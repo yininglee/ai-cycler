@@ -1,0 +1,42 @@
+{
+  "run_id": "RUN-20260822-013",
+  "recorded_at": "2026-08-22",
+  "evidence_source": "user-provided-Coze-debug-output-and-screenshot",
+  "comparable": true,
+  "case_id": "l1-built-in-sample",
+  "run_type": "single_first_attempt",
+  "few_shot_mode": "disabled",
+  "prompt_version": "3.0 (reported configuration)",
+  "workflow_version": "ride_analysis_v2 (console version not recorded)",
+  "workflow_latency_ms_approx": 12000,
+  "token_count": 7112,
+  "result": "semantic_fail",
+  "fallback_state": "not_exercised_in_Coze_debug",
+  "human_review": {
+    "status": "fail",
+    "passed": [
+      "Pace and climbing values are traceable.",
+      "The first/last-quarter relation is expressed as beginning/end stages.",
+      "The output does not add unsupported intensity, effort, route difficulty, or trend claims."
+    ],
+    "concerns": [
+      "headline is a single fact statement rather than a concise overall assessment or useful salient feature.",
+      "overallAssessment and dimensions mostly restate facts and do not explain their meaning for the ride.",
+      "shareCopy again includes今日 without a time claim."
+    ]
+  },
+  "output": {
+    "dimensions": [
+      {"claimIds": ["claim:ride-l1-built-in-sample:feature:speedSeriesMeanMps", "claim:ride-l1-built-in-sample:feature:speedFirstLastDeltaMps"], "confidence": "high", "key": "pace", "text": "本次骑行平均速度为25km/h，骑行过程中速度存在变化，结束阶段速度相比开始阶段有所降低。"},
+      {"claimIds": ["claim:ride-l1-built-in-sample:feature:elevationPositiveGainM", "claim:ride-l1-built-in-sample:feature:elevationRangeM"], "confidence": "high", "key": "climbing", "text": "本次骑行累计爬升260米，骑行路线海拔整体范围约41.6米。"}
+    ],
+    "headline": "本次骑行结束阶段速度有所降低",
+    "limitations": ["本次评价不包含运动强度分析", "无心率、功率、踏频数据可供分析"],
+    "nextAction": {"basisClaimIds": [], "kind": "general", "text": "骑行后做好拉伸放松，记得补充水分"},
+    "notableEvents": [],
+    "overallAssessment": {"claimIds": ["claim:ride-l1-built-in-sample:distanceM", "claim:ride-l1-built-in-sample:avgSpeedMps", "claim:ride-l1-built-in-sample:feature:elevationPositiveGainM", "claim:ride-l1-built-in-sample:feature:speedFirstLastDeltaMps"], "text": "本次骑行完成了25公里，平均速度25km/h，累计爬升260米，结束阶段速度比开始阶段低约4.5km/h。"},
+    "safetyLevel": "normal",
+    "schemaVersion": "ride-analysis-output-v0.3",
+    "shareCopy": ["完成本次骑行，记录25公里骑行旅程", "今日完成骑行，累计爬升260米", "记录一次骑行，保持骑行节奏"]
+  }
+}

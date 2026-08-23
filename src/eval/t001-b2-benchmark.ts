@@ -1,0 +1,378 @@
+import {
+  CozeWorkflowError,
+  type RideAnalysisInvocation,
+  type RideAnalysisProvider,
+  type RideAnalysisProviderResult,
+} from "../ai/coze-workflow-client.ts";
+import {
+  RIDE_ANALYSIS_PROMPT_VERSION,
+  RIDE_ANALYSIS_SERVICE_VERSION,
+  RIDE_ANALYSIS_WORKFLOW_VERSION,
+  prepareRideAnalysis,
+  runRideAnalysis,
+  type RideAnalysisRuntimeResult,
+} from "../ai/ride-analysis-service.ts";
+import { RIDE_ANALYSIS_OUTPUT_SCHEMA_VERSION } from "../ai/ride-analysis-output-v03.ts";
+import {
+  ANALYSIS_ELIGIBILITY_RULES_VERSION,
+  ANALYSIS_ELIGIBILITY_SCHEMA_VERSION,
+} from "../domain/analysis-eligibility.ts";
+import {
+  RIDE_ANALYSIS_CONTEXT_RULES_VERSION,
+  RIDE_ANALYSIS_CONTEXT_SCHEMA_VERSION,
+} from "../domain/ride-analysis-context.ts";
+import { B0_TEMPLATE_VERSION } from "../domain/ride-summary.ts";
+import {
+  getT001AutomaticRideAnalysisCase,
+  t001AutomaticRideAnalysisCaseIds,
+  type T001AutomaticRideAnalysisCaseId,
+} from "../fixtures/ride-analysis-t001.ts";
+
+export const T001_B2_RAW_BATCH_SCHEMA_VERSION = "t001-b2-raw-batch-v0.1" as const;
+export const T001_B2_RESULT_SCHEMA_VERSION = "t001-b2-evaluated-run-v0.1" as const;
+export const T001_B2_REPETITIONS = 3 as const;
+
+export interface T001B2VersionMatrix {
+  appVersion: "visual-shell-v0.1";
+  outputSchemaVersion: typeof RIDE_ANALYSIS_OUTPUT_SCHEMA_VERSION;
+  contextSchemaVersion: typeof RIDE_ANALYSIS_CONTEXT_SCHEMA_VERSION;
+  contextRulesVersion: typeof RIDE_ANALYSIS_CONTEXT_RULES_VERSION;
+  eligibilitySchemaVersion: typeof ANALYSIS_ELIGIBILITY_SCHEMA_VERSION;
+  eligibilityRulesVersion: typeof ANALYSIS_ELIGIBILITY_RULES_VERSION;
+  promptVersion: typeof RIDE_ANALYSIS_PROMPT_VERSION;
+  serviceVersion: typeof RIDE_ANALYSIS_SERVICE_VERSION;
+  workflowVersion: typeof RIDE_ANALYSIS_WORKFLOW_VERSION;
+  fewShotMode: "disabled";
+  b0TemplateVersion: typeof B0_TEMPLATE_VERSION;
+  modelId: string;
+  region: string;
+  modelParameters: Record<string, unknown>;
+}
+
+export interface T001B2Attempt {
+  attempt: 1 | 2;
+  outcome: "response" | "timeout" | "provider_error";
+  providerRequestId: string;
+  latencyMs: number;
+  rawText?: string;
+}
+
+export interface T001B2RawRecord {
+  caseId: T001AutomaticRideAnalysisCaseId;
+  repetition: 1 | 2 | 3;
+  requestId: string;
+  startedAt: string;
+  completedAt: string;
+  totalLatencyMs: number;
+  tokenUsage: {
+    inputTokens: number;
+    outputTokens: number;
+    totalTokens: number;
+  };
+  costCny: number;
+  attempts: T001B2Attempt[];
+}
+
+export interface T001B2RawBatch {
+  schemaVersion: typeof T001_B2_RAW_BATCH_SCHEMA_VERSION;
+  batchId: string;
+  plan: "B2";
+  versionMatrix: T001B2VersionMatrix;
+  records: T001B2RawRecord[];
+}
+
+export interface T001B2EvaluatedRecord extends T001B2RawRecord {
+  slotId: string;
+  firstAttemptContractValid: boolean | null;
+  runtimeResult: RideAnalysisRuntimeResult;
+}
+
+export interface T001B2EvaluatedBatch {
+  schemaVersion: typeof T001_B2_RESULT_SCHEMA_VERSION;
+  runId: string;
+  benchmark: "T001";
+  plan: "B2";
+  validationStatus: "PASS" | "FAIL";
+  benchmarkStatus: "NOT_SCORED";
+  versionMatrix: T001B2VersionMatrix;
+  dataset: {
+    caseCount: 18;
+    repetitionsPerCase: 3;
+    expectedSlotCount: 54;
+    b0RunId: "RUN-20260823-022";
+  };
+  summary: {
+    slotCount: number;
+    firstAttemptContractValidCount: number;
+    repairedSuccessCount: number;
+    b2SuccessCount: number;
+    b0FallbackCount: number;
+    safetyStopCount: number;
+    modelCallCount: number;
+    tokenCount: number;
+    costCny: number;
+    latencyMs: { p50: number; p95: number };
+  };
+  issues: string[];
+  records: T001B2EvaluatedRecord[];
+}
+
+const FIXED_VERSION_MATRIX = {
+  appVersion: "visual-shell-v0.1",
+  outputSchemaVersion: RIDE_ANALYSIS_OUTPUT_SCHEMA_VERSION,
+  contextSchemaVersion: RIDE_ANALYSIS_CONTEXT_SCHEMA_VERSION,
+  contextRulesVersion: RIDE_ANALYSIS_CONTEXT_RULES_VERSION,
+  eligibilitySchemaVersion: ANALYSIS_ELIGIBILITY_SCHEMA_VERSION,
+  eligibilityRulesVersion: ANALYSIS_ELIGIBILITY_RULES_VERSION,
+  promptVersion: RIDE_ANALYSIS_PROMPT_VERSION,
+  serviceVersion: RIDE_ANALYSIS_SERVICE_VERSION,
+  workflowVersion: RIDE_ANALYSIS_WORKFLOW_VERSION,
+  fewShotMode: "disabled",
+  b0TemplateVersion: B0_TEMPLATE_VERSION,
+} as const;
+
+const CASE_IDS = new Set<string>(t001AutomaticRideAnalysisCaseIds);
+const UNRECORDED_MODEL_IDS = new Set(["", "unrecorded", "not_recorded", "not-applicable", "not_applicable_b0"]);
+
+function finiteNonNegative(value: unknown): value is number {
+  return typeof value === "number" && Number.isFinite(value) && value >= 0;
+}
+
+function positive(value: unknown): value is number {
+  return typeof value === "number" && Number.isFinite(value) && value > 0;
+}
+
+function validDate(value: unknown): number | undefined {
+  if (typeof value !== "string") return undefined;
+  const timestamp = Date.parse(value);
+  return Number.isFinite(timestamp) ? timestamp : undefined;
+}
+
+function slotId(record: Pick<T001B2RawRecord, "caseId" | "repetition">): string {
+  return `${record.caseId}#${record.repetition}`;
+}
+
+function percentile(values: number[], ratio: number): number {
+  const sorted = [...values].sort((a, b) => a - b);
+  const index = Math.max(0, Math.ceil(sorted.length * ratio) - 1);
+  return Number((sorted[index] ?? 0).toFixed(3));
+}
+
+function parseJson(value: string): unknown {
+  try {
+    return JSON.parse(value);
+  } catch {
+    return undefined;
+  }
+}
+
+function validateVersionMatrix(value: unknown, issues: string[]): void {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    issues.push("INVALID_VERSION_MATRIX");
+    return;
+  }
+  const matrix = value as Partial<T001B2VersionMatrix>;
+  for (const [key, expected] of Object.entries(FIXED_VERSION_MATRIX)) {
+    if (matrix[key as keyof T001B2VersionMatrix] !== expected) issues.push(`VERSION_MISMATCH:${key}`);
+  }
+  if (
+    typeof matrix.modelId !== "string"
+    || !matrix.modelId.trim()
+    || UNRECORDED_MODEL_IDS.has(matrix.modelId.trim().toLowerCase())
+  ) issues.push("MODEL_ID_NOT_RECORDED");
+  if (typeof matrix.region !== "string" || !matrix.region.trim()) issues.push("MODEL_REGION_NOT_RECORDED");
+  if (
+    !matrix.modelParameters
+    || typeof matrix.modelParameters !== "object"
+    || Array.isArray(matrix.modelParameters)
+    || Object.keys(matrix.modelParameters).length === 0
+  ) {
+    issues.push("MODEL_PARAMETERS_NOT_RECORDED");
+  }
+}
+
+function validateRecordMetadata(record: T001B2RawRecord, eligibility: boolean, issues: string[]): void {
+  const prefix = slotId(record);
+  if (!CASE_IDS.has(record.caseId)) issues.push(`${prefix}:UNKNOWN_CASE`);
+  if (![1, 2, 3].includes(record.repetition)) issues.push(`${prefix}:INVALID_REPETITION`);
+  if (typeof record.requestId !== "string" || !record.requestId.trim()) issues.push(`${prefix}:MISSING_REQUEST_ID`);
+  const started = validDate(record.startedAt);
+  const completed = validDate(record.completedAt);
+  if (started === undefined || completed === undefined || completed < started) issues.push(`${prefix}:INVALID_TIMESTAMPS`);
+  if (!positive(record.totalLatencyMs)) issues.push(`${prefix}:MISSING_TOTAL_LATENCY`);
+  if (!finiteNonNegative(record.costCny)) issues.push(`${prefix}:MISSING_COST`);
+  else if (!eligibility && record.costCny !== 0) issues.push(`${prefix}:INELIGIBLE_WITH_MODEL_COST`);
+  const tokenUsageValid = Boolean(
+    record.tokenUsage
+    && Number.isInteger(record.tokenUsage.inputTokens)
+    && Number.isInteger(record.tokenUsage.outputTokens)
+    && Number.isInteger(record.tokenUsage.totalTokens),
+  );
+  if (!tokenUsageValid) {
+    issues.push(`${prefix}:MISSING_TOKEN_USAGE`);
+  } else if (
+    record.tokenUsage.inputTokens < 0
+    || record.tokenUsage.outputTokens < 0
+    || record.tokenUsage.totalTokens !== record.tokenUsage.inputTokens + record.tokenUsage.outputTokens
+  ) {
+    issues.push(`${prefix}:INVALID_TOKEN_USAGE`);
+  }
+
+  if (!Array.isArray(record.attempts) || record.attempts.length > 2) {
+    issues.push(`${prefix}:INVALID_ATTEMPT_COUNT`);
+    return;
+  }
+  if (eligibility && record.attempts.length === 0) issues.push(`${prefix}:ELIGIBLE_WITHOUT_MODEL_ATTEMPT`);
+  if (!eligibility && record.attempts.length > 0) issues.push(`${prefix}:INELIGIBLE_WITH_MODEL_ATTEMPT`);
+  const hasModelResponse = record.attempts.some(
+    (attempt) => Boolean(attempt && typeof attempt === "object" && !Array.isArray(attempt) && attempt.outcome === "response"),
+  );
+  if (tokenUsageValid && hasModelResponse && record.tokenUsage.totalTokens <= 0) issues.push(`${prefix}:RESPONSE_WITHOUT_TOKEN_USAGE`);
+  if (tokenUsageValid && !eligibility && record.tokenUsage.totalTokens !== 0) issues.push(`${prefix}:INELIGIBLE_WITH_TOKEN_USAGE`);
+
+  let attemptLatency = 0;
+  for (const [index, attempt] of record.attempts.entries()) {
+    if (!attempt || typeof attempt !== "object" || Array.isArray(attempt)) {
+      issues.push(`${prefix}:INVALID_ATTEMPT:${index + 1}`);
+      continue;
+    }
+    if (attempt.attempt !== index + 1) issues.push(`${prefix}:NON_SEQUENTIAL_ATTEMPT`);
+    if (!["response", "timeout", "provider_error"].includes(attempt.outcome)) issues.push(`${prefix}:INVALID_ATTEMPT_OUTCOME`);
+    if (typeof attempt.providerRequestId !== "string" || !attempt.providerRequestId.trim()) issues.push(`${prefix}:MISSING_PROVIDER_REQUEST_ID`);
+    if (!positive(attempt.latencyMs)) issues.push(`${prefix}:MISSING_ATTEMPT_LATENCY`);
+    else attemptLatency += attempt.latencyMs;
+    if (attempt.outcome === "response" && !attempt.rawText?.trim()) issues.push(`${prefix}:MISSING_RAW_OUTPUT`);
+    if (attempt.outcome !== "response" && attempt.rawText !== undefined) issues.push(`${prefix}:ERROR_ATTEMPT_HAS_RAW_OUTPUT`);
+  }
+  if (positive(record.totalLatencyMs) && attemptLatency > record.totalLatencyMs) issues.push(`${prefix}:ATTEMPT_LATENCY_EXCEEDS_TOTAL`);
+}
+
+class RecordedAttemptProvider implements RideAnalysisProvider {
+  calls = 0;
+  private readonly attempts: T001B2Attempt[];
+
+  constructor(attempts: T001B2Attempt[]) {
+    this.attempts = attempts;
+  }
+
+  async run(_input: RideAnalysisInvocation): Promise<RideAnalysisProviderResult> {
+    const attempt = this.attempts[this.calls++];
+    if (!attempt) throw new Error("Recorded provider was called more times than captured attempts");
+    if (attempt.outcome === "timeout") throw new CozeWorkflowError("AI_TIMEOUT", "Recorded timeout");
+    if (attempt.outcome === "provider_error") throw new CozeWorkflowError("PROVIDER_HTTP_ERROR", "Recorded provider error");
+    return { rawText: attempt.rawText!, providerRequestId: attempt.providerRequestId };
+  }
+}
+
+export function expectedT001B2SlotIds(): string[] {
+  return t001AutomaticRideAnalysisCaseIds.flatMap((caseId) => [1, 2, 3].map((repetition) => `${caseId}#${repetition}`));
+}
+
+export function validateT001B2BatchMetadata(batch: T001B2RawBatch): string[] {
+  const issues: string[] = [];
+  if (batch.schemaVersion !== T001_B2_RAW_BATCH_SCHEMA_VERSION) issues.push("INVALID_BATCH_SCHEMA_VERSION");
+  if (typeof batch.batchId !== "string" || !/^RUN-\d{8}-\d{3}$/.test(batch.batchId)) issues.push("INVALID_BATCH_ID");
+  if (batch.plan !== "B2") issues.push("INVALID_BENCHMARK_PLAN");
+  validateVersionMatrix(batch.versionMatrix, issues);
+  if (!Array.isArray(batch.records)) return [...issues, "INVALID_RECORDS"];
+
+  const seenSlots = new Set<string>();
+  const seenRequests = new Set<string>();
+  for (const [index, value] of batch.records.entries()) {
+    if (!value || typeof value !== "object" || Array.isArray(value)) {
+      issues.push(`INVALID_RECORD:${index}`);
+      continue;
+    }
+    const record = value as T001B2RawRecord;
+    const item = CASE_IDS.has(record.caseId) ? getT001AutomaticRideAnalysisCase(record.caseId) : undefined;
+    const eligible = item ? prepareRideAnalysis(item.record, `eval-t001:${record.caseId}`, item.contextOptions).eligibility.eligible : false;
+    validateRecordMetadata(record, eligible, issues);
+    const slot = slotId(record);
+    if (seenSlots.has(slot)) issues.push(`${slot}:DUPLICATE_SLOT`);
+    seenSlots.add(slot);
+    if (typeof record.requestId === "string") {
+      if (seenRequests.has(record.requestId)) issues.push(`${slot}:DUPLICATE_REQUEST_ID`);
+      seenRequests.add(record.requestId);
+    }
+  }
+  for (const expected of expectedT001B2SlotIds()) if (!seenSlots.has(expected)) issues.push(`${expected}:MISSING_SLOT`);
+  if (batch.records.length !== 54) issues.push(`INVALID_SLOT_COUNT:${batch.records.length}`);
+  return [...new Set(issues)];
+}
+
+export async function evaluateT001B2Record(
+  record: T001B2RawRecord,
+  modelId: string,
+): Promise<T001B2EvaluatedRecord> {
+  const item = getT001AutomaticRideAnalysisCase(record.caseId);
+  const prepared = prepareRideAnalysis(item.record, `eval-t001:${record.caseId}`, item.contextOptions);
+  const provider = new RecordedAttemptProvider(record.attempts);
+  const runtimeResult = await runRideAnalysis(prepared, {
+    enabled: true,
+    provider,
+    modelId,
+    requestId: record.requestId,
+    fewShotEnabled: false,
+  });
+  if (provider.calls !== record.attempts.length) throw new Error(`${slotId(record)}:RECORDED_ATTEMPTS_NOT_CONSUMED`);
+  const first = record.attempts[0];
+  const firstAttemptContractValid = first?.outcome === "response"
+    ? runtimeResult.attempts === 1 && runtimeResult.source === "b2"
+    : first ? false : null;
+  return { ...record, slotId: slotId(record), firstAttemptContractValid, runtimeResult };
+}
+
+export async function evaluateT001B2Batch(batch: T001B2RawBatch): Promise<T001B2EvaluatedBatch> {
+  const issues = validateT001B2BatchMetadata(batch);
+  const records: T001B2EvaluatedRecord[] = [];
+  if (issues.length === 0) {
+    for (const record of batch.records) {
+      try {
+        records.push(await evaluateT001B2Record(record, batch.versionMatrix.modelId));
+      } catch (error) {
+        issues.push(error instanceof Error ? error.message : `${slotId(record)}:EVALUATION_FAILED`);
+      }
+    }
+  }
+  const b2SuccessCount = records.filter((record) => record.runtimeResult.source === "b2").length;
+  const b0FallbackCount = records.filter((record) => record.runtimeResult.source === "b0").length;
+  const safetyStopCount = records.filter((record) => record.runtimeResult.source === "safety_stop").length;
+  const firstAttemptContractValidCount = records.filter((record) => record.firstAttemptContractValid).length;
+  const repairedSuccessCount = records.filter((record) => record.runtimeResult.source === "b2" && record.runtimeResult.attempts === 2).length;
+  return {
+    schemaVersion: T001_B2_RESULT_SCHEMA_VERSION,
+    runId: batch.batchId,
+    benchmark: "T001",
+    plan: "B2",
+    validationStatus: issues.length === 0 ? "PASS" : "FAIL",
+    benchmarkStatus: "NOT_SCORED",
+    versionMatrix: batch.versionMatrix,
+    dataset: { caseCount: 18, repetitionsPerCase: 3, expectedSlotCount: 54, b0RunId: "RUN-20260823-022" },
+    summary: {
+      slotCount: records.length,
+      firstAttemptContractValidCount,
+      repairedSuccessCount,
+      b2SuccessCount,
+      b0FallbackCount,
+      safetyStopCount,
+      modelCallCount: records.reduce((sum, record) => sum + record.attempts.length, 0),
+      tokenCount: records.reduce((sum, record) => sum + record.tokenUsage.totalTokens, 0),
+      costCny: Number(records.reduce((sum, record) => sum + record.costCny, 0).toFixed(6)),
+      latencyMs: {
+        p50: percentile(records.map((record) => record.totalLatencyMs), 0.5),
+        p95: percentile(records.map((record) => record.totalLatencyMs), 0.95),
+      },
+    },
+    issues: [...new Set(issues)],
+    records,
+  };
+}
+
+export function parseT001B2RawBatch(value: unknown): T001B2RawBatch {
+  if (!value || typeof value !== "object" || Array.isArray(value)) throw new Error("B2 batch must be a JSON object");
+  return value as T001B2RawBatch;
+}
+
+export function rawAttemptJson(attempt: T001B2Attempt): unknown {
+  return attempt.outcome === "response" && attempt.rawText ? parseJson(attempt.rawText) : undefined;
+}

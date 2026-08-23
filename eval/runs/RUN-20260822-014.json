@@ -1,0 +1,30 @@
+{
+  "run_id": "RUN-20260822-014",
+  "date": "2026-08-22",
+  "work_item": "ITEM-V014",
+  "fixture": "l1-built-in-sample",
+  "prompt_version": "3.1",
+  "workflow_version": "ride_analysis_v2-dev.12",
+  "few_shot_mode": "disabled",
+  "model_label": "豆包·2.0·lite",
+  "duration_seconds": 13,
+  "tokens": 7484,
+  "result": "semantic_fail",
+  "raw_output": {
+    "headline": "后程速度回落，配速呈现节奏变化",
+    "issues": [
+      "未校准程度词：速度波动幅度较小、没有大幅变化、整体速度保持得比较稳定、明显回落",
+      "未校准路线分类：整体海拔起伏不大",
+      "limitations罗列缺少心率/功率/踏频数据并声称无法解读"
+    ],
+    "passed": [
+      "v0.3结构",
+      "claim引用",
+      "标题已不再是流程状态",
+      "整体评价和维度已出现解释桥接",
+      "未出现历史不足、日期或计划越界"
+    ]
+  },
+  "service_validation": "NOT_RUN",
+  "next_action": "使用加入程度词与设备清单拒绝门后的当前Prompt和同一L1输入复测；不启动L2/L3。"
+}

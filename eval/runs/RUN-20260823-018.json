@@ -1,0 +1,85 @@
+{
+  "run_id": "RUN-20260823-018",
+  "date": "2026-08-23",
+  "work_item": "ITEM-V014",
+  "fixture_set": ["l1-built-in-sample", "l2-built-in-sample", "l3-built-in-sample"],
+  "comparison_type": "same-prompt-three-capability-smoke",
+  "evidence_source": "user-provided-Coze-run-outputs",
+  "prompt_version_claimed": "3.1.1",
+  "few_shot_mode": "disabled",
+  "workflow_version_claimed": "ride_analysis_v2-dev.14",
+  "metadata": {
+    "exact_model_id": "NOT_RECORDED",
+    "request_ids": "NOT_RECORDED",
+    "latency": "NOT_RECORDED",
+    "token_count": "NOT_RECORDED",
+    "cost": "NOT_RECORDED",
+    "server_validation": "NOT_RUN_ON_RAW_OUTPUTS"
+  },
+  "result": "partial_pass_semantic_fail",
+  "case_results": {
+    "l1-built-in-sample": {
+      "status": "pass",
+      "dimension_keys": ["pace", "climbing"],
+      "passed": [
+        "v0.3 output structure and enums",
+        "semantic business dimensions",
+        "pace fact-plus-direct-meaning",
+        "sensor limitation includes impact",
+        "fact-only climbing fallback is acceptable",
+        "general nextAction"
+      ],
+      "concerns": [
+        "headline is slightly repetitive",
+        "shareCopy contains strong but permitted low-risk subjective wording such as 畅快"
+      ]
+    },
+    "l2-built-in-sample": {
+      "status": "conditional_pass",
+      "dimension_keys": ["pace", "heartRate", "cadence", "climbing"],
+      "passed": [
+        "v0.3 output structure and enums",
+        "independent heart-rate and cadence dimensions",
+        "sensor/profile limitations describe their interpretation boundary",
+        "general nextAction"
+      ],
+      "concerns": [
+        "shareCopy contains unsupported time label 今日",
+        "shareCopy phrase 充实的一天 is a weak unsupported scene/time implication",
+        "three metrics都有变化 is less precise than explicitly stating end-stage values are below start-stage values"
+      ]
+    },
+    "l3-built-in-sample": {
+      "status": "fail",
+      "dimension_keys": ["pace", "heartRate", "power", "cadence", "climbing"],
+      "hard_failures": [
+        "cadenceCoefficientOfVariation is converted into unversioned classification 整体变化小/保持稳定",
+        "limitations exposes internal history gap with 无可用历史数据，不做历史对比分析",
+        "shareCopy contains unsupported time label 今日"
+      ],
+      "semantic_concerns": [
+        "powerFirstLastDeltaW only supports first/last quarter comparison, but output says 功率全程没有变化",
+        "normalizedPowerRatio is listed without explaining its user meaning",
+        "踏频稳定结论 is repeated in headline and overallAssessment"
+      ]
+    }
+  },
+  "repair_scope": {
+    "allowed": [
+      "remove or narrow unsupported wording",
+      "replace full-course wording with first/last-stage wording",
+      "remove history-gap limitation",
+      "replace unsupported shareCopy time labels with neutral copy",
+      "remove uncalibrated stability classification or retain the raw fact only"
+    ],
+    "forbidden": [
+      "add new Claim IDs",
+      "add new numbers",
+      "invent a classification threshold",
+      "add a history conclusion",
+      "rewrite the output into a new dimension structure"
+    ]
+  },
+  "quality_score": "NOT_SCORED",
+  "next_action": "Run exactly one constrained repair against the L3 output using the server-generated error codes; then validate the repaired output. Do not modify the original run record and do not start L2/L3 release work."
+}

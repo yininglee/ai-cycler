@@ -1,0 +1,22 @@
+{
+  "run_id": "RUN-20260822-016",
+  "date": "2026-08-22",
+  "work_item": "ITEM-V014",
+  "fixture": "l1-built-in-sample",
+  "prompt_version_claimed": "3.2",
+  "workflow_version_claimed": "ride_analysis_v2-dev.13",
+  "few_shot_mode": "unknown",
+  "duration_seconds": 12,
+  "tokens": 7626,
+  "result": "contract_mismatch",
+  "observed_output": {
+    "schemaVersion": "0.2",
+    "safetyLevel": "safe",
+    "nextActionKind": "tip",
+    "notableEventsType": "string[]",
+    "shareCopyCount": 1
+  },
+  "diagnosis": "输出形态属于旧骑后合同，尚未证明当前v3.2 Prompt或v0.3结构化输出配置已生效。",
+  "quality_score": "NOT_SCORED",
+  "next_action": "先核对扣子System Prompt和大模型节点结构化输出是否为v0.3，再用同一L1输入重跑。"
+}

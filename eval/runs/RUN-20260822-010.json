@@ -1,0 +1,32 @@
+{
+  "run_id": "RUN-20260822-010",
+  "recorded_at": "2026-08-22",
+  "evidence_source": "user-provided-Coze-debug-output",
+  "comparable": false,
+  "missing_metadata": ["exact_model_id", "published_workflow_version", "request_id", "latency", "token_count", "cost", "server_validation_result"],
+  "case_id": "l1-built-in-sample",
+  "run_type": "single_first_attempt",
+  "few_shot_mode": "disabled",
+  "prompt_version": "2.4 (reported configuration; exact console version not recorded)",
+  "result": "semantic_fail",
+  "fallback_state": "not_exercised_in_Coze_debug",
+  "human_review": {
+    "status": "fail",
+    "passed": ["v0.3 structure is complete.", "Speed uses the server display value and the first/last quarter definition.", "Elevation facts use the server display values without an unsupported route classification.", "Overall assessment stays within the supplied facts."],
+    "concerns": ["limitations exposes no-usable-history information, violating the silent historical-gap rule.", "shareCopy includes轻松完成 without direct intensity or subjective-feeling evidence.", "shareCopy includes周末晨骑 without a time or scene claim in the context.", "shareCopy includes享受在路上的感觉, which is a subjective experience not evidenced by the context."]
+  },
+  "output": {
+    "dimensions": [
+      {"claimIds": ["claim:ride-l1-built-in-sample:feature:speedSeriesMeanMps", "claim:ride-l1-built-in-sample:feature:speedFirstLastDeltaMps"], "confidence": "high", "key": "pace", "text": "本次骑行平均速度为25km/h，骑行末段四分之一比首段四分之一速度降低了4.49km/h。"},
+      {"claimIds": ["claim:ride-l1-built-in-sample:feature:elevationPositiveGainM", "claim:ride-l1-built-in-sample:feature:elevationRangeM", "claim:ride-l1-built-in-sample:feature:elevationMinM", "claim:ride-l1-built-in-sample:feature:elevationMaxM"], "confidence": "high", "key": "climbing", "text": "本次骑行累计爬升为260米，路线海拔范围是41.6米，最低海拔30米，最高海拔71.6米。"}
+    ],
+    "headline": "本次骑行完成25公里全程骑行",
+    "limitations": ["本次评价不包含运动强度判断", "无可用历史数据做对比分析"],
+    "nextAction": {"basisClaimIds": [], "kind": "general", "text": "骑行结束后可以做拉伸放松，及时补充水分和能量"},
+    "notableEvents": [],
+    "overallAssessment": {"claimIds": ["claim:ride-l1-built-in-sample:distanceM", "claim:ride-l1-built-in-sample:movingTimeS", "claim:ride-l1-built-in-sample:feature:speedSeriesMeanMps", "claim:ride-l1-built-in-sample:feature:speedFirstLastDeltaMps", "claim:ride-l1-built-in-sample:feature:elevationPositiveGainM"], "text": "你完成了本次骑行，全程共骑行了25公里，用时1小时，累计爬升260米，平均速度保持在25km/h，骑行末段四分之一相比首段四分之一速度有所下降。"},
+    "safetyLevel": "normal",
+    "schemaVersion": "ride-analysis-output-v0.3",
+    "shareCopy": ["完成今天的骑行，25公里1小时，顺利打卡✅", "周末晨骑25公里，享受在路上的感觉～", "轻松完成25公里骑行，又是活力满满的一天"]
+  }
+}

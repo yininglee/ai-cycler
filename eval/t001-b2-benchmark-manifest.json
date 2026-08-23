@@ -1,0 +1,61 @@
+{
+  "schemaVersion": "t001-b2-benchmark-manifest-v0.1",
+  "benchmarkId": "T001-B2",
+  "plan": "B2",
+  "dataset": {
+    "migrationManifest": "eval/ride-analysis-cases-v0.3-migration.json",
+    "caseIds": [
+      "RA-AUTO-001",
+      "RA-AUTO-002",
+      "RA-AUTO-003",
+      "RA-AUTO-004",
+      "RA-AUTO-005",
+      "RA-AUTO-006",
+      "RA-AUTO-007",
+      "RA-AUTO-008",
+      "RA-AUTO-009",
+      "RA-AUTO-010",
+      "RA-AUTO-011",
+      "RA-AUTO-012",
+      "RA-AUTO-013",
+      "RA-AUTO-014",
+      "RA-AUTO-015",
+      "RA-AUTO-016",
+      "RA-AUTO-017",
+      "RA-AUTO-018"
+    ],
+    "repetitionsPerCase": 3,
+    "expectedSlotCount": 54,
+    "b0RunId": "RUN-20260823-022"
+  },
+  "fixedVersionMatrix": {
+    "appVersion": "visual-shell-v0.1",
+    "outputSchemaVersion": "ride-analysis-output-v0.3",
+    "contextSchemaVersion": "0.2",
+    "contextRulesVersion": "ride-analysis-context-rules-v0.2",
+    "eligibilitySchemaVersion": "0.1",
+    "eligibilityRulesVersion": "analysis-eligibility-rules-v0.1",
+    "promptVersion": "3.1.2",
+    "serviceVersion": "ride-analysis-service-v1.4",
+    "workflowVersion": "ride_analysis_v2-dev.15",
+    "fewShotMode": "disabled",
+    "b0TemplateVersion": "b0-template-v0.1"
+  },
+  "requiredBatchMetadata": [
+    "batchId",
+    "modelId",
+    "region",
+    "modelParameters"
+  ],
+  "requiredRecordMetadata": [
+    "caseId",
+    "repetition",
+    "requestId",
+    "startedAt",
+    "completedAt",
+    "totalLatencyMs",
+    "tokenUsage",
+    "costCny",
+    "attempts"
+  ]
+}

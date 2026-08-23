@@ -1,0 +1,71 @@
+{
+  "run_id": "RUN-20260818-002",
+  "recorded_at": "2026-08-18",
+  "evidence_source": "user-provided-Coze-debug-output",
+  "comparable": false,
+  "missing_metadata": [
+    "exact_model_id",
+    "published_workflow_version",
+    "request_id",
+    "cost"
+  ],
+  "app_version": "visual-shell-v0.1",
+  "rules_version": "ride-rules-v0.1",
+  "snapshot_schema_version": "1.0",
+  "output_schema_version": "ride-analysis-output-v0.1",
+  "prompt_version": "1.1",
+  "workflow_version": "ride_analysis_v1-draft",
+  "model_id": "豆包·2.0·lite (UI label; exact ID not recorded)",
+  "kb_version": null,
+  "case_id": "l1-built-in-sample",
+  "result": "contract_pass_latency_fail",
+  "fallback_state": "none_in_coze_debug",
+  "latency_ms_approx": 34000,
+  "token_count": 3988,
+  "cost": "NOT_RECORDED",
+  "contract_validation": {
+    "valid": true,
+    "issues": [],
+    "summary_length": 67,
+    "headline_length": 10,
+    "share_copy_lengths": [18, 19, 20]
+  },
+  "output": {
+    "headline": "完成25公里休闲骑行",
+    "summary": "你这次骑行一共骑行了25公里，移动骑行时长1小时，累计爬升260米，平均速度25km/h，本次数据记录完整，是一次节奏不错的休闲骑行。",
+    "highlights": [
+      {
+        "text": "本次骑行总距离为25公里，数据记录完整",
+        "claimIds": ["claim:ride-l1-built-in-sample:distanceM"],
+        "confidence": "high"
+      },
+      {
+        "text": "移动骑行时长1小时，平均速度为25km/h",
+        "claimIds": [
+          "claim:ride-l1-built-in-sample:movingTimeS",
+          "claim:ride-l1-built-in-sample:avgSpeedMps"
+        ],
+        "confidence": "high"
+      },
+      {
+        "text": "全程累计爬升260米，整体起伏不大",
+        "claimIds": ["claim:ride-l1-built-in-sample:elevationGainM"],
+        "confidence": "high"
+      }
+    ],
+    "nextAction": {
+      "text": "骑行结束后做好拉伸放松，补充水分能量",
+      "basisClaimIds": [
+        "claim:ride-l1-built-in-sample:distanceM",
+        "claim:ride-l1-built-in-sample:movingTimeS"
+      ]
+    },
+    "limitations": ["仅提供基础骑行数据解读，不包含体能训练分析"],
+    "safetyLevel": "normal",
+    "shareCopy": [
+      "今日完成25公里骑行，舒服的休闲骑～",
+      "休闲刷街1小时，骑了25公里，收获快乐",
+      "周末骑游25公里，爬升260米，太惬意啦"
+    ]
+  }
+}

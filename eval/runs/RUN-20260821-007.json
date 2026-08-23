@@ -1,0 +1,115 @@
+{
+  "run_id": "RUN-20260821-007",
+  "recorded_at": "2026-08-21",
+  "evidence_source": "user-provided-Coze-debug-output-and-screenshot",
+  "comparable": false,
+  "missing_metadata": [
+    "exact_model_id",
+    "published_workflow_version",
+    "request_id",
+    "model_parameters",
+    "cost"
+  ],
+  "app_version": "visual-shell-v0.1",
+  "service_version": "ride-analysis-service-v0.3",
+  "context_schema_version": "0.2",
+  "eligibility_schema_version": "0.1",
+  "output_schema_version": "ride-analysis-output-v0.3",
+  "prompt_version": "2.1",
+  "workflow_version": "ride_analysis_v2-dev.2 (candidate; UI exact version not recorded)",
+  "model_id": "豆包·2.0·lite (UI label; exact ID not recorded)",
+  "few_shot_mode": "disabled",
+  "case_id": "l1-built-in-sample",
+  "run_type": "single_first_attempt",
+  "result": "structure_pass_semantic_fail",
+  "fallback_state": "not_exercised_in_Coze_debug",
+  "workflow_latency_ms_approx": 13000,
+  "token_count": 6097,
+  "cost": "NOT_RECORDED",
+  "contract_validation_at_run": {
+    "status": "NOT_RUN",
+    "reason": "The screenshot is a direct Coze workflow debug run, not the server validation path."
+  },
+  "replay_against_prompt_v2_2_guards": {
+    "valid": false,
+    "issues": [
+      "OVERALL_UNSUPPORTED_NUMBER",
+      "TEXT_UNSUPPORTED_NUMBER",
+      "VISIBLE_HISTORY_GAP",
+      "UNSUPPORTED_DISTANCE_CLASSIFICATION",
+      "UNSUPPORTED_ROUTE_CLASSIFICATION",
+      "UNSUPPORTED_EFFORT_CLASSIFICATION",
+      "UNSUPPORTED_PHYSIOLOGICAL_CAUSALITY",
+      "UNCALIBRATED_FEATURE_CLASSIFICATION",
+      "UNSUPPORTED_SEGMENT_LABEL"
+    ]
+  },
+  "human_review": {
+    "status": "fail",
+    "passed": [
+      "The root object and all nine v0.3 fields are present.",
+      "All referenced claimIds exist in the supplied L1 context.",
+      "No forbidden heart-rate, power or cadence dimension was generated.",
+      "notableEvents is correctly empty and the general action has no claimIds."
+    ],
+    "concerns": [
+      "The first-ride history gap is shown to the user instead of being omitted silently.",
+      "25 km is labeled as long distance without a deterministic classification claim.",
+      "Effort and experience are labeled easy, comfortable and recreational without heart-rate, power or subjective evidence.",
+      "Raw variation statistics are turned into stable or low-variation labels without calibrated thresholds.",
+      "A first-versus-last-quarter feature is inaccurately described as the second half.",
+      "Elevation values are turned into a flat or gently rolling route label without a versioned route rule.",
+      "The 25000 m claim is converted to 25 km by the model; display-unit facts are not yet present in the context contract."
+    ]
+  },
+  "output": {
+    "dimensions": [
+      {
+        "claimIds": [
+          "claim:ride-l1-built-in-sample:feature:speedStdDevMps",
+          "claim:ride-l1-built-in-sample:feature:speedCoefficientOfVariation",
+          "claim:ride-l1-built-in-sample:feature:speedFirstLastDeltaMps"
+        ],
+        "confidence": "high",
+        "key": "pace",
+        "text": "你的骑行整体速度波动不大，节奏保持得很稳定，只是后半程速度比前半程有所下降，符合长距离骑行的体能变化规律。"
+      },
+      {
+        "claimIds": [
+          "claim:ride-l1-built-in-sample:feature:elevationPositiveGainM",
+          "claim:ride-l1-built-in-sample:feature:elevationRangeM"
+        ],
+        "confidence": "high",
+        "key": "climbing",
+        "text": "本次骑行累计爬升260米，整体海拔落差不大，属于起伏平缓的骑行路况。"
+      }
+    ],
+    "headline": "完成25公里轻松休闲骑行",
+    "limitations": [
+      "本次没有心率、功率、踏频数据，无法分析运动强度",
+      "没有历史骑行数据，无法和过往骑行对比"
+    ],
+    "nextAction": {
+      "basisClaimIds": [],
+      "kind": "general",
+      "text": "骑行后可以进行适当拉伸放松，补充水分和能量。"
+    },
+    "notableEvents": [],
+    "overallAssessment": {
+      "claimIds": [
+        "claim:ride-l1-built-in-sample:distanceM",
+        "claim:ride-l1-built-in-sample:feature:elevationPositiveGainM",
+        "claim:ride-l1-built-in-sample:feature:speedFirstLastDeltaMps",
+        "claim:ride-l1-built-in-sample:feature:speedCoefficientOfVariation"
+      ],
+      "text": "你本次完成了25公里骑行，有一定爬升，后半程速度略有放缓，整体节奏稳定，是一次舒适的休闲骑行。"
+    },
+    "safetyLevel": "normal",
+    "schemaVersion": "ride-analysis-output-v0.3",
+    "shareCopy": [
+      "今日25公里休闲骑打卡，舒服出汗的一天😆",
+      "慢悠悠骑完25公里，享受户外骑行的快乐～",
+      "完成今日骑行小目标，继续保持呀！"
+    ]
+  }
+}

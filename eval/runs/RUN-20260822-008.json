@@ -1,0 +1,87 @@
+{
+  "run_id": "RUN-20260822-008",
+  "recorded_at": "2026-08-22",
+  "evidence_source": "user-provided-Coze-debug-output-and-screenshot",
+  "comparable": false,
+  "missing_metadata": [
+    "exact_model_id",
+    "published_workflow_version",
+    "request_id",
+    "cost",
+    "server_validation_result"
+  ],
+  "case_id": "l1-built-in-sample",
+  "run_type": "single_first_attempt",
+  "few_shot_mode": "disabled",
+  "prompt_version": "2.3 (reported configuration; exact console version not recorded)",
+  "workflow_latency_ms_approx": 11000,
+  "token_count": 6667,
+  "result": "improved_but_semantic_fail",
+  "fallback_state": "not_exercised_in_Coze_debug",
+  "human_review": {
+    "status": "fail",
+    "improvements": [
+      "History insufficiency is no longer shown to the user.",
+      "Speed wording uses the first and last quarter rather than first and second half.",
+      "The unsupported physiological-causality explanation is absent.",
+      "Distance, duration, average speed and elevation values are mostly understandable to users."
+    ],
+    "concerns": [
+      "The model still labels raw speed statistics as stable or low variation without a calibrated classification claim.",
+      "The model still labels the terrain as relatively flat from elevation gain and range without a route-classification rule.",
+      "The pace dimension references speed feature claims but writes 25 km/h, which requires a display value on feature claims or a separate average-speed claim.",
+      "The pace dimension writes a rounded 1.25 m/s while the deterministic claim value is -1.2483215846 m/s; the current numeric validator may reject this rounded token.",
+      "Share copy still uses subjective comfort language such as畅快、舒服 without direct intensity or subjective-feeling evidence."
+    ]
+  },
+  "output": {
+    "dimensions": [
+      {
+        "claimIds": [
+          "claim:ride-l1-built-in-sample:feature:speedSeriesMeanMps",
+          "claim:ride-l1-built-in-sample:feature:speedStdDevMps",
+          "claim:ride-l1-built-in-sample:feature:speedCoefficientOfVariation",
+          "claim:ride-l1-built-in-sample:feature:speedFirstLastDeltaMps"
+        ],
+        "confidence": "high",
+        "key": "pace",
+        "text": "本次骑行全程平均速度为25km/h，骑行过程中速度变化幅度较小，末段四分之一的平均速度相比首段降低了约1.25m/s。"
+      },
+      {
+        "claimIds": [
+          "claim:ride-l1-built-in-sample:feature:elevationPositiveGainM",
+          "claim:ride-l1-built-in-sample:feature:elevationRangeM"
+        ],
+        "confidence": "high",
+        "key": "climbing",
+        "text": "本次骑行累计爬升260米，全程海拔范围约42米，整体地势相对平缓。"
+      }
+    ],
+    "headline": "完成本次骑行，速度表现稳定",
+    "limitations": ["本次评价不包含运动强度分析"],
+    "nextAction": {
+      "basisClaimIds": [],
+      "kind": "general",
+      "text": "骑行后做好拉伸放松，及时补充水分和能量。"
+    },
+    "notableEvents": [],
+    "overallAssessment": {
+      "claimIds": [
+        "claim:ride-l1-built-in-sample:movingTimeS",
+        "claim:ride-l1-built-in-sample:distanceM",
+        "claim:ride-l1-built-in-sample:elevationGainM",
+        "claim:ride-l1-built-in-sample:avgSpeedMps",
+        "claim:ride-l1-built-in-sample:feature:speedCoefficientOfVariation",
+        "claim:ride-l1-built-in-sample:feature:speedFirstLastDeltaMps"
+      ],
+      "text": "本次骑行总移动时长1小时，完成了25公里的骑行，累计爬升260米，全程平均速度保持在25km/h，骑行过程中速度波动较小，末段四分之一的平均速度比首段有所下降。"
+    },
+    "safetyLevel": "normal",
+    "schemaVersion": "ride-analysis-output-v0.3",
+    "shareCopy": [
+      "今日完成骑行✅，25公里1小时，畅快骑行的一天～",
+      "晨骑25公里，享受在路上的感觉，舒服😌",
+      "打卡完成一次骑行，保持运动，继续加油💪"
+    ]
+  }
+}

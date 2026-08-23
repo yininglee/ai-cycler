@@ -1,0 +1,39 @@
+{
+  "name": "ai-cycling-buddy-demo",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "test": "node --test tests/*.test.ts",
+    "typecheck": "tsc --noEmit",
+    "verify": "pnpm typecheck && pnpm test",
+    "benchmark:b0": "node scripts/benchmark-b0.ts",
+    "benchmark:t001:b0": "node scripts/benchmark-t001-b0.ts",
+    "benchmark:t001:b2:validate": "node scripts/validate-t001-b2-results.ts",
+    "inspect:capabilities": "node scripts/inspect-atomic-capabilities.ts",
+    "inspect:features": "node scripts/inspect-ride-features.ts",
+    "inspect:history": "node scripts/inspect-history.ts",
+    "inspect:ride": "node scripts/inspect-ride-file.ts",
+    "export:coze-inputs": "node scripts/export-coze-inputs.ts",
+    "export:coze:t001": "node scripts/export-t001-coze-inputs.ts"
+  },
+  "engines": {
+    "node": ">=22.6"
+  },
+  "dependencies": {
+    "fast-xml-parser": "5.11.0",
+    "fit-file-parser": "4.1.0",
+    "next": "^16.3.1",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
+  },
+  "devDependencies": {
+    "@types/node": "24.10.1",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
+    "typescript": "5.9.3"
+  }
+}

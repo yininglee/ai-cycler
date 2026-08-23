@@ -1,0 +1,29 @@
+{
+  "run_id": "RUN-20260823-019",
+  "date": "2026-08-23",
+  "work_item": "ITEM-V014",
+  "case_id": "l3-built-in-sample",
+  "run_type": "single_constrained_repair",
+  "evidence_source": "user-provided-Coze-repair-output",
+  "prompt_version_claimed": "3.1.1",
+  "few_shot_mode": "disabled",
+  "workflow_version_claimed": "ride_analysis_v2-dev.14",
+  "result": "hard_boundary_repair_pass_semantic_conditional",
+  "fixed": [
+    "removed unversioned cadence stability classification",
+    "removed visible history-gap limitation",
+    "replaced whole-ride power conclusion with start/end-stage difference",
+    "removed explicit 今日 time label from shareCopy"
+  ],
+  "remaining_concerns": [
+    "cadenceCoefficientOfVariation is still listed as raw 0.06 without explaining its meaning",
+    "normalizedPowerRatio is still listed as raw 1.07 without explaining its meaning",
+    "headline 多项指标出现回落 is less specific than naming the affected metrics",
+    "shareCopy contains generic time-like wording 一天, which should remain under review"
+  ],
+  "human_review": {
+    "status": "conditional_pass",
+    "reason": "No remaining hard boundary violation identified in the repaired output, but raw internal statistics do not yet meet the user-value requirement."
+  },
+  "next_action": "Run deterministic second-failure-to-B0 verification. Do not accept V014 until raw-statistic presentation is resolved in a later quality pass."
+}

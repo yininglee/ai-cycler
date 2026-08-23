@@ -1,0 +1,32 @@
+{
+  "run_id": "RUN-20260822-017",
+  "date": "2026-08-22",
+  "work_item": "ITEM-V014",
+  "fixture": "l1-built-in-sample",
+  "comparison_type": "same-input-prompt-version-comparison",
+  "evidence_source": "user-provided-coze-run-logs",
+  "prompt_versions": ["3.2", "3.1"],
+  "few_shot_mode": "disabled",
+  "result": "prompt_regression_detected",
+  "observed": {
+    "compact_3_2": {
+      "schemaVersion": "ride-analysis-output-v0.3",
+      "dimensionKeys": ["distance", "time", "elevation", "avgSpeed", "speedChange", "elevationRange"],
+      "dimensionFinding": "字段型维度逐项罗列概要和特征，未按语义维度合并",
+      "headlineFinding": "概要事实罗列",
+      "limitationFinding": "暴露无历史骑行数据可对比",
+      "shareFinding": "含今日、享受、轻松等无Claim支持表达"
+    },
+    "archived_3_1": {
+      "schemaVersion": "ride-analysis-output-v0.3",
+      "dimensionKeys": ["pace", "climbing"],
+      "dimensionFinding": "按语义维度组织并合并相关Claim",
+      "headlineFinding": "突出后程配速变化",
+      "limitationFinding": "未暴露历史准入原因",
+      "shareFinding": "仍有部分中性/主观表达边界待继续评估"
+    }
+  },
+  "diagnosis": "v3.2压缩时遗漏维度选择、基础概要归属和语义Claim合并规则；同时历史静默和分享边界执行不足。",
+  "quality_score": "NOT_SCORED",
+  "next_action": "使用Prompt v3.2.1完整替换扣子System Prompt，保持同一L1输入和v0.3结构化输出Schema后重跑。"
+}

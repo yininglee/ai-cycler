@@ -1,0 +1,89 @@
+{
+  "run_id": "RUN-20260818-004",
+  "recorded_at": "2026-08-18",
+  "evidence_source": "user-provided-Coze-debug-output",
+  "comparable": false,
+  "missing_metadata": [
+    "exact_model_id",
+    "published_workflow_version",
+    "request_id",
+    "cost"
+  ],
+  "app_version": "visual-shell-v0.1",
+  "rules_version": "ride-rules-v0.1",
+  "snapshot_schema_version": "1.0",
+  "output_schema_version": "ride-analysis-output-v0.1",
+  "prompt_version": "1.1",
+  "workflow_version": "ride_analysis_v1-draft",
+  "model_id": "豆包·2.0·lite (UI label; exact ID not recorded)",
+  "model_parameters": {
+    "preset_base": "precise",
+    "ui_mode": "custom",
+    "max_reply_tokens": 700,
+    "deep_thinking": false,
+    "temperature": "NOT_CONFIGURED"
+  },
+  "kb_version": null,
+  "case_id": "l1-built-in-sample",
+  "run_type": "single_bounded_repair",
+  "previous_run_id": "RUN-20260818-003",
+  "repair_instruction_codes": ["INVALID_SUMMARY_LENGTH"],
+  "result": "repair_failed",
+  "fallback_state": "b0_required",
+  "workflow_latency_ms_approx": 9000,
+  "model_node_latency_ms_approx": 7000,
+  "token_count": 3296,
+  "cost": "NOT_RECORDED",
+  "contract_validation": {
+    "valid": false,
+    "issues": ["INVALID_SUMMARY_LENGTH"],
+    "summary_length": 49,
+    "headline_length": 11,
+    "share_copy_lengths": [18, 16, 12]
+  },
+  "human_review": {
+    "status": "needs_review",
+    "concerns": [
+      "路线起伏不大仍缺少直接路线剖面或比较规则证据",
+      "车辆清洁保养与distance claim的语义关联较弱"
+    ]
+  },
+  "output": {
+    "headline": "本次休闲骑完成25公里",
+    "highlights": [
+      {
+        "claimIds": ["claim:ride-l1-built-in-sample:distanceM"],
+        "confidence": "high",
+        "text": "本次骑行总距离为25公里"
+      },
+      {
+        "claimIds": [
+          "claim:ride-l1-built-in-sample:movingTimeS",
+          "claim:ride-l1-built-in-sample:avgSpeedMps"
+        ],
+        "confidence": "high",
+        "text": "骑行移动时间1小时，平均速度25km/h"
+      },
+      {
+        "claimIds": ["claim:ride-l1-built-in-sample:elevationGainM"],
+        "confidence": "high",
+        "text": "累计爬升260米，路线起伏不大"
+      }
+    ],
+    "limitations": [
+      "本次分析不涉及体能、训练效果评估",
+      "无实时路况天气数据，无法判断路线安全状态"
+    ],
+    "nextAction": {
+      "basisClaimIds": ["claim:ride-l1-built-in-sample:distanceM"],
+      "text": "充分拉伸放松，给车辆做好清洁保养即可"
+    },
+    "safetyLevel": "normal",
+    "shareCopy": [
+      "今日休闲骑完成25公里，舒服出汗😁",
+      "周末骑游25公里，慢慢骑感受风景",
+      "完成一小时骑行，状态不错"
+    ],
+    "summary": "这是一次数据完整的休闲骑行，总共骑行25公里，用时1小时，平均速度25km/h，累计爬升260米。"
+  }
+}

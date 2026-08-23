@@ -1,0 +1,26 @@
+{
+  "run_id": "RUN-20260822-015",
+  "date": "2026-08-22",
+  "work_item": "ITEM-V014",
+  "fixture": "l1-built-in-sample",
+  "prompt_version": "3.1",
+  "workflow_version": "ride_analysis_v2-dev.12",
+  "few_shot_mode": "disabled",
+  "model_label": "豆包·2.0·lite",
+  "duration_seconds": 12,
+  "tokens": 7626,
+  "result": "semantic_fail",
+  "passed": [
+    "v0.3结构",
+    "Claim引用",
+    "事实关系和解释桥接",
+    "未出现强度体感越界"
+  ],
+  "failed": [
+    "海拔变化不大/海拔变化幅度较小：未校准程度判断",
+    "limitations输出本次评价不包含历史对比分析：违反历史静默",
+    "shareCopy输出记录今日骑行：缺少时间Claim"
+  ],
+  "service_validation": "NOT_RUN",
+  "next_action": "使用历史静默和当前日期拒绝门后的Prompt及同一L1输入复测；不启动L2/L3。"
+}

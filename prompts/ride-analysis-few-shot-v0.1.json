@@ -1,0 +1,218 @@
+{
+  "libraryVersion": "ride-analysis-few-shot-v0.1",
+  "dataPolicy": "synthetic_only",
+  "examples": [
+    {
+      "exampleId": "FS-BASE-001",
+      "scenario": "route_time_elevation",
+      "capabilityKeys": ["route", "timing", "speed", "elevation"],
+      "allowedDimensions": ["pace", "climbing"],
+      "inputFacts": [
+        {"claimId": "claim:synthetic-base:feature:speedCoefficientOfVariation", "meaning": "速度波动较小"},
+        {"claimId": "claim:synthetic-base:feature:elevationRangeM", "meaning": "路线存在持续起伏"}
+      ],
+      "expectedOutput": {
+        "schemaVersion": "ride-analysis-output-v0.3",
+        "headline": "起伏中保持了连贯节奏",
+        "overallAssessment": {"text": "面对持续起伏，整段骑行仍保持了较连贯的速度节奏，说明本次节奏控制与路线变化匹配得较好。", "claimIds": ["claim:synthetic-base:feature:speedCoefficientOfVariation", "claim:synthetic-base:feature:elevationRangeM"]},
+        "dimensions": [
+          {"key": "pace", "text": "速度波动较小，过程节奏相对连贯。", "claimIds": ["claim:synthetic-base:feature:speedCoefficientOfVariation"], "confidence": "high"},
+          {"key": "climbing", "text": "路线的持续起伏为本次节奏提供了必要背景。", "claimIds": ["claim:synthetic-base:feature:elevationRangeM"], "confidence": "high"}
+        ],
+        "notableEvents": [],
+        "nextAction": {"kind": "grounded", "text": "下次可继续观察起伏路段中的节奏连贯性。", "basisClaimIds": ["claim:synthetic-base:feature:speedCoefficientOfVariation", "claim:synthetic-base:feature:elevationRangeM"]},
+        "limitations": [],
+        "safetyLevel": "normal",
+        "shareCopy": ["起伏路线也保持住了节奏。", "今天骑得连贯又从容。", "稳稳完成一次起伏骑行。"]
+      },
+      "forbiddenConclusions": ["训练效果", "恢复时间", "心率或功率表现"],
+      "qualityStatus": "draft_needs_review"
+    },
+    {
+      "exampleId": "FS-HR-001",
+      "scenario": "heart_rate_only",
+      "capabilityKeys": ["heartRate"],
+      "allowedDimensions": ["heartRate"],
+      "inputFacts": [{"claimId": "claim:synthetic-hr:feature:heartRateFirstLastDeltaBpm", "meaning": "后段心率高于前段"}],
+      "expectedOutput": {
+        "schemaVersion": "ride-analysis-output-v0.3",
+        "headline": "后段心率反应更明显",
+        "overallAssessment": {"text": "本次骑行后段的心率反应更明显，值得结合当时体感回看后程是否仍然从容。", "claimIds": ["claim:synthetic-hr:feature:heartRateFirstLastDeltaBpm"]},
+        "dimensions": [{"key": "heartRate", "text": "后段心率高于前段，但仅凭这一变化不能确定具体原因。", "claimIds": ["claim:synthetic-hr:feature:heartRateFirstLastDeltaBpm"], "confidence": "high"}],
+        "notableEvents": [],
+        "nextAction": {"kind": "grounded", "text": "回想后程体感，并继续观察相似骑行中的心率变化。", "basisClaimIds": ["claim:synthetic-hr:feature:heartRateFirstLastDeltaBpm"]},
+        "limitations": ["心率变化不能单独用于诊断疲劳或身体状态。"],
+        "safetyLevel": "normal",
+        "shareCopy": ["今天认真观察了后程状态。", "骑完回看心率更有数。", "记录每次骑行中的身体反应。"]
+      },
+      "forbiddenConclusions": ["功率表现", "脱水诊断", "体能退步"],
+      "qualityStatus": "draft_needs_review"
+    },
+    {
+      "exampleId": "FS-POWER-001",
+      "scenario": "power_only",
+      "capabilityKeys": ["power"],
+      "allowedDimensions": ["power"],
+      "inputFacts": [{"claimId": "claim:synthetic-power:feature:powerCoefficientOfVariation", "meaning": "功率输出集中"}],
+      "expectedOutput": {
+        "schemaVersion": "ride-analysis-output-v0.3",
+        "headline": "本次输出控制较稳定",
+        "overallAssessment": {"text": "本次功率输出较为集中，说明骑行过程中的发力节奏控制得比较稳定。", "claimIds": ["claim:synthetic-power:feature:powerCoefficientOfVariation"]},
+        "dimensions": [{"key": "power", "text": "功率变化集中，过程中的输出节奏较一致。", "claimIds": ["claim:synthetic-power:feature:powerCoefficientOfVariation"], "confidence": "high"}],
+        "notableEvents": [],
+        "nextAction": {"kind": "grounded", "text": "下次继续观察功率变化是否保持集中。", "basisClaimIds": ["claim:synthetic-power:feature:powerCoefficientOfVariation"]},
+        "limitations": ["没有心率依据，不能评价本次身体反应。"],
+        "safetyLevel": "normal",
+        "shareCopy": ["今天的输出节奏很稳。", "稳住发力完成一次骑行。", "按自己的节奏顺利完骑。"]
+      },
+      "forbiddenConclusions": ["心率区间", "FTP提升", "恢复时间"],
+      "qualityStatus": "draft_needs_review"
+    },
+    {
+      "exampleId": "FS-HR-POWER-001",
+      "scenario": "heart_rate_and_power",
+      "capabilityKeys": ["heartRate", "power"],
+      "allowedDimensions": ["heartRate", "power"],
+      "inputFacts": [
+        {"claimId": "claim:synthetic-hp:feature:powerFirstLastDeltaW", "meaning": "后段功率基本保持"},
+        {"claimId": "claim:synthetic-hp:feature:heartRateFirstLastDeltaBpm", "meaning": "后段心率有所上升"}
+      ],
+      "expectedOutput": {
+        "schemaVersion": "ride-analysis-output-v0.3",
+        "headline": "输出保持住了，后程反应更高",
+        "overallAssessment": {"text": "后段功率基本保持的同时心率有所上升，说明输出没有明显松掉，但后程身体反应更值得关注。", "claimIds": ["claim:synthetic-hp:feature:powerFirstLastDeltaW", "claim:synthetic-hp:feature:heartRateFirstLastDeltaBpm"]},
+        "dimensions": [
+          {"key": "power", "text": "后段功率基本保持，输出延续性较好。", "claimIds": ["claim:synthetic-hp:feature:powerFirstLastDeltaW"], "confidence": "high"},
+          {"key": "heartRate", "text": "后段心率有所上升，需要结合体感理解，不能直接归因。", "claimIds": ["claim:synthetic-hp:feature:heartRateFirstLastDeltaBpm"], "confidence": "high"}
+        ],
+        "notableEvents": [],
+        "nextAction": {"kind": "grounded", "text": "下次可同时观察后程输出和体感是否仍然匹配。", "basisClaimIds": ["claim:synthetic-hp:feature:powerFirstLastDeltaW", "claim:synthetic-hp:feature:heartRateFirstLastDeltaBpm"]},
+        "limitations": ["心率变化不能单独证明疲劳或体能变化。"],
+        "safetyLevel": "normal",
+        "shareCopy": ["后程也把输出保持住了。", "今天的骑行很有延续性。", "认真骑完，也认真回看。"]
+      },
+      "forbiddenConclusions": ["必然发生心率漂移", "体能下降", "处方型训练计划"],
+      "qualityStatus": "draft_needs_review"
+    },
+    {
+      "exampleId": "FS-CAD-001",
+      "scenario": "cadence_without_heart_rate",
+      "capabilityKeys": ["cadence"],
+      "allowedDimensions": ["cadence"],
+      "inputFacts": [{"claimId": "claim:synthetic-cad:feature:cadenceCoefficientOfVariation", "meaning": "踏频变化集中"}],
+      "expectedOutput": {
+        "schemaVersion": "ride-analysis-output-v0.3",
+        "headline": "踩踏节奏保持得较一致",
+        "overallAssessment": {"text": "本次踏频变化较集中，说明踩踏节奏在骑行过程中保持得比较一致。", "claimIds": ["claim:synthetic-cad:feature:cadenceCoefficientOfVariation"]},
+        "dimensions": [{"key": "cadence", "text": "踏频波动较集中，踩踏节奏没有明显散开。", "claimIds": ["claim:synthetic-cad:feature:cadenceCoefficientOfVariation"], "confidence": "high"}],
+        "notableEvents": [],
+        "nextAction": {"kind": "grounded", "text": "下次继续观察不同路段中的踩踏节奏是否一致。", "basisClaimIds": ["claim:synthetic-cad:feature:cadenceCoefficientOfVariation"]},
+        "limitations": ["没有心率依据，不能据此评价心肺强度。"],
+        "safetyLevel": "normal",
+        "shareCopy": ["今天踩踏节奏很顺。", "稳稳转动，顺利完骑。", "按舒服的节奏完成骑行。"]
+      },
+      "forbiddenConclusions": ["心肺强度", "功率效率", "用踏频跨用户排名"],
+      "qualityStatus": "draft_needs_review"
+    },
+    {
+      "exampleId": "FS-FIRST-001",
+      "scenario": "first_or_no_history",
+      "capabilityKeys": [],
+      "allowedDimensions": ["pace"],
+      "inputFacts": [{"claimId": "claim:synthetic-first:feature:speedCoefficientOfVariation", "meaning": "仅有本次骑行的速度节奏特征"}],
+      "expectedOutput": {
+        "schemaVersion": "ride-analysis-output-v0.3",
+        "headline": "本次骑行节奏较连贯",
+        "overallAssessment": {"text": "从本次记录看，速度节奏较为连贯，骑行过程没有明显散开。", "claimIds": ["claim:synthetic-first:feature:speedCoefficientOfVariation"]},
+        "dimensions": [{"key": "pace", "text": "本次速度波动较小，过程节奏相对稳定。", "claimIds": ["claim:synthetic-first:feature:speedCoefficientOfVariation"], "confidence": "high"}],
+        "notableEvents": [],
+        "nextAction": {"kind": "grounded", "text": "下次继续留意整段骑行的节奏连贯性。", "basisClaimIds": ["claim:synthetic-first:feature:speedCoefficientOfVariation"]},
+        "limitations": [],
+        "safetyLevel": "normal",
+        "shareCopy": ["今天骑得稳稳当当。", "按自己的节奏完成骑行。", "一次连贯舒服的骑行。"]
+      },
+      "forbiddenConclusions": ["历史不足提示", "趋势判断", "相对个人水平排名"],
+      "qualityStatus": "draft_needs_review"
+    },
+    {
+      "exampleId": "FS-HISTORY-001",
+      "scenario": "history_comparable",
+      "capabilityKeys": ["historyComparison"],
+      "allowedDimensions": ["history"],
+      "inputFacts": [{"claimId": "claim:synthetic-history:comparison:avgPowerW", "meaning": "同口径窗口内本次功率高于可比基线"}],
+      "expectedOutput": {
+        "schemaVersion": "ride-analysis-output-v0.3",
+        "headline": "本次输出高于近期可比水平",
+        "overallAssessment": {"text": "在服务端确认可比的同口径窗口内，本次功率表现高于基线，但这一变化只代表当前指标。", "claimIds": ["claim:synthetic-history:comparison:avgPowerW"]},
+        "dimensions": [{"key": "history", "text": "本次功率高于可比历史基线，比较范围仅限当前指标与窗口。", "claimIds": ["claim:synthetic-history:comparison:avgPowerW"], "confidence": "high"}],
+        "notableEvents": [],
+        "nextAction": {"kind": "grounded", "text": "后续可继续观察同口径骑行中的功率表现。", "basisClaimIds": ["claim:synthetic-history:comparison:avgPowerW"]},
+        "limitations": ["单项变化不能代表整体体能变化。"],
+        "safetyLevel": "normal",
+        "shareCopy": ["这次输出有了新的表现。", "持续记录，看见自己的节奏。", "认真骑，也认真比较。"]
+      },
+      "forbiddenConclusions": ["跨口径比较", "由单指标断言整体体能变化", "改变服务端比较窗口"],
+      "qualityStatus": "draft_needs_review"
+    },
+    {
+      "exampleId": "FS-HISTORY-NO-001",
+      "scenario": "history_not_comparable",
+      "capabilityKeys": ["historyComparison"],
+      "allowedDimensions": ["pace"],
+      "inputFacts": [{"claimId": "claim:synthetic-history-no:feature:speedStdDevMps", "meaning": "历史不可比，只有本次速度波动特征可用"}],
+      "expectedOutput": {
+        "schemaVersion": "ride-analysis-output-v0.3",
+        "headline": "本次速度节奏较平顺",
+        "overallAssessment": {"text": "本次速度变化较平顺，整段骑行的节奏保持得较连贯。", "claimIds": ["claim:synthetic-history-no:feature:speedStdDevMps"]},
+        "dimensions": [{"key": "pace", "text": "本次速度波动较小，没有加入不可比的历史结论。", "claimIds": ["claim:synthetic-history-no:feature:speedStdDevMps"], "confidence": "high"}],
+        "notableEvents": [],
+        "nextAction": {"kind": "grounded", "text": "下次继续观察本次这样的节奏连贯性。", "basisClaimIds": ["claim:synthetic-history-no:feature:speedStdDevMps"]},
+        "limitations": [],
+        "safetyLevel": "normal",
+        "shareCopy": ["今天骑得平顺又连贯。", "稳住节奏完成骑行。", "享受一次顺畅的骑行。"]
+      },
+      "forbiddenConclusions": ["强行比较", "向用户解释没有足够历史", "自行重选历史样本"],
+      "qualityStatus": "draft_needs_review"
+    },
+    {
+      "exampleId": "FS-MISSING-001",
+      "scenario": "missing_or_anomalous_data",
+      "capabilityKeys": ["speed"],
+      "allowedDimensions": ["pace"],
+      "inputFacts": [{"claimId": "claim:synthetic-missing:feature:speedSeriesMeanMps", "meaning": "只有速度特征通过质量门"}],
+      "expectedOutput": {
+        "schemaVersion": "ride-analysis-output-v0.3",
+        "headline": "本次节奏以速度表现为主",
+        "overallAssessment": {"text": "当前可靠依据集中在速度表现，因此本次只评价骑行节奏，不扩展到其他维度。", "claimIds": ["claim:synthetic-missing:feature:speedSeriesMeanMps"]},
+        "dimensions": [{"key": "pace", "text": "可用速度特征为本次节奏回顾提供了直接依据。", "claimIds": ["claim:synthetic-missing:feature:speedSeriesMeanMps"], "confidence": "high"}],
+        "notableEvents": [],
+        "nextAction": null,
+        "limitations": ["本次只解读已经通过质量门的速度特征。"],
+        "safetyLevel": "normal",
+        "shareCopy": ["今天按自己的速度完成骑行。", "一次专注节奏的骑行。", "骑完回看，更了解自己的节奏。"]
+      },
+      "forbiddenConclusions": ["补齐缺失数值", "评价数据完整度", "讨论被关闭能力"],
+      "qualityStatus": "draft_needs_review"
+    },
+    {
+      "exampleId": "FS-REPAIR-001",
+      "scenario": "schema_repair_or_safety",
+      "capabilityKeys": ["speed"],
+      "allowedDimensions": ["pace"],
+      "inputFacts": [{"claimId": "claim:synthetic-repair:feature:speedStdDevMps", "meaning": "修复只能使用原有合法速度claim"}],
+      "expectedOutput": {
+        "schemaVersion": "ride-analysis-output-v0.3",
+        "headline": "本次速度节奏较稳定",
+        "overallAssessment": {"text": "本次速度波动较小，骑行节奏保持得较稳定。", "claimIds": ["claim:synthetic-repair:feature:speedStdDevMps"]},
+        "dimensions": [{"key": "pace", "text": "速度波动较小，为稳定节奏提供了直接依据。", "claimIds": ["claim:synthetic-repair:feature:speedStdDevMps"], "confidence": "high"}],
+        "notableEvents": [],
+        "nextAction": null,
+        "limitations": [],
+        "safetyLevel": "normal",
+        "shareCopy": ["今天骑得很稳。", "保持节奏完成骑行。", "一次平顺的骑行记录。"]
+      },
+      "forbiddenConclusions": ["为通过校验而编造claim", "改写准入规则", "在安全停止时继续普通生成"],
+      "qualityStatus": "draft_needs_review"
+    }
+  ]
+}

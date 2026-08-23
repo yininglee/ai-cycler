@@ -1,0 +1,53 @@
+{
+  "run_id": "RUN-20260823-020",
+  "date": "2026-08-23",
+  "work_item": "ITEM-V014",
+  "case_id": "l3-built-in-sample",
+  "run_type": "deterministic_second_failure_b0",
+  "evidence_source": "automated-service-verification",
+  "service_version": "ride-analysis-service-v1.2",
+  "workflow_version_claimed": "ride_analysis_v2-dev.14",
+  "prompt_version_claimed": "3.1.1",
+  "few_shot_mode": "disabled",
+  "model_id": "test-b0-failure-model",
+  "provider_queue": [
+    { "attempt": 1, "raw_output": "not-json" },
+    { "attempt": 2, "raw_output": "still-not-json" }
+  ],
+  "expected": {
+    "max_attempts": 2,
+    "source": "b0",
+    "fallback_code": "REPAIR_FAILED",
+    "no_third_attempt": true
+  },
+  "observed": {
+    "source": "b0",
+    "fallback_code": "REPAIR_FAILED",
+    "attempts": 2,
+    "provider_request_ids": ["b0-test-provider-1", "b0-test-provider-2"],
+    "validation_issues": ["OUTPUT_NOT_OBJECT"],
+    "selected_example_ids": [],
+    "few_shot_mode": "disabled",
+    "b0_template_version": "b0-template-v0.1",
+    "b0_output_valid": true,
+    "b0_output": {
+      "headline": "本次功率记录已整理",
+      "highlight_claim_ids": [
+        "claim:ride-l3-built-in-sample:distanceM",
+        "claim:ride-l3-built-in-sample:avgPowerW",
+        "claim:ride-l3-built-in-sample:avgSpeedMps"
+      ],
+      "next_action_basis_claim_ids": [
+        "claim:ride-l3-built-in-sample:avgPowerW"
+      ],
+      "safety_level": "normal",
+      "share_copy_count": 3
+    }
+  },
+  "result": "PASS",
+  "human_review": {
+    "status": "pass",
+    "reason": "第二次校验仍失败时服务端停止重试并返回确定性B0；未调用第三次模型请求，且B0输出包含可追溯Claim和低风险后续建议。"
+  },
+  "next_action": "保留V014为CHANGES_REQUESTED；后续解决L3原始统计量缺少用户意义解释的问题，再进行最终验收判断。"
+}

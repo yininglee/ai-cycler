@@ -1,0 +1,10 @@
+.DS_Store
+node_modules/
+.pnpm-store/
+.next/
+coverage/
+*.log
+*.tsbuildinfo
+test-data/private/
+.env*
+!.env.example

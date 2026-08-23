@@ -1,0 +1,42 @@
+{
+  "run_id": "RUN-20260822-011",
+  "recorded_at": "2026-08-22",
+  "evidence_source": "user-provided-Coze-debug-output-and-screenshot",
+  "comparable": true,
+  "case_id": "l1-built-in-sample",
+  "run_type": "single_first_attempt",
+  "few_shot_mode": "disabled",
+  "prompt_version": "2.6 (reported configuration)",
+  "workflow_version": "ride_analysis_v2 (console version not recorded)",
+  "workflow_latency_ms_approx": 13000,
+  "token_count": 6981,
+  "result": "near_pass_semantic_fail",
+  "fallback_state": "not_exercised_in_Coze_debug",
+  "human_review": {
+    "status": "fail",
+    "passed": [
+      "History insufficiency is silent.",
+      "No unsupported effort, subjective-feeling, or time/scene labels appear in shareCopy.",
+      "Speed, standard deviation, elevation and display values are numerically aligned.",
+      "The output is structurally complete and uses the allowed dimensions."
+    ],
+    "concerns": [
+      "速度变化不大 is an uncalibrated qualitative classification derived from standard deviation.",
+      "开头部分 is not the required explicit 首段四分之一 wording."
+    ]
+  },
+  "output": {
+    "dimensions": [
+      {"claimIds": ["claim:ride-l1-built-in-sample:feature:speedSeriesMeanMps", "claim:ride-l1-built-in-sample:feature:speedStdDevMps", "claim:ride-l1-built-in-sample:feature:speedFirstLastDeltaMps"], "confidence": "high", "key": "pace", "text": "本次骑行平均速度为25km/h，速度标准差为2.75km/h，骑行过程中速度变化不大，相比开头部分，最后四分之一段速度下降了4.49km/h。"},
+      {"claimIds": ["claim:ride-l1-built-in-sample:feature:elevationPositiveGainM", "claim:ride-l1-built-in-sample:feature:elevationMinM", "claim:ride-l1-built-in-sample:feature:elevationMaxM", "claim:ride-l1-built-in-sample:feature:elevationRangeM"], "confidence": "high", "key": "climbing", "text": "本次骑行累计爬升260m，路线海拔在30m到71.6m之间，海拔差为41.6m。"}
+    ],
+    "headline": "本次骑行完成，数据已记录",
+    "limitations": ["本次评价不包含运动强度相关分析"],
+    "nextAction": {"basisClaimIds": [], "kind": "general", "text": "骑行后可做适当拉伸放松，补充水分。"},
+    "notableEvents": [],
+    "overallAssessment": {"claimIds": ["claim:ride-l1-built-in-sample:feature:speedSeriesMeanMps", "claim:ride-l1-built-in-sample:feature:speedFirstLastDeltaMps", "claim:ride-l1-built-in-sample:feature:elevationPositiveGainM"], "text": "你完成了本次骑行，本次骑行平均速度为25km/h，累计爬升260m，骑行全程速度变化不大，最后四分之一段速度相比开头有所下降。"},
+    "safetyLevel": "normal",
+    "schemaVersion": "ride-analysis-output-v0.3",
+    "shareCopy": ["完成本次骑行，记录一段骑行旅程", "今日骑行25km，顺利完成行程", "又一次骑行记录，保持骑行节奏"]
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "run_id": "RUN-20260822-009",
+  "recorded_at": "2026-08-22",
+  "evidence_source": "user-provided-Coze-debug-output-and-screenshot",
+  "case_id": "l1-built-in-sample",
+  "run_type": "single_first_attempt",
+  "few_shot_mode": "disabled",
+  "workflow_latency_ms_approx": 12000,
+  "token_count": 6845,
+  "result": "near_pass_semantic_fail",
+  "fallback_state": "not_exercised_in_Coze_debug",
+  "human_review": {
+    "status": "fail",
+    "passed": [
+      "Pace facts use server-generated display values and the first/last quarter definition.",
+      "Climbing dimension describes gain, range, minimum and maximum without calling the route flat.",
+      "Overall assessment is concise and does not invent physiological causality or stability claims."
+    ],
+    "concerns": [
+      "limitations exposes no-usable-history information, violating the silent historical-gap rule.",
+      "shareCopy includes轻松完成, which implies effort without direct intensity or subjective-feeling evidence.",
+      "The run predates the latest server guard that now rejects these two patterns; it must be rerun after the latest input/prompt export."
+    ]
+  },
+  "output_summary": {
+    "dimensions": 2,
+    "notableEvents": 0,
+    "nextActionKind": "general",
+    "schemaVersion": "ride-analysis-output-v0.3"
+  }
+}
