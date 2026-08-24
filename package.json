@@ -11,6 +11,7 @@
     "typecheck": "tsc --noEmit",
     "verify": "pnpm typecheck && pnpm test",
     "benchmark:b0": "node scripts/benchmark-b0.ts",
+    "benchmark:v014:b0-path": "node scripts/run-v014-b0-path.ts",
     "benchmark:t001:b0": "node scripts/benchmark-t001-b0.ts",
     "benchmark:t001:b2:validate": "node scripts/validate-t001-b2-results.ts",
     "inspect:capabilities": "node scripts/inspect-atomic-capabilities.ts",
@@ -18,6 +19,7 @@
     "inspect:history": "node scripts/inspect-history.ts",
     "inspect:ride": "node scripts/inspect-ride-file.ts",
     "export:coze-inputs": "node scripts/export-coze-inputs.ts",
+    "export:coze:v014:repair": "node scripts/export-v014-repair-input.ts",
     "export:coze:t001": "node scripts/export-t001-coze-inputs.ts"
   },
   "engines": {

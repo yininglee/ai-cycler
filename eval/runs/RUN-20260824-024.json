@@ -1,0 +1,129 @@
+{
+  "run_id": "RUN-20260824-024",
+  "date": "2026-08-24",
+  "work_item": "ITEM-V014",
+  "run_type": "user_provided_coze_l1_trial",
+  "evidence_source": {
+    "raw_output": "user-provided-Coze-run-output",
+    "metadata_screenshot": "eval/runs/evidence/RUN-20260824-024-coze-metadata.png"
+  },
+  "case_id": "l1-built-in-sample",
+  "version_matrix": {
+    "app_version": "visual-shell-v0.1",
+    "context_schema_version": "0.2",
+    "context_rules_version": "ride-analysis-context-rules-v0.2",
+    "feature_rules_version": "ride-feature-rules-v0.2",
+    "eligibility_schema_version": "0.1",
+    "eligibility_rules_version": "analysis-eligibility-rules-v0.1",
+    "output_schema_version": "ride-analysis-output-v0.3",
+    "prompt_version_claimed": "3.1.2",
+    "service_validation_version": "ride-analysis-service-v1.5",
+    "workflow_version_claimed": "ride_analysis_v2-dev.15",
+    "few_shot_mode": "disabled",
+    "model_id": "NOT_RECORDED",
+    "model_display_name": "豆包·2.0-lite",
+    "model_parameters_observed": {
+      "protocol_type_display": "Chat Api",
+      "repetition_penalty_display": "0.00",
+      "max_response_length_display": 2400,
+      "max_reasoning_and_response_length_display": 0,
+      "deep_thinking_display": "off"
+    },
+    "tool_version": "none",
+    "kb_version": "not_applicable"
+  },
+  "request_metadata": {
+    "request_id": "NOT_RECORDED",
+    "provider_request_id": "NOT_RECORDED",
+    "attempt_role": "primary_generation",
+    "started_at": "NOT_RECORDED",
+    "completed_at": "NOT_RECORDED",
+    "workflow_status_display": "运行完成",
+    "workflow_duration_display_s": 11,
+    "model_node_duration_display_s": 10,
+    "latency_ms": "NOT_RECORDED_EXACT",
+    "input_tokens": "NOT_RECORDED",
+    "output_tokens": "NOT_RECORDED",
+    "total_tokens_displayed": 8583,
+    "cost_cny": "NOT_RECORDED"
+  },
+  "raw_output": {
+    "dimensions": [
+      {
+        "claimIds": [
+          "claim:ride-l1-built-in-sample:feature:speedSeriesMeanMps",
+          "claim:ride-l1-built-in-sample:feature:speedFirstLastDeltaMps",
+          "claim:ride-l1-built-in-sample:feature:speedCoefficientOfVariation"
+        ],
+        "confidence": "high",
+        "key": "pace",
+        "text": "平均速度为25km/h，结束阶段速度比开始阶段低4.49km/h，配速出现后程回落；速度变异系数约为0.11，整体速度波动较小。"
+      },
+      {
+        "claimIds": [
+          "claim:ride-l1-built-in-sample:feature:elevationPositiveGainM",
+          "claim:ride-l1-built-in-sample:feature:elevationMinM",
+          "claim:ride-l1-built-in-sample:feature:elevationMaxM",
+          "claim:ride-l1-built-in-sample:feature:elevationRangeM"
+        ],
+        "confidence": "high",
+        "key": "climbing",
+        "text": "累计爬升260米，最低海拔30米，最高海拔71.6米，海拔范围为41.6米。"
+      }
+    ],
+    "headline": "后程配速回落，整体速度波动较小",
+    "limitations": [
+      "历史记录不足，无法进行历史对比",
+      "无心率、功率和踏频数据，本次解读不涉及运动强度、发力和踩踏节奏",
+      "无法做体能或骑行水平的相关判断"
+    ],
+    "nextAction": {
+      "basisClaimIds": [],
+      "kind": "general",
+      "text": "骑行后做好拉伸放松，及时补充水分"
+    },
+    "notableEvents": [],
+    "overallAssessment": {
+      "claimIds": [
+        "claim:ride-l1-built-in-sample:feature:speedSeriesMeanMps",
+        "claim:ride-l1-built-in-sample:feature:speedFirstLastDeltaMps",
+        "claim:ride-l1-built-in-sample:feature:speedCoefficientOfVariation",
+        "claim:ride-l1-built-in-sample:feature:elevationPositiveGainM",
+        "claim:ride-l1-built-in-sample:feature:elevationRangeM"
+      ],
+      "text": "本次骑行平均速度25km/h，结束阶段速度比开始阶段低约4.5km/h，配速出现回落，整体速度波动较小；累计爬升260米，海拔变化范围约41.6米。本次解读不涉及强度、体能相关判断。"
+    },
+    "safetyLevel": "normal",
+    "schemaVersion": "ride-analysis-output-v0.3",
+    "shareCopy": [
+      "享受骑行，保持节奏，慢慢进步～",
+      "又是完成骑行的一天，很舒服",
+      "记录骑行，享受在路上的感觉"
+    ]
+  },
+  "service_validation": {
+    "status": "PASS",
+    "issues": [],
+    "method": "rebuild l1-built-in-sample context and call validateRideAnalysisOutputV03",
+    "model_called_during_validation": false
+  },
+  "agent_quality_review": {
+    "status": "PASS_WITH_NON_BLOCKING_NOTES",
+    "strengths": [
+      "pace and climbing remain product-level dimensions rather than field-level cards",
+      "pace combines grounded facts with a direct interpretation",
+      "overallAssessment cites every metric topic it states",
+      "limitations, general nextAction, and editable shareCopy follow the accepted product boundary"
+    ],
+    "non_blocking_notes": [
+      "Displaying coefficient of variation as 0.11 is still technical even though its meaning is explained",
+      "The final limitation sentence in overallAssessment repeats information already present in limitations"
+    ]
+  },
+  "human_review": {
+    "status": "PENDING_USER_PREVIEW",
+    "scope": "single final v3.1.2 L1 output"
+  },
+  "result": "contract_pass_agent_review_pass_with_notes_user_preview_pending",
+  "next_action": "User previews the archived L1 and L2 trial slice before final v3.1.2 repair and B0 path verification."
+}

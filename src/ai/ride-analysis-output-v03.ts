@@ -114,7 +114,7 @@ function claimNumericVariants(claim: RideAnalysisContext["allowedClaims"][number
     if (!text) continue;
     for (const token of numberTokens(text)) sourceValues.push(Number(token));
   }
-  for (const value of sourceValues) addNumericVariants(variants, value);
+  for (const value of sourceValues) addNumericVariants(variants, value, true);
 
   // These are the only model-side display conversions currently accepted. They
   // are presentation changes of one Claim, not permission to invent metrics.

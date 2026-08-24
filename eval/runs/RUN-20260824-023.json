@@ -1,0 +1,164 @@
+{
+  "run_id": "RUN-20260824-023",
+  "date": "2026-08-24",
+  "work_item": "ITEM-V014",
+  "run_type": "user_provided_coze_l3_trial",
+  "evidence_source": "user-provided-Coze-run-output",
+  "case_id": "l3-built-in-sample",
+  "version_matrix": {
+    "app_version": "visual-shell-v0.1",
+    "context_schema_version": "0.2",
+    "context_rules_version": "ride-analysis-context-rules-v0.2",
+    "eligibility_schema_version": "0.1",
+    "eligibility_rules_version": "analysis-eligibility-rules-v0.1",
+    "output_schema_version": "ride-analysis-output-v0.3",
+    "feature_rules_version": "ride-feature-rules-v0.1",
+    "prompt_version_claimed": "3.1.2",
+    "service_validation_version": "ride-analysis-service-v1.4",
+    "workflow_version_claimed": "ride_analysis_v2-dev.15",
+    "few_shot_mode": "disabled",
+    "model_id": "NOT_RECORDED",
+    "model_parameters": "NOT_RECORDED"
+  },
+  "corrected_replay_version_matrix": {
+    "context_schema_version": "0.2",
+    "context_rules_version": "ride-analysis-context-rules-v0.2",
+    "feature_rules_version": "ride-feature-rules-v0.2",
+    "eligibility_schema_version": "0.1",
+    "eligibility_rules_version": "analysis-eligibility-rules-v0.1",
+    "output_schema_version": "ride-analysis-output-v0.3",
+    "prompt_version": "3.1.2",
+    "service_validation_version": "ride-analysis-service-v1.5",
+    "workflow_version": "ride_analysis_v2-dev.15",
+    "few_shot_mode": "disabled",
+    "model_called": false
+  },
+  "request_metadata": {
+    "request_id": "NOT_RECORDED",
+    "provider_request_id": "NOT_RECORDED",
+    "attempt_role": "NOT_RECORDED",
+    "started_at": "NOT_RECORDED",
+    "completed_at": "NOT_RECORDED",
+    "latency_ms": "NOT_RECORDED",
+    "input_tokens": "NOT_RECORDED",
+    "output_tokens": "NOT_RECORDED",
+    "total_tokens": "NOT_RECORDED",
+    "cost_cny": "NOT_RECORDED"
+  },
+  "raw_output": {
+    "dimensions": [
+      {
+        "claimIds": [
+          "claim:ride-l3-built-in-sample:feature:speedSeriesMeanMps",
+          "claim:ride-l3-built-in-sample:feature:speedCoefficientOfVariation",
+          "claim:ride-l3-built-in-sample:feature:speedFirstLastDeltaMps"
+        ],
+        "confidence": "high",
+        "key": "pace",
+        "text": "平均速度为25.7km/h，速度变异系数约11%，整体速度波动较小；结束阶段速度比开始阶段低4.62km/h，后程配速出现回落。"
+      },
+      {
+        "claimIds": [
+          "claim:ride-l3-built-in-sample:feature:heartRateSeriesMeanBpm",
+          "claim:ride-l3-built-in-sample:feature:heartRateStdDevBpm",
+          "claim:ride-l3-built-in-sample:feature:heartRateFirstLastDeltaBpm"
+        ],
+        "confidence": "high",
+        "key": "heartRate",
+        "text": "平均心率约152bpm，心率标准差7.44bpm，整体心率波动不大；结束阶段心率比开始阶段低约9.8bpm，后程心率出现回落。"
+      },
+      {
+        "claimIds": [
+          "claim:ride-l3-built-in-sample:feature:powerSeriesMeanW",
+          "claim:ride-l3-built-in-sample:feature:normalizedPowerRatio",
+          "claim:ride-l3-built-in-sample:feature:powerFirstLastDeltaW"
+        ],
+        "confidence": "high",
+        "key": "power",
+        "text": "平均功率约172W，标准化功率比平均功率高约7%；开始阶段和结束阶段功率没有差异。"
+      },
+      {
+        "claimIds": [
+          "claim:ride-l3-built-in-sample:feature:cadenceSeriesMeanRpm",
+          "claim:ride-l3-built-in-sample:feature:cadenceCoefficientOfVariation",
+          "claim:ride-l3-built-in-sample:feature:cadenceFirstLastDeltaRpm"
+        ],
+        "confidence": "high",
+        "key": "cadence",
+        "text": "平均踏频87rpm，踏频变异系数约6%，踩踏节奏整体比较平稳；结束阶段踏频比开始阶段低约8.3rpm，后程踏频出现回落。"
+      },
+      {
+        "claimIds": [
+          "claim:ride-l3-built-in-sample:feature:elevationPositiveGainM",
+          "claim:ride-l3-built-in-sample:feature:elevationMinM",
+          "claim:ride-l3-built-in-sample:feature:elevationMaxM",
+          "claim:ride-l3-built-in-sample:feature:elevationRangeM"
+        ],
+        "confidence": "high",
+        "key": "climbing",
+        "text": "本次骑行累计爬升600m，海拔最低30m，最高126m，海拔范围96m。"
+      }
+    ],
+    "headline": "后程配速、心率和踏频均出现回落",
+    "limitations": [
+      "缺少用户个人最大心率和FTP信息，无法生成心率区间、功率分区和训练负荷解读",
+      "历史记录不足，无法进行历史对比"
+    ],
+    "nextAction": {
+      "basisClaimIds": [],
+      "kind": "general",
+      "text": "骑行后注意拉伸放松，补充水分和能量。"
+    },
+    "notableEvents": [],
+    "overallAssessment": {
+      "claimIds": [
+        "claim:ride-l3-built-in-sample:feature:speedSeriesMeanMps",
+        "claim:ride-l3-built-in-sample:feature:speedFirstLastDeltaMps",
+        "claim:ride-l3-built-in-sample:feature:heartRateFirstLastDeltaBpm",
+        "claim:ride-l3-built-in-sample:feature:cadenceFirstLastDeltaRpm",
+        "claim:ride-l3-built-in-sample:feature:powerFirstLastDeltaW",
+        "claim:ride-l3-built-in-sample:feature:speedCoefficientOfVariation",
+        "claim:ride-l3-built-in-sample:feature:cadenceCoefficientOfVariation",
+        "claim:ride-l3-built-in-sample:feature:elevationPositiveGainM",
+        "claim:ride-l3-built-in-sample:feature:elevationRangeM"
+      ],
+      "text": "本次骑行平均速度25.7km/h，结束阶段速度、心率、踏频均低于开始阶段，功率首末阶段没有变化，速度波动较小，踩踏节奏相对平稳。本次骑行累计爬升600m，海拔范围96m。"
+    },
+    "safetyLevel": "normal",
+    "schemaVersion": "ride-analysis-output-v0.3",
+    "shareCopy": [
+      "享受骑行的快乐，记录每一次出发",
+      "顺利完成骑行，收获满满的运动体验",
+      "保持节奏，慢慢骑也很开心"
+    ]
+  },
+  "original_contract_validation": {
+    "status": "FAIL",
+    "issues": [
+      "DIMENSION_UNSUPPORTED_NUMBER",
+      "TEXT_UNSUPPORTED_NUMBER"
+    ],
+    "root_cause": "Coefficient-of-variation Claims were incorrectly emitted with physical units by ride-feature-rules-v0.1, and service-v1.4 did not accept reasonable rounding of an unconverted Claim value. The model's approximately 11%, 6%, 152, 10, and 8.3 displays were mathematically correct.",
+    "model_called_during_validation": false
+  },
+  "corrected_service_validation": {
+    "status": "PASS",
+    "issues": [],
+    "method": "rebuild l3-built-in-sample context with ride-feature-rules-v0.2 and replay the unchanged raw output through ride-analysis-service-v1.5 validation",
+    "model_called_during_validation": false
+  },
+  "human_review": {
+    "status": "PENDING_USER_PREVIEW",
+    "scope": "single L3 output only",
+    "not_proven": [
+      "final v3.1.2 L1 behavior",
+      "final v3.1.2 L2 behavior",
+      "whether this output was a first attempt or constrained repair",
+      "final v3.1.2 repair and B0 runtime path",
+      "model quality stability, latency, token usage, or cost",
+      "ITEM-V014 acceptance"
+    ]
+  },
+  "result": "corrected_contract_replay_pass_human_review_pending",
+  "next_action": "User previews this archived L3 result; after acceptance, run final v3.1.2 L1 and L2 smoke cases before revalidating the final repair/B0 path."
+}

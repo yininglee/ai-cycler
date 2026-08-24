@@ -277,6 +277,26 @@ test("approved same-claim conversions are accepted and arbitrary percentages are
   assert.ok(result.issues.includes("OVERALL_UNSUPPORTED_NUMBER"));
 });
 
+test("reasonable same-claim rounding is accepted while unrelated rounded numbers are rejected", () => {
+  const { analysisContext, eligibility } = context("l3-built-in-sample");
+  const output = validOutput();
+  output.overallAssessment = {
+    text: "平均心率约152bpm，结束阶段心率比开始阶段低约10bpm。",
+    claimIds: [
+      "claim:ride-l3-built-in-sample:feature:heartRateSeriesMeanBpm",
+      "claim:ride-l3-built-in-sample:feature:heartRateFirstLastDeltaBpm",
+    ],
+  };
+  output.dimensions = [];
+  let result = validateRideAnalysisOutputV03(output, analysisContext, eligibility);
+  assert.equal(result.valid, true, result.issues.join(","));
+
+  output.overallAssessment.text = "平均心率约160bpm。";
+  result = validateRideAnalysisOutputV03(output, analysisContext, eligibility);
+  assert.equal(result.valid, false);
+  assert.ok(result.issues.includes("OVERALL_UNSUPPORTED_NUMBER"));
+});
+
 test("overall assessment must cite claims for every metric topic it states", () => {
   const { analysisContext, eligibility } = context("l3-built-in-sample");
   const output = validOutput();

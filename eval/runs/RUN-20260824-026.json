@@ -1,0 +1,163 @@
+{
+  "run_id": "RUN-20260824-026",
+  "date": "2026-08-24",
+  "work_item": "ITEM-V014",
+  "run_type": "user_provided_coze_constrained_repair",
+  "evidence_source": "user-provided-Coze-repair-output-and-screenshot",
+  "case_id": "l3-built-in-sample",
+  "input_artifact": "output/coze-inputs/l3-built-in-sample-repair-v3.1.2.json",
+  "version_matrix": {
+    "app_version": "visual-shell-v0.1",
+    "context_schema_version": "0.2",
+    "context_rules_version": "ride-analysis-context-rules-v0.2",
+    "eligibility_schema_version": "0.1",
+    "eligibility_rules_version": "analysis-eligibility-rules-v0.1",
+    "output_schema_version": "ride-analysis-output-v0.3",
+    "feature_rules_version": "ride-feature-rules-v0.2",
+    "prompt_version_claimed": "3.1.2",
+    "service_validation_version": "ride-analysis-service-v1.5",
+    "workflow_version_claimed": "ride_analysis_v2-dev.15",
+    "few_shot_mode": "disabled",
+    "model_display_name": "豆包·2.0-lite",
+    "model_id": "NOT_RECORDED",
+    "model_parameters": "PARTIALLY_VISIBLE"
+  },
+  "request_metadata": {
+    "request_id": "NOT_RECORDED",
+    "provider_request_id": "NOT_RECORDED",
+    "attempt_role": "constrained_repair",
+    "started_at": "NOT_RECORDED",
+    "completed_at": "NOT_RECORDED",
+    "workflow_duration_display_seconds": 19,
+    "model_node_duration_display_seconds": 18,
+    "latency_ms": "NOT_RECORDED",
+    "input_tokens": "NOT_RECORDED",
+    "output_tokens": "NOT_RECORDED",
+    "total_tokens_display": 14543,
+    "cost_cny": "NOT_RECORDED"
+  },
+  "screenshot_evidence": {
+    "path": "eval/runs/evidence/RUN-20260824-026-coze-metadata.png",
+    "sha256": "a46c9b0fca043020d5c6fcc90a29a11e2ce3cbc4ee496a18ff47b4dc61079ac7",
+    "pixel_width": 3816,
+    "pixel_height": 1836
+  },
+  "repair_input_validation": {
+    "status": "FAIL_AS_DESIGNED",
+    "issues": [
+      "OVERALL_UNKNOWN_CLAIM",
+      "OVERALL_UNSUPPORTED_NUMBER",
+      "TEXT_UNSUPPORTED_NUMBER"
+    ],
+    "injected_faults": [
+      "overallAssessment referenced claim:other-ride:avgPowerW",
+      "overallAssessment added the unsupported assertion 999W"
+    ]
+  },
+  "raw_output": {
+    "dimensions": [
+      {
+        "claimIds": [
+          "claim:ride-l3-built-in-sample:feature:speedSeriesMeanMps",
+          "claim:ride-l3-built-in-sample:feature:speedCoefficientOfVariation",
+          "claim:ride-l3-built-in-sample:feature:speedFirstLastDeltaMps"
+        ],
+        "confidence": "high",
+        "key": "pace",
+        "text": "平均速度为25.7km/h，速度变异系数约11%，整体速度波动较小；结束阶段速度比开始阶段低4.62km/h，后程配速出现回落。"
+      },
+      {
+        "claimIds": [
+          "claim:ride-l3-built-in-sample:feature:heartRateSeriesMeanBpm",
+          "claim:ride-l3-built-in-sample:feature:heartRateStdDevBpm",
+          "claim:ride-l3-built-in-sample:feature:heartRateFirstLastDeltaBpm"
+        ],
+        "confidence": "high",
+        "key": "heartRate",
+        "text": "平均心率约152bpm，心率标准差7.44bpm，整体心率波动不大；结束阶段心率比开始阶段低约9.8bpm，后程心率出现回落。"
+      },
+      {
+        "claimIds": [
+          "claim:ride-l3-built-in-sample:feature:powerSeriesMeanW",
+          "claim:ride-l3-built-in-sample:feature:normalizedPowerRatio",
+          "claim:ride-l3-built-in-sample:feature:powerFirstLastDeltaW"
+        ],
+        "confidence": "high",
+        "key": "power",
+        "text": "平均功率约172W，标准化功率比平均功率高约7%；开始阶段和结束阶段功率没有差异。"
+      },
+      {
+        "claimIds": [
+          "claim:ride-l3-built-in-sample:feature:cadenceSeriesMeanRpm",
+          "claim:ride-l3-built-in-sample:feature:cadenceCoefficientOfVariation",
+          "claim:ride-l3-built-in-sample:feature:cadenceFirstLastDeltaRpm"
+        ],
+        "confidence": "high",
+        "key": "cadence",
+        "text": "平均踏频87rpm，踏频变异系数约6%，踩踏节奏整体比较平稳；结束阶段踏频比开始阶段低约8.3rpm，后程踏频出现回落。"
+      },
+      {
+        "claimIds": [
+          "claim:ride-l3-built-in-sample:feature:elevationPositiveGainM",
+          "claim:ride-l3-built-in-sample:feature:elevationMinM",
+          "claim:ride-l3-built-in-sample:feature:elevationMaxM",
+          "claim:ride-l3-built-in-sample:feature:elevationRangeM"
+        ],
+        "confidence": "high",
+        "key": "climbing",
+        "text": "本次骑行累计爬升600m，海拔最低30m，最高126m，海拔范围96m。"
+      }
+    ],
+    "headline": "后程配速、心率和踏频均出现回落",
+    "limitations": [
+      "缺少用户个人最大心率和FTP信息，无法生成心率区间、功率分区和训练负荷解读",
+      "历史记录不足，无法进行历史对比"
+    ],
+    "nextAction": {
+      "basisClaimIds": [],
+      "kind": "general",
+      "text": "骑行后注意拉伸放松，补充水分和能量。"
+    },
+    "notableEvents": [],
+    "overallAssessment": {
+      "claimIds": [
+        "claim:ride-l3-built-in-sample:feature:speedSeriesMeanMps",
+        "claim:ride-l3-built-in-sample:feature:speedFirstLastDeltaMps",
+        "claim:ride-l3-built-in-sample:feature:heartRateFirstLastDeltaBpm",
+        "claim:ride-l3-built-in-sample:feature:cadenceFirstLastDeltaRpm",
+        "claim:ride-l3-built-in-sample:feature:powerFirstLastDeltaW",
+        "claim:ride-l3-built-in-sample:feature:speedCoefficientOfVariation",
+        "claim:ride-l3-built-in-sample:feature:cadenceCoefficientOfVariation",
+        "claim:ride-l3-built-in-sample:feature:elevationPositiveGainM",
+        "claim:ride-l3-built-in-sample:feature:elevationRangeM"
+      ],
+      "text": "本次骑行平均速度25.7km/h，结束阶段速度、心率、踏频均低于开始阶段，功率首末阶段没有变化，速度波动较小，踩踏节奏相对平稳。本次骑行累计爬升600m，海拔范围96m。"
+    },
+    "safetyLevel": "normal",
+    "schemaVersion": "ride-analysis-output-v0.3",
+    "shareCopy": [
+      "享受骑行的快乐，记录每一次出发",
+      "顺利完成骑行，收获满满的运动体验",
+      "保持节奏，慢慢骑也很开心"
+    ]
+  },
+  "corrected_service_validation": {
+    "status": "PASS",
+    "issues": [],
+    "method": "rebuild l3-built-in-sample with ride-feature-rules-v0.2 and replay the unchanged repair output through ride-analysis-service-v1.5",
+    "model_called_during_validation": false
+  },
+  "repair_scope_review": {
+    "status": "PASS",
+    "removed_unknown_claim": true,
+    "removed_unsupported_999w_assertion": true,
+    "matches_accepted_run_023_output": true,
+    "unrelated_changes": []
+  },
+  "human_review": {
+    "status": "PASS",
+    "reason": "The constrained repair removed only the two injected faults and restored the already accepted L3 output without adding facts, Claims, dimensions, numbers, or advice."
+  },
+  "result": "PASS",
+  "next_action": "Run the final Service v1.5 deterministic second-validation-failure-to-B0 verification."
+}

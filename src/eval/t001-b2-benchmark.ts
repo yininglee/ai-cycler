@@ -1,3 +1,7 @@
+import { createHash } from "node:crypto";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+
 import {
   CozeWorkflowError,
   type RideAnalysisInvocation,
@@ -21,6 +25,7 @@ import {
   RIDE_ANALYSIS_CONTEXT_RULES_VERSION,
   RIDE_ANALYSIS_CONTEXT_SCHEMA_VERSION,
 } from "../domain/ride-analysis-context.ts";
+import { RIDE_FEATURE_RULES_VERSION } from "../domain/ride-features.ts";
 import { B0_TEMPLATE_VERSION } from "../domain/ride-summary.ts";
 import {
   getT001AutomaticRideAnalysisCase,
@@ -28,15 +33,18 @@ import {
   type T001AutomaticRideAnalysisCaseId,
 } from "../fixtures/ride-analysis-t001.ts";
 
-export const T001_B2_RAW_BATCH_SCHEMA_VERSION = "t001-b2-raw-batch-v0.1" as const;
-export const T001_B2_RESULT_SCHEMA_VERSION = "t001-b2-evaluated-run-v0.1" as const;
+export const T001_B2_RAW_BATCH_SCHEMA_VERSION = "t001-b2-raw-batch-v0.2" as const;
+export const T001_B2_RESULT_SCHEMA_VERSION = "t001-b2-evaluated-run-v0.2" as const;
 export const T001_B2_REPETITIONS = 3 as const;
+export const T001_B2_B0_RUN_ID = "RUN-20260824-028" as const;
+export const T001_B2_FROZEN_INPUT_SET_SHA256 = "5333b4cd4d5aeb21fbada26357381120e3665ffc2c71bda429d5cdce9b2c7671" as const;
 
 export interface T001B2VersionMatrix {
   appVersion: "visual-shell-v0.1";
   outputSchemaVersion: typeof RIDE_ANALYSIS_OUTPUT_SCHEMA_VERSION;
   contextSchemaVersion: typeof RIDE_ANALYSIS_CONTEXT_SCHEMA_VERSION;
   contextRulesVersion: typeof RIDE_ANALYSIS_CONTEXT_RULES_VERSION;
+  featureRulesVersion: typeof RIDE_FEATURE_RULES_VERSION;
   eligibilitySchemaVersion: typeof ANALYSIS_ELIGIBILITY_SCHEMA_VERSION;
   eligibilityRulesVersion: typeof ANALYSIS_ELIGIBILITY_RULES_VERSION;
   promptVersion: typeof RIDE_ANALYSIS_PROMPT_VERSION;
@@ -44,6 +52,8 @@ export interface T001B2VersionMatrix {
   workflowVersion: typeof RIDE_ANALYSIS_WORKFLOW_VERSION;
   fewShotMode: "disabled";
   b0TemplateVersion: typeof B0_TEMPLATE_VERSION;
+  inputSetSha256: typeof T001_B2_FROZEN_INPUT_SET_SHA256;
+  sourceCommit: string;
   modelId: string;
   region: string;
   modelParameters: Record<string, unknown>;
@@ -99,7 +109,7 @@ export interface T001B2EvaluatedBatch {
     caseCount: 18;
     repetitionsPerCase: 3;
     expectedSlotCount: 54;
-    b0RunId: "RUN-20260823-022";
+    b0RunId: typeof T001_B2_B0_RUN_ID;
   };
   summary: {
     slotCount: number;
@@ -122,6 +132,7 @@ const FIXED_VERSION_MATRIX = {
   outputSchemaVersion: RIDE_ANALYSIS_OUTPUT_SCHEMA_VERSION,
   contextSchemaVersion: RIDE_ANALYSIS_CONTEXT_SCHEMA_VERSION,
   contextRulesVersion: RIDE_ANALYSIS_CONTEXT_RULES_VERSION,
+  featureRulesVersion: RIDE_FEATURE_RULES_VERSION,
   eligibilitySchemaVersion: ANALYSIS_ELIGIBILITY_SCHEMA_VERSION,
   eligibilityRulesVersion: ANALYSIS_ELIGIBILITY_RULES_VERSION,
   promptVersion: RIDE_ANALYSIS_PROMPT_VERSION,
@@ -129,6 +140,7 @@ const FIXED_VERSION_MATRIX = {
   workflowVersion: RIDE_ANALYSIS_WORKFLOW_VERSION,
   fewShotMode: "disabled",
   b0TemplateVersion: B0_TEMPLATE_VERSION,
+  inputSetSha256: T001_B2_FROZEN_INPUT_SET_SHA256,
 } as const;
 
 const CASE_IDS = new Set<string>(t001AutomaticRideAnalysisCaseIds);
@@ -166,6 +178,18 @@ function parseJson(value: string): unknown {
   }
 }
 
+export function calculateCurrentT001InputSetSha256(rootDirectory = process.cwd()): string {
+  const digest = createHash("sha256");
+  for (const caseId of t001AutomaticRideAnalysisCaseIds) {
+    const file = readFileSync(join(rootDirectory, "output", "coze-inputs", `t001-${caseId}.json`));
+    digest.update(caseId);
+    digest.update("\0");
+    digest.update(file);
+    digest.update("\0");
+  }
+  return digest.digest("hex");
+}
+
 function validateVersionMatrix(value: unknown, issues: string[]): void {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
     issues.push("INVALID_VERSION_MATRIX");
@@ -174,6 +198,9 @@ function validateVersionMatrix(value: unknown, issues: string[]): void {
   const matrix = value as Partial<T001B2VersionMatrix>;
   for (const [key, expected] of Object.entries(FIXED_VERSION_MATRIX)) {
     if (matrix[key as keyof T001B2VersionMatrix] !== expected) issues.push(`VERSION_MISMATCH:${key}`);
+  }
+  if (typeof matrix.sourceCommit !== "string" || !/^[0-9a-f]{40}$/.test(matrix.sourceCommit)) {
+    issues.push("SOURCE_COMMIT_NOT_RECORDED");
   }
   if (
     typeof matrix.modelId !== "string"
@@ -347,7 +374,7 @@ export async function evaluateT001B2Batch(batch: T001B2RawBatch): Promise<T001B2
     validationStatus: issues.length === 0 ? "PASS" : "FAIL",
     benchmarkStatus: "NOT_SCORED",
     versionMatrix: batch.versionMatrix,
-    dataset: { caseCount: 18, repetitionsPerCase: 3, expectedSlotCount: 54, b0RunId: "RUN-20260823-022" },
+    dataset: { caseCount: 18, repetitionsPerCase: 3, expectedSlotCount: 54, b0RunId: T001_B2_B0_RUN_ID },
     summary: {
       slotCount: records.length,
       firstAttemptContractValidCount,

@@ -1,0 +1,117 @@
+{
+  "run_id": "RUN-20260824-027",
+  "date": "2026-08-24",
+  "work_item": "ITEM-V014",
+  "run_type": "deterministic_second_failure_b0",
+  "evidence_source": "automated-service-verification",
+  "case_id": "l3-built-in-sample",
+  "version_matrix": {
+    "service": "ride-analysis-service-v1.5",
+    "outputSchema": "ride-analysis-output-v0.3",
+    "prompt": "3.1.2",
+    "workflow": "ride_analysis_v2-dev.15",
+    "modelId": "deterministic-test-double",
+    "context": "0.2",
+    "contextRules": "ride-analysis-context-rules-v0.2",
+    "eligibility": "0.1",
+    "eligibilityRules": "analysis-eligibility-rules-v0.1",
+    "fewShotLibrary": "ride-analysis-few-shot-v0.1",
+    "fewShotRouter": "few-shot-router-v0.1",
+    "fewShotMode": "disabled",
+    "b0Template": "b0-template-v0.1",
+    "feature_rules": "ride-feature-rules-v0.2",
+    "provider_kind": "deterministic_test_double"
+  },
+  "provider_queue": [
+    {
+      "attempt": 1,
+      "raw_output": "not-json"
+    },
+    {
+      "attempt": 2,
+      "raw_output": "still-not-json"
+    }
+  ],
+  "expected": {
+    "max_attempts": 2,
+    "source": "b0",
+    "fallback_code": "REPAIR_FAILED",
+    "no_third_attempt": true
+  },
+  "observed": {
+    "source": "b0",
+    "fallback_code": "REPAIR_FAILED",
+    "attempts": 2,
+    "provider_call_count": 2,
+    "no_third_attempt": true,
+    "provider_request_ids": [
+      "v014-b0-provider-1",
+      "v014-b0-provider-2"
+    ],
+    "validation_issues": [
+      "OUTPUT_NOT_OBJECT"
+    ],
+    "selected_example_ids": [],
+    "few_shot_mode": "disabled",
+    "repair_instruction": "上一输出未通过服务端校验。只修正JSON结构、claim引用、数字或越权维度；不得新增事实、数字、claim、维度或建议。\n错误码：OUTPUT_NOT_OBJECT\n仍只能使用analysis_context.allowedClaims和analysis_elig允许的维度，并只输出ride-analysis-output-v0.3 JSON。",
+    "repair_previous_output": "not-json",
+    "b0_template_version": "b0-template-v0.1",
+    "b0_output_valid": true,
+    "b0_validation_issues": [],
+    "b0_output": {
+      "headline": "本次功率记录已整理",
+      "summary": "本次骑行的基础事实、心率与功率记录已经整理，可用于回顾当次输出。当前没有长期可比数据或完整训练负荷背景，因此不判断体能变化，也不生成处方型训练计划。",
+      "highlights": [
+        {
+          "text": "距离 45 km",
+          "claimIds": [
+            "claim:ride-l3-built-in-sample:distanceM"
+          ],
+          "confidence": "high"
+        },
+        {
+          "text": "平均功率 198 W",
+          "claimIds": [
+            "claim:ride-l3-built-in-sample:avgPowerW"
+          ],
+          "confidence": "high"
+        },
+        {
+          "text": "平均速度 25.7 km/h",
+          "claimIds": [
+            "claim:ride-l3-built-in-sample:avgSpeedMps"
+          ],
+          "confidence": "high"
+        }
+      ],
+      "nextAction": {
+        "text": "结合当时体感核对功率记录，再决定下一次是否调整训练。",
+        "basisClaimIds": [
+          "claim:ride-l3-built-in-sample:avgPowerW"
+        ]
+      },
+      "limitations": [
+        "缺少长期可比数据，不判断体能趋势或给出训练处方"
+      ],
+      "safetyLevel": "normal",
+      "shareCopy": [
+        "完成一次骑行记录，先把数据看懂。",
+        "骑完回看可靠事实，下一次更有数。",
+        "每次骑行都值得被认真记录。"
+      ]
+    }
+  },
+  "execution_metadata": {
+    "real_model_called": false,
+    "provider_attempts": 2,
+    "model_tokens": 0,
+    "model_cost_cny": 0,
+    "local_process_latency_ms": 0
+  },
+  "result": "PASS",
+  "human_review": {
+    "status": "PASS",
+    "reason": "Service v1.5 stops after one constrained repair and returns the valid deterministic B0 output after the second validation failure; no third Provider call occurs."
+  },
+  "next_action": "Submit the final v3.1.2 constrained-repair and B0-path slice for user preview before deciding ITEM-V014 acceptance."
+}

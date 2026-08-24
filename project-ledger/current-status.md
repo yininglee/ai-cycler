@@ -3,12 +3,12 @@
 > 最后更新：2026-08-24  
 > 当前阶段：v0.1 证据型Demo开发  
 > 当前 Gate：G1「Demo核心价值」（G0已`GO`）  
-> 总体状态：`IN_PROGRESS`  
+> 总体状态：`IN_PROGRESS`
 > 人工导航：[台账索引](index.md)
 
 ## 1. 当前目标
 
-ITEM-V009至ITEM-V014的约定范围已完成用户确认；V014的真实模型冒烟、一次受限修复和二次失败转B0均已留存，但这些不是完整T1基准或G1证据。当前进入`ITEM-T001`：迁移新合同自动骑后评测集并完成B0/B1/B2/B3基准准备。
+ITEM-V009至ITEM-V014均已完成用户确认。用户已接受`DEC-065`及`ITEM-T001` Service v1.5重冻结实施切片；当前只建立包含已验收V014与T001实现的新本地Git冻结基线，不发布扣子、不接入API/UI、不运行54槽真实B2。
 
 ## 2. 当前基线与证据
 
@@ -28,9 +28,11 @@ ITEM-V009至ITEM-V014的约定范围已完成用户确认；V014的真实模型�
 - ITEM-V008已验收，边界保持冻结：Demo使用localStorage适配`UserProfile v0.1`，Alpha再切换PostgreSQL；用户保存的FTP为`user_provided + user_confirmed`，不称为实测、不自动估算、不在本项启用IF/TSS/功率区间/训练负荷。
 - 旧`RideContextSnapshot v1.0`及旧B2链路仍作为历史兼容代码存在并含`dataLevel`；新链路已迁移到不含等级字段的`RideAnalysisContext v0.2`与V013合同，后续不得重新使用旧等级作为业务门。
 - B1/B2/B3、真实上传、真实GPX/多设备、5人测试和线上部署均未验证，不得对外开放或宣称G1通过。
-- T001的18条自动骑后上下文fixture已补齐并通过合同测试；`RUN-20260823-022`已完成18条新合同B0基线，18个五变量扣子输入也已导出；B2的54槽冻结清单、真实原始结果接收协议和服务端回放校验器已完成，完整模型基准尚未运行。
-- 本机无`.env.local`，用户已在扣子`ride_analysis_v2`完成V014三能力冒烟；服务端真实模型调用、精确模型ID和成本仍`NOT_RUN`，B0降级路径已由`RUN-20260823-020`验证，T001新合同B0基线见`RUN-20260823-022`。
+- T001的18条自动骑后上下文fixture已补齐；Service v1.5/特征规则v0.2的18个五变量输入、SHA-256、54槽v0.2 manifest/接收合同与新B0 `RUN-20260824-028`已完成，完整模型基准尚未运行。`RUN-20260823-022`保留为Service v1.4/特征规则v0.1历史B0。
+- 本机无`.env.local`。v3.1.1历史冒烟/修复/B0见`RUN-20260823-018/019/020`；最终v3.1.2的L3、L1、L2分别归档为`RUN-20260824-023/024/025`。L1/L2截图只记录模型显示名、整数秒和总Token，精确模型ID、请求ID、毫秒延迟、Token拆分和成本仍未记录；本地合同回放不调用模型，不能补足这些字段。
+- T001 Service v1.5重冻结实施已完成用户验收；包含实际冻结实现的新Git commit正在建立。建立并复核前真实B2继续暂停，B1/B2/B3仍为`NOT_RUN`。
 - 项目在2026-08-24由用户确认建立首个本地Git基线；基线建立前`main`分支无commit、项目文件均未跟踪。后续真实RUN必须绑定该基线或其后续commit，保持源码、配置与评测证据可追溯。
+- 首个Git基线为`8c1677834c8ab2d8e03035104b9c720ccdd44243`，但它早于后续已验收V014修复；真实B2前必须再建一个包含实际冻结实现的commit，不得把较旧基线冒充为实际源码版本。
 
 ## 4. 当前决定状态
 
@@ -42,26 +44,27 @@ ITEM-V009至ITEM-V014的约定范围已完成用户确认；V014的真实模型�
 - `DEC-054`已确认数据Tab采用参考图的13组长期结构，并按实际可靠字段动态隐藏空分组；
 - `DEC-055`已确认ITEM-V007沿用现有Schema重组字段，并在摘要有可靠值时增加运动消耗；其余参考字段进入后续规划；
 - `DEC-056`已确认V008 Demo使用localStorage、Alpha切换PostgreSQL；`DEC-057`已确认用户保存FTP的可信语义；
+- `DEC-065`已确认T001 Service v1.5版本矩阵重冻结方案，实施切片也已用户验收；
 - 完整决定及权衡以[决策日志](decision-log.md#dec-027确认运动消耗替代得分)为准；当前没有未确认的6.2/6.3/6.5方向性决定；
 - `DEC-023 PROPOSED`保留为旧链路实现假设；V013只冻结合同，不自动接受该编排方案，留待下一工作项启动后基于新合同重新评估。
 
 ## 5. 当前工作项
 
-### ITEM-T001｜新合同B1/B2/B3基准测试与评测迁移
+### ITEM-T001｜新Git冻结基线切片
 
 - 状态：`IN_PROGRESS`
-- 目标：在冻结的18条自动骑后固定集上建立可重复、可追溯的B0/B1/B2/B3比较证据，为G1判断模型是否相对B0产生真实用户价值增量。
-- 已完成：18条新合同上下文、12条独立对话集、18条B0基线`RUN-20260823-022`、18个扣子五变量输入，以及B2的18条×3次运行清单、原始结果接收协议和服务端回放校验器；Prompt固定`3.1.2`，Few-shot固定`disabled`。
-- 当前动作：提交B2运行准备项给用户预览和验收；验收后取得冻结的真实模型配置与计量来源，执行54槽B2真实运行。
-- 排除：准备项没有调用模型、没有生成质量分、没有运行B1/B3、没有进行5人测试或G1放行。
-- 证据：[ITEM-T001评审](../reviews/ITEM-T001-eval-migration-review.md)、[B2运行接收协议](../eval/t001-b2-run-protocol.md)、[RUN-20260823-022](../eval/runs/RUN-20260823-022.json)、[T1 B0基线与B2准备](../eval/benchmark-report.md)。
+- 目标：提交已验收V014与T001 Service v1.5重冻结实现，使未来B2可绑定不可变的40位`sourceCommit`。
+- 前置：[ITEM-T001第14节](../reviews/ITEM-T001-eval-migration-review.md#14-用户验收service-v15重冻结实施切片)已记录用户验收；旧基线`8c1677834c8ab2d8e03035104b9c720ccdd44243`仅保留为历史。
+- 当前动作：只暂存V014/T001相关代码、输入、RUN、评审与台账，排除无关的`findings.md / progress.md / task_plan.md`删除；提交后复核文件集和摘要。
+- 排除：不发布扣子工作流、不接入API/UI、不调用模型、不创建B2结果、不进行质量评分或G1判断。
+- 证据：[V014整体用户验收](../reviews/ITEM-V014-prompt-few-shot-coze-input-review.md#32-用户验收item-v014整体)、[T001现有评审](../reviews/ITEM-T001-eval-migration-review.md#11-b2真实运行准备项)、[LOG-20260824-119](progress-ledger.md#log-20260824-119用户接受item-v014整体)。
 
 ## 6. 下一工作项
 
-- `ITEM-T001 B2真实固定集运行`：用户验收运行准备项并取得冻结的精确模型ID、区域、模型参数和Token/成本记录来源后，按18条×3次执行B2并保留首次输出、一次受限修复及B0降级；B2完成前不运行B1/B3、不推进G1。
+- `ITEM-T001 真实B2运行配置审查切片`（前置：用户验收新Git冻结基线）：确认扣子测试环境发布范围、精确模型ID/区域/参数与Token/成本记录来源；审查本身不运行54槽B2。
 
 ## 7. 当前版本矩阵
 
 | app / schema / rules | parser / GPS quality | B0 / eval | AI runtime |
 |---|---|---|---|
-| visual-shell-v0.1 + `ride-detail-ui-v0.2`已验收；`RideActivity v0.2 / RideSeries v0.1 / UserProfile v0.1 / AtomicCapability v0.1 / RideFeatureSnapshot v0.1 / HistoricalComparisonSnapshot v0.1 / RideAnalysisContext v0.2 / AnalysisEligibility v0.1 / ride-analysis-output-v0.3`均已验收 | FIT parser v0.2；GPX parser v0.3 / GPS质量v0.1；自动回归173/173、生产构建和交付系统校验已通过 | 旧B0 `b0-template-v0.1` 14/14；T001新合同B0 `RUN-20260823-022` 18/18，P50/P95=0.188/1.684ms；B1/B2/B3 `NOT_RUN` | Prompt v3.1.2 + `ride-analysis-service-v1.4` + `ride_analysis_v2-dev.15` + `fewShotMode=disabled`已作为V014联调基线；T001 B2 54槽清单与导入校验已完成，待用户验收和冻结真实模型配置后执行；RAG/Function Calling关闭 |
+| visual-shell-v0.1 + `ride-detail-ui-v0.2`已验收；`RideActivity v0.2 / RideSeries v0.1 / UserProfile v0.1 / AtomicCapability v0.1 / RideFeatureSnapshot v0.1 / HistoricalComparisonSnapshot v0.1 / RideAnalysisContext v0.2 / AnalysisEligibility v0.1 / ride-analysis-output-v0.3`均已验收；当前特征规则`ride-feature-rules-v0.2` | FIT parser v0.2；GPX parser v0.3 / GPS质量v0.1；自动回归187/187、生产构建已通过 | 旧B0 `b0-template-v0.1` 14/14；历史T001 B0 `RUN-20260823-022` 18/18（Service v1.4/特征规则v0.1）；当前T001 B0 `RUN-20260824-028` 18/18，P50/P95=0.192/1.66ms（Service v1.5/特征规则v0.2）；B1/B2/B3 `NOT_RUN` | V014已接受Prompt v3.1.2 + Service v1.5 + Workflow dev.15 + Few-shot disabled；T001 v0.2 manifest固定18条输入摘要/54槽/新B0并要求`sourceCommit`，实施已验收；RAG/Function Calling关闭 |

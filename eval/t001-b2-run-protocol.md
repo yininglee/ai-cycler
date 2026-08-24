@@ -14,21 +14,23 @@
 - 清单：[`t001-b2-benchmark-manifest.json`](t001-b2-benchmark-manifest.json)
 - 案例：`RA-AUTO-001`至`RA-AUTO-018`
 - 次数：每条3次
-- B0对照：`RUN-20260823-022`
+- B0对照：`RUN-20260824-028`（Service v1.5/特征规则v0.2同矩阵）
 - Prompt：`3.1.2`
-- Service：`ride-analysis-service-v1.4`
+- Service：`ride-analysis-service-v1.5`
+- 特征规则：`ride-feature-rules-v0.2`
 - Workflow：`ride_analysis_v2-dev.15`
 - Few-shot：`disabled`
+- 输入集SHA-256：`5333b4cd4d5aeb21fbada26357381120e3665ffc2c71bda429d5cdce9b2c7671`
 
 精确`modelId`、区域和模型参数必须由真实运行补充，不能使用`unrecorded`或营销系列名替代。
 
 ## 3. 原始批次结构
 
-输入为一个JSON对象，`schemaVersion`固定为`t001-b2-raw-batch-v0.1`，包含：
+输入为一个JSON对象，`schemaVersion`固定为`t001-b2-raw-batch-v0.2`，包含：
 
 - `batchId`：未使用过的`RUN-YYYYMMDD-NNN`；
 - `plan`：固定`B2`；
-- `versionMatrix`：清单中的固定版本，加精确`modelId`、`region`和非空`modelParameters`；
+- `versionMatrix`：清单中的固定版本和输入摘要，加精确`modelId`、`region`、非空`modelParameters`和40位小写Git `sourceCommit`；
 - `records`：54条记录，每个`caseId + repetition`只能出现一次。
 
 每条记录必须保存本地`requestId`、开始/结束时间、端到端延迟、输入/输出Token、成本，以及0至2次Provider尝试。可准入案例必须有模型尝试；服务端不准入案例必须是0次模型调用、0 Token、0模型成本。
@@ -54,7 +56,8 @@ pnpm benchmark:t001:b2:validate <raw-batch.json>
 - 槽位缺失、重复，或request ID重复；
 - 可准入案例没有模型尝试，或不可准入案例调用了模型；
 - 首次有效后仍记录第二次调用，或修复所需的第二次响应缺失；
-- 固定Schema、规则、Prompt、Service、Workflow、Few-shot或B0版本不一致。
+- 固定Schema、上下文/准入/特征规则、Prompt、Service、Workflow、Few-shot、B0或输入集摘要不一致；
+- `sourceCommit`缺失或不是完整40位小写Git SHA。
 
 ## 5. 后续评分
 

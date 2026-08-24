@@ -14,7 +14,7 @@ test("feature snapshot computes deterministic multi-dimensional facts with claim
   const snapshot = buildRideFeatureSnapshot(record("l3-built-in-sample"));
   assert.equal(validateRideFeatureSnapshot(snapshot).valid, true);
   assert.equal(snapshot.schemaVersion, "0.1");
-  assert.equal(snapshot.rulesVersion, "ride-feature-rules-v0.1");
+  assert.equal(snapshot.rulesVersion, "ride-feature-rules-v0.2");
   assert.ok(snapshot.features.length >= 17);
   for (const feature of snapshot.features) {
     assert.match(feature.claimId, /^claim:ride-l3-built-in-sample:feature:/);
@@ -22,8 +22,18 @@ test("feature snapshot computes deterministic multi-dimensional facts with claim
     assert.ok(Number.isFinite(feature.value));
     assert.ok(feature.formulaVersion.length > 0);
   }
-  assert.ok(getRideFeature(snapshot, "speedCoefficientOfVariation"));
-  assert.ok(getRideFeature(snapshot, "powerFirstLastDeltaW"));
+  assert.equal(getRideFeature(snapshot, "speedCoefficientOfVariation")?.unit, "ratio");
+  assert.equal(getRideFeature(snapshot, "powerCoefficientOfVariation")?.unit, "ratio");
+  assert.equal(getRideFeature(snapshot, "cadenceCoefficientOfVariation")?.unit, "ratio");
+  assert.equal(getRideFeature(snapshot, "speedSeriesMeanMps")?.unit, "m/s");
+  assert.equal(getRideFeature(snapshot, "speedStdDevMps")?.unit, "m/s");
+  assert.equal(getRideFeature(snapshot, "speedFirstLastDeltaMps")?.unit, "m/s");
+  assert.equal(getRideFeature(snapshot, "powerSeriesMeanW")?.unit, "W");
+  assert.equal(getRideFeature(snapshot, "powerStdDevW")?.unit, "W");
+  assert.equal(getRideFeature(snapshot, "powerFirstLastDeltaW")?.unit, "W");
+  assert.equal(getRideFeature(snapshot, "cadenceSeriesMeanRpm")?.unit, "rpm");
+  assert.equal(getRideFeature(snapshot, "cadenceStdDevRpm")?.unit, "rpm");
+  assert.equal(getRideFeature(snapshot, "cadenceFirstLastDeltaRpm")?.unit, "rpm");
   assert.ok(getRideFeature(snapshot, "normalizedPowerRatio"));
   assert.ok(getRideFeature(snapshot, "cadenceSeriesMeanRpm"));
   assert.ok(getRideFeature(snapshot, "elevationRangeM"));

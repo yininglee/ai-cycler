@@ -2,13 +2,32 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { performance } from "node:perf_hooks";
 
 import {
+  RIDE_ANALYSIS_PROMPT_VERSION,
+  RIDE_ANALYSIS_SERVICE_VERSION,
+  RIDE_ANALYSIS_WORKFLOW_VERSION,
   prepareRideAnalysis,
 } from "../src/ai/ride-analysis-service.ts";
 import {
+  ANALYSIS_ELIGIBILITY_RULES_VERSION,
+  ANALYSIS_ELIGIBILITY_SCHEMA_VERSION,
   validateAnalysisEligibility,
 } from "../src/domain/analysis-eligibility.ts";
-import { validateRideAnalysisContext } from "../src/domain/ride-analysis-context.ts";
-import { generateB0RideAnalysis, validateB0RideAnalysis } from "../src/domain/ride-summary.ts";
+import {
+  RIDE_ANALYSIS_CONTEXT_RULES_VERSION,
+  RIDE_ANALYSIS_CONTEXT_SCHEMA_VERSION,
+  validateRideAnalysisContext,
+} from "../src/domain/ride-analysis-context.ts";
+import { RIDE_FEATURE_RULES_VERSION } from "../src/domain/ride-features.ts";
+import {
+  B0_TEMPLATE_VERSION,
+  generateB0RideAnalysis,
+  validateB0RideAnalysis,
+} from "../src/domain/ride-summary.ts";
+import {
+  T001_B2_B0_RUN_ID,
+  T001_B2_FROZEN_INPUT_SET_SHA256,
+  calculateCurrentT001InputSetSha256,
+} from "../src/eval/t001-b2-benchmark.ts";
 import {
   getT001AutomaticRideAnalysisCase,
   t001AutomaticRideAnalysisCaseIds,
@@ -22,8 +41,12 @@ interface MigrationManifest {
   }>;
 }
 
-const runId = "RUN-20260823-022";
+const runId = T001_B2_B0_RUN_ID;
 const startedAt = new Date().toISOString();
+const inputSetSha256 = calculateCurrentT001InputSetSha256();
+if (inputSetSha256 !== T001_B2_FROZEN_INPUT_SET_SHA256) {
+  throw new Error(`Frozen T001 input set mismatch: ${inputSetSha256}`);
+}
 const manifest = JSON.parse(await readFile("eval/ride-analysis-cases-v0.3-migration.json", "utf8")) as MigrationManifest;
 const manifestByCase = new Map(manifest.cases.map((item) => [item.targetCaseId, item]));
 
@@ -33,7 +56,7 @@ const results = t001AutomaticRideAnalysisCaseIds.map((caseId) => {
   if (!manifestCase) throw new Error(`Missing migration manifest entry: ${caseId}`);
 
   const started = performance.now();
-  const prepared = prepareRideAnalysis(item.record, `eval-t001:${caseId}`, item.contextOptions);
+  const prepared = prepareRideAnalysis(item.record, `coze-t001:${caseId}`, item.contextOptions);
   const contextValidation = validateRideAnalysisContext(prepared.context);
   const eligibilityValidation = validateAnalysisEligibility(prepared.eligibility);
   const b0 = generateB0RideAnalysis(item.record.activity, `eval-t001:${caseId}`);
@@ -98,22 +121,25 @@ const report = {
   versionMatrix: {
     appVersion: "visual-shell-v0.1",
     outputSchemaVersion: "ride-analysis-output-v0.3",
-    contextSchemaVersion: "RideAnalysisContext v0.2",
-    contextRulesVersion: "ride-analysis-context-rules-v0.2",
-    eligibilitySchemaVersion: "AnalysisEligibility v0.1",
-    eligibilityRulesVersion: "analysis-eligibility-rules-v0.1",
-    promptVersion: "3.1.2",
-    serviceVersion: "ride-analysis-service-v1.4",
-    workflowVersion: "ride_analysis_v2-dev.15",
+    contextSchemaVersion: RIDE_ANALYSIS_CONTEXT_SCHEMA_VERSION,
+    contextRulesVersion: RIDE_ANALYSIS_CONTEXT_RULES_VERSION,
+    eligibilitySchemaVersion: ANALYSIS_ELIGIBILITY_SCHEMA_VERSION,
+    eligibilityRulesVersion: ANALYSIS_ELIGIBILITY_RULES_VERSION,
+    featureRulesVersion: RIDE_FEATURE_RULES_VERSION,
+    promptVersion: RIDE_ANALYSIS_PROMPT_VERSION,
+    serviceVersion: RIDE_ANALYSIS_SERVICE_VERSION,
+    workflowVersion: RIDE_ANALYSIS_WORKFLOW_VERSION,
     modelId: "not_applicable_b0",
     fewShotMode: "disabled",
-    b0TemplateVersion: "b0-template-v0.1",
+    b0TemplateVersion: B0_TEMPLATE_VERSION,
+    inputSetSha256,
   },
   dataset: {
     migrationManifest: "eval/ride-analysis-cases-v0.3-migration.json",
     caseCount: results.length,
     repetitionsPerCase: 1,
     caseIds: [...t001AutomaticRideAnalysisCaseIds],
+    inputSetSha256,
   },
   summary: {
     contextContractValid: `${contextValidCount}/${results.length}`,
@@ -134,7 +160,7 @@ const report = {
 };
 
 await mkdir("eval/runs", { recursive: true });
-await writeFile(`eval/runs/${runId}.json`, `${JSON.stringify(report, null, 2)}\n`, "utf8");
+await writeFile(`eval/runs/${runId}.json`, `${JSON.stringify(report, null, 2)}\n`, { encoding: "utf8", flag: "wx" });
 console.log(JSON.stringify({
   runId,
   status: report.status,

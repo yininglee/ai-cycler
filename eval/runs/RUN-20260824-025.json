@@ -1,0 +1,154 @@
+{
+  "run_id": "RUN-20260824-025",
+  "date": "2026-08-24",
+  "work_item": "ITEM-V014",
+  "run_type": "user_provided_coze_l2_trial",
+  "evidence_source": {
+    "raw_output": "user-provided-Coze-run-output",
+    "metadata_screenshot": "eval/runs/evidence/RUN-20260824-025-coze-metadata.png"
+  },
+  "case_id": "l2-built-in-sample",
+  "version_matrix": {
+    "app_version": "visual-shell-v0.1",
+    "context_schema_version": "0.2",
+    "context_rules_version": "ride-analysis-context-rules-v0.2",
+    "feature_rules_version": "ride-feature-rules-v0.2",
+    "eligibility_schema_version": "0.1",
+    "eligibility_rules_version": "analysis-eligibility-rules-v0.1",
+    "output_schema_version": "ride-analysis-output-v0.3",
+    "prompt_version_claimed": "3.1.2",
+    "service_validation_version": "ride-analysis-service-v1.5",
+    "workflow_version_claimed": "ride_analysis_v2-dev.15",
+    "few_shot_mode": "disabled",
+    "model_id": "NOT_RECORDED",
+    "model_display_name": "豆包·2.0-lite",
+    "model_parameters_observed": {
+      "protocol_type_display": "Chat Api",
+      "repetition_penalty_display": "0.00",
+      "max_response_length_display": 2400,
+      "max_reasoning_and_response_length_display": 0,
+      "deep_thinking_display": "off"
+    },
+    "tool_version": "none",
+    "kb_version": "not_applicable"
+  },
+  "request_metadata": {
+    "request_id": "NOT_RECORDED",
+    "provider_request_id": "NOT_RECORDED",
+    "attempt_role": "primary_generation",
+    "started_at": "NOT_RECORDED",
+    "completed_at": "NOT_RECORDED",
+    "workflow_status_display": "运行完成",
+    "workflow_duration_display_s": 16,
+    "model_node_duration_display_s": 15,
+    "latency_ms": "NOT_RECORDED_EXACT",
+    "input_tokens": "NOT_RECORDED",
+    "output_tokens": "NOT_RECORDED",
+    "total_tokens_displayed": 11092,
+    "cost_cny": "NOT_RECORDED"
+  },
+  "raw_output": {
+    "dimensions": [
+      {
+        "claimIds": [
+          "claim:ride-l2-built-in-sample:feature:speedSeriesMeanMps",
+          "claim:ride-l2-built-in-sample:feature:speedFirstLastDeltaMps",
+          "claim:ride-l2-built-in-sample:feature:speedCoefficientOfVariation"
+        ],
+        "confidence": "high",
+        "key": "pace",
+        "text": "平均速度26.3km/h，结束阶段速度比开始阶段低4.72km/h，速度变异系数约11%，整体节奏平稳。"
+      },
+      {
+        "claimIds": [
+          "claim:ride-l2-built-in-sample:avgHeartRateBpm",
+          "claim:ride-l2-built-in-sample:maxHeartRateBpm",
+          "claim:ride-l2-built-in-sample:feature:heartRateSeriesMeanBpm",
+          "claim:ride-l2-built-in-sample:feature:heartRateFirstLastDeltaBpm",
+          "claim:ride-l2-built-in-sample:feature:heartRateStdDevBpm"
+        ],
+        "confidence": "high",
+        "key": "heartRate",
+        "text": "平均心率约147bpm，最高心率176bpm，结束阶段心率比开始阶段低约9.8bpm，心率波动幅度较小。"
+      },
+      {
+        "claimIds": [
+          "claim:ride-l2-built-in-sample:avgCadenceRpm",
+          "claim:ride-l2-built-in-sample:feature:cadenceSeriesMeanRpm",
+          "claim:ride-l2-built-in-sample:feature:cadenceFirstLastDeltaRpm",
+          "claim:ride-l2-built-in-sample:feature:cadenceCoefficientOfVariation"
+        ],
+        "confidence": "high",
+        "key": "cadence",
+        "text": "平均踏频84rpm，结束阶段踏频比开始阶段低约8.3rpm，踏频变异系数约7%，踩踏节奏稳定。"
+      },
+      {
+        "claimIds": [
+          "claim:ride-l2-built-in-sample:feature:elevationPositiveGainM",
+          "claim:ride-l2-built-in-sample:feature:elevationMinM",
+          "claim:ride-l2-built-in-sample:feature:elevationMaxM",
+          "claim:ride-l2-built-in-sample:feature:elevationRangeM"
+        ],
+        "confidence": "high",
+        "key": "climbing",
+        "text": "累计爬升410m，海拔范围为30m到95.6m，整体海拔落差65.6m。"
+      }
+    ],
+    "headline": "后程速度心率踏频均回落，节奏平稳",
+    "limitations": [
+      "历史记录不足，无法进行历史对比",
+      "无功率相关数据，本次解读不涉及功率相关分析",
+      "缺少最大心率基准和心率分区，无法评估心率强度区间"
+    ],
+    "nextAction": {
+      "basisClaimIds": [],
+      "kind": "general",
+      "text": "骑行后注意拉伸放松，及时补充水分和能量。"
+    },
+    "notableEvents": [],
+    "overallAssessment": {
+      "claimIds": [
+        "claim:ride-l2-built-in-sample:distanceM",
+        "claim:ride-l2-built-in-sample:movingTimeS",
+        "claim:ride-l2-built-in-sample:avgSpeedMps",
+        "claim:ride-l2-built-in-sample:feature:speedFirstLastDeltaMps",
+        "claim:ride-l2-built-in-sample:feature:heartRateFirstLastDeltaBpm",
+        "claim:ride-l2-built-in-sample:feature:cadenceFirstLastDeltaRpm",
+        "claim:ride-l2-built-in-sample:feature:speedCoefficientOfVariation"
+      ],
+      "text": "本次骑行距离35km，耗时1小时20分钟，平均速度26.3km/h；结束阶段相比开始阶段，速度、心率和踏频均出现回落，全程速度波动较小，节奏整体平稳。"
+    },
+    "safetyLevel": "normal",
+    "schemaVersion": "ride-analysis-output-v0.3",
+    "shareCopy": [
+      "完成一段骑行，享受车轮向前的快乐～",
+      "保持骑行节奏，慢慢享受过程",
+      "又完成一次骑行，继续保持呀"
+    ]
+  },
+  "service_validation": {
+    "status": "PASS",
+    "issues": [],
+    "method": "rebuild l2-built-in-sample context and call validateRideAnalysisOutputV03",
+    "model_called_during_validation": false
+  },
+  "agent_quality_review": {
+    "status": "PASS_WITH_NON_BLOCKING_NOTES",
+    "strengths": [
+      "pace, heartRate, cadence, and climbing match the dimensions opened by the current context",
+      "overallAssessment synthesizes base facts with speed, heart-rate, and cadence changes instead of repeating every dimension",
+      "overallAssessment cites every metric topic it states",
+      "limitations, general nextAction, and editable shareCopy follow the accepted product boundary"
+    ],
+    "non_blocking_notes": [
+      "The heart-rate and cadence dimensions cite both aggregate and series-mean Claims although one source would be sufficient for each stated mean",
+      "The climbing dimension intentionally remains fact-only because the context has no calibrated route classification"
+    ]
+  },
+  "human_review": {
+    "status": "PENDING_USER_PREVIEW",
+    "scope": "single final v3.1.2 L2 output"
+  },
+  "result": "contract_pass_agent_review_pass_with_notes_user_preview_pending",
+  "next_action": "User previews the archived L1 and L2 trial slice before final v3.1.2 repair and B0 path verification."
+}

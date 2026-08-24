@@ -10,7 +10,7 @@ import type {
 import type { UserProfile } from "./user-profile.ts";
 
 export const RIDE_FEATURE_SCHEMA_VERSION = "0.1" as const;
-export const RIDE_FEATURE_RULES_VERSION = "ride-feature-rules-v0.1" as const;
+export const RIDE_FEATURE_RULES_VERSION = "ride-feature-rules-v0.2" as const;
 
 const MIN_STAT_SAMPLE_COUNT = 5;
 const MIN_SEGMENT_SAMPLE_COUNT = 8;
@@ -134,13 +134,14 @@ function addFeature(
   value: number,
   formulaVersion: string,
   sampleCount: number,
+  unit: RideFeature["unit"] = definition.unit,
 ): void {
   if (!Number.isFinite(value)) return;
   features.push({
     key,
     dimension: definition.dimension,
     value,
-    unit: definition.unit,
+    unit,
     confidence: "high",
     formulaVersion,
     input: { seriesKey: definition.seriesKey, sampleCount },
@@ -199,7 +200,7 @@ function addSeriesFeatures(
   addFeature(features, record, definition, definition.meanKey, average, "series-mean-v0.1", values.length);
   addFeature(features, record, definition, definition.stdDevKey, deviation, "series-population-stddev-v0.1", values.length);
   if (definition.cvKey && average > 0) {
-    addFeature(features, record, definition, definition.cvKey, deviation / average, "series-coefficient-of-variation-v0.1", values.length);
+    addFeature(features, record, definition, definition.cvKey, deviation / average, "series-coefficient-of-variation-v0.1", values.length, "ratio");
   }
   if (values.length >= MIN_SEGMENT_SAMPLE_COUNT) {
     const segmentSize = Math.max(1, Math.floor(values.length / 4));

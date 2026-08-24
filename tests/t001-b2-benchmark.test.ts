@@ -1,11 +1,15 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 
 import { prepareRideAnalysis } from "../src/ai/ride-analysis-service.ts";
 import type { AnalysisDimensionKey } from "../src/domain/analysis-eligibility.ts";
 import {
+  T001_B2_B0_RUN_ID,
+  T001_B2_FROZEN_INPUT_SET_SHA256,
   T001_B2_RAW_BATCH_SCHEMA_VERSION,
+  calculateCurrentT001InputSetSha256,
   evaluateT001B2Batch,
   evaluateT001B2Record,
   expectedT001B2SlotIds,
@@ -21,10 +25,19 @@ import {
 interface BenchmarkManifest {
   schemaVersion: string;
   dataset: { caseIds: string[]; repetitionsPerCase: number; expectedSlotCount: number; b0RunId: string };
+  inputSet: { algorithm: string; digest: string; files: Array<{ caseId: string; path: string; sha256: string }> };
   fixedVersionMatrix: Record<string, unknown>;
 }
 
 const manifest = JSON.parse(readFileSync(new URL("../eval/t001-b2-benchmark-manifest.json", import.meta.url), "utf8")) as BenchmarkManifest;
+const b0Run = JSON.parse(readFileSync(new URL("../eval/runs/RUN-20260824-028.json", import.meta.url), "utf8")) as {
+  runId: string;
+  status: string;
+  versionMatrix: Record<string, unknown>;
+  dataset: { caseCount: number; inputSetSha256: string };
+  summary: Record<string, unknown>;
+  failures: unknown[];
+};
 
 const dimensionLabels: Record<AnalysisDimensionKey, { topic: string; headline: string }> = {
   endurance: { topic: "耐力", headline: "本次骑行耐力表现可关注" },
@@ -104,13 +117,16 @@ function completeBatch(): T001B2RawBatch {
       outputSchemaVersion: "ride-analysis-output-v0.3",
       contextSchemaVersion: "0.2",
       contextRulesVersion: "ride-analysis-context-rules-v0.2",
+      featureRulesVersion: "ride-feature-rules-v0.2",
       eligibilitySchemaVersion: "0.1",
       eligibilityRulesVersion: "analysis-eligibility-rules-v0.1",
       promptVersion: "3.1.2",
-      serviceVersion: "ride-analysis-service-v1.4",
+      serviceVersion: "ride-analysis-service-v1.5",
       workflowVersion: "ride_analysis_v2-dev.15",
       fewShotMode: "disabled",
       b0TemplateVersion: "b0-template-v0.1",
+      inputSetSha256: T001_B2_FROZEN_INPUT_SET_SHA256,
+      sourceCommit: "0123456789abcdef0123456789abcdef01234567",
       modelId: "coze-test-model-exact-id",
       region: "cn-test",
       modelParameters: { mode: "provider_default_recorded" },
@@ -120,21 +136,48 @@ function completeBatch(): T001B2RawBatch {
 }
 
 test("T001 B2 manifest freezes 18 cases and 54 unique run slots", () => {
-  assert.equal(manifest.schemaVersion, "t001-b2-benchmark-manifest-v0.1");
+  assert.equal(manifest.schemaVersion, "t001-b2-benchmark-manifest-v0.2");
   assert.deepEqual(manifest.dataset.caseIds, t001AutomaticRideAnalysisCaseIds);
   assert.equal(manifest.dataset.repetitionsPerCase, 3);
   assert.equal(manifest.dataset.expectedSlotCount, 54);
-  assert.equal(manifest.dataset.b0RunId, "RUN-20260823-022");
+  assert.equal(manifest.dataset.b0RunId, T001_B2_B0_RUN_ID);
+  assert.equal(manifest.inputSet.algorithm, "sha256");
+  assert.equal(manifest.inputSet.digest, T001_B2_FROZEN_INPUT_SET_SHA256);
+  assert.equal(manifest.inputSet.files.length, 18);
+  assert.deepEqual(manifest.inputSet.files.map((item) => item.caseId), t001AutomaticRideAnalysisCaseIds);
+  for (const item of manifest.inputSet.files) {
+    const actual = createHash("sha256").update(readFileSync(new URL(`../${item.path}`, import.meta.url))).digest("hex");
+    assert.equal(item.sha256, actual, item.caseId);
+  }
+  assert.equal(calculateCurrentT001InputSetSha256(), T001_B2_FROZEN_INPUT_SET_SHA256);
   assert.equal(expectedT001B2SlotIds().length, 54);
   assert.equal(new Set(expectedT001B2SlotIds()).size, 54);
+});
+
+test("T001 Service v1.5 B0 run is frozen to the same input set", () => {
+  assert.equal(b0Run.runId, T001_B2_B0_RUN_ID);
+  assert.equal(b0Run.status, "PASS");
+  assert.equal(b0Run.versionMatrix.serviceVersion, "ride-analysis-service-v1.5");
+  assert.equal(b0Run.versionMatrix.featureRulesVersion, "ride-feature-rules-v0.2");
+  assert.equal(b0Run.versionMatrix.contextSchemaVersion, "0.2");
+  assert.equal(b0Run.versionMatrix.eligibilitySchemaVersion, "0.1");
+  assert.equal(b0Run.versionMatrix.inputSetSha256, T001_B2_FROZEN_INPUT_SET_SHA256);
+  assert.equal(b0Run.dataset.caseCount, 18);
+  assert.equal(b0Run.dataset.inputSetSha256, T001_B2_FROZEN_INPUT_SET_SHA256);
+  assert.equal(b0Run.summary.modelCalls, 0);
+  assert.equal(b0Run.summary.tokenCount, 0);
+  assert.equal(b0Run.summary.costCny, 0);
+  assert.deepEqual(b0Run.failures, []);
 });
 
 test("T001 B2 metadata gate rejects unrecorded model identity and incomplete or duplicate slots", () => {
   const batch = completeBatch();
   batch.versionMatrix.modelId = "unrecorded";
+  batch.versionMatrix.sourceCommit = "unrecorded";
   batch.records[1] = structuredClone(batch.records[0]!);
   const issues = validateT001B2BatchMetadata(batch);
   assert.ok(issues.includes("MODEL_ID_NOT_RECORDED"));
+  assert.ok(issues.includes("SOURCE_COMMIT_NOT_RECORDED"));
   assert.ok(issues.some((issue) => issue.endsWith(":DUPLICATE_SLOT")));
   assert.ok(issues.some((issue) => issue.endsWith(":MISSING_SLOT")));
 });
@@ -148,6 +191,7 @@ test("T001 B2 metadata gate reports malformed nested input without throwing", ()
   assert.ok(issues.includes("MODEL_ID_NOT_RECORDED"));
   assert.ok(issues.includes("MODEL_REGION_NOT_RECORDED"));
   assert.ok(issues.includes("MODEL_PARAMETERS_NOT_RECORDED"));
+  assert.ok(issues.includes("SOURCE_COMMIT_NOT_RECORDED"));
   assert.ok(issues.includes("INVALID_RECORD:0"));
   assert.ok(issues.includes("INVALID_RECORD:1"));
 });

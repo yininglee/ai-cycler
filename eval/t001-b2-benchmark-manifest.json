@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "t001-b2-benchmark-manifest-v0.1",
+  "schemaVersion": "t001-b2-benchmark-manifest-v0.2",
   "benchmarkId": "T001-B2",
   "plan": "B2",
   "dataset": {
@@ -26,26 +26,53 @@
     ],
     "repetitionsPerCase": 3,
     "expectedSlotCount": 54,
-    "b0RunId": "RUN-20260823-022"
+    "b0RunId": "RUN-20260824-028"
+  },
+  "inputSet": {
+    "algorithm": "sha256",
+    "digest": "5333b4cd4d5aeb21fbada26357381120e3665ffc2c71bda429d5cdce9b2c7671",
+    "files": [
+      { "caseId": "RA-AUTO-001", "path": "output/coze-inputs/t001-RA-AUTO-001.json", "sha256": "691acb0097c31960c7c94f397b14b43658ccca5d91b9ae86ffd6a6f9aa510e5d" },
+      { "caseId": "RA-AUTO-002", "path": "output/coze-inputs/t001-RA-AUTO-002.json", "sha256": "f879dc72c6dd83986b3d845931d59529079065fa423e1c5754979e4f91fb8853" },
+      { "caseId": "RA-AUTO-003", "path": "output/coze-inputs/t001-RA-AUTO-003.json", "sha256": "5247e1fc4ca5b11cf70acf12c03f8e0545eb1b9605c5ebe0cc5406623b20f691" },
+      { "caseId": "RA-AUTO-004", "path": "output/coze-inputs/t001-RA-AUTO-004.json", "sha256": "1a4133bba80362d7e4623e417aead09c4743d3167e115e4c3e06aba88bbe8d22" },
+      { "caseId": "RA-AUTO-005", "path": "output/coze-inputs/t001-RA-AUTO-005.json", "sha256": "94e1a6a8da77dfb5d8609ecf06be758807099b92e12489c2efe42e37ecf52779" },
+      { "caseId": "RA-AUTO-006", "path": "output/coze-inputs/t001-RA-AUTO-006.json", "sha256": "defcc369f9aaddfe9576a20297b0b822d290172faed6756aa435c97ea3b4fbf4" },
+      { "caseId": "RA-AUTO-007", "path": "output/coze-inputs/t001-RA-AUTO-007.json", "sha256": "74efa5f9608872227445a5d3892a40b687c57c212274a4aaf896fc7a928467ec" },
+      { "caseId": "RA-AUTO-008", "path": "output/coze-inputs/t001-RA-AUTO-008.json", "sha256": "d7946825cfa90a98110ba7718f557d9fbfec9740eb2319032793f0de49b83c1e" },
+      { "caseId": "RA-AUTO-009", "path": "output/coze-inputs/t001-RA-AUTO-009.json", "sha256": "733192cd8afd00f3c7a9749680de1a73af2d7f29f06f719b765204ae97c3022b" },
+      { "caseId": "RA-AUTO-010", "path": "output/coze-inputs/t001-RA-AUTO-010.json", "sha256": "1bf1d7ea0ce49e497c1b9b8e50b82e85f58f981353f2f2a1d6fa349e56d72d3e" },
+      { "caseId": "RA-AUTO-011", "path": "output/coze-inputs/t001-RA-AUTO-011.json", "sha256": "5cad99ee651d8f83f866228f26ccef25329ced69d36decad6073d52bb5c46012" },
+      { "caseId": "RA-AUTO-012", "path": "output/coze-inputs/t001-RA-AUTO-012.json", "sha256": "8d90de8cae8222a41f7366d206fb15dde01424a4cd00fe5824c352a0b9ab0859" },
+      { "caseId": "RA-AUTO-013", "path": "output/coze-inputs/t001-RA-AUTO-013.json", "sha256": "bea3a764ccb46b2ab71d9c3cddedd8a325fe6041ca7d50723f26445aa33cf359" },
+      { "caseId": "RA-AUTO-014", "path": "output/coze-inputs/t001-RA-AUTO-014.json", "sha256": "459995532f89e63c217ec58a64d2890a287cf5bc6acac64b2d613b257b9d50d1" },
+      { "caseId": "RA-AUTO-015", "path": "output/coze-inputs/t001-RA-AUTO-015.json", "sha256": "089efec0295d29bcf656ff0b7d7c9e327db453974cb3a3eb165e5ecdd5838e76" },
+      { "caseId": "RA-AUTO-016", "path": "output/coze-inputs/t001-RA-AUTO-016.json", "sha256": "ec89303ec7e8acdf3fa4362ec545d87cd62f3cae6a6ab2b5262f7263709b142b" },
+      { "caseId": "RA-AUTO-017", "path": "output/coze-inputs/t001-RA-AUTO-017.json", "sha256": "0a7cb11d45ca26232e70890311cde3e1ae497dee8e4de1c6ec562613aa66d059" },
+      { "caseId": "RA-AUTO-018", "path": "output/coze-inputs/t001-RA-AUTO-018.json", "sha256": "8dce2f872654f4aebec7f2326ec4a6447aec8e4fbba2225c89570ed88f46ca7b" }
+    ]
   },
   "fixedVersionMatrix": {
     "appVersion": "visual-shell-v0.1",
     "outputSchemaVersion": "ride-analysis-output-v0.3",
     "contextSchemaVersion": "0.2",
     "contextRulesVersion": "ride-analysis-context-rules-v0.2",
+    "featureRulesVersion": "ride-feature-rules-v0.2",
     "eligibilitySchemaVersion": "0.1",
     "eligibilityRulesVersion": "analysis-eligibility-rules-v0.1",
     "promptVersion": "3.1.2",
-    "serviceVersion": "ride-analysis-service-v1.4",
+    "serviceVersion": "ride-analysis-service-v1.5",
     "workflowVersion": "ride_analysis_v2-dev.15",
     "fewShotMode": "disabled",
-    "b0TemplateVersion": "b0-template-v0.1"
+    "b0TemplateVersion": "b0-template-v0.1",
+    "inputSetSha256": "5333b4cd4d5aeb21fbada26357381120e3665ffc2c71bda429d5cdce9b2c7671"
   },
   "requiredBatchMetadata": [
     "batchId",
     "modelId",
     "region",
-    "modelParameters"
+    "modelParameters",
+    "sourceCommit"
   ],
   "requiredRecordMetadata": [
     "caseId",

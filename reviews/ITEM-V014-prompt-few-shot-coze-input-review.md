@@ -1,7 +1,7 @@
 # ITEM-V014｜新骑后 Prompt/Few-shot/扣子输入联调评审
 
 > 日期：2026-08-21  
-> 状态：`CHANGES_REQUESTED`  
+> 状态：`ACCEPTED`
 > 当前阶段：v0.1 证据型Demo / G1「Demo核心价值」  
 > 边界：完成新Prompt、Few-shot模式和服务端扣子输入的静态联调；当前真实联调不注入Few-shot，模型运行须在用户配置v2 Workflow后执行。
 
@@ -273,3 +273,106 @@ L1首次冒烟后，请按以下方式同步Prompt v2.3并复测；5变量与输
 最新输出已将速度、心率、功率和踏频相关Claim纳入`overallAssessment.claimIds`，解决了上一轮整体评价只引用pace的问题。但`powerFirstLastDeltaW`只支持首段与末段功率差值为0，不能支持“功率全程没有变化”。服务端的`OVERBROAD_SERIES_CONCLUSION`会拒绝该输出；Prompt v3.1.2已增加明确反例，要求改写为“功率首末阶段没有变化”，除非上下文存在全程统计Claim。
 
 本轮进一步发现“功率保持一致”虽未出现“全程”字样，仍缺少范围限定。服务端新增`UNSCOPED_CONSISTENCY_CONCLUSION`，仅允许带有“首末/开始/结束/阶段”限定的一致性表达；不重新收紧已允许的统计量合理定性。
+
+## 24. RUN-20260824-023｜v3.1.2 L3试运行归档与合同修复复验
+
+用户提供的最终Prompt v3.1.2单条L3扣子输出已原样归档为[`RUN-20260824-023`](../eval/runs/RUN-20260824-023.json)。精确模型ID、模型参数、请求ID、运行角色、延迟、Token与成本均未出现在原日志中，因此全部保留为`NOT_RECORDED`；本地复验没有调用模型，也不能补足这些运行证据。
+
+原始输入属于`ride-feature-rules-v0.1 / ride-analysis-service-v1.4`。首次合同回放返回`DIMENSION_UNSUPPORTED_NUMBER`和`TEXT_UNSUPPORTED_NUMBER`，定位到两项确定性合同缺陷，而不是模型计算错误：
+
+- speed/power/cadence的变异系数被错误标成`m/s / W / rpm`，实际应是无量纲`ratio`；模型写“约11%”“约6%”的换算正确。
+- 数字白名单只允许换算结果舍入，却没有允许同一Claim原值合理舍入，因而误拒`151.73→约152`、`-9.77→约10`和`-8.33→约8.3`。
+
+修复后矩阵为`ride-feature-rules-v0.2 / ride-analysis-service-v1.5`，Prompt仍为`3.1.2`、Workflow仍为`ride_analysis_v2-dev.15`、Few-shot仍为`disabled`。原始输出未改写；使用修复后的同一L3 fixture重建上下文后，合同回放为`PASS`。L3导出上下文中的三项CV均为`unit=ratio / displayUnit=ratio`，均值、标准差和首末差继续保留物理单位。
+
+验证证据：聚焦回归36/36通过；`pnpm verify` 176/176通过；`pnpm build`通过；交付系统校验0 error / 0 warning。该证据只证明这条L3原始输出可被修复后的确定性合同正确验证，不证明模型质量稳定、首次/修复角色、延迟、Token、成本或V014整体完成。
+
+本切片状态：`READY_FOR_PREVIEW`。`ITEM-V014`整体仍未验收；用户接受本切片后，下一项才是使用最终v3.1.2补跑L1/L2，再复验最终版本的一次受限修复与B0路径。
+
+## 25. 用户验收：L3归档与合同修复切片
+
+2026-08-24，用户明确回复接受“L3归档与合同修复”切片。该验收覆盖`RUN-20260824-023`的原始输出归档、`ride-feature-rules-v0.2 / ride-analysis-service-v1.5`确定性修复、修复后本地合同回放及其证据边界。
+
+本次验收不等于`ITEM-V014`整体完成，也不补足原扣子运行中未记录的模型ID、请求ID、首次/修复角色、延迟、Token或成本。下一验证切片固定为最终Prompt v3.1.2的L1/L2扣子试运行；L1/L2通过后仍需复验最终版本的一次受限修复与B0路径。
+
+## 26. RUN-20260824-024/025｜最终v3.1.2 L1/L2扣子试运行
+
+用户使用当前L1/L2五变量输入完成两次扣子试运行，原始JSON分别归档为[`RUN-20260824-024`](../eval/runs/RUN-20260824-024.json)和[`RUN-20260824-025`](../eval/runs/RUN-20260824-025.json)，截图归档在`eval/runs/evidence/`。两次运行均使用Prompt v3.1.2、Workflow dev.15、Few-shot disabled输入；本地按`ride-feature-rules-v0.2 / ride-analysis-service-v1.5`重建对应fixture并回放，结果均为`PASS / 0 issue`。
+
+截图只支持以下运行元数据：模型界面显示名为“豆包·2.0-lite”；L1工作流显示11秒、模型节点10秒、8583 Tokens；L2工作流显示16秒、模型节点15秒、11092 Tokens。精确Provider `model_id`、请求ID、精确毫秒延迟、输入/输出Token拆分和成本没有显示，继续记为`NOT_RECORDED`，不得用界面显示名或整数秒替代。
+
+### 26.1 L1质量审查
+
+- `pace/climbing`保持业务维度，没有退化成字段卡；pace完成“事实 + 直接意义”，climbing在无可靠分类时使用事实降级。
+- headline突出后程配速回落和速度波动；overallAssessment引用了文本中的速度、爬升与海拔主题，Claim覆盖完整。
+- limitations说明历史、传感器和判断边界；`nextAction`为无Claim绑定的低风险通用建议；shareCopy使用已允许的可编辑主观表达。
+- 非阻断备注：直接展示“变异系数0.11”仍偏专业；overallAssessment末句重复了limitations中的强度/体能边界。
+
+### 26.2 L2质量审查
+
+- `pace/heartRate/cadence/climbing`与当前准入能力一致；没有生成power或history维度。
+- overallAssessment把距离、时间、平均速度与速度/心率/踏频首末变化合并为整体判断，没有机械重复全部维度；主题Claim覆盖完整。
+- 心率区间、功率缺口和历史限制表达准确，通用建议与分享文案符合当前边界。
+- 非阻断备注：心率和踏频维度同时引用活动聚合均值与序列均值，证据略冗余但没有事实冲突；climbing保持事实罗列是合法降级。
+
+验证：新增RUN回放与截图元数据测试4/4通过；含已接受L3的聚焦证据测试6/6通过；`pnpm verify` 180/180通过。本轮未修改Prompt、输出Schema或产品规则，也未执行受限修复/B0路径。
+
+本L1/L2试运行切片状态：`READY_FOR_PREVIEW`。两条均通过硬合同和Agent质量审查，非阻断备注不要求修改Prompt；是否接受该切片仍由用户决定。
+
+## 27. 用户验收：最终v3.1.2 L1/L2试运行切片
+
+2026-08-24，用户明确接受“最终Prompt v3.1.2 L1/L2试运行”切片。该验收覆盖`RUN-20260824-024/025`原始输出与截图归档、Service v1.5合同回放、Agent质量审查，以及精确模型ID、请求ID、毫秒延迟、Token拆分和成本均未记录的证据边界。
+
+本次验收不等于`ITEM-V014`整体完成，也不证明稳定性基准、T001或G1通过。下一验证切片固定为最终Prompt v3.1.2的一次受限修复与二次失败转B0路径复验；旧v3.1.1的`RUN-20260823-019/020`只作为历史证据，不替代最终版本验证。
+
+## 28. 最终v3.1.2受限修复输入准备
+
+已生成[`l3-built-in-sample-repair-v3.1.2.json`](../output/coze-inputs/l3-built-in-sample-repair-v3.1.2.json)，严格保留`analysis_context / analysis_elig / few_shot_json / repair_instruction / previous_output`五个扣子输入。输入使用已验收的`RUN-20260824-023` L3原始输出作为基底，只在人为构造的`previous_output.overallAssessment`末尾增加“本次骑行达到999W”并引用未知`claim:other-ride:avgPowerW`，用于稳定触发`OVERALL_UNKNOWN_CLAIM / OVERALL_UNSUPPORTED_NUMBER / TEXT_UNSUPPORTED_NUMBER`。
+
+`repair_instruction`由Service v1.5实际校验结果生成，不是手工猜测错误码；Few-shot保持`disabled`且`examples=[]`。扣子真实修复应只删除或纠正上述未知Claim和无依据数字，不新增事实、数字、Claim、维度或建议，并保持其余已验收内容不被无关改写。
+
+验证：输入导出聚焦测试2/2通过；`pnpm verify` 182/182通过；`git diff --check`通过；交付系统校验0 error / 0 warning。本节只证明修复输入可复现且合同正确，尚未调用扣子模型，也没有修复后的原始输出、请求元数据或质量结论。
+
+真实运行步骤：在当前Prompt v3.1.2、Workflow dev.15、Few-shot disabled配置中，把该JSON五个值原样填入同名输入后运行一次；保留未经人工修改的输出JSON和包含模型显示名、时长、Token的运行截图，再交由Service v1.5回放与人工审查。
+
+## 29. RUN-20260824-026/027｜最终v3.1.2受限修复与B0路径复验
+
+用户使用第28节五变量输入完成真实扣子受限修复，原始输出与截图归档为[`RUN-20260824-026`](../eval/runs/RUN-20260824-026.json)。修复结果删除了未知`claim:other-ride:avgPowerW`与无依据`999W`，Service v1.5回放为`PASS / 0 issue`；输出与已验收的`RUN-20260824-023`完全一致，未新增或无关改写事实、数字、Claim、维度或建议。
+
+截图显示模型名“豆包·2.0-lite”、工作流19秒、模型节点18秒、总计14543 Tokens。精确Provider `model_id`、请求ID、毫秒延迟、Token拆分和成本仍未显示并保持`NOT_RECORDED`；界面显示名和整数秒不替代这些字段。
+
+最终二次失败路径归档为[`RUN-20260824-027`](../eval/runs/RUN-20260824-027.json)。该项使用确定性测试Provider连续返回`not-json / still-not-json`，不调用真实模型。Service v1.5观察结果为`source=b0 / fallbackCode=REPAIR_FAILED / attempts=2`，Provider调用数2、无第三次调用，Few-shot disabled，`b0-template-v0.1`输出通过确定性合同；测试Provider的模型Token与成本均为0。
+
+验证：本切片聚焦证据测试6/6通过；`pnpm verify` 186/186通过；Prompt、Few-shot、输出Schema和产品规则均未修改。该证据证明最终`Prompt v3.1.2 / Service v1.5 / Workflow dev.15 / Few-shot disabled`候选的一次真实受限修复与服务端二次失败B0路径可工作，不证明18条×3次稳定性、真实端到端B0触发率、精确模型成本、T001或G1通过。
+
+本最终链路切片状态：`READY_FOR_PREVIEW`。用户接受后再进行`ITEM-V014`整体验收判断；T001真实B2仍暂停。
+
+## 30. 用户验收：最终v3.1.2受限修复与B0路径切片
+
+2026-08-24，用户明确接受“最终v3.1.2受限修复与B0路径”切片。该验收覆盖`RUN-20260824-026`真实受限修复、`RUN-20260824-027`确定性二次失败转B0，以及两条证据各自的运行元数据边界。
+
+本次验收不补足RUN-026未记录的精确模型ID、请求ID、毫秒延迟、Token拆分和成本，也不把RUN-027的确定性测试Provider称为真实模型运行；不代表T001、18条稳定性基准或G1通过。
+
+## 31. ITEM-V014整体验收审计
+
+| 验收面 | 证据 | 结论 |
+|---|---|---:|
+| 最终Prompt与旧版保留 | Prompt v3.1.2独立文件；v3.1/v3.1.1及其他候选未覆盖 | PASS |
+| 五变量扣子输入 | `analysis_context / analysis_elig / few_shot_json / repair_instruction / previous_output` | PASS |
+| Few-shot基线 | `disabled`、`examples=[]`，误开也不注入草稿 | PASS |
+| 输出与服务端合同 | output-v0.3；Service v1.5校验Schema、Claim、数字/换算、能力和安全 | PASS |
+| 最终真实样例 | L3 `RUN-023`、L1 `RUN-024`、L2 `RUN-025`；三个切片均已用户验收 | PASS |
+| 一次受限修复 | `RUN-026`只删除注入的未知Claim与`999W`，恢复已验收L3输出 | PASS |
+| 二次失败转B0 | `RUN-027`两次调用后`REPAIR_FAILED + B0`，无第三次调用 | PASS |
+| 自动回归 | `pnpm verify` 186/186；聚焦修复/B0证据6/6 | PASS |
+| 交付文档一致性 | `git diff --check`通过；交付系统0 error / 0 warning | PASS |
+
+审计结论：`ITEM-V014`目标与第5节约定的最终真实样例、一次修复和B0降级证据均已完成，当前具备整体验收条件，状态为`READY_FOR_PREVIEW`。V014只证明开发候选联调链路成立，不证明B2相对B0的价值增量、18条×3次稳定性、精确模型成本/P95、UI接入或G1通过。
+
+请求用户明确确认：`接受 ITEM-V014`。在该确认前不把工作项标记为`ACCEPTED`，也不启动T001真实B2。
+
+## 32. 用户验收：ITEM-V014整体
+
+2026-08-24，用户明确回复`接受 ITEM-V014`。本项最终验收范围为`Prompt v3.1.2 + ride-analysis-service-v1.5 + ride_analysis_v2-dev.15 + Few-shot disabled + ride-analysis-output-v0.3`的开发联调候选，以及第31节列出的真实样例、一次受限修复、二次失败B0和自动回归证据。
+
+`ITEM-V014`状态更新为`ACCEPTED`。该验收不发布扣子工作流、不接入API或UI、不补足精确模型计量，也不代表T001、B1/B2/B3、G1或生产放行。下一工作项仅审查并重冻结T001的Service v1.5版本矩阵；完成预览与确认前不运行54槽真实B2。

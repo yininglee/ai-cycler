@@ -1,0 +1,5363 @@
+{
+  "runId": "RUN-20260824-028",
+  "benchmark": "T001",
+  "plan": "B0",
+  "status": "PASS",
+  "startedAt": "2026-08-24T02:45:07.056Z",
+  "completedAt": "2026-08-24T02:45:07.069Z",
+  "versionMatrix": {
+    "appVersion": "visual-shell-v0.1",
+    "outputSchemaVersion": "ride-analysis-output-v0.3",
+    "contextSchemaVersion": "0.2",
+    "contextRulesVersion": "ride-analysis-context-rules-v0.2",
+    "eligibilitySchemaVersion": "0.1",
+    "eligibilityRulesVersion": "analysis-eligibility-rules-v0.1",
+    "featureRulesVersion": "ride-feature-rules-v0.2",
+    "promptVersion": "3.1.2",
+    "serviceVersion": "ride-analysis-service-v1.5",
+    "workflowVersion": "ride_analysis_v2-dev.15",
+    "modelId": "not_applicable_b0",
+    "fewShotMode": "disabled",
+    "b0TemplateVersion": "b0-template-v0.1",
+    "inputSetSha256": "5333b4cd4d5aeb21fbada26357381120e3665ffc2c71bda429d5cdce9b2c7671"
+  },
+  "dataset": {
+    "migrationManifest": "eval/ride-analysis-cases-v0.3-migration.json",
+    "caseCount": 18,
+    "repetitionsPerCase": 1,
+    "caseIds": [
+      "RA-AUTO-001",
+      "RA-AUTO-002",
+      "RA-AUTO-003",
+      "RA-AUTO-004",
+      "RA-AUTO-005",
+      "RA-AUTO-006",
+      "RA-AUTO-007",
+      "RA-AUTO-008",
+      "RA-AUTO-009",
+      "RA-AUTO-010",
+      "RA-AUTO-011",
+      "RA-AUTO-012",
+      "RA-AUTO-013",
+      "RA-AUTO-014",
+      "RA-AUTO-015",
+      "RA-AUTO-016",
+      "RA-AUTO-017",
+      "RA-AUTO-018"
+    ],
+    "inputSetSha256": "5333b4cd4d5aeb21fbada26357381120e3665ffc2c71bda429d5cdce9b2c7671"
+  },
+  "summary": {
+    "contextContractValid": "18/18",
+    "eligibilityContractValid": "18/18",
+    "b0OutputContractValid": "18/18",
+    "expectedFocusDimensionsAvailable": "18/18",
+    "modelCalls": 0,
+    "tokenCount": 0,
+    "costCny": 0,
+    "latencyMs": {
+      "p50": 0.192,
+      "p95": 1.66
+    }
+  },
+  "contractNote": "B0 output is the legacy deterministic RideContextSnapshot v1.0 / RideAnalysisOutput path. It is a deterministic baseline and fallback, not a ride-analysis-output-v0.3 model result.",
+  "failures": [],
+  "results": [
+    {
+      "caseId": "RA-AUTO-001",
+      "fixtureId": "l1-built-in-sample",
+      "expectedDimensionKeys": [
+        "pace",
+        "climbing"
+      ],
+      "actualDimensionKeys": [
+        "pace",
+        "climbing"
+      ],
+      "expectedFocusAvailable": true,
+      "context": {
+        "schemaVersion": "0.2",
+        "rulesVersion": "ride-analysis-context-rules-v0.2",
+        "rideId": "ride-l1-built-in-sample",
+        "allowedClaimIds": [
+          "claim:ride-l1-built-in-sample:distanceM",
+          "claim:ride-l1-built-in-sample:movingTimeS",
+          "claim:ride-l1-built-in-sample:elevationGainM",
+          "claim:ride-l1-built-in-sample:avgSpeedMps",
+          "claim:ride-l1-built-in-sample:feature:speedSeriesMeanMps",
+          "claim:ride-l1-built-in-sample:feature:speedStdDevMps",
+          "claim:ride-l1-built-in-sample:feature:speedCoefficientOfVariation",
+          "claim:ride-l1-built-in-sample:feature:speedFirstLastDeltaMps",
+          "claim:ride-l1-built-in-sample:feature:elevationPositiveGainM",
+          "claim:ride-l1-built-in-sample:feature:elevationMinM",
+          "claim:ride-l1-built-in-sample:feature:elevationMaxM",
+          "claim:ride-l1-built-in-sample:feature:elevationRangeM"
+        ],
+        "forbiddenClaims": [
+          "heartRate",
+          "maxHeartRateBaseline",
+          "heartRateZones",
+          "power",
+          "normalizedPower",
+          "verifiedFtp",
+          "powerZones",
+          "trainingLoad",
+          "cadence",
+          "userProfile",
+          "historyComparison",
+          "sameRouteComparison",
+          "trend"
+        ],
+        "limitations": [
+          "heartRateSeriesMeanBpm:CAPABILITY_UNAVAILABLE",
+          "heartRateStdDevBpm:CAPABILITY_UNAVAILABLE",
+          "heartRateFirstLastDeltaBpm:CAPABILITY_UNAVAILABLE",
+          "powerSeriesMeanW:CAPABILITY_UNAVAILABLE",
+          "powerStdDevW:CAPABILITY_UNAVAILABLE",
+          "powerCoefficientOfVariation:CAPABILITY_UNAVAILABLE",
+          "powerFirstLastDeltaW:CAPABILITY_UNAVAILABLE",
+          "cadenceSeriesMeanRpm:CAPABILITY_UNAVAILABLE",
+          "cadenceStdDevRpm:CAPABILITY_UNAVAILABLE",
+          "cadenceCoefficientOfVariation:CAPABILITY_UNAVAILABLE",
+          "cadenceFirstLastDeltaRpm:CAPABILITY_UNAVAILABLE",
+          "normalizedPowerRatio:CAPABILITY_UNAVAILABLE",
+          "heartRate:FIELD_MISSING",
+          "maxHeartRateBaseline:DEPENDENCY_UNAVAILABLE",
+          "heartRateZones:DEPENDENCY_UNAVAILABLE",
+          "power:FIELD_MISSING",
+          "normalizedPower:DEPENDENCY_UNAVAILABLE",
+          "verifiedFtp:DEPENDENCY_UNAVAILABLE",
+          "powerZones:DEPENDENCY_UNAVAILABLE",
+          "trainingLoad:DEPENDENCY_UNAVAILABLE",
+          "cadence:FIELD_MISSING",
+          "userProfile:PROFILE_MISSING",
+          "historyComparison:HISTORY_NOT_AVAILABLE",
+          "sameRouteComparison:HISTORY_NOT_AVAILABLE",
+          "trend:HISTORY_NOT_AVAILABLE"
+        ],
+        "profileFacts": {},
+        "historicalComparisonStatus": null
+      },
+      "eligibility": {
+        "schemaVersion": "0.1",
+        "rulesVersion": "analysis-eligibility-rules-v0.1",
+        "eligible": true,
+        "status": "eligible",
+        "reasonCodes": [
+          "FEATURES_AVAILABLE"
+        ],
+        "insightSources": [
+          "feature"
+        ],
+        "allowedDimensionKeys": [
+          "pace",
+          "climbing"
+        ],
+        "requiredClaimIds": [
+          "claim:ride-l1-built-in-sample:feature:speedSeriesMeanMps",
+          "claim:ride-l1-built-in-sample:feature:speedStdDevMps",
+          "claim:ride-l1-built-in-sample:feature:speedCoefficientOfVariation",
+          "claim:ride-l1-built-in-sample:feature:speedFirstLastDeltaMps",
+          "claim:ride-l1-built-in-sample:feature:elevationPositiveGainM",
+          "claim:ride-l1-built-in-sample:feature:elevationMinM",
+          "claim:ride-l1-built-in-sample:feature:elevationMaxM",
+          "claim:ride-l1-built-in-sample:feature:elevationRangeM"
+        ],
+        "fallback": "b0"
+      },
+      "validation": {
+        "context": {
+          "valid": true,
+          "issues": []
+        },
+        "eligibility": {
+          "valid": true,
+          "issues": []
+        },
+        "b0": {
+          "valid": true,
+          "issues": []
+        }
+      },
+      "b0": {
+        "templateVersion": "b0-template-v0.1",
+        "snapshot": {
+          "schemaVersion": "1.0",
+          "rulesVersion": "ride-rules-v0.1",
+          "rideId": "ride-l1-built-in-sample",
+          "userScope": "eval-t001:RA-AUTO-001",
+          "dataLevel": "L1",
+          "analysisMode": "full",
+          "recordedMetrics": {
+            "distanceM": {
+              "value": 25000,
+              "unit": "m",
+              "evidenceId": "EV-SL1-001",
+              "confidence": "high"
+            },
+            "movingTimeS": {
+              "value": 3600,
+              "unit": "s",
+              "evidenceId": "EV-SL1-002",
+              "confidence": "high"
+            },
+            "elevationGainM": {
+              "value": 260,
+              "unit": "m",
+              "evidenceId": "EV-SL1-003",
+              "confidence": "high"
+            }
+          },
+          "derivedMetrics": {
+            "avgSpeedMps": {
+              "value": 6.944444444444445,
+              "unit": "m/s",
+              "evidenceId": "EV-SL1-004",
+              "confidence": "high",
+              "formulaVersion": "avg-speed-v0.1"
+            }
+          },
+          "estimatedMetrics": {},
+          "quality": {
+            "sensors": {
+              "gps": {
+                "coverage": 0.99,
+                "sampleCount": 3500,
+                "invalidSampleCount": 2
+              }
+            },
+            "issueCodes": []
+          },
+          "allowedClaims": [
+            {
+              "claimId": "claim:ride-l1-built-in-sample:distanceM",
+              "metricKey": "distanceM",
+              "text": "距离 25 km",
+              "value": 25000,
+              "unit": "m",
+              "displayValue": "25 km",
+              "evidenceId": "EV-SL1-001",
+              "provenance": "recorded",
+              "confidence": "high"
+            },
+            {
+              "claimId": "claim:ride-l1-built-in-sample:movingTimeS",
+              "metricKey": "movingTimeS",
+              "text": "骑行时间 1 小时",
+              "value": 3600,
+              "unit": "s",
+              "displayValue": "1 小时",
+              "evidenceId": "EV-SL1-002",
+              "provenance": "recorded",
+              "confidence": "high"
+            },
+            {
+              "claimId": "claim:ride-l1-built-in-sample:avgSpeedMps",
+              "metricKey": "avgSpeedMps",
+              "text": "平均速度 25 km/h",
+              "value": 6.944444444444445,
+              "unit": "m/s",
+              "displayValue": "25 km/h",
+              "evidenceId": "EV-SL1-004",
+              "provenance": "calculated",
+              "confidence": "high",
+              "formulaVersion": "avg-speed-v0.1"
+            },
+            {
+              "claimId": "claim:ride-l1-built-in-sample:elevationGainM",
+              "metricKey": "elevationGainM",
+              "text": "累计爬升 260 m",
+              "value": 260,
+              "unit": "m",
+              "displayValue": "260 m",
+              "evidenceId": "EV-SL1-003",
+              "provenance": "recorded",
+              "confidence": "high"
+            }
+          ],
+          "forbiddenClaims": [
+            "心率区间",
+            "功率",
+            "FTP",
+            "IF",
+            "TSS",
+            "恢复时间",
+            "体能提升"
+          ],
+          "limitations": [],
+          "safetyFlags": [],
+          "privacyFlags": [
+            "raw_track_excluded",
+            "precise_coordinates_excluded",
+            "source_filename_excluded"
+          ]
+        },
+        "output": {
+          "headline": "本次基础记录已整理",
+          "summary": "本次骑行的距离、时间、速度与爬升等基础事实已经整理。当前缺少可靠的心率和功率依据，因此只回顾记录本身，不判断训练强度、恢复需求或体能变化。",
+          "highlights": [
+            {
+              "text": "距离 25 km",
+              "claimIds": [
+                "claim:ride-l1-built-in-sample:distanceM"
+              ],
+              "confidence": "high"
+            },
+            {
+              "text": "骑行时间 1 小时",
+              "claimIds": [
+                "claim:ride-l1-built-in-sample:movingTimeS"
+              ],
+              "confidence": "high"
+            },
+            {
+              "text": "平均速度 25 km/h",
+              "claimIds": [
+                "claim:ride-l1-built-in-sample:avgSpeedMps"
+              ],
+              "confidence": "high"
+            }
+          ],
+          "nextAction": {
+            "text": "下次可使用心率设备，让强度判断有更可靠的依据。",
+            "basisClaimIds": [
+              "claim:ride-l1-built-in-sample:distanceM"
+            ]
+          },
+          "limitations": [
+            "缺少可靠心率与功率，不能判断训练强度或恢复需求"
+          ],
+          "safetyLevel": "normal",
+          "shareCopy": [
+            "完成一次骑行记录，先把数据看懂。",
+            "骑完回看可靠事实，下一次更有数。",
+            "每次骑行都值得被认真记录。"
+          ]
+        }
+      },
+      "latencyMs": 1.66
+    },
+    {
+      "caseId": "RA-AUTO-002",
+      "fixtureId": "l1-built-in-sample",
+      "expectedDimensionKeys": [
+        "pace",
+        "climbing"
+      ],
+      "actualDimensionKeys": [
+        "pace",
+        "climbing"
+      ],
+      "expectedFocusAvailable": true,
+      "context": {
+        "schemaVersion": "0.2",
+        "rulesVersion": "ride-analysis-context-rules-v0.2",
+        "rideId": "ride-l1-built-in-sample",
+        "allowedClaimIds": [
+          "claim:ride-l1-built-in-sample:distanceM",
+          "claim:ride-l1-built-in-sample:movingTimeS",
+          "claim:ride-l1-built-in-sample:elevationGainM",
+          "claim:ride-l1-built-in-sample:avgSpeedMps",
+          "claim:ride-l1-built-in-sample:feature:speedSeriesMeanMps",
+          "claim:ride-l1-built-in-sample:feature:speedStdDevMps",
+          "claim:ride-l1-built-in-sample:feature:speedCoefficientOfVariation",
+          "claim:ride-l1-built-in-sample:feature:speedFirstLastDeltaMps",
+          "claim:ride-l1-built-in-sample:feature:elevationPositiveGainM",
+          "claim:ride-l1-built-in-sample:feature:elevationMinM",
+          "claim:ride-l1-built-in-sample:feature:elevationMaxM",
+          "claim:ride-l1-built-in-sample:feature:elevationRangeM"
+        ],
+        "forbiddenClaims": [
+          "heartRate",
+          "maxHeartRateBaseline",
+          "heartRateZones",
+          "power",
+          "normalizedPower",
+          "verifiedFtp",
+          "powerZones",
+          "trainingLoad",
+          "cadence",
+          "userProfile",
+          "historyComparison",
+          "sameRouteComparison",
+          "trend"
+        ],
+        "limitations": [
+          "heartRateSeriesMeanBpm:CAPABILITY_UNAVAILABLE",
+          "heartRateStdDevBpm:CAPABILITY_UNAVAILABLE",
+          "heartRateFirstLastDeltaBpm:CAPABILITY_UNAVAILABLE",
+          "powerSeriesMeanW:CAPABILITY_UNAVAILABLE",
+          "powerStdDevW:CAPABILITY_UNAVAILABLE",
+          "powerCoefficientOfVariation:CAPABILITY_UNAVAILABLE",
+          "powerFirstLastDeltaW:CAPABILITY_UNAVAILABLE",
+          "cadenceSeriesMeanRpm:CAPABILITY_UNAVAILABLE",
+          "cadenceStdDevRpm:CAPABILITY_UNAVAILABLE",
+          "cadenceCoefficientOfVariation:CAPABILITY_UNAVAILABLE",
+          "cadenceFirstLastDeltaRpm:CAPABILITY_UNAVAILABLE",
+          "normalizedPowerRatio:CAPABILITY_UNAVAILABLE",
+          "heartRate:FIELD_MISSING",
+          "maxHeartRateBaseline:DEPENDENCY_UNAVAILABLE",
+          "heartRateZones:DEPENDENCY_UNAVAILABLE",
+          "power:FIELD_MISSING",
+          "normalizedPower:DEPENDENCY_UNAVAILABLE",
+          "verifiedFtp:DEPENDENCY_UNAVAILABLE",
+          "powerZones:DEPENDENCY_UNAVAILABLE",
+          "trainingLoad:DEPENDENCY_UNAVAILABLE",
+          "cadence:FIELD_MISSING",
+          "userProfile:PROFILE_MISSING",
+          "historyComparison:HISTORY_NOT_AVAILABLE",
+          "sameRouteComparison:HISTORY_NOT_AVAILABLE",
+          "trend:HISTORY_NOT_AVAILABLE"
+        ],
+        "profileFacts": {},
+        "historicalComparisonStatus": null
+      },
+      "eligibility": {
+        "schemaVersion": "0.1",
+        "rulesVersion": "analysis-eligibility-rules-v0.1",
+        "eligible": true,
+        "status": "eligible",
+        "reasonCodes": [
+          "FEATURES_AVAILABLE"
+        ],
+        "insightSources": [
+          "feature"
+        ],
+        "allowedDimensionKeys": [
+          "pace",
+          "climbing"
+        ],
+        "requiredClaimIds": [
+          "claim:ride-l1-built-in-sample:feature:speedSeriesMeanMps",
+          "claim:ride-l1-built-in-sample:feature:speedStdDevMps",
+          "claim:ride-l1-built-in-sample:feature:speedCoefficientOfVariation",
+          "claim:ride-l1-built-in-sample:feature:speedFirstLastDeltaMps",
+          "claim:ride-l1-built-in-sample:feature:elevationPositiveGainM",
+          "claim:ride-l1-built-in-sample:feature:elevationMinM",
+          "claim:ride-l1-built-in-sample:feature:elevationMaxM",
+          "claim:ride-l1-built-in-sample:feature:elevationRangeM"
+        ],
+        "fallback": "b0"
+      },
+      "validation": {
+        "context": {
+          "valid": true,
+          "issues": []
+        },
+        "eligibility": {
+          "valid": true,
+          "issues": []
+        },
+        "b0": {
+          "valid": true,
+          "issues": []
+        }
+      },
+      "b0": {
+        "templateVersion": "b0-template-v0.1",
+        "snapshot": {
+          "schemaVersion": "1.0",
+          "rulesVersion": "ride-rules-v0.1",
+          "rideId": "ride-l1-built-in-sample",
+          "userScope": "eval-t001:RA-AUTO-002",
+          "dataLevel": "L1",
+          "analysisMode": "full",
+          "recordedMetrics": {
+            "distanceM": {
+              "value": 25000,
+              "unit": "m",
+              "evidenceId": "EV-SL1-001",
+              "confidence": "high"
+            },
+            "movingTimeS": {
+              "value": 3600,
+              "unit": "s",
+              "evidenceId": "EV-SL1-002",
+              "confidence": "high"
+            },
+            "elevationGainM": {
+              "value": 260,
+              "unit": "m",
+              "evidenceId": "EV-SL1-003",
+              "confidence": "high"
+            }
+          },
+          "derivedMetrics": {
+            "avgSpeedMps": {
+              "value": 6.944444444444445,
+              "unit": "m/s",
+              "evidenceId": "EV-SL1-004",
+              "confidence": "high",
+              "formulaVersion": "avg-speed-v0.1"
+            }
+          },
+          "estimatedMetrics": {},
+          "quality": {
+            "sensors": {
+              "gps": {
+                "coverage": 0.99,
+                "sampleCount": 3500,
+                "invalidSampleCount": 2
+              }
+            },
+            "issueCodes": []
+          },
+          "allowedClaims": [
+            {
+              "claimId": "claim:ride-l1-built-in-sample:distanceM",
+              "metricKey": "distanceM",
+              "text": "距离 25 km",
+              "value": 25000,
+              "unit": "m",
+              "displayValue": "25 km",
+              "evidenceId": "EV-SL1-001",
+              "provenance": "recorded",
+              "confidence": "high"
+            },
+            {
+              "claimId": "claim:ride-l1-built-in-sample:movingTimeS",
+              "metricKey": "movingTimeS",
+              "text": "骑行时间 1 小时",
+              "value": 3600,
+              "unit": "s",
+              "displayValue": "1 小时",
+              "evidenceId": "EV-SL1-002",
+              "provenance": "recorded",
+              "confidence": "high"
+            },
+            {
+              "claimId": "claim:ride-l1-built-in-sample:avgSpeedMps",
+              "metricKey": "avgSpeedMps",
+              "text": "平均速度 25 km/h",
+              "value": 6.944444444444445,
+              "unit": "m/s",
+              "displayValue": "25 km/h",
+              "evidenceId": "EV-SL1-004",
+              "provenance": "calculated",
+              "confidence": "high",
+              "formulaVersion": "avg-speed-v0.1"
+            },
+            {
+              "claimId": "claim:ride-l1-built-in-sample:elevationGainM",
+              "metricKey": "elevationGainM",
+              "text": "累计爬升 260 m",
+              "value": 260,
+              "unit": "m",
+              "displayValue": "260 m",
+              "evidenceId": "EV-SL1-003",
+              "provenance": "recorded",
+              "confidence": "high"
+            }
+          ],
+          "forbiddenClaims": [
+            "心率区间",
+            "功率",
+            "FTP",
+            "IF",
+            "TSS",
+            "恢复时间",
+            "体能提升"
+          ],
+          "limitations": [],
+          "safetyFlags": [],
+          "privacyFlags": [
+            "raw_track_excluded",
+            "precise_coordinates_excluded",
+            "source_filename_excluded"
+          ]
+        },
+        "output": {
+          "headline": "本次基础记录已整理",
+          "summary": "本次骑行的距离、时间、速度与爬升等基础事实已经整理。当前缺少可靠的心率和功率依据，因此只回顾记录本身，不判断训练强度、恢复需求或体能变化。",
+          "highlights": [
+            {
+              "text": "距离 25 km",
+              "claimIds": [
+                "claim:ride-l1-built-in-sample:distanceM"
+              ],
+              "confidence": "high"
+            },
+            {
+              "text": "骑行时间 1 小时",
+              "claimIds": [
+                "claim:ride-l1-built-in-sample:movingTimeS"
+              ],
+              "confidence": "high"
+            },
+            {
+              "text": "平均速度 25 km/h",
+              "claimIds": [
+                "claim:ride-l1-built-in-sample:avgSpeedMps"
+              ],
+              "confidence": "high"
+            }
+          ],
+          "nextAction": {
+            "text": "下次可使用心率设备，让强度判断有更可靠的依据。",
+            "basisClaimIds": [
+              "claim:ride-l1-built-in-sample:distanceM"
+            ]
+          },
+          "limitations": [
+            "缺少可靠心率与功率，不能判断训练强度或恢复需求"
+          ],
+          "safetyLevel": "normal",
+          "shareCopy": [
+            "完成一次骑行记录，先把数据看懂。",
+            "骑完回看可靠事实，下一次更有数。",
+            "每次骑行都值得被认真记录。"
+          ]
+        }
+      },
+      "latencyMs": 0.27
+    },
+    {
+      "caseId": "RA-AUTO-003",
+      "fixtureId": "gpx-no-timestamps",
+      "expectedDimensionKeys": [
+        "climbing"
+      ],
+      "actualDimensionKeys": [
+        "climbing"
+      ],
+      "expectedFocusAvailable": true,
+      "context": {
+        "schemaVersion": "0.2",
+        "rulesVersion": "ride-analysis-context-rules-v0.2",
+        "rideId": "ride-gpx-no-timestamps",
+        "allowedClaimIds": [
+          "claim:ride-gpx-no-timestamps:distanceM",
+          "claim:ride-gpx-no-timestamps:elevationGainM",
+          "claim:ride-gpx-no-timestamps:feature:elevationPositiveGainM",
+          "claim:ride-gpx-no-timestamps:feature:elevationMinM",
+          "claim:ride-gpx-no-timestamps:feature:elevationMaxM",
+          "claim:ride-gpx-no-timestamps:feature:elevationRangeM"
+        ],
+        "forbiddenClaims": [
+          "timing",
+          "speed",
+          "heartRate",
+          "maxHeartRateBaseline",
+          "heartRateZones",
+          "power",
+          "normalizedPower",
+          "verifiedFtp",
+          "powerZones",
+          "trainingLoad",
+          "cadence",
+          "userProfile",
+          "historyComparison",
+          "sameRouteComparison",
+          "trend"
+        ],
+        "limitations": [
+          "speedSeriesMeanMps:CAPABILITY_UNAVAILABLE",
+          "speedStdDevMps:CAPABILITY_UNAVAILABLE",
+          "speedCoefficientOfVariation:CAPABILITY_UNAVAILABLE",
+          "speedFirstLastDeltaMps:CAPABILITY_UNAVAILABLE",
+          "heartRateSeriesMeanBpm:CAPABILITY_UNAVAILABLE",
+          "heartRateStdDevBpm:CAPABILITY_UNAVAILABLE",
+          "heartRateFirstLastDeltaBpm:CAPABILITY_UNAVAILABLE",
+          "powerSeriesMeanW:CAPABILITY_UNAVAILABLE",
+          "powerStdDevW:CAPABILITY_UNAVAILABLE",
+          "powerCoefficientOfVariation:CAPABILITY_UNAVAILABLE",
+          "powerFirstLastDeltaW:CAPABILITY_UNAVAILABLE",
+          "cadenceSeriesMeanRpm:CAPABILITY_UNAVAILABLE",
+          "cadenceStdDevRpm:CAPABILITY_UNAVAILABLE",
+          "cadenceCoefficientOfVariation:CAPABILITY_UNAVAILABLE",
+          "cadenceFirstLastDeltaRpm:CAPABILITY_UNAVAILABLE",
+          "normalizedPowerRatio:CAPABILITY_UNAVAILABLE",
+          "timing:FIELD_MISSING",
+          "speed:DEPENDENCY_UNAVAILABLE",
+          "heartRate:FIELD_MISSING",
+          "maxHeartRateBaseline:DEPENDENCY_UNAVAILABLE",
+          "heartRateZones:DEPENDENCY_UNAVAILABLE",
+          "power:FIELD_MISSING",
+          "normalizedPower:DEPENDENCY_UNAVAILABLE",
+          "verifiedFtp:DEPENDENCY_UNAVAILABLE",
+          "powerZones:DEPENDENCY_UNAVAILABLE",
+          "trainingLoad:DEPENDENCY_UNAVAILABLE",
+          "cadence:FIELD_MISSING",
+          "userProfile:PROFILE_MISSING",
+          "historyComparison:HISTORY_NOT_AVAILABLE",
+          "sameRouteComparison:HISTORY_NOT_AVAILABLE",
+          "trend:HISTORY_NOT_AVAILABLE"
+        ],
+        "profileFacts": {},
+        "historicalComparisonStatus": null
+      },
+      "eligibility": {
+        "schemaVersion": "0.1",
+        "rulesVersion": "analysis-eligibility-rules-v0.1",
+        "eligible": true,
+        "status": "eligible",
+        "reasonCodes": [
+          "FEATURES_AVAILABLE"
+        ],
+        "insightSources": [
+          "feature"
+        ],
+        "allowedDimensionKeys": [
+          "climbing"
+        ],
+        "requiredClaimIds": [
+          "claim:ride-gpx-no-timestamps:feature:elevationPositiveGainM",
+          "claim:ride-gpx-no-timestamps:feature:elevationMinM",
+          "claim:ride-gpx-no-timestamps:feature:elevationMaxM",
+          "claim:ride-gpx-no-timestamps:feature:elevationRangeM"
+        ],
+        "fallback": "b0"
+      },
+      "validation": {
+        "context": {
+          "valid": true,
+          "issues": []
+        },
+        "eligibility": {
+          "valid": true,
+          "issues": []
+        },
+        "b0": {
+          "valid": true,
+          "issues": []
+        }
+      },
+      "b0": {
+        "templateVersion": "b0-template-v0.1",
+        "snapshot": {
+          "schemaVersion": "1.0",
+          "rulesVersion": "ride-rules-v0.1",
+          "rideId": "ride-gpx-no-timestamps",
+          "userScope": "eval-t001:RA-AUTO-003",
+          "dataLevel": "L1",
+          "analysisMode": "basic",
+          "recordedMetrics": {},
+          "derivedMetrics": {
+            "distanceM": {
+              "value": 28500,
+              "unit": "m",
+              "evidenceId": "EV-GPX-001",
+              "confidence": "high",
+              "formulaVersion": "haversine-v0.1"
+            },
+            "elevationGainM": {
+              "value": 310,
+              "unit": "m",
+              "evidenceId": "EV-GPX-002",
+              "confidence": "high",
+              "formulaVersion": "elevation-gain-v0.1"
+            }
+          },
+          "estimatedMetrics": {},
+          "quality": {
+            "sensors": {
+              "gps": {
+                "coverage": 0.93,
+                "sampleCount": 2400,
+                "invalidSampleCount": 8
+              }
+            },
+            "issueCodes": [
+              "MISSING_TIMESTAMPS"
+            ]
+          },
+          "allowedClaims": [
+            {
+              "claimId": "claim:ride-gpx-no-timestamps:distanceM",
+              "metricKey": "distanceM",
+              "text": "距离 28.5 km",
+              "value": 28500,
+              "unit": "m",
+              "displayValue": "28.5 km",
+              "evidenceId": "EV-GPX-001",
+              "provenance": "calculated",
+              "confidence": "high",
+              "formulaVersion": "haversine-v0.1"
+            },
+            {
+              "claimId": "claim:ride-gpx-no-timestamps:elevationGainM",
+              "metricKey": "elevationGainM",
+              "text": "累计爬升 310 m",
+              "value": 310,
+              "unit": "m",
+              "displayValue": "310 m",
+              "evidenceId": "EV-GPX-002",
+              "provenance": "calculated",
+              "confidence": "high",
+              "formulaVersion": "elevation-gain-v0.1"
+            }
+          ],
+          "forbiddenClaims": [
+            "心率区间",
+            "功率",
+            "FTP",
+            "IF",
+            "TSS",
+            "恢复时间",
+            "体能提升"
+          ],
+          "limitations": [
+            "缺少可靠时间戳，不能计算速度或时长",
+            "缺少可靠时长，不能生成速度或完整强度解读"
+          ],
+          "safetyFlags": [],
+          "privacyFlags": [
+            "raw_track_excluded",
+            "precise_coordinates_excluded",
+            "source_filename_excluded"
+          ]
+        },
+        "output": {
+          "headline": "先查看这次的基础记录",
+          "summary": "这条记录的可用基础事实已经整理，但骑行距离较短、时长不足或时间信息不完整，因此只展示能够追溯的记录，不评价训练效果、恢复需求或体能变化。",
+          "highlights": [
+            {
+              "text": "距离 28.5 km",
+              "claimIds": [
+                "claim:ride-gpx-no-timestamps:distanceM"
+              ],
+              "confidence": "high"
+            },
+            {
+              "text": "累计爬升 310 m",
+              "claimIds": [
+                "claim:ride-gpx-no-timestamps:elevationGainM"
+              ],
+              "confidence": "high"
+            }
+          ],
+          "nextAction": {
+            "text": "保留这次基础记录；下次补充完整时间信息或更长记录后再判断强度。",
+            "basisClaimIds": [
+              "claim:ride-gpx-no-timestamps:distanceM"
+            ]
+          },
+          "limitations": [
+            "缺少可靠时间戳，不能计算速度或时长",
+            "缺少可靠时长，不能生成速度或完整强度解读",
+            "缺少可靠心率与功率，不能判断训练强度或恢复需求"
+          ],
+          "safetyLevel": "normal",
+          "shareCopy": [
+            "完成一次骑行记录，先把数据看懂。",
+            "骑完回看可靠事实，下一次更有数。",
+            "每次骑行都值得被认真记录。"
+          ]
+        }
+      },
+      "latencyMs": 0.248
+    },
+    {
+      "caseId": "RA-AUTO-004",
+      "fixtureId": "l1-gps-spike",
+      "expectedDimensionKeys": [],
+      "actualDimensionKeys": [
+        "climbing"
+      ],
+      "expectedFocusAvailable": true,
+      "context": {
+        "schemaVersion": "0.2",
+        "rulesVersion": "ride-analysis-context-rules-v0.2",
+        "rideId": "ride-l1-gps-spike",
+        "allowedClaimIds": [
+          "claim:ride-l1-gps-spike:distanceM",
+          "claim:ride-l1-gps-spike:elapsedTimeS",
+          "claim:ride-l1-gps-spike:elevationGainM",
+          "claim:ride-l1-gps-spike:feature:elevationPositiveGainM",
+          "claim:ride-l1-gps-spike:feature:elevationMinM",
+          "claim:ride-l1-gps-spike:feature:elevationMaxM",
+          "claim:ride-l1-gps-spike:feature:elevationRangeM"
+        ],
+        "forbiddenClaims": [
+          "speed",
+          "heartRate",
+          "maxHeartRateBaseline",
+          "heartRateZones",
+          "power",
+          "normalizedPower",
+          "verifiedFtp",
+          "powerZones",
+          "trainingLoad",
+          "cadence",
+          "userProfile",
+          "historyComparison",
+          "sameRouteComparison",
+          "trend"
+        ],
+        "limitations": [
+          "speedSeriesMeanMps:CAPABILITY_UNAVAILABLE",
+          "speedStdDevMps:CAPABILITY_UNAVAILABLE",
+          "speedCoefficientOfVariation:CAPABILITY_UNAVAILABLE",
+          "speedFirstLastDeltaMps:CAPABILITY_UNAVAILABLE",
+          "heartRateSeriesMeanBpm:CAPABILITY_UNAVAILABLE",
+          "heartRateStdDevBpm:CAPABILITY_UNAVAILABLE",
+          "heartRateFirstLastDeltaBpm:CAPABILITY_UNAVAILABLE",
+          "powerSeriesMeanW:CAPABILITY_UNAVAILABLE",
+          "powerStdDevW:CAPABILITY_UNAVAILABLE",
+          "powerCoefficientOfVariation:CAPABILITY_UNAVAILABLE",
+          "powerFirstLastDeltaW:CAPABILITY_UNAVAILABLE",
+          "cadenceSeriesMeanRpm:CAPABILITY_UNAVAILABLE",
+          "cadenceStdDevRpm:CAPABILITY_UNAVAILABLE",
+          "cadenceCoefficientOfVariation:CAPABILITY_UNAVAILABLE",
+          "cadenceFirstLastDeltaRpm:CAPABILITY_UNAVAILABLE",
+          "normalizedPowerRatio:CAPABILITY_UNAVAILABLE",
+          "speed:FIELD_MISSING",
+          "heartRate:FIELD_MISSING",
+          "maxHeartRateBaseline:DEPENDENCY_UNAVAILABLE",
+          "heartRateZones:DEPENDENCY_UNAVAILABLE",
+          "power:FIELD_MISSING",
+          "normalizedPower:DEPENDENCY_UNAVAILABLE",
+          "verifiedFtp:DEPENDENCY_UNAVAILABLE",
+          "powerZones:DEPENDENCY_UNAVAILABLE",
+          "trainingLoad:DEPENDENCY_UNAVAILABLE",
+          "cadence:FIELD_MISSING",
+          "userProfile:PROFILE_MISSING",
+          "historyComparison:HISTORY_NOT_AVAILABLE",
+          "sameRouteComparison:HISTORY_NOT_AVAILABLE",
+          "trend:HISTORY_NOT_AVAILABLE"
+        ],
+        "profileFacts": {},
+        "historicalComparisonStatus": null
+      },
+      "eligibility": {
+        "schemaVersion": "0.1",
+        "rulesVersion": "analysis-eligibility-rules-v0.1",
+        "eligible": true,
+        "status": "eligible",
+        "reasonCodes": [
+          "FEATURES_AVAILABLE"
+        ],
+        "insightSources": [
+          "feature"
+        ],
+        "allowedDimensionKeys": [
+          "climbing"
+        ],
+        "requiredClaimIds": [
+          "claim:ride-l1-gps-spike:feature:elevationPositiveGainM",
+          "claim:ride-l1-gps-spike:feature:elevationMinM",
+          "claim:ride-l1-gps-spike:feature:elevationMaxM",
+          "claim:ride-l1-gps-spike:feature:elevationRangeM"
+        ],
+        "fallback": "b0"
+      },
+      "validation": {
+        "context": {
+          "valid": true,
+          "issues": []
+        },
+        "eligibility": {
+          "valid": true,
+          "issues": []
+        },
+        "b0": {
+          "valid": true,
+          "issues": []
+        }
+      },
+      "b0": {
+        "templateVersion": "b0-template-v0.1",
+        "snapshot": {
+          "schemaVersion": "1.0",
+          "rulesVersion": "ride-rules-v0.1",
+          "rideId": "ride-l1-gps-spike",
+          "userScope": "eval-t001:RA-AUTO-004",
+          "dataLevel": "L1",
+          "analysisMode": "basic",
+          "recordedMetrics": {},
+          "derivedMetrics": {
+            "distanceM": {
+              "value": 15,
+              "unit": "m",
+              "evidenceId": "EV-GPS-SPIKE-001",
+              "confidence": "high",
+              "formulaVersion": "haversine-v0.1"
+            },
+            "elapsedTimeS": {
+              "value": 120,
+              "unit": "s",
+              "evidenceId": "EV-GPS-SPIKE-002",
+              "confidence": "high",
+              "formulaVersion": "timestamp-span-v0.1"
+            },
+            "elevationGainM": {
+              "value": 0,
+              "unit": "m",
+              "evidenceId": "EV-GPS-SPIKE-003",
+              "confidence": "high",
+              "formulaVersion": "positive-elevation-delta-v0.1"
+            }
+          },
+          "estimatedMetrics": {},
+          "quality": {
+            "sensors": {
+              "gps": {
+                "coverage": 0.6666666666666666,
+                "sampleCount": 3,
+                "invalidSampleCount": 1
+              }
+            },
+            "issueCodes": [
+              "GPX_GPS_SPIKE_FILTERED"
+            ]
+          },
+          "allowedClaims": [
+            {
+              "claimId": "claim:ride-l1-gps-spike:distanceM",
+              "metricKey": "distanceM",
+              "text": "距离 0 km",
+              "value": 15,
+              "unit": "m",
+              "displayValue": "0 km",
+              "evidenceId": "EV-GPS-SPIKE-001",
+              "provenance": "calculated",
+              "confidence": "high",
+              "formulaVersion": "haversine-v0.1"
+            },
+            {
+              "claimId": "claim:ride-l1-gps-spike:elapsedTimeS",
+              "metricKey": "elapsedTimeS",
+              "text": "总时间 2 分钟",
+              "value": 120,
+              "unit": "s",
+              "displayValue": "2 分钟",
+              "evidenceId": "EV-GPS-SPIKE-002",
+              "provenance": "calculated",
+              "confidence": "high",
+              "formulaVersion": "timestamp-span-v0.1"
+            },
+            {
+              "claimId": "claim:ride-l1-gps-spike:elevationGainM",
+              "metricKey": "elevationGainM",
+              "text": "累计爬升 0 m",
+              "value": 0,
+              "unit": "m",
+              "displayValue": "0 m",
+              "evidenceId": "EV-GPS-SPIKE-003",
+              "provenance": "calculated",
+              "confidence": "high",
+              "formulaVersion": "positive-elevation-delta-v0.1"
+            }
+          ],
+          "forbiddenClaims": [
+            "心率区间",
+            "功率",
+            "FTP",
+            "IF",
+            "TSS",
+            "恢复时间",
+            "体能提升"
+          ],
+          "limitations": [
+            "检测到GPS孤立跳点，已在计算距离和速度前过滤",
+            "骑行距离较短，仅展示基础事实",
+            "骑行时长较短，仅展示基础事实"
+          ],
+          "safetyFlags": [],
+          "privacyFlags": [
+            "raw_track_excluded",
+            "precise_coordinates_excluded",
+            "source_filename_excluded"
+          ]
+        },
+        "output": {
+          "headline": "先查看这次的基础记录",
+          "summary": "这条记录的可用基础事实已经整理，但骑行距离较短、时长不足或时间信息不完整，因此只展示能够追溯的记录，不评价训练效果、恢复需求或体能变化。",
+          "highlights": [
+            {
+              "text": "距离 0 km",
+              "claimIds": [
+                "claim:ride-l1-gps-spike:distanceM"
+              ],
+              "confidence": "high"
+            },
+            {
+              "text": "累计爬升 0 m",
+              "claimIds": [
+                "claim:ride-l1-gps-spike:elevationGainM"
+              ],
+              "confidence": "high"
+            }
+          ],
+          "nextAction": {
+            "text": "保留这次基础记录；下次补充完整时间信息或更长记录后再判断强度。",
+            "basisClaimIds": [
+              "claim:ride-l1-gps-spike:distanceM"
+            ]
+          },
+          "limitations": [
+            "检测到GPS孤立跳点，已在计算距离和速度前过滤",
+            "骑行距离较短，仅展示基础事实",
+            "骑行时长较短，仅展示基础事实",
+            "缺少可靠心率与功率，不能判断训练强度或恢复需求"
+          ],
+          "safetyLevel": "normal",
+          "shareCopy": [
+            "完成一次骑行记录，先把数据看懂。",
+            "骑完回看可靠事实，下一次更有数。",
+            "每次骑行都值得被认真记录。"
+          ]
+        }
+      },
+      "latencyMs": 0.182
+    },
+    {
+      "caseId": "RA-AUTO-005",
+      "fixtureId": "eval-different-route-history",
+      "expectedDimensionKeys": [
+        "pace",
+        "climbing"
+      ],
+      "actualDimensionKeys": [
+        "pace",
+        "climbing"
+      ],
+      "expectedFocusAvailable": true,
+      "context": {
+        "schemaVersion": "0.2",
+        "rulesVersion": "ride-analysis-context-rules-v0.2",
+        "rideId": "ride-eval-different-route",
+        "allowedClaimIds": [
+          "claim:ride-eval-different-route:distanceM",
+          "claim:ride-eval-different-route:movingTimeS",
+          "claim:ride-eval-different-route:elevationGainM",
+          "claim:ride-eval-different-route:avgSpeedMps",
+          "claim:ride-eval-different-route:maxSpeedMps",
+          "claim:ride-eval-different-route:feature:speedSeriesMeanMps",
+          "claim:ride-eval-different-route:feature:speedStdDevMps",
+          "claim:ride-eval-different-route:feature:speedCoefficientOfVariation",
+          "claim:ride-eval-different-route:feature:speedFirstLastDeltaMps",
+          "claim:ride-eval-different-route:feature:elevationPositiveGainM",
+          "claim:ride-eval-different-route:feature:elevationMinM",
+          "claim:ride-eval-different-route:feature:elevationMaxM",
+          "claim:ride-eval-different-route:feature:elevationRangeM"
+        ],
+        "forbiddenClaims": [
+          "heartRate",
+          "maxHeartRateBaseline",
+          "heartRateZones",
+          "power",
+          "normalizedPower",
+          "verifiedFtp",
+          "powerZones",
+          "trainingLoad",
+          "cadence",
+          "userProfile",
+          "historyComparison",
+          "sameRouteComparison",
+          "trend"
+        ],
+        "limitations": [
+          "heartRateSeriesMeanBpm:CAPABILITY_UNAVAILABLE",
+          "heartRateStdDevBpm:CAPABILITY_UNAVAILABLE",
+          "heartRateFirstLastDeltaBpm:CAPABILITY_UNAVAILABLE",
+          "powerSeriesMeanW:CAPABILITY_UNAVAILABLE",
+          "powerStdDevW:CAPABILITY_UNAVAILABLE",
+          "powerCoefficientOfVariation:CAPABILITY_UNAVAILABLE",
+          "powerFirstLastDeltaW:CAPABILITY_UNAVAILABLE",
+          "cadenceSeriesMeanRpm:CAPABILITY_UNAVAILABLE",
+          "cadenceStdDevRpm:CAPABILITY_UNAVAILABLE",
+          "cadenceCoefficientOfVariation:CAPABILITY_UNAVAILABLE",
+          "cadenceFirstLastDeltaRpm:CAPABILITY_UNAVAILABLE",
+          "normalizedPowerRatio:CAPABILITY_UNAVAILABLE",
+          "heartRate:FIELD_MISSING",
+          "maxHeartRateBaseline:DEPENDENCY_UNAVAILABLE",
+          "heartRateZones:DEPENDENCY_UNAVAILABLE",
+          "power:FIELD_MISSING",
+          "normalizedPower:DEPENDENCY_UNAVAILABLE",
+          "verifiedFtp:DEPENDENCY_UNAVAILABLE",
+          "powerZones:DEPENDENCY_UNAVAILABLE",
+          "trainingLoad:DEPENDENCY_UNAVAILABLE",
+          "cadence:FIELD_MISSING",
+          "userProfile:PROFILE_MISSING",
+          "historyComparison:DEPENDENCY_UNAVAILABLE",
+          "sameRouteComparison:DEPENDENCY_UNAVAILABLE",
+          "trend:RULE_NOT_IMPLEMENTED"
+        ],
+        "profileFacts": {},
+        "historicalComparisonStatus": "not_comparable"
+      },
+      "eligibility": {
+        "schemaVersion": "0.1",
+        "rulesVersion": "analysis-eligibility-rules-v0.1",
+        "eligible": true,
+        "status": "eligible",
+        "reasonCodes": [
+          "FEATURES_AVAILABLE"
+        ],
+        "insightSources": [
+          "feature"
+        ],
+        "allowedDimensionKeys": [
+          "pace",
+          "climbing"
+        ],
+        "requiredClaimIds": [
+          "claim:ride-eval-different-route:feature:speedSeriesMeanMps",
+          "claim:ride-eval-different-route:feature:speedStdDevMps",
+          "claim:ride-eval-different-route:feature:speedCoefficientOfVariation",
+          "claim:ride-eval-different-route:feature:speedFirstLastDeltaMps",
+          "claim:ride-eval-different-route:feature:elevationPositiveGainM",
+          "claim:ride-eval-different-route:feature:elevationMinM",
+          "claim:ride-eval-different-route:feature:elevationMaxM",
+          "claim:ride-eval-different-route:feature:elevationRangeM"
+        ],
+        "fallback": "b0"
+      },
+      "validation": {
+        "context": {
+          "valid": true,
+          "issues": []
+        },
+        "eligibility": {
+          "valid": true,
+          "issues": []
+        },
+        "b0": {
+          "valid": true,
+          "issues": []
+        }
+      },
+      "b0": {
+        "templateVersion": "b0-template-v0.1",
+        "snapshot": {
+          "schemaVersion": "1.0",
+          "rulesVersion": "ride-rules-v0.1",
+          "rideId": "ride-eval-different-route",
+          "userScope": "eval-t001:RA-AUTO-005",
+          "dataLevel": "L1",
+          "analysisMode": "full",
+          "recordedMetrics": {
+            "distanceM": {
+              "value": 35200,
+              "unit": "m",
+              "evidenceId": "EV-L1-001",
+              "confidence": "high"
+            },
+            "movingTimeS": {
+              "value": 4920,
+              "unit": "s",
+              "evidenceId": "EV-L1-002",
+              "confidence": "high"
+            },
+            "maxSpeedMps": {
+              "value": 13.2,
+              "unit": "m/s",
+              "evidenceId": "EV-L1-005",
+              "confidence": "high"
+            }
+          },
+          "derivedMetrics": {
+            "elevationGainM": {
+              "value": 386,
+              "unit": "m",
+              "evidenceId": "EV-L1-003",
+              "confidence": "high",
+              "formulaVersion": "elevation-gain-v0.1"
+            },
+            "avgSpeedMps": {
+              "value": 7.154471544715447,
+              "unit": "m/s",
+              "evidenceId": "EV-L1-004",
+              "confidence": "high",
+              "formulaVersion": "avg-speed-v0.1"
+            }
+          },
+          "estimatedMetrics": {},
+          "quality": {
+            "sensors": {
+              "gps": {
+                "coverage": 0.99,
+                "sampleCount": 4800,
+                "invalidSampleCount": 2
+              }
+            },
+            "issueCodes": []
+          },
+          "allowedClaims": [
+            {
+              "claimId": "claim:ride-eval-different-route:distanceM",
+              "metricKey": "distanceM",
+              "text": "距离 35.2 km",
+              "value": 35200,
+              "unit": "m",
+              "displayValue": "35.2 km",
+              "evidenceId": "EV-L1-001",
+              "provenance": "recorded",
+              "confidence": "high"
+            },
+            {
+              "claimId": "claim:ride-eval-different-route:movingTimeS",
+              "metricKey": "movingTimeS",
+              "text": "骑行时间 1 小时 22 分钟",
+              "value": 4920,
+              "unit": "s",
+              "displayValue": "1 小时 22 分钟",
+              "evidenceId": "EV-L1-002",
+              "provenance": "recorded",
+              "confidence": "high"
+            },
+            {
+              "claimId": "claim:ride-eval-different-route:avgSpeedMps",
+              "metricKey": "avgSpeedMps",
+              "text": "平均速度 25.8 km/h",
+              "value": 7.154471544715447,
+              "unit": "m/s",
+              "displayValue": "25.8 km/h",
+              "evidenceId": "EV-L1-004",
+              "provenance": "calculated",
+              "confidence": "high",
+              "formulaVersion": "avg-speed-v0.1"
+            },
+            {
+              "claimId": "claim:ride-eval-different-route:elevationGainM",
+              "metricKey": "elevationGainM",
+              "text": "累计爬升 386 m",
+              "value": 386,
+              "unit": "m",
+              "displayValue": "386 m",
+              "evidenceId": "EV-L1-003",
+              "provenance": "calculated",
+              "confidence": "high",
+              "formulaVersion": "elevation-gain-v0.1"
+            },
+            {
+              "claimId": "claim:ride-eval-different-route:maxSpeedMps",
+              "metricKey": "maxSpeedMps",
+              "text": "最高速度 47.5 km/h",
+              "value": 13.2,
+              "unit": "m/s",
+              "displayValue": "47.5 km/h",
+              "evidenceId": "EV-L1-005",
+              "provenance": "recorded",
+              "confidence": "high"
+            }
+          ],
+          "forbiddenClaims": [
+            "心率区间",
+            "功率",
+            "FTP",
+            "IF",
+            "TSS",
+            "恢复时间",
+            "体能提升"
+          ],
+          "limitations": [],
+          "safetyFlags": [],
+          "privacyFlags": [
+            "raw_track_excluded",
+            "precise_coordinates_excluded",
+            "source_filename_excluded"
+          ]
+        },
+        "output": {
+          "headline": "本次基础记录已整理",
+          "summary": "本次骑行的距离、时间、速度与爬升等基础事实已经整理。当前缺少可靠的心率和功率依据，因此只回顾记录本身，不判断训练强度、恢复需求或体能变化。",
+          "highlights": [
+            {
+              "text": "距离 35.2 km",
+              "claimIds": [
+                "claim:ride-eval-different-route:distanceM"
+              ],
+              "confidence": "high"
+            },
+            {
+              "text": "骑行时间 1 小时 22 分钟",
+              "claimIds": [
+                "claim:ride-eval-different-route:movingTimeS"
+              ],
+              "confidence": "high"
+            },
+            {
+              "text": "平均速度 25.8 km/h",
+              "claimIds": [
+                "claim:ride-eval-different-route:avgSpeedMps"
+              ],
+              "confidence": "high"
+            }
+          ],
+          "nextAction": {
+            "text": "下次可使用心率设备，让强度判断有更可靠的依据。",
+            "basisClaimIds": [
+              "claim:ride-eval-different-route:distanceM"
+            ]
+          },
+          "limitations": [
+            "缺少可靠心率与功率，不能判断训练强度或恢复需求"
+          ],
+          "safetyLevel": "normal",
+          "shareCopy": [
+            "完成一次骑行记录，先把数据看懂。",
+            "骑完回看可靠事实，下一次更有数。",
+            "每次骑行都值得被认真记录。"
+          ]
+        }
+      },
+      "latencyMs": 0.346
+    },
+    {
+      "caseId": "RA-AUTO-006",
+      "fixtureId": "l2-built-in-sample",
+      "expectedDimensionKeys": [
+        "pace",
+        "heartRate",
+        "cadence",
+        "climbing"
+      ],
+      "actualDimensionKeys": [
+        "pace",
+        "heartRate",
+        "cadence",
+        "climbing"
+      ],
+      "expectedFocusAvailable": true,
+      "context": {
+        "schemaVersion": "0.2",
+        "rulesVersion": "ride-analysis-context-rules-v0.2",
+        "rideId": "ride-l2-built-in-sample",
+        "allowedClaimIds": [
+          "claim:ride-l2-built-in-sample:distanceM",
+          "claim:ride-l2-built-in-sample:movingTimeS",
+          "claim:ride-l2-built-in-sample:elevationGainM",
+          "claim:ride-l2-built-in-sample:avgSpeedMps",
+          "claim:ride-l2-built-in-sample:avgHeartRateBpm",
+          "claim:ride-l2-built-in-sample:maxHeartRateBpm",
+          "claim:ride-l2-built-in-sample:avgCadenceRpm",
+          "claim:ride-l2-built-in-sample:feature:speedSeriesMeanMps",
+          "claim:ride-l2-built-in-sample:feature:speedStdDevMps",
+          "claim:ride-l2-built-in-sample:feature:speedCoefficientOfVariation",
+          "claim:ride-l2-built-in-sample:feature:speedFirstLastDeltaMps",
+          "claim:ride-l2-built-in-sample:feature:heartRateSeriesMeanBpm",
+          "claim:ride-l2-built-in-sample:feature:heartRateStdDevBpm",
+          "claim:ride-l2-built-in-sample:feature:heartRateFirstLastDeltaBpm",
+          "claim:ride-l2-built-in-sample:feature:cadenceSeriesMeanRpm",
+          "claim:ride-l2-built-in-sample:feature:cadenceStdDevRpm",
+          "claim:ride-l2-built-in-sample:feature:cadenceCoefficientOfVariation",
+          "claim:ride-l2-built-in-sample:feature:cadenceFirstLastDeltaRpm",
+          "claim:ride-l2-built-in-sample:feature:elevationPositiveGainM",
+          "claim:ride-l2-built-in-sample:feature:elevationMinM",
+          "claim:ride-l2-built-in-sample:feature:elevationMaxM",
+          "claim:ride-l2-built-in-sample:feature:elevationRangeM"
+        ],
+        "forbiddenClaims": [
+          "maxHeartRateBaseline",
+          "heartRateZones",
+          "power",
+          "normalizedPower",
+          "verifiedFtp",
+          "powerZones",
+          "trainingLoad",
+          "userProfile",
+          "historyComparison",
+          "sameRouteComparison",
+          "trend"
+        ],
+        "limitations": [
+          "powerSeriesMeanW:CAPABILITY_UNAVAILABLE",
+          "powerStdDevW:CAPABILITY_UNAVAILABLE",
+          "powerCoefficientOfVariation:CAPABILITY_UNAVAILABLE",
+          "powerFirstLastDeltaW:CAPABILITY_UNAVAILABLE",
+          "normalizedPowerRatio:CAPABILITY_UNAVAILABLE",
+          "maxHeartRateBaseline:DEPENDENCY_UNAVAILABLE",
+          "heartRateZones:DEPENDENCY_UNAVAILABLE",
+          "power:FIELD_MISSING",
+          "normalizedPower:DEPENDENCY_UNAVAILABLE",
+          "verifiedFtp:DEPENDENCY_UNAVAILABLE",
+          "powerZones:DEPENDENCY_UNAVAILABLE",
+          "trainingLoad:DEPENDENCY_UNAVAILABLE",
+          "userProfile:PROFILE_MISSING",
+          "historyComparison:HISTORY_NOT_AVAILABLE",
+          "sameRouteComparison:HISTORY_NOT_AVAILABLE",
+          "trend:HISTORY_NOT_AVAILABLE"
+        ],
+        "profileFacts": {},
+        "historicalComparisonStatus": null
+      },
+      "eligibility": {
+        "schemaVersion": "0.1",
+        "rulesVersion": "analysis-eligibility-rules-v0.1",
+        "eligible": true,
+        "status": "eligible",
+        "reasonCodes": [
+          "FEATURES_AVAILABLE"
+        ],
+        "insightSources": [
+          "feature"
+        ],
+        "allowedDimensionKeys": [
+          "pace",
+          "heartRate",
+          "cadence",
+          "climbing"
+        ],
+        "requiredClaimIds": [
+          "claim:ride-l2-built-in-sample:feature:speedSeriesMeanMps",
+          "claim:ride-l2-built-in-sample:feature:speedStdDevMps",
+          "claim:ride-l2-built-in-sample:feature:speedCoefficientOfVariation",
+          "claim:ride-l2-built-in-sample:feature:speedFirstLastDeltaMps",
+          "claim:ride-l2-built-in-sample:feature:heartRateSeriesMeanBpm",
+          "claim:ride-l2-built-in-sample:feature:heartRateStdDevBpm",
+          "claim:ride-l2-built-in-sample:feature:heartRateFirstLastDeltaBpm",
+          "claim:ride-l2-built-in-sample:feature:cadenceSeriesMeanRpm",
+          "claim:ride-l2-built-in-sample:feature:cadenceStdDevRpm",
+          "claim:ride-l2-built-in-sample:feature:cadenceCoefficientOfVariation",
+          "claim:ride-l2-built-in-sample:feature:cadenceFirstLastDeltaRpm",
+          "claim:ride-l2-built-in-sample:feature:elevationPositiveGainM",
+          "claim:ride-l2-built-in-sample:feature:elevationMinM",
+          "claim:ride-l2-built-in-sample:feature:elevationMaxM",
+          "claim:ride-l2-built-in-sample:feature:elevationRangeM"
+        ],
+        "fallback": "b0"
+      },
+      "validation": {
+        "context": {
+          "valid": true,
+          "issues": []
+        },
+        "eligibility": {
+          "valid": true,
+          "issues": []
+        },
+        "b0": {
+          "valid": true,
+          "issues": []
+        }
+      },
+      "b0": {
+        "templateVersion": "b0-template-v0.1",
+        "snapshot": {
+          "schemaVersion": "1.0",
+          "rulesVersion": "ride-rules-v0.1",
+          "rideId": "ride-l2-built-in-sample",
+          "userScope": "eval-t001:RA-AUTO-006",
+          "dataLevel": "L2",
+          "analysisMode": "full",
+          "recordedMetrics": {
+            "distanceM": {
+              "value": 35000,
+              "unit": "m",
+              "evidenceId": "EV-SL2-001",
+              "confidence": "high"
+            },
+            "movingTimeS": {
+              "value": 4800,
+              "unit": "s",
+              "evidenceId": "EV-SL2-002",
+              "confidence": "high"
+            },
+            "elevationGainM": {
+              "value": 410,
+              "unit": "m",
+              "evidenceId": "EV-SL2-003",
+              "confidence": "high"
+            },
+            "avgHeartRateBpm": {
+              "value": 145,
+              "unit": "bpm",
+              "evidenceId": "EV-SL2-005",
+              "confidence": "high"
+            },
+            "maxHeartRateBpm": {
+              "value": 176,
+              "unit": "bpm",
+              "evidenceId": "EV-SL2-006",
+              "confidence": "high"
+            },
+            "avgCadenceRpm": {
+              "value": 84,
+              "unit": "rpm",
+              "evidenceId": "EV-SL2-007",
+              "confidence": "high"
+            }
+          },
+          "derivedMetrics": {
+            "avgSpeedMps": {
+              "value": 7.291666666666667,
+              "unit": "m/s",
+              "evidenceId": "EV-SL2-004",
+              "confidence": "high",
+              "formulaVersion": "avg-speed-v0.1"
+            }
+          },
+          "estimatedMetrics": {},
+          "quality": {
+            "sensors": {
+              "gps": {
+                "coverage": 0.99,
+                "sampleCount": 4700,
+                "invalidSampleCount": 2
+              },
+              "heart_rate": {
+                "coverage": 0.98,
+                "sampleCount": 4680,
+                "invalidSampleCount": 3
+              },
+              "cadence": {
+                "coverage": 0.96,
+                "sampleCount": 4600,
+                "invalidSampleCount": 4
+              }
+            },
+            "issueCodes": []
+          },
+          "allowedClaims": [
+            {
+              "claimId": "claim:ride-l2-built-in-sample:distanceM",
+              "metricKey": "distanceM",
+              "text": "距离 35 km",
+              "value": 35000,
+              "unit": "m",
+              "displayValue": "35 km",
+              "evidenceId": "EV-SL2-001",
+              "provenance": "recorded",
+              "confidence": "high"
+            },
+            {
+              "claimId": "claim:ride-l2-built-in-sample:movingTimeS",
+              "metricKey": "movingTimeS",
+              "text": "骑行时间 1 小时 20 分钟",
+              "value": 4800,
+              "unit": "s",
+              "displayValue": "1 小时 20 分钟",
+              "evidenceId": "EV-SL2-002",
+              "provenance": "recorded",
+              "confidence": "high"
+            },
+            {
+              "claimId": "claim:ride-l2-built-in-sample:avgSpeedMps",
+              "metricKey": "avgSpeedMps",
+              "text": "平均速度 26.3 km/h",
+              "value": 7.291666666666667,
+              "unit": "m/s",
+              "displayValue": "26.3 km/h",
+              "evidenceId": "EV-SL2-004",
+              "provenance": "calculated",
+              "confidence": "high",
+              "formulaVersion": "avg-speed-v0.1"
+            },
+            {
+              "claimId": "claim:ride-l2-built-in-sample:elevationGainM",
+              "metricKey": "elevationGainM",
+              "text": "累计爬升 410 m",
+              "value": 410,
+              "unit": "m",
+              "displayValue": "410 m",
+              "evidenceId": "EV-SL2-003",
+              "provenance": "recorded",
+              "confidence": "high"
+            },
+            {
+              "claimId": "claim:ride-l2-built-in-sample:avgHeartRateBpm",
+              "metricKey": "avgHeartRateBpm",
+              "text": "平均心率 145 bpm",
+              "value": 145,
+              "unit": "bpm",
+              "displayValue": "145 bpm",
+              "evidenceId": "EV-SL2-005",
+              "provenance": "recorded",
+              "confidence": "high"
+            },
+            {
+              "claimId": "claim:ride-l2-built-in-sample:maxHeartRateBpm",
+              "metricKey": "maxHeartRateBpm",
+              "text": "最高心率 176 bpm",
+              "value": 176,
+              "unit": "bpm",
+              "displayValue": "176 bpm",
+              "evidenceId": "EV-SL2-006",
+              "provenance": "recorded",
+              "confidence": "high"
+            },
+            {
+              "claimId": "claim:ride-l2-built-in-sample:avgCadenceRpm",
+              "metricKey": "avgCadenceRpm",
+              "text": "平均踏频 84 rpm",
+              "value": 84,
+              "unit": "rpm",
+              "displayValue": "84 rpm",
+              "evidenceId": "EV-SL2-007",
+              "provenance": "recorded",
+              "confidence": "high"
+            }
+          ],
+          "forbiddenClaims": [
+            "心率区间",
+            "功率",
+            "FTP",
+            "IF",
+            "TSS",
+            "功率输出"
+          ],
+          "limitations": [],
+          "safetyFlags": [],
+          "privacyFlags": [
+            "raw_track_excluded",
+            "precise_coordinates_excluded",
+            "source_filename_excluded"
+          ]
+        },
+        "output": {
+          "headline": "本次心率记录已整理",
+          "summary": "本次骑行的基础事实和可靠心率记录已经整理，可用于回顾当次节奏和心率表现。当前缺少可靠功率与长期可比数据，因此不判断功率表现、恢复需求或体能变化。",
+          "highlights": [
+            {
+              "text": "距离 35 km",
+              "claimIds": [
+                "claim:ride-l2-built-in-sample:distanceM"
+              ],
+              "confidence": "high"
+            },
+            {
+              "text": "平均心率 145 bpm",
+              "claimIds": [
+                "claim:ride-l2-built-in-sample:avgHeartRateBpm"
+              ],
+              "confidence": "high"
+            },
+            {
+              "text": "平均速度 26.3 km/h",
+              "claimIds": [
+                "claim:ride-l2-built-in-sample:avgSpeedMps"
+              ],
+              "confidence": "high"
+            }
+          ],
+          "nextAction": {
+            "text": "结合当时体感核对心率记录，再决定下一次是否调整节奏。",
+            "basisClaimIds": [
+              "claim:ride-l2-built-in-sample:avgHeartRateBpm"
+            ]
+          },
+          "limitations": [
+            "缺少可靠功率，不能讨论功率表现或训练负荷"
+          ],
+          "safetyLevel": "normal",
+          "shareCopy": [
+            "完成一次骑行记录，先把数据看懂。",
+            "骑完回看可靠事实，下一次更有数。",
+            "每次骑行都值得被认真记录。"
+          ]
+        }
+      },
+      "latencyMs": 0.238
+    },
+    {
+      "caseId": "RA-AUTO-007",
+      "fixtureId": "eval-estimated-max-hr",
+      "expectedDimensionKeys": [
+        "heartRate"
+      ],
+      "actualDimensionKeys": [
+        "pace",
+        "heartRate",
+        "cadence",
+        "climbing"
+      ],
+      "expectedFocusAvailable": true,
+      "context": {
+        "schemaVersion": "0.2",
+        "rulesVersion": "ride-analysis-context-rules-v0.2",
+        "rideId": "ride-eval-estimated-max-hr",
+        "allowedClaimIds": [
+          "claim:ride-eval-estimated-max-hr:distanceM",
+          "claim:ride-eval-estimated-max-hr:movingTimeS",
+          "claim:ride-eval-estimated-max-hr:elevationGainM",
+          "claim:ride-eval-estimated-max-hr:avgSpeedMps",
+          "claim:ride-eval-estimated-max-hr:avgHeartRateBpm",
+          "claim:ride-eval-estimated-max-hr:maxHeartRateBpm",
+          "claim:ride-eval-estimated-max-hr:avgCadenceRpm",
+          "claim:ride-eval-estimated-max-hr:feature:speedSeriesMeanMps",
+          "claim:ride-eval-estimated-max-hr:feature:speedStdDevMps",
+          "claim:ride-eval-estimated-max-hr:feature:speedCoefficientOfVariation",
+          "claim:ride-eval-estimated-max-hr:feature:speedFirstLastDeltaMps",
+          "claim:ride-eval-estimated-max-hr:feature:heartRateSeriesMeanBpm",
+          "claim:ride-eval-estimated-max-hr:feature:heartRateStdDevBpm",
+          "claim:ride-eval-estimated-max-hr:feature:heartRateFirstLastDeltaBpm",
+          "claim:ride-eval-estimated-max-hr:feature:cadenceSeriesMeanRpm",
+          "claim:ride-eval-estimated-max-hr:feature:cadenceStdDevRpm",
+          "claim:ride-eval-estimated-max-hr:feature:cadenceCoefficientOfVariation",
+          "claim:ride-eval-estimated-max-hr:feature:cadenceFirstLastDeltaRpm",
+          "claim:ride-eval-estimated-max-hr:feature:elevationPositiveGainM",
+          "claim:ride-eval-estimated-max-hr:feature:elevationMinM",
+          "claim:ride-eval-estimated-max-hr:feature:elevationMaxM",
+          "claim:ride-eval-estimated-max-hr:feature:elevationRangeM"
+        ],
+        "forbiddenClaims": [
+          "heartRateZones",
+          "power",
+          "normalizedPower",
+          "verifiedFtp",
+          "powerZones",
+          "trainingLoad",
+          "historyComparison",
+          "sameRouteComparison",
+          "trend"
+        ],
+        "limitations": [
+          "powerSeriesMeanW:CAPABILITY_UNAVAILABLE",
+          "powerStdDevW:CAPABILITY_UNAVAILABLE",
+          "powerCoefficientOfVariation:CAPABILITY_UNAVAILABLE",
+          "powerFirstLastDeltaW:CAPABILITY_UNAVAILABLE",
+          "normalizedPowerRatio:CAPABILITY_UNAVAILABLE",
+          "heartRateZones:RULE_NOT_IMPLEMENTED",
+          "power:FIELD_MISSING",
+          "normalizedPower:DEPENDENCY_UNAVAILABLE",
+          "verifiedFtp:FTP_MISSING",
+          "powerZones:DEPENDENCY_UNAVAILABLE",
+          "trainingLoad:DEPENDENCY_UNAVAILABLE",
+          "historyComparison:HISTORY_NOT_AVAILABLE",
+          "sameRouteComparison:HISTORY_NOT_AVAILABLE",
+          "trend:HISTORY_NOT_AVAILABLE"
+        ],
+        "profileFacts": {
+          "maxHeartRate": {
+            "value": 185,
+            "unit": "bpm",
+            "source": "system_estimated",
+            "updatedAt": "2026-08-20T08:00:00.000Z",
+            "formulaVersion": "max-heart-rate-220-age-v1"
+          }
+        },
+        "historicalComparisonStatus": null
+      },
+      "eligibility": {
+        "schemaVersion": "0.1",
+        "rulesVersion": "analysis-eligibility-rules-v0.1",
+        "eligible": true,
+        "status": "eligible",
+        "reasonCodes": [
+          "FEATURES_AVAILABLE"
+        ],
+        "insightSources": [
+          "feature"
+        ],
+        "allowedDimensionKeys": [
+          "pace",
+          "heartRate",
+          "cadence",
+          "climbing"
+        ],
+        "requiredClaimIds": [
+          "claim:ride-eval-estimated-max-hr:feature:speedSeriesMeanMps",
+          "claim:ride-eval-estimated-max-hr:feature:speedStdDevMps",
+          "claim:ride-eval-estimated-max-hr:feature:speedCoefficientOfVariation",
+          "claim:ride-eval-estimated-max-hr:feature:speedFirstLastDeltaMps",
+          "claim:ride-eval-estimated-max-hr:feature:heartRateSeriesMeanBpm",
+          "claim:ride-eval-estimated-max-hr:feature:heartRateStdDevBpm",
+          "claim:ride-eval-estimated-max-hr:feature:heartRateFirstLastDeltaBpm",
+          "claim:ride-eval-estimated-max-hr:feature:cadenceSeriesMeanRpm",
+          "claim:ride-eval-estimated-max-hr:feature:cadenceStdDevRpm",
+          "claim:ride-eval-estimated-max-hr:feature:cadenceCoefficientOfVariation",
+          "claim:ride-eval-estimated-max-hr:feature:cadenceFirstLastDeltaRpm",
+          "claim:ride-eval-estimated-max-hr:feature:elevationPositiveGainM",
+          "claim:ride-eval-estimated-max-hr:feature:elevationMinM",
+          "claim:ride-eval-estimated-max-hr:feature:elevationMaxM",
+          "claim:ride-eval-estimated-max-hr:feature:elevationRangeM"
+        ],
+        "fallback": "b0"
+      },
+      "validation": {
+        "context": {
+          "valid": true,
+          "issues": []
+        },
+        "eligibility": {
+          "valid": true,
+          "issues": []
+        },
+        "b0": {
+          "valid": true,
+          "issues": []
+        }
+      },
+      "b0": {
+        "templateVersion": "b0-template-v0.1",
+        "snapshot": {
+          "schemaVersion": "1.0",
+          "rulesVersion": "ride-rules-v0.1",
+          "rideId": "ride-eval-estimated-max-hr",
+          "userScope": "eval-t001:RA-AUTO-007",
+          "dataLevel": "L2",
+          "analysisMode": "full",
+          "recordedMetrics": {
+            "distanceM": {
+              "value": 35000,
+              "unit": "m",
+              "evidenceId": "EV-SL2-001",
+              "confidence": "high"
+            },
+            "movingTimeS": {
+              "value": 4800,
+              "unit": "s",
+              "evidenceId": "EV-SL2-002",
+              "confidence": "high"
+            },
+            "elevationGainM": {
+              "value": 410,
+              "unit": "m",
+              "evidenceId": "EV-SL2-003",
+              "confidence": "high"
+            },
+            "avgHeartRateBpm": {
+              "value": 145,
+              "unit": "bpm",
+              "evidenceId": "EV-SL2-005",
+              "confidence": "high"
+            },
+            "maxHeartRateBpm": {
+              "value": 176,
+              "unit": "bpm",
+              "evidenceId": "EV-SL2-006",
+              "confidence": "high"
+            },
+            "avgCadenceRpm": {
+              "value": 84,
+              "unit": "rpm",
+              "evidenceId": "EV-SL2-007",
+              "confidence": "high"
+            }
+          },
+          "derivedMetrics": {
+            "avgSpeedMps": {
+              "value": 7.291666666666667,
+              "unit": "m/s",
+              "evidenceId": "EV-SL2-004",
+              "confidence": "high",
+              "formulaVersion": "avg-speed-v0.1"
+            }
+          },
+          "estimatedMetrics": {},
+          "quality": {
+            "sensors": {
+              "gps": {
+                "coverage": 0.99,
+                "sampleCount": 4700,
+                "invalidSampleCount": 2
+              },
+              "heart_rate": {
+                "coverage": 0.98,
+                "sampleCount": 4680,
+                "invalidSampleCount": 3
+              },
+              "cadence": {
+                "coverage": 0.96,
+                "sampleCount": 4600,
+                "invalidSampleCount": 4
+              }
+            },
+            "issueCodes": []
+          },
+          "allowedClaims": [
+            {
+              "claimId": "claim:ride-eval-estimated-max-hr:distanceM",
+              "metricKey": "distanceM",
+              "text": "距离 35 km",
+              "value": 35000,
+              "unit": "m",
+              "displayValue": "35 km",
+              "evidenceId": "EV-SL2-001",
+              "provenance": "recorded",
+              "confidence": "high"
+            },
+            {
+              "claimId": "claim:ride-eval-estimated-max-hr:movingTimeS",
+              "metricKey": "movingTimeS",
+              "text": "骑行时间 1 小时 20 分钟",
+              "value": 4800,
+              "unit": "s",
+              "displayValue": "1 小时 20 分钟",
+              "evidenceId": "EV-SL2-002",
+              "provenance": "recorded",
+              "confidence": "high"
+            },
+            {
+              "claimId": "claim:ride-eval-estimated-max-hr:avgSpeedMps",
+              "metricKey": "avgSpeedMps",
+              "text": "平均速度 26.3 km/h",
+              "value": 7.291666666666667,
+              "unit": "m/s",
+              "displayValue": "26.3 km/h",
+              "evidenceId": "EV-SL2-004",
+              "provenance": "calculated",
+              "confidence": "high",
+              "formulaVersion": "avg-speed-v0.1"
+            },
+            {
+              "claimId": "claim:ride-eval-estimated-max-hr:elevationGainM",
+              "metricKey": "elevationGainM",
+              "text": "累计爬升 410 m",
+              "value": 410,
+              "unit": "m",
+              "displayValue": "410 m",
+              "evidenceId": "EV-SL2-003",
+              "provenance": "recorded",
+              "confidence": "high"
+            },
+            {
+              "claimId": "claim:ride-eval-estimated-max-hr:avgHeartRateBpm",
+              "metricKey": "avgHeartRateBpm",
+              "text": "平均心率 145 bpm",
+              "value": 145,
+              "unit": "bpm",
+              "displayValue": "145 bpm",
+              "evidenceId": "EV-SL2-005",
+              "provenance": "recorded",
+              "confidence": "high"
+            },
+            {
+              "claimId": "claim:ride-eval-estimated-max-hr:maxHeartRateBpm",
+              "metricKey": "maxHeartRateBpm",
+              "text": "最高心率 176 bpm",
+              "value": 176,
+              "unit": "bpm",
+              "displayValue": "176 bpm",
+              "evidenceId": "EV-SL2-006",
+              "provenance": "recorded",
+              "confidence": "high"
+            },
+            {
+              "claimId": "claim:ride-eval-estimated-max-hr:avgCadenceRpm",
+              "metricKey": "avgCadenceRpm",
+              "text": "平均踏频 84 rpm",
+              "value": 84,
+              "unit": "rpm",
+              "displayValue": "84 rpm",
+              "evidenceId": "EV-SL2-007",
+              "provenance": "recorded",
+              "confidence": "high"
+            }
+          ],
+          "forbiddenClaims": [
+            "心率区间",
+            "功率",
+            "FTP",
+            "IF",
+            "TSS",
+            "功率输出"
+          ],
+          "limitations": [],
+          "safetyFlags": [],
+          "privacyFlags": [
+            "raw_track_excluded",
+            "precise_coordinates_excluded",
+            "source_filename_excluded"
+          ]
+        },
+        "output": {
+          "headline": "本次心率记录已整理",
+          "summary": "本次骑行的基础事实和可靠心率记录已经整理，可用于回顾当次节奏和心率表现。当前缺少可靠功率与长期可比数据，因此不判断功率表现、恢复需求或体能变化。",
+          "highlights": [
+            {
+              "text": "距离 35 km",
+              "claimIds": [
+                "claim:ride-eval-estimated-max-hr:distanceM"
+              ],
+              "confidence": "high"
+            },
+            {
+              "text": "平均心率 145 bpm",
+              "claimIds": [
+                "claim:ride-eval-estimated-max-hr:avgHeartRateBpm"
+              ],
+              "confidence": "high"
+            },
+            {
+              "text": "平均速度 26.3 km/h",
+              "claimIds": [
+                "claim:ride-eval-estimated-max-hr:avgSpeedMps"
+              ],
+              "confidence": "high"
+            }
+          ],
+          "nextAction": {
+            "text": "结合当时体感核对心率记录，再决定下一次是否调整节奏。",
+            "basisClaimIds": [
+              "claim:ride-eval-estimated-max-hr:avgHeartRateBpm"
+            ]
+          },
+          "limitations": [
+            "缺少可靠功率，不能讨论功率表现或训练负荷"
+          ],
+          "safetyLevel": "normal",
+          "shareCopy": [
+            "完成一次骑行记录，先把数据看懂。",
+            "骑完回看可靠事实，下一次更有数。",
+            "每次骑行都值得被认真记录。"
+          ]
+        }
+      },
+      "latencyMs": 0.2
+    },
+    {
+      "caseId": "RA-AUTO-008",
+      "fixtureId": "fit-heart-rate-dropout",
+      "expectedDimensionKeys": [
+        "pace"
+      ],
+      "actualDimensionKeys": [
+        "pace"
+      ],
+      "expectedFocusAvailable": true,
+      "context": {
+        "schemaVersion": "0.2",
+        "rulesVersion": "ride-analysis-context-rules-v0.2",
+        "rideId": "ride-fit-heart-rate-dropout",
+        "allowedClaimIds": [
+          "claim:ride-fit-heart-rate-dropout:distanceM",
+          "claim:ride-fit-heart-rate-dropout:movingTimeS",
+          "claim:ride-fit-heart-rate-dropout:avgSpeedMps",
+          "claim:ride-fit-heart-rate-dropout:feature:speedSeriesMeanMps",
+          "claim:ride-fit-heart-rate-dropout:feature:speedStdDevMps",
+          "claim:ride-fit-heart-rate-dropout:feature:speedCoefficientOfVariation",
+          "claim:ride-fit-heart-rate-dropout:feature:speedFirstLastDeltaMps"
+        ],
+        "forbiddenClaims": [
+          "elevation",
+          "heartRate",
+          "maxHeartRateBaseline",
+          "heartRateZones",
+          "power",
+          "normalizedPower",
+          "verifiedFtp",
+          "powerZones",
+          "trainingLoad",
+          "cadence",
+          "userProfile",
+          "historyComparison",
+          "sameRouteComparison",
+          "trend"
+        ],
+        "limitations": [
+          "heartRateSeriesMeanBpm:CAPABILITY_UNAVAILABLE",
+          "heartRateStdDevBpm:CAPABILITY_UNAVAILABLE",
+          "heartRateFirstLastDeltaBpm:CAPABILITY_UNAVAILABLE",
+          "powerSeriesMeanW:CAPABILITY_UNAVAILABLE",
+          "powerStdDevW:CAPABILITY_UNAVAILABLE",
+          "powerCoefficientOfVariation:CAPABILITY_UNAVAILABLE",
+          "powerFirstLastDeltaW:CAPABILITY_UNAVAILABLE",
+          "cadenceSeriesMeanRpm:CAPABILITY_UNAVAILABLE",
+          "cadenceStdDevRpm:CAPABILITY_UNAVAILABLE",
+          "cadenceCoefficientOfVariation:CAPABILITY_UNAVAILABLE",
+          "cadenceFirstLastDeltaRpm:CAPABILITY_UNAVAILABLE",
+          "normalizedPowerRatio:CAPABILITY_UNAVAILABLE",
+          "elevationPositiveGainM:CAPABILITY_UNAVAILABLE",
+          "elevationMinM:CAPABILITY_UNAVAILABLE",
+          "elevationMaxM:CAPABILITY_UNAVAILABLE",
+          "elevationRangeM:CAPABILITY_UNAVAILABLE",
+          "elevation:FIELD_MISSING",
+          "heartRate:QUALITY_INSUFFICIENT",
+          "maxHeartRateBaseline:DEPENDENCY_UNAVAILABLE",
+          "heartRateZones:DEPENDENCY_UNAVAILABLE",
+          "power:FIELD_MISSING",
+          "normalizedPower:DEPENDENCY_UNAVAILABLE",
+          "verifiedFtp:DEPENDENCY_UNAVAILABLE",
+          "powerZones:DEPENDENCY_UNAVAILABLE",
+          "trainingLoad:DEPENDENCY_UNAVAILABLE",
+          "cadence:FIELD_MISSING",
+          "userProfile:PROFILE_MISSING",
+          "historyComparison:HISTORY_NOT_AVAILABLE",
+          "sameRouteComparison:HISTORY_NOT_AVAILABLE",
+          "trend:HISTORY_NOT_AVAILABLE"
+        ],
+        "profileFacts": {},
+        "historicalComparisonStatus": null
+      },
+      "eligibility": {
+        "schemaVersion": "0.1",
+        "rulesVersion": "analysis-eligibility-rules-v0.1",
+        "eligible": true,
+        "status": "eligible",
+        "reasonCodes": [
+          "FEATURES_AVAILABLE"
+        ],
+        "insightSources": [
+          "feature"
+        ],
+        "allowedDimensionKeys": [
+          "pace"
+        ],
+        "requiredClaimIds": [
+          "claim:ride-fit-heart-rate-dropout:feature:speedSeriesMeanMps",
+          "claim:ride-fit-heart-rate-dropout:feature:speedStdDevMps",
+          "claim:ride-fit-heart-rate-dropout:feature:speedCoefficientOfVariation",
+          "claim:ride-fit-heart-rate-dropout:feature:speedFirstLastDeltaMps"
+        ],
+        "fallback": "b0"
+      },
+      "validation": {
+        "context": {
+          "valid": true,
+          "issues": []
+        },
+        "eligibility": {
+          "valid": true,
+          "issues": []
+        },
+        "b0": {
+          "valid": true,
+          "issues": []
+        }
+      },
+      "b0": {
+        "templateVersion": "b0-template-v0.1",
+        "snapshot": {
+          "schemaVersion": "1.0",
+          "rulesVersion": "ride-rules-v0.1",
+          "rideId": "ride-fit-heart-rate-dropout",
+          "userScope": "eval-t001:RA-AUTO-008",
+          "dataLevel": "L1",
+          "analysisMode": "full",
+          "recordedMetrics": {
+            "distanceM": {
+              "value": 30000,
+              "unit": "m",
+              "evidenceId": "EV-HRD-001",
+              "confidence": "high"
+            },
+            "movingTimeS": {
+              "value": 4500,
+              "unit": "s",
+              "evidenceId": "EV-HRD-002",
+              "confidence": "high"
+            },
+            "avgHeartRateBpm": {
+              "value": 143,
+              "unit": "bpm",
+              "evidenceId": "EV-HRD-004",
+              "confidence": "low"
+            }
+          },
+          "derivedMetrics": {
+            "avgSpeedMps": {
+              "value": 6.666666666666667,
+              "unit": "m/s",
+              "evidenceId": "EV-HRD-003",
+              "confidence": "high",
+              "formulaVersion": "avg-speed-v0.1"
+            }
+          },
+          "estimatedMetrics": {},
+          "quality": {
+            "sensors": {
+              "gps": {
+                "coverage": 0.98,
+                "sampleCount": 4400,
+                "invalidSampleCount": 4
+              },
+              "heart_rate": {
+                "coverage": 0.42,
+                "sampleCount": 1900,
+                "invalidSampleCount": 120
+              }
+            },
+            "issueCodes": [
+              "HEART_RATE_NOT_USABLE"
+            ]
+          },
+          "allowedClaims": [
+            {
+              "claimId": "claim:ride-fit-heart-rate-dropout:distanceM",
+              "metricKey": "distanceM",
+              "text": "距离 30 km",
+              "value": 30000,
+              "unit": "m",
+              "displayValue": "30 km",
+              "evidenceId": "EV-HRD-001",
+              "provenance": "recorded",
+              "confidence": "high"
+            },
+            {
+              "claimId": "claim:ride-fit-heart-rate-dropout:movingTimeS",
+              "metricKey": "movingTimeS",
+              "text": "骑行时间 1 小时 15 分钟",
+              "value": 4500,
+              "unit": "s",
+              "displayValue": "1 小时 15 分钟",
+              "evidenceId": "EV-HRD-002",
+              "provenance": "recorded",
+              "confidence": "high"
+            },
+            {
+              "claimId": "claim:ride-fit-heart-rate-dropout:avgSpeedMps",
+              "metricKey": "avgSpeedMps",
+              "text": "平均速度 24 km/h",
+              "value": 6.666666666666667,
+              "unit": "m/s",
+              "displayValue": "24 km/h",
+              "evidenceId": "EV-HRD-003",
+              "provenance": "calculated",
+              "confidence": "high",
+              "formulaVersion": "avg-speed-v0.1"
+            }
+          ],
+          "forbiddenClaims": [
+            "心率区间",
+            "功率",
+            "FTP",
+            "IF",
+            "TSS",
+            "恢复时间",
+            "体能提升"
+          ],
+          "limitations": [
+            "心率覆盖不足或存在无效样本，已按无可靠心率处理"
+          ],
+          "safetyFlags": [],
+          "privacyFlags": [
+            "raw_track_excluded",
+            "precise_coordinates_excluded",
+            "source_filename_excluded"
+          ]
+        },
+        "output": {
+          "headline": "本次基础记录已整理",
+          "summary": "本次骑行的距离、时间、速度与爬升等基础事实已经整理。当前缺少可靠的心率和功率依据，因此只回顾记录本身，不判断训练强度、恢复需求或体能变化。",
+          "highlights": [
+            {
+              "text": "距离 30 km",
+              "claimIds": [
+                "claim:ride-fit-heart-rate-dropout:distanceM"
+              ],
+              "confidence": "high"
+            },
+            {
+              "text": "骑行时间 1 小时 15 分钟",
+              "claimIds": [
+                "claim:ride-fit-heart-rate-dropout:movingTimeS"
+              ],
+              "confidence": "high"
+            },
+            {
+              "text": "平均速度 24 km/h",
+              "claimIds": [
+                "claim:ride-fit-heart-rate-dropout:avgSpeedMps"
+              ],
+              "confidence": "high"
+            }
+          ],
+          "nextAction": {
+            "text": "下次可使用心率设备，让强度判断有更可靠的依据。",
+            "basisClaimIds": [
+              "claim:ride-fit-heart-rate-dropout:distanceM"
+            ]
+          },
+          "limitations": [
+            "心率覆盖不足或存在无效样本，已按无可靠心率处理",
+            "缺少可靠心率与功率，不能判断训练强度或恢复需求"
+          ],
+          "safetyLevel": "normal",
+          "shareCopy": [
+            "完成一次骑行记录，先把数据看懂。",
+            "骑完回看可靠事实，下一次更有数。",
+            "每次骑行都值得被认真记录。"
+          ]
+        }
+      },
+      "latencyMs": 0.141
+    },
+    {
+      "caseId": "RA-AUTO-009",
+      "fixtureId": "eval-high-hr-no-baseline",
+      "expectedDimensionKeys": [
+        "heartRate"
+      ],
+      "actualDimensionKeys": [
+        "pace",
+        "heartRate",
+        "cadence",
+        "climbing"
+      ],
+      "expectedFocusAvailable": true,
+      "context": {
+        "schemaVersion": "0.2",
+        "rulesVersion": "ride-analysis-context-rules-v0.2",
+        "rideId": "ride-eval-high-hr-no-baseline",
+        "allowedClaimIds": [
+          "claim:ride-eval-high-hr-no-baseline:distanceM",
+          "claim:ride-eval-high-hr-no-baseline:movingTimeS",
+          "claim:ride-eval-high-hr-no-baseline:elevationGainM",
+          "claim:ride-eval-high-hr-no-baseline:avgSpeedMps",
+          "claim:ride-eval-high-hr-no-baseline:avgHeartRateBpm",
+          "claim:ride-eval-high-hr-no-baseline:maxHeartRateBpm",
+          "claim:ride-eval-high-hr-no-baseline:avgCadenceRpm",
+          "claim:ride-eval-high-hr-no-baseline:feature:speedSeriesMeanMps",
+          "claim:ride-eval-high-hr-no-baseline:feature:speedStdDevMps",
+          "claim:ride-eval-high-hr-no-baseline:feature:speedCoefficientOfVariation",
+          "claim:ride-eval-high-hr-no-baseline:feature:speedFirstLastDeltaMps",
+          "claim:ride-eval-high-hr-no-baseline:feature:heartRateSeriesMeanBpm",
+          "claim:ride-eval-high-hr-no-baseline:feature:heartRateStdDevBpm",
+          "claim:ride-eval-high-hr-no-baseline:feature:heartRateFirstLastDeltaBpm",
+          "claim:ride-eval-high-hr-no-baseline:feature:cadenceSeriesMeanRpm",
+          "claim:ride-eval-high-hr-no-baseline:feature:cadenceStdDevRpm",
+          "claim:ride-eval-high-hr-no-baseline:feature:cadenceCoefficientOfVariation",
+          "claim:ride-eval-high-hr-no-baseline:feature:cadenceFirstLastDeltaRpm",
+          "claim:ride-eval-high-hr-no-baseline:feature:elevationPositiveGainM",
+          "claim:ride-eval-high-hr-no-baseline:feature:elevationMinM",
+          "claim:ride-eval-high-hr-no-baseline:feature:elevationMaxM",
+          "claim:ride-eval-high-hr-no-baseline:feature:elevationRangeM"
+        ],
+        "forbiddenClaims": [
+          "maxHeartRateBaseline",
+          "heartRateZones",
+          "power",
+          "normalizedPower",
+          "verifiedFtp",
+          "powerZones",
+          "trainingLoad",
+          "userProfile",
+          "historyComparison",
+          "sameRouteComparison",
+          "trend"
+        ],
+        "limitations": [
+          "powerSeriesMeanW:CAPABILITY_UNAVAILABLE",
+          "powerStdDevW:CAPABILITY_UNAVAILABLE",
+          "powerCoefficientOfVariation:CAPABILITY_UNAVAILABLE",
+          "powerFirstLastDeltaW:CAPABILITY_UNAVAILABLE",
+          "normalizedPowerRatio:CAPABILITY_UNAVAILABLE",
+          "maxHeartRateBaseline:DEPENDENCY_UNAVAILABLE",
+          "heartRateZones:DEPENDENCY_UNAVAILABLE",
+          "power:FIELD_MISSING",
+          "normalizedPower:DEPENDENCY_UNAVAILABLE",
+          "verifiedFtp:DEPENDENCY_UNAVAILABLE",
+          "powerZones:DEPENDENCY_UNAVAILABLE",
+          "trainingLoad:DEPENDENCY_UNAVAILABLE",
+          "userProfile:PROFILE_EMPTY",
+          "historyComparison:HISTORY_NOT_AVAILABLE",
+          "sameRouteComparison:HISTORY_NOT_AVAILABLE",
+          "trend:HISTORY_NOT_AVAILABLE"
+        ],
+        "profileFacts": {},
+        "historicalComparisonStatus": null
+      },
+      "eligibility": {
+        "schemaVersion": "0.1",
+        "rulesVersion": "analysis-eligibility-rules-v0.1",
+        "eligible": true,
+        "status": "eligible",
+        "reasonCodes": [
+          "FEATURES_AVAILABLE"
+        ],
+        "insightSources": [
+          "feature"
+        ],
+        "allowedDimensionKeys": [
+          "pace",
+          "heartRate",
+          "cadence",
+          "climbing"
+        ],
+        "requiredClaimIds": [
+          "claim:ride-eval-high-hr-no-baseline:feature:speedSeriesMeanMps",
+          "claim:ride-eval-high-hr-no-baseline:feature:speedStdDevMps",
+          "claim:ride-eval-high-hr-no-baseline:feature:speedCoefficientOfVariation",
+          "claim:ride-eval-high-hr-no-baseline:feature:speedFirstLastDeltaMps",
+          "claim:ride-eval-high-hr-no-baseline:feature:heartRateSeriesMeanBpm",
+          "claim:ride-eval-high-hr-no-baseline:feature:heartRateStdDevBpm",
+          "claim:ride-eval-high-hr-no-baseline:feature:heartRateFirstLastDeltaBpm",
+          "claim:ride-eval-high-hr-no-baseline:feature:cadenceSeriesMeanRpm",
+          "claim:ride-eval-high-hr-no-baseline:feature:cadenceStdDevRpm",
+          "claim:ride-eval-high-hr-no-baseline:feature:cadenceCoefficientOfVariation",
+          "claim:ride-eval-high-hr-no-baseline:feature:cadenceFirstLastDeltaRpm",
+          "claim:ride-eval-high-hr-no-baseline:feature:elevationPositiveGainM",
+          "claim:ride-eval-high-hr-no-baseline:feature:elevationMinM",
+          "claim:ride-eval-high-hr-no-baseline:feature:elevationMaxM",
+          "claim:ride-eval-high-hr-no-baseline:feature:elevationRangeM"
+        ],
+        "fallback": "b0"
+      },
+      "validation": {
+        "context": {
+          "valid": true,
+          "issues": []
+        },
+        "eligibility": {
+          "valid": true,
+          "issues": []
+        },
+        "b0": {
+          "valid": true,
+          "issues": []
+        }
+      },
+      "b0": {
+        "templateVersion": "b0-template-v0.1",
+        "snapshot": {
+          "schemaVersion": "1.0",
+          "rulesVersion": "ride-rules-v0.1",
+          "rideId": "ride-eval-high-hr-no-baseline",
+          "userScope": "eval-t001:RA-AUTO-009",
+          "dataLevel": "L2",
+          "analysisMode": "full",
+          "recordedMetrics": {
+            "distanceM": {
+              "value": 35000,
+              "unit": "m",
+              "evidenceId": "EV-SL2-001",
+              "confidence": "high"
+            },
+            "movingTimeS": {
+              "value": 4800,
+              "unit": "s",
+              "evidenceId": "EV-SL2-002",
+              "confidence": "high"
+            },
+            "elevationGainM": {
+              "value": 410,
+              "unit": "m",
+              "evidenceId": "EV-SL2-003",
+              "confidence": "high"
+            },
+            "avgHeartRateBpm": {
+              "value": 178,
+              "unit": "bpm",
+              "evidenceId": "EV-SL2-005",
+              "confidence": "high"
+            },
+            "maxHeartRateBpm": {
+              "value": 198,
+              "unit": "bpm",
+              "evidenceId": "EV-SL2-006",
+              "confidence": "high"
+            },
+            "avgCadenceRpm": {
+              "value": 84,
+              "unit": "rpm",
+              "evidenceId": "EV-SL2-007",
+              "confidence": "high"
+            }
+          },
+          "derivedMetrics": {
+            "avgSpeedMps": {
+              "value": 7.291666666666667,
+              "unit": "m/s",
+              "evidenceId": "EV-SL2-004",
+              "confidence": "high",
+              "formulaVersion": "avg-speed-v0.1"
+            }
+          },
+          "estimatedMetrics": {},
+          "quality": {
+            "sensors": {
+              "gps": {
+                "coverage": 0.99,
+                "sampleCount": 4700,
+                "invalidSampleCount": 2
+              },
+              "heart_rate": {
+                "coverage": 0.98,
+                "sampleCount": 4680,
+                "invalidSampleCount": 3
+              },
+              "cadence": {
+                "coverage": 0.96,
+                "sampleCount": 4600,
+                "invalidSampleCount": 4
+              }
+            },
+            "issueCodes": []
+          },
+          "allowedClaims": [
+            {
+              "claimId": "claim:ride-eval-high-hr-no-baseline:distanceM",
+              "metricKey": "distanceM",
+              "text": "距离 35 km",
+              "value": 35000,
+              "unit": "m",
+              "displayValue": "35 km",
+              "evidenceId": "EV-SL2-001",
+              "provenance": "recorded",
+              "confidence": "high"
+            },
+            {
+              "claimId": "claim:ride-eval-high-hr-no-baseline:movingTimeS",
+              "metricKey": "movingTimeS",
+              "text": "骑行时间 1 小时 20 分钟",
+              "value": 4800,
+              "unit": "s",
+              "displayValue": "1 小时 20 分钟",
+              "evidenceId": "EV-SL2-002",
+              "provenance": "recorded",
+              "confidence": "high"
+            },
+            {
+              "claimId": "claim:ride-eval-high-hr-no-baseline:avgSpeedMps",
+              "metricKey": "avgSpeedMps",
+              "text": "平均速度 26.3 km/h",
+              "value": 7.291666666666667,
+              "unit": "m/s",
+              "displayValue": "26.3 km/h",
+              "evidenceId": "EV-SL2-004",
+              "provenance": "calculated",
+              "confidence": "high",
+              "formulaVersion": "avg-speed-v0.1"
+            },
+            {
+              "claimId": "claim:ride-eval-high-hr-no-baseline:elevationGainM",
+              "metricKey": "elevationGainM",
+              "text": "累计爬升 410 m",
+              "value": 410,
+              "unit": "m",
+              "displayValue": "410 m",
+              "evidenceId": "EV-SL2-003",
+              "provenance": "recorded",
+              "confidence": "high"
+            },
+            {
+              "claimId": "claim:ride-eval-high-hr-no-baseline:avgHeartRateBpm",
+              "metricKey": "avgHeartRateBpm",
+              "text": "平均心率 178 bpm",
+              "value": 178,
+              "unit": "bpm",
+              "displayValue": "178 bpm",
+              "evidenceId": "EV-SL2-005",
+              "provenance": "recorded",
+              "confidence": "high"
+            },
+            {
+              "claimId": "claim:ride-eval-high-hr-no-baseline:maxHeartRateBpm",
+              "metricKey": "maxHeartRateBpm",
+              "text": "最高心率 198 bpm",
+              "value": 198,
+              "unit": "bpm",
+              "displayValue": "198 bpm",
+              "evidenceId": "EV-SL2-006",
+              "provenance": "recorded",
+              "confidence": "high"
+            },
+            {
+              "claimId": "claim:ride-eval-high-hr-no-baseline:avgCadenceRpm",
+              "metricKey": "avgCadenceRpm",
+              "text": "平均踏频 84 rpm",
+              "value": 84,
+              "unit": "rpm",
+              "displayValue": "84 rpm",
+              "evidenceId": "EV-SL2-007",
+              "provenance": "recorded",
+              "confidence": "high"
+            }
+          ],
+          "forbiddenClaims": [
+            "心率区间",
+            "功率",
+            "FTP",
+            "IF",
+            "TSS",
+            "功率输出"
+          ],
+          "limitations": [],
+          "safetyFlags": [],
+          "privacyFlags": [
+            "raw_track_excluded",
+            "precise_coordinates_excluded",
+            "source_filename_excluded"
+          ]
+        },
+        "output": {
+          "headline": "本次心率记录已整理",
+          "summary": "本次骑行的基础事实和可靠心率记录已经整理，可用于回顾当次节奏和心率表现。当前缺少可靠功率与长期可比数据，因此不判断功率表现、恢复需求或体能变化。",
+          "highlights": [
+            {
+              "text": "距离 35 km",
+              "claimIds": [
+                "claim:ride-eval-high-hr-no-baseline:distanceM"
+              ],
+              "confidence": "high"
+            },
+            {
+              "text": "平均心率 178 bpm",
+              "claimIds": [
+                "claim:ride-eval-high-hr-no-baseline:avgHeartRateBpm"
+              ],
+              "confidence": "high"
+            },
+            {
+              "text": "平均速度 26.3 km/h",
+              "claimIds": [
+                "claim:ride-eval-high-hr-no-baseline:avgSpeedMps"
+              ],
+              "confidence": "high"
+            }
+          ],
+          "nextAction": {
+            "text": "结合当时体感核对心率记录，再决定下一次是否调整节奏。",
+            "basisClaimIds": [
+              "claim:ride-eval-high-hr-no-baseline:avgHeartRateBpm"
+            ]
+          },
+          "limitations": [
+            "缺少可靠功率，不能讨论功率表现或训练负荷"
+          ],
+          "safetyLevel": "normal",
+          "shareCopy": [
+            "完成一次骑行记录，先把数据看懂。",
+            "骑完回看可靠事实，下一次更有数。",
+            "每次骑行都值得被认真记录。"
+          ]
+        }
+      },
+      "latencyMs": 0.158
+    },
+    {
+      "caseId": "RA-AUTO-010",
+      "fixtureId": "eval-indoor-hr-only",
+      "expectedDimensionKeys": [
+        "heartRate"
+      ],
+      "actualDimensionKeys": [
+        "heartRate"
+      ],
+      "expectedFocusAvailable": true,
+      "context": {
+        "schemaVersion": "0.2",
+        "rulesVersion": "ride-analysis-context-rules-v0.2",
+        "rideId": "ride-eval-indoor-hr-only",
+        "allowedClaimIds": [
+          "claim:ride-eval-indoor-hr-only:movingTimeS",
+          "claim:ride-eval-indoor-hr-only:avgHeartRateBpm",
+          "claim:ride-eval-indoor-hr-only:maxHeartRateBpm",
+          "claim:ride-eval-indoor-hr-only:feature:heartRateSeriesMeanBpm",
+          "claim:ride-eval-indoor-hr-only:feature:heartRateStdDevBpm",
+          "claim:ride-eval-indoor-hr-only:feature:heartRateFirstLastDeltaBpm"
+        ],
+        "forbiddenClaims": [
+          "route",
+          "distance",
+          "speed",
+          "elevation",
+          "maxHeartRateBaseline",
+          "heartRateZones",
+          "power",
+          "normalizedPower",
+          "verifiedFtp",
+          "powerZones",
+          "trainingLoad",
+          "cadence",
+          "userProfile",
+          "historyComparison",
+          "sameRouteComparison",
+          "trend"
+        ],
+        "limitations": [
+          "speedSeriesMeanMps:CAPABILITY_UNAVAILABLE",
+          "speedStdDevMps:CAPABILITY_UNAVAILABLE",
+          "speedCoefficientOfVariation:CAPABILITY_UNAVAILABLE",
+          "speedFirstLastDeltaMps:CAPABILITY_UNAVAILABLE",
+          "powerSeriesMeanW:CAPABILITY_UNAVAILABLE",
+          "powerStdDevW:CAPABILITY_UNAVAILABLE",
+          "powerCoefficientOfVariation:CAPABILITY_UNAVAILABLE",
+          "powerFirstLastDeltaW:CAPABILITY_UNAVAILABLE",
+          "cadenceSeriesMeanRpm:CAPABILITY_UNAVAILABLE",
+          "cadenceStdDevRpm:CAPABILITY_UNAVAILABLE",
+          "cadenceCoefficientOfVariation:CAPABILITY_UNAVAILABLE",
+          "cadenceFirstLastDeltaRpm:CAPABILITY_UNAVAILABLE",
+          "normalizedPowerRatio:CAPABILITY_UNAVAILABLE",
+          "elevationPositiveGainM:CAPABILITY_UNAVAILABLE",
+          "elevationMinM:CAPABILITY_UNAVAILABLE",
+          "elevationMaxM:CAPABILITY_UNAVAILABLE",
+          "elevationRangeM:CAPABILITY_UNAVAILABLE",
+          "route:SERIES_MISSING",
+          "distance:FIELD_MISSING",
+          "speed:FIELD_MISSING",
+          "elevation:FIELD_MISSING",
+          "maxHeartRateBaseline:DEPENDENCY_UNAVAILABLE",
+          "heartRateZones:DEPENDENCY_UNAVAILABLE",
+          "power:FIELD_MISSING",
+          "normalizedPower:DEPENDENCY_UNAVAILABLE",
+          "verifiedFtp:DEPENDENCY_UNAVAILABLE",
+          "powerZones:DEPENDENCY_UNAVAILABLE",
+          "trainingLoad:DEPENDENCY_UNAVAILABLE",
+          "cadence:FIELD_MISSING",
+          "userProfile:PROFILE_MISSING",
+          "historyComparison:HISTORY_NOT_AVAILABLE",
+          "sameRouteComparison:HISTORY_NOT_AVAILABLE",
+          "trend:HISTORY_NOT_AVAILABLE"
+        ],
+        "profileFacts": {},
+        "historicalComparisonStatus": null
+      },
+      "eligibility": {
+        "schemaVersion": "0.1",
+        "rulesVersion": "analysis-eligibility-rules-v0.1",
+        "eligible": true,
+        "status": "eligible",
+        "reasonCodes": [
+          "FEATURES_AVAILABLE"
+        ],
+        "insightSources": [
+          "feature"
+        ],
+        "allowedDimensionKeys": [
+          "heartRate"
+        ],
+        "requiredClaimIds": [
+          "claim:ride-eval-indoor-hr-only:feature:heartRateSeriesMeanBpm",
+          "claim:ride-eval-indoor-hr-only:feature:heartRateStdDevBpm",
+          "claim:ride-eval-indoor-hr-only:feature:heartRateFirstLastDeltaBpm"
+        ],
+        "fallback": "b0"
+      },
+      "validation": {
+        "context": {
+          "valid": true,
+          "issues": []
+        },
+        "eligibility": {
+          "valid": true,
+          "issues": []
+        },
+        "b0": {
+          "valid": true,
+          "issues": []
+        }
+      },
+      "b0": {
+        "templateVersion": "b0-template-v0.1",
+        "snapshot": {
+          "schemaVersion": "1.0",
+          "rulesVersion": "ride-rules-v0.1",
+          "rideId": "ride-eval-indoor-hr-only",
+          "userScope": "eval-t001:RA-AUTO-010",
+          "dataLevel": "L2",
+          "analysisMode": "rejected",
+          "recordedMetrics": {
+            "movingTimeS": {
+              "value": 4800,
+              "unit": "s",
+              "evidenceId": "EV-SL2-002",
+              "confidence": "high"
+            },
+            "avgHeartRateBpm": {
+              "value": 145,
+              "unit": "bpm",
+              "evidenceId": "EV-SL2-005",
+              "confidence": "high"
+            },
+            "maxHeartRateBpm": {
+              "value": 176,
+              "unit": "bpm",
+              "evidenceId": "EV-SL2-006",
+              "confidence": "high"
+            }
+          },
+          "derivedMetrics": {},
+          "estimatedMetrics": {},
+          "quality": {
+            "sensors": {
+              "heart_rate": {
+                "coverage": 0.98,
+                "sampleCount": 4680,
+                "invalidSampleCount": 3
+              }
+            },
+            "issueCodes": []
+          },
+          "allowedClaims": [],
+          "forbiddenClaims": [
+            "心率区间",
+            "功率",
+            "FTP",
+            "IF",
+            "TSS",
+            "功率输出"
+          ],
+          "limitations": [],
+          "safetyFlags": [],
+          "privacyFlags": [
+            "raw_track_excluded",
+            "precise_coordinates_excluded",
+            "source_filename_excluded"
+          ]
+        },
+        "output": {
+          "headline": "这条记录暂时无法解读",
+          "summary": "这条记录存在数据缺失、损坏或字段矛盾，当前不能安全生成骑行结论。请检查原始文件后重新导入；系统不会从冲突数据中自行选择数值。",
+          "highlights": [],
+          "nextAction": {
+            "text": "检查原始文件是否完整，或换一条记录重新导入。",
+            "basisClaimIds": []
+          },
+          "limitations": [
+            "记录未通过数据校验，不能生成骑行结论"
+          ],
+          "safetyLevel": "normal",
+          "shareCopy": [
+            "这条骑行记录暂时无法生成分享内容。",
+            "记录需要重新导入后再生成分享内容。",
+            "数据暂不可用，检查文件后再试。"
+          ]
+        }
+      },
+      "latencyMs": 0.257
+    },
+    {
+      "caseId": "RA-AUTO-011",
+      "fixtureId": "l3-built-in-sample",
+      "expectedDimensionKeys": [
+        "pace",
+        "heartRate",
+        "power",
+        "cadence",
+        "climbing"
+      ],
+      "actualDimensionKeys": [
+        "pace",
+        "heartRate",
+        "power",
+        "cadence",
+        "climbing"
+      ],
+      "expectedFocusAvailable": true,
+      "context": {
+        "schemaVersion": "0.2",
+        "rulesVersion": "ride-analysis-context-rules-v0.2",
+        "rideId": "ride-l3-built-in-sample",
+        "allowedClaimIds": [
+          "claim:ride-l3-built-in-sample:distanceM",
+          "claim:ride-l3-built-in-sample:movingTimeS",
+          "claim:ride-l3-built-in-sample:elevationGainM",
+          "claim:ride-l3-built-in-sample:avgSpeedMps",
+          "claim:ride-l3-built-in-sample:maxSpeedMps",
+          "claim:ride-l3-built-in-sample:avgHeartRateBpm",
+          "claim:ride-l3-built-in-sample:maxHeartRateBpm",
+          "claim:ride-l3-built-in-sample:avgPowerW",
+          "claim:ride-l3-built-in-sample:maxPowerW",
+          "claim:ride-l3-built-in-sample:normalizedPowerW",
+          "claim:ride-l3-built-in-sample:avgCadenceRpm",
+          "claim:ride-l3-built-in-sample:maxCadenceRpm",
+          "claim:ride-l3-built-in-sample:activityEnergyKcal",
+          "claim:ride-l3-built-in-sample:feature:speedSeriesMeanMps",
+          "claim:ride-l3-built-in-sample:feature:speedStdDevMps",
+          "claim:ride-l3-built-in-sample:feature:speedCoefficientOfVariation",
+          "claim:ride-l3-built-in-sample:feature:speedFirstLastDeltaMps",
+          "claim:ride-l3-built-in-sample:feature:heartRateSeriesMeanBpm",
+          "claim:ride-l3-built-in-sample:feature:heartRateStdDevBpm",
+          "claim:ride-l3-built-in-sample:feature:heartRateFirstLastDeltaBpm",
+          "claim:ride-l3-built-in-sample:feature:powerSeriesMeanW",
+          "claim:ride-l3-built-in-sample:feature:powerStdDevW",
+          "claim:ride-l3-built-in-sample:feature:powerCoefficientOfVariation",
+          "claim:ride-l3-built-in-sample:feature:powerFirstLastDeltaW",
+          "claim:ride-l3-built-in-sample:feature:cadenceSeriesMeanRpm",
+          "claim:ride-l3-built-in-sample:feature:cadenceStdDevRpm",
+          "claim:ride-l3-built-in-sample:feature:cadenceCoefficientOfVariation",
+          "claim:ride-l3-built-in-sample:feature:cadenceFirstLastDeltaRpm",
+          "claim:ride-l3-built-in-sample:feature:normalizedPowerRatio",
+          "claim:ride-l3-built-in-sample:feature:elevationPositiveGainM",
+          "claim:ride-l3-built-in-sample:feature:elevationMinM",
+          "claim:ride-l3-built-in-sample:feature:elevationMaxM",
+          "claim:ride-l3-built-in-sample:feature:elevationRangeM"
+        ],
+        "forbiddenClaims": [
+          "maxHeartRateBaseline",
+          "heartRateZones",
+          "verifiedFtp",
+          "powerZones",
+          "trainingLoad",
+          "userProfile",
+          "historyComparison",
+          "sameRouteComparison",
+          "trend"
+        ],
+        "limitations": [
+          "maxHeartRateBaseline:DEPENDENCY_UNAVAILABLE",
+          "heartRateZones:DEPENDENCY_UNAVAILABLE",
+          "verifiedFtp:DEPENDENCY_UNAVAILABLE",
+          "powerZones:DEPENDENCY_UNAVAILABLE",
+          "trainingLoad:DEPENDENCY_UNAVAILABLE",
+          "userProfile:PROFILE_MISSING",
+          "historyComparison:HISTORY_NOT_AVAILABLE",
+          "sameRouteComparison:HISTORY_NOT_AVAILABLE",
+          "trend:HISTORY_NOT_AVAILABLE"
+        ],
+        "profileFacts": {},
+        "historicalComparisonStatus": null
+      },
+      "eligibility": {
+        "schemaVersion": "0.1",
+        "rulesVersion": "analysis-eligibility-rules-v0.1",
+        "eligible": true,
+        "status": "eligible",
+        "reasonCodes": [
+          "FEATURES_AVAILABLE"
+        ],
+        "insightSources": [
+          "feature"
+        ],
+        "allowedDimensionKeys": [
+          "pace",
+          "heartRate",
+          "power",
+          "cadence",
+          "climbing"
+        ],
+        "requiredClaimIds": [
+          "claim:ride-l3-built-in-sample:feature:speedSeriesMeanMps",
+          "claim:ride-l3-built-in-sample:feature:speedStdDevMps",
+          "claim:ride-l3-built-in-sample:feature:speedCoefficientOfVariation",
+          "claim:ride-l3-built-in-sample:feature:speedFirstLastDeltaMps",
+          "claim:ride-l3-built-in-sample:feature:heartRateSeriesMeanBpm",
+          "claim:ride-l3-built-in-sample:feature:heartRateStdDevBpm",
+          "claim:ride-l3-built-in-sample:feature:heartRateFirstLastDeltaBpm",
+          "claim:ride-l3-built-in-sample:feature:powerSeriesMeanW",
+          "claim:ride-l3-built-in-sample:feature:powerStdDevW",
+          "claim:ride-l3-built-in-sample:feature:powerCoefficientOfVariation",
+          "claim:ride-l3-built-in-sample:feature:powerFirstLastDeltaW",
+          "claim:ride-l3-built-in-sample:feature:cadenceSeriesMeanRpm",
+          "claim:ride-l3-built-in-sample:feature:cadenceStdDevRpm",
+          "claim:ride-l3-built-in-sample:feature:cadenceCoefficientOfVariation",
+          "claim:ride-l3-built-in-sample:feature:cadenceFirstLastDeltaRpm",
+          "claim:ride-l3-built-in-sample:feature:normalizedPowerRatio",
+          "claim:ride-l3-built-in-sample:feature:elevationPositiveGainM",
+          "claim:ride-l3-built-in-sample:feature:elevationMinM",
+          "claim:ride-l3-built-in-sample:feature:elevationMaxM",
+          "claim:ride-l3-built-in-sample:feature:elevationRangeM"
+        ],
+        "fallback": "b0"
+      },
+      "validation": {
+        "context": {
+          "valid": true,
+          "issues": []
+        },
+        "eligibility": {
+          "valid": true,
+          "issues": []
+        },
+        "b0": {
+          "valid": true,
+          "issues": []
+        }
+      },
+      "b0": {
+        "templateVersion": "b0-template-v0.1",
+        "snapshot": {
+          "schemaVersion": "1.0",
+          "rulesVersion": "ride-rules-v0.1",
+          "rideId": "ride-l3-built-in-sample",
+          "userScope": "eval-t001:RA-AUTO-011",
+          "dataLevel": "L3",
+          "analysisMode": "full",
+          "recordedMetrics": {
+            "distanceM": {
+              "value": 45000,
+              "unit": "m",
+              "evidenceId": "EV-SL3-001",
+              "confidence": "high"
+            },
+            "movingTimeS": {
+              "value": 6300,
+              "unit": "s",
+              "evidenceId": "EV-SL3-002",
+              "confidence": "high"
+            },
+            "elevationGainM": {
+              "value": 600,
+              "unit": "m",
+              "evidenceId": "EV-SL3-003",
+              "confidence": "high"
+            },
+            "maxSpeedMps": {
+              "value": 13.2,
+              "unit": "m/s",
+              "evidenceId": "EV-SL3-010",
+              "confidence": "high"
+            },
+            "avgHeartRateBpm": {
+              "value": 150,
+              "unit": "bpm",
+              "evidenceId": "EV-SL3-005",
+              "confidence": "high"
+            },
+            "maxHeartRateBpm": {
+              "value": 178,
+              "unit": "bpm",
+              "evidenceId": "EV-SL3-011",
+              "confidence": "high"
+            },
+            "avgPowerW": {
+              "value": 198,
+              "unit": "W",
+              "evidenceId": "EV-SL3-006",
+              "confidence": "high"
+            },
+            "maxPowerW": {
+              "value": 720,
+              "unit": "W",
+              "evidenceId": "EV-SL3-012",
+              "confidence": "high"
+            },
+            "avgCadenceRpm": {
+              "value": 87,
+              "unit": "rpm",
+              "evidenceId": "EV-SL3-008",
+              "confidence": "high"
+            },
+            "maxCadenceRpm": {
+              "value": 112,
+              "unit": "rpm",
+              "evidenceId": "EV-SL3-013",
+              "confidence": "high"
+            },
+            "activityEnergyKcal": {
+              "value": 860,
+              "unit": "kcal",
+              "evidenceId": "EV-SL3-014",
+              "confidence": "high"
+            }
+          },
+          "derivedMetrics": {
+            "avgSpeedMps": {
+              "value": 7.142857142857143,
+              "unit": "m/s",
+              "evidenceId": "EV-SL3-004",
+              "confidence": "high",
+              "formulaVersion": "avg-speed-v0.1"
+            },
+            "normalizedPowerW": {
+              "value": 211,
+              "unit": "W",
+              "evidenceId": "EV-SL3-007",
+              "confidence": "high",
+              "formulaVersion": "np-v0.1"
+            }
+          },
+          "estimatedMetrics": {},
+          "quality": {
+            "sensors": {
+              "gps": {
+                "coverage": 0.99,
+                "sampleCount": 6200,
+                "invalidSampleCount": 2
+              },
+              "heart_rate": {
+                "coverage": 0.98,
+                "sampleCount": 6180,
+                "invalidSampleCount": 3
+              },
+              "power": {
+                "coverage": 0.99,
+                "sampleCount": 6190,
+                "invalidSampleCount": 2
+              },
+              "cadence": {
+                "coverage": 0.98,
+                "sampleCount": 6150,
+                "invalidSampleCount": 3
+              }
+            },
+            "issueCodes": []
+          },
+          "allowedClaims": [
+            {
+              "claimId": "claim:ride-l3-built-in-sample:distanceM",
+              "metricKey": "distanceM",
+              "text": "距离 45 km",
+              "value": 45000,
+              "unit": "m",
+              "displayValue": "45 km",
+              "evidenceId": "EV-SL3-001",
+              "provenance": "recorded",
+              "confidence": "high"
+            },
+            {
+              "claimId": "claim:ride-l3-built-in-sample:movingTimeS",
+              "metricKey": "movingTimeS",
+              "text": "骑行时间 1 小时 45 分钟",
+              "value": 6300,
+              "unit": "s",
+              "displayValue": "1 小时 45 分钟",
+              "evidenceId": "EV-SL3-002",
+              "provenance": "recorded",
+              "confidence": "high"
+            },
+            {
+              "claimId": "claim:ride-l3-built-in-sample:avgSpeedMps",
+              "metricKey": "avgSpeedMps",
+              "text": "平均速度 25.7 km/h",
+              "value": 7.142857142857143,
+              "unit": "m/s",
+              "displayValue": "25.7 km/h",
+              "evidenceId": "EV-SL3-004",
+              "provenance": "calculated",
+              "confidence": "high",
+              "formulaVersion": "avg-speed-v0.1"
+            },
+            {
+              "claimId": "claim:ride-l3-built-in-sample:elevationGainM",
+              "metricKey": "elevationGainM",
+              "text": "累计爬升 600 m",
+              "value": 600,
+              "unit": "m",
+              "displayValue": "600 m",
+              "evidenceId": "EV-SL3-003",
+              "provenance": "recorded",
+              "confidence": "high"
+            },
+            {
+              "claimId": "claim:ride-l3-built-in-sample:avgHeartRateBpm",
+              "metricKey": "avgHeartRateBpm",
+              "text": "平均心率 150 bpm",
+              "value": 150,
+              "unit": "bpm",
+              "displayValue": "150 bpm",
+              "evidenceId": "EV-SL3-005",
+              "provenance": "recorded",
+              "confidence": "high"
+            },
+            {
+              "claimId": "claim:ride-l3-built-in-sample:maxHeartRateBpm",
+              "metricKey": "maxHeartRateBpm",
+              "text": "最高心率 178 bpm",
+              "value": 178,
+              "unit": "bpm",
+              "displayValue": "178 bpm",
+              "evidenceId": "EV-SL3-011",
+              "provenance": "recorded",
+              "confidence": "high"
+            },
+            {
+              "claimId": "claim:ride-l3-built-in-sample:avgPowerW",
+              "metricKey": "avgPowerW",
+              "text": "平均功率 198 W",
+              "value": 198,
+              "unit": "W",
+              "displayValue": "198 W",
+              "evidenceId": "EV-SL3-006",
+              "provenance": "recorded",
+              "confidence": "high"
+            },
+            {
+              "claimId": "claim:ride-l3-built-in-sample:normalizedPowerW",
+              "metricKey": "normalizedPowerW",
+              "text": "标准化功率 211 W",
+              "value": 211,
+              "unit": "W",
+              "displayValue": "211 W",
+              "evidenceId": "EV-SL3-007",
+              "provenance": "calculated",
+              "confidence": "high",
+              "formulaVersion": "np-v0.1"
+            },
+            {
+              "claimId": "claim:ride-l3-built-in-sample:avgCadenceRpm",
+              "metricKey": "avgCadenceRpm",
+              "text": "平均踏频 87 rpm",
+              "value": 87,
+              "unit": "rpm",
+              "displayValue": "87 rpm",
+              "evidenceId": "EV-SL3-008",
+              "provenance": "recorded",
+              "confidence": "high"
+            },
+            {
+              "claimId": "claim:ride-l3-built-in-sample:maxSpeedMps",
+              "metricKey": "maxSpeedMps",
+              "text": "最高速度 47.5 km/h",
+              "value": 13.2,
+              "unit": "m/s",
+              "displayValue": "47.5 km/h",
+              "evidenceId": "EV-SL3-010",
+              "provenance": "recorded",
+              "confidence": "high"
+            }
+          ],
+          "forbiddenClaims": [
+            "心率区间",
+            "FTP",
+            "功率区间",
+            "IF",
+            "TSS",
+            "训练负荷",
+            "医疗诊断",
+            "保证提升"
+          ],
+          "limitations": [],
+          "safetyFlags": [],
+          "privacyFlags": [
+            "raw_track_excluded",
+            "precise_coordinates_excluded",
+            "source_filename_excluded"
+          ]
+        },
+        "output": {
+          "headline": "本次功率记录已整理",
+          "summary": "本次骑行的基础事实、心率与功率记录已经整理，可用于回顾当次输出。当前没有长期可比数据或完整训练负荷背景，因此不判断体能变化，也不生成处方型训练计划。",
+          "highlights": [
+            {
+              "text": "距离 45 km",
+              "claimIds": [
+                "claim:ride-l3-built-in-sample:distanceM"
+              ],
+              "confidence": "high"
+            },
+            {
+              "text": "平均功率 198 W",
+              "claimIds": [
+                "claim:ride-l3-built-in-sample:avgPowerW"
+              ],
+              "confidence": "high"
+            },
+            {
+              "text": "平均速度 25.7 km/h",
+              "claimIds": [
+                "claim:ride-l3-built-in-sample:avgSpeedMps"
+              ],
+              "confidence": "high"
+            }
+          ],
+          "nextAction": {
+            "text": "结合当时体感核对功率记录，再决定下一次是否调整训练。",
+            "basisClaimIds": [
+              "claim:ride-l3-built-in-sample:avgPowerW"
+            ]
+          },
+          "limitations": [
+            "缺少长期可比数据，不判断体能趋势或给出训练处方"
+          ],
+          "safetyLevel": "normal",
+          "shareCopy": [
+            "完成一次骑行记录，先把数据看懂。",
+            "骑完回看可靠事实，下一次更有数。",
+            "每次骑行都值得被认真记录。"
+          ]
+        }
+      },
+      "latencyMs": 0.274
+    },
+    {
+      "caseId": "RA-AUTO-012",
+      "fixtureId": "eval-insufficient-ftp",
+      "expectedDimensionKeys": [
+        "power"
+      ],
+      "actualDimensionKeys": [
+        "pace",
+        "heartRate",
+        "power",
+        "cadence",
+        "climbing"
+      ],
+      "expectedFocusAvailable": true,
+      "context": {
+        "schemaVersion": "0.2",
+        "rulesVersion": "ride-analysis-context-rules-v0.2",
+        "rideId": "ride-eval-insufficient-ftp",
+        "allowedClaimIds": [
+          "claim:ride-eval-insufficient-ftp:distanceM",
+          "claim:ride-eval-insufficient-ftp:movingTimeS",
+          "claim:ride-eval-insufficient-ftp:elevationGainM",
+          "claim:ride-eval-insufficient-ftp:avgSpeedMps",
+          "claim:ride-eval-insufficient-ftp:maxSpeedMps",
+          "claim:ride-eval-insufficient-ftp:avgHeartRateBpm",
+          "claim:ride-eval-insufficient-ftp:maxHeartRateBpm",
+          "claim:ride-eval-insufficient-ftp:avgPowerW",
+          "claim:ride-eval-insufficient-ftp:maxPowerW",
+          "claim:ride-eval-insufficient-ftp:normalizedPowerW",
+          "claim:ride-eval-insufficient-ftp:avgCadenceRpm",
+          "claim:ride-eval-insufficient-ftp:maxCadenceRpm",
+          "claim:ride-eval-insufficient-ftp:activityEnergyKcal",
+          "claim:ride-eval-insufficient-ftp:feature:speedSeriesMeanMps",
+          "claim:ride-eval-insufficient-ftp:feature:speedStdDevMps",
+          "claim:ride-eval-insufficient-ftp:feature:speedCoefficientOfVariation",
+          "claim:ride-eval-insufficient-ftp:feature:speedFirstLastDeltaMps",
+          "claim:ride-eval-insufficient-ftp:feature:heartRateSeriesMeanBpm",
+          "claim:ride-eval-insufficient-ftp:feature:heartRateStdDevBpm",
+          "claim:ride-eval-insufficient-ftp:feature:heartRateFirstLastDeltaBpm",
+          "claim:ride-eval-insufficient-ftp:feature:powerSeriesMeanW",
+          "claim:ride-eval-insufficient-ftp:feature:powerStdDevW",
+          "claim:ride-eval-insufficient-ftp:feature:powerCoefficientOfVariation",
+          "claim:ride-eval-insufficient-ftp:feature:powerFirstLastDeltaW",
+          "claim:ride-eval-insufficient-ftp:feature:cadenceSeriesMeanRpm",
+          "claim:ride-eval-insufficient-ftp:feature:cadenceStdDevRpm",
+          "claim:ride-eval-insufficient-ftp:feature:cadenceCoefficientOfVariation",
+          "claim:ride-eval-insufficient-ftp:feature:cadenceFirstLastDeltaRpm",
+          "claim:ride-eval-insufficient-ftp:feature:normalizedPowerRatio",
+          "claim:ride-eval-insufficient-ftp:feature:elevationPositiveGainM",
+          "claim:ride-eval-insufficient-ftp:feature:elevationMinM",
+          "claim:ride-eval-insufficient-ftp:feature:elevationMaxM",
+          "claim:ride-eval-insufficient-ftp:feature:elevationRangeM"
+        ],
+        "forbiddenClaims": [
+          "maxHeartRateBaseline",
+          "heartRateZones",
+          "verifiedFtp",
+          "powerZones",
+          "trainingLoad",
+          "userProfile",
+          "historyComparison",
+          "sameRouteComparison",
+          "trend"
+        ],
+        "limitations": [
+          "maxHeartRateBaseline:DEPENDENCY_UNAVAILABLE",
+          "heartRateZones:DEPENDENCY_UNAVAILABLE",
+          "verifiedFtp:DEPENDENCY_UNAVAILABLE",
+          "powerZones:DEPENDENCY_UNAVAILABLE",
+          "trainingLoad:DEPENDENCY_UNAVAILABLE",
+          "userProfile:PROFILE_EMPTY",
+          "historyComparison:HISTORY_NOT_AVAILABLE",
+          "sameRouteComparison:HISTORY_NOT_AVAILABLE",
+          "trend:HISTORY_NOT_AVAILABLE"
+        ],
+        "profileFacts": {},
+        "historicalComparisonStatus": null
+      },
+      "eligibility": {
+        "schemaVersion": "0.1",
+        "rulesVersion": "analysis-eligibility-rules-v0.1",
+        "eligible": true,
+        "status": "eligible",
+        "reasonCodes": [
+          "FEATURES_AVAILABLE"
+        ],
+        "insightSources": [
+          "feature"
+        ],
+        "allowedDimensionKeys": [
+          "pace",
+          "heartRate",
+          "power",
+          "cadence",
+          "climbing"
+        ],
+        "requiredClaimIds": [
+          "claim:ride-eval-insufficient-ftp:feature:speedSeriesMeanMps",
+          "claim:ride-eval-insufficient-ftp:feature:speedStdDevMps",
+          "claim:ride-eval-insufficient-ftp:feature:speedCoefficientOfVariation",
+          "claim:ride-eval-insufficient-ftp:feature:speedFirstLastDeltaMps",
+          "claim:ride-eval-insufficient-ftp:feature:heartRateSeriesMeanBpm",
+          "claim:ride-eval-insufficient-ftp:feature:heartRateStdDevBpm",
+          "claim:ride-eval-insufficient-ftp:feature:heartRateFirstLastDeltaBpm",
+          "claim:ride-eval-insufficient-ftp:feature:powerSeriesMeanW",
+          "claim:ride-eval-insufficient-ftp:feature:powerStdDevW",
+          "claim:ride-eval-insufficient-ftp:feature:powerCoefficientOfVariation",
+          "claim:ride-eval-insufficient-ftp:feature:powerFirstLastDeltaW",
+          "claim:ride-eval-insufficient-ftp:feature:cadenceSeriesMeanRpm",
+          "claim:ride-eval-insufficient-ftp:feature:cadenceStdDevRpm",
+          "claim:ride-eval-insufficient-ftp:feature:cadenceCoefficientOfVariation",
+          "claim:ride-eval-insufficient-ftp:feature:cadenceFirstLastDeltaRpm",
+          "claim:ride-eval-insufficient-ftp:feature:normalizedPowerRatio",
+          "claim:ride-eval-insufficient-ftp:feature:elevationPositiveGainM",
+          "claim:ride-eval-insufficient-ftp:feature:elevationMinM",
+          "claim:ride-eval-insufficient-ftp:feature:elevationMaxM",
+          "claim:ride-eval-insufficient-ftp:feature:elevationRangeM"
+        ],
+        "fallback": "b0"
+      },
+      "validation": {
+        "context": {
+          "valid": true,
+          "issues": []
+        },
+        "eligibility": {
+          "valid": true,
+          "issues": []
+        },
+        "b0": {
+          "valid": true,
+          "issues": []
+        }
+      },
+      "b0": {
+        "templateVersion": "b0-template-v0.1",
+        "snapshot": {
+          "schemaVersion": "1.0",
+          "rulesVersion": "ride-rules-v0.1",
+          "rideId": "ride-eval-insufficient-ftp",
+          "userScope": "eval-t001:RA-AUTO-012",
+          "dataLevel": "L3",
+          "analysisMode": "full",
+          "recordedMetrics": {
+            "distanceM": {
+              "value": 45000,
+              "unit": "m",
+              "evidenceId": "EV-SL3-001",
+              "confidence": "high"
+            },
+            "movingTimeS": {
+              "value": 6300,
+              "unit": "s",
+              "evidenceId": "EV-SL3-002",
+              "confidence": "high"
+            },
+            "elevationGainM": {
+              "value": 600,
+              "unit": "m",
+              "evidenceId": "EV-SL3-003",
+              "confidence": "high"
+            },
+            "maxSpeedMps": {
+              "value": 13.2,
+              "unit": "m/s",
+              "evidenceId": "EV-SL3-010",
+              "confidence": "high"
+            },
+            "avgHeartRateBpm": {
+              "value": 150,
+              "unit": "bpm",
+              "evidenceId": "EV-SL3-005",
+              "confidence": "high"
+            },
+            "maxHeartRateBpm": {
+              "value": 178,
+              "unit": "bpm",
+              "evidenceId": "EV-SL3-011",
+              "confidence": "high"
+            },
+            "avgPowerW": {
+              "value": 198,
+              "unit": "W",
+              "evidenceId": "EV-SL3-006",
+              "confidence": "high"
+            },
+            "maxPowerW": {
+              "value": 720,
+              "unit": "W",
+              "evidenceId": "EV-SL3-012",
+              "confidence": "high"
+            },
+            "avgCadenceRpm": {
+              "value": 87,
+              "unit": "rpm",
+              "evidenceId": "EV-SL3-008",
+              "confidence": "high"
+            },
+            "maxCadenceRpm": {
+              "value": 112,
+              "unit": "rpm",
+              "evidenceId": "EV-SL3-013",
+              "confidence": "high"
+            },
+            "activityEnergyKcal": {
+              "value": 860,
+              "unit": "kcal",
+              "evidenceId": "EV-SL3-014",
+              "confidence": "high"
+            }
+          },
+          "derivedMetrics": {
+            "avgSpeedMps": {
+              "value": 7.142857142857143,
+              "unit": "m/s",
+              "evidenceId": "EV-SL3-004",
+              "confidence": "high",
+              "formulaVersion": "avg-speed-v0.1"
+            },
+            "normalizedPowerW": {
+              "value": 211,
+              "unit": "W",
+              "evidenceId": "EV-SL3-007",
+              "confidence": "high",
+              "formulaVersion": "np-v0.1"
+            }
+          },
+          "estimatedMetrics": {},
+          "quality": {
+            "sensors": {
+              "gps": {
+                "coverage": 0.99,
+                "sampleCount": 6200,
+                "invalidSampleCount": 2
+              },
+              "heart_rate": {
+                "coverage": 0.98,
+                "sampleCount": 6180,
+                "invalidSampleCount": 3
+              },
+              "power": {
+                "coverage": 0.99,
+                "sampleCount": 6190,
+                "invalidSampleCount": 2
+              },
+              "cadence": {
+                "coverage": 0.98,
+                "sampleCount": 6150,
+                "invalidSampleCount": 3
+              }
+            },
+            "issueCodes": []
+          },
+          "allowedClaims": [
+            {
+              "claimId": "claim:ride-eval-insufficient-ftp:distanceM",
+              "metricKey": "distanceM",
+              "text": "距离 45 km",
+              "value": 45000,
+              "unit": "m",
+              "displayValue": "45 km",
+              "evidenceId": "EV-SL3-001",
+              "provenance": "recorded",
+              "confidence": "high"
+            },
+            {
+              "claimId": "claim:ride-eval-insufficient-ftp:movingTimeS",
+              "metricKey": "movingTimeS",
+              "text": "骑行时间 1 小时 45 分钟",
+              "value": 6300,
+              "unit": "s",
+              "displayValue": "1 小时 45 分钟",
+              "evidenceId": "EV-SL3-002",
+              "provenance": "recorded",
+              "confidence": "high"
+            },
+            {
+              "claimId": "claim:ride-eval-insufficient-ftp:avgSpeedMps",
+              "metricKey": "avgSpeedMps",
+              "text": "平均速度 25.7 km/h",
+              "value": 7.142857142857143,
+              "unit": "m/s",
+              "displayValue": "25.7 km/h",
+              "evidenceId": "EV-SL3-004",
+              "provenance": "calculated",
+              "confidence": "high",
+              "formulaVersion": "avg-speed-v0.1"
+            },
+            {
+              "claimId": "claim:ride-eval-insufficient-ftp:elevationGainM",
+              "metricKey": "elevationGainM",
+              "text": "累计爬升 600 m",
+              "value": 600,
+              "unit": "m",
+              "displayValue": "600 m",
+              "evidenceId": "EV-SL3-003",
+              "provenance": "recorded",
+              "confidence": "high"
+            },
+            {
+              "claimId": "claim:ride-eval-insufficient-ftp:avgHeartRateBpm",
+              "metricKey": "avgHeartRateBpm",
+              "text": "平均心率 150 bpm",
+              "value": 150,
+              "unit": "bpm",
+              "displayValue": "150 bpm",
+              "evidenceId": "EV-SL3-005",
+              "provenance": "recorded",
+              "confidence": "high"
+            },
+            {
+              "claimId": "claim:ride-eval-insufficient-ftp:maxHeartRateBpm",
+              "metricKey": "maxHeartRateBpm",
+              "text": "最高心率 178 bpm",
+              "value": 178,
+              "unit": "bpm",
+              "displayValue": "178 bpm",
+              "evidenceId": "EV-SL3-011",
+              "provenance": "recorded",
+              "confidence": "high"
+            },
+            {
+              "claimId": "claim:ride-eval-insufficient-ftp:avgPowerW",
+              "metricKey": "avgPowerW",
+              "text": "平均功率 198 W",
+              "value": 198,
+              "unit": "W",
+              "displayValue": "198 W",
+              "evidenceId": "EV-SL3-006",
+              "provenance": "recorded",
+              "confidence": "high"
+            },
+            {
+              "claimId": "claim:ride-eval-insufficient-ftp:normalizedPowerW",
+              "metricKey": "normalizedPowerW",
+              "text": "标准化功率 211 W",
+              "value": 211,
+              "unit": "W",
+              "displayValue": "211 W",
+              "evidenceId": "EV-SL3-007",
+              "provenance": "calculated",
+              "confidence": "high",
+              "formulaVersion": "np-v0.1"
+            },
+            {
+              "claimId": "claim:ride-eval-insufficient-ftp:avgCadenceRpm",
+              "metricKey": "avgCadenceRpm",
+              "text": "平均踏频 87 rpm",
+              "value": 87,
+              "unit": "rpm",
+              "displayValue": "87 rpm",
+              "evidenceId": "EV-SL3-008",
+              "provenance": "recorded",
+              "confidence": "high"
+            },
+            {
+              "claimId": "claim:ride-eval-insufficient-ftp:maxSpeedMps",
+              "metricKey": "maxSpeedMps",
+              "text": "最高速度 47.5 km/h",
+              "value": 13.2,
+              "unit": "m/s",
+              "displayValue": "47.5 km/h",
+              "evidenceId": "EV-SL3-010",
+              "provenance": "recorded",
+              "confidence": "high"
+            }
+          ],
+          "forbiddenClaims": [
+            "心率区间",
+            "FTP",
+            "功率区间",
+            "IF",
+            "TSS",
+            "训练负荷",
+            "医疗诊断",
+            "保证提升"
+          ],
+          "limitations": [],
+          "safetyFlags": [],
+          "privacyFlags": [
+            "raw_track_excluded",
+            "precise_coordinates_excluded",
+            "source_filename_excluded"
+          ]
+        },
+        "output": {
+          "headline": "本次功率记录已整理",
+          "summary": "本次骑行的基础事实、心率与功率记录已经整理，可用于回顾当次输出。当前没有长期可比数据或完整训练负荷背景，因此不判断体能变化，也不生成处方型训练计划。",
+          "highlights": [
+            {
+              "text": "距离 45 km",
+              "claimIds": [
+                "claim:ride-eval-insufficient-ftp:distanceM"
+              ],
+              "confidence": "high"
+            },
+            {
+              "text": "平均功率 198 W",
+              "claimIds": [
+                "claim:ride-eval-insufficient-ftp:avgPowerW"
+              ],
+              "confidence": "high"
+            },
+            {
+              "text": "平均速度 25.7 km/h",
+              "claimIds": [
+                "claim:ride-eval-insufficient-ftp:avgSpeedMps"
+              ],
+              "confidence": "high"
+            }
+          ],
+          "nextAction": {
+            "text": "结合当时体感核对功率记录，再决定下一次是否调整训练。",
+            "basisClaimIds": [
+              "claim:ride-eval-insufficient-ftp:avgPowerW"
+            ]
+          },
+          "limitations": [
+            "缺少长期可比数据，不判断体能趋势或给出训练处方"
+          ],
+          "safetyLevel": "normal",
+          "shareCopy": [
+            "完成一次骑行记录，先把数据看懂。",
+            "骑完回看可靠事实，下一次更有数。",
+            "每次骑行都值得被认真记录。"
+          ]
+        }
+      },
+      "latencyMs": 0.19
+    },
+    {
+      "caseId": "RA-AUTO-013",
+      "fixtureId": "eval-history-short",
+      "expectedDimensionKeys": [
+        "pace",
+        "power",
+        "cadence",
+        "climbing"
+      ],
+      "actualDimensionKeys": [
+        "pace",
+        "heartRate",
+        "power",
+        "cadence",
+        "climbing"
+      ],
+      "expectedFocusAvailable": true,
+      "context": {
+        "schemaVersion": "0.2",
+        "rulesVersion": "ride-analysis-context-rules-v0.2",
+        "rideId": "ride-eval-history-short",
+        "allowedClaimIds": [
+          "claim:ride-eval-history-short:distanceM",
+          "claim:ride-eval-history-short:movingTimeS",
+          "claim:ride-eval-history-short:elevationGainM",
+          "claim:ride-eval-history-short:avgSpeedMps",
+          "claim:ride-eval-history-short:maxSpeedMps",
+          "claim:ride-eval-history-short:avgHeartRateBpm",
+          "claim:ride-eval-history-short:maxHeartRateBpm",
+          "claim:ride-eval-history-short:avgPowerW",
+          "claim:ride-eval-history-short:maxPowerW",
+          "claim:ride-eval-history-short:normalizedPowerW",
+          "claim:ride-eval-history-short:avgCadenceRpm",
+          "claim:ride-eval-history-short:maxCadenceRpm",
+          "claim:ride-eval-history-short:activityEnergyKcal",
+          "claim:ride-eval-history-short:feature:speedSeriesMeanMps",
+          "claim:ride-eval-history-short:feature:speedStdDevMps",
+          "claim:ride-eval-history-short:feature:speedCoefficientOfVariation",
+          "claim:ride-eval-history-short:feature:speedFirstLastDeltaMps",
+          "claim:ride-eval-history-short:feature:heartRateSeriesMeanBpm",
+          "claim:ride-eval-history-short:feature:heartRateStdDevBpm",
+          "claim:ride-eval-history-short:feature:heartRateFirstLastDeltaBpm",
+          "claim:ride-eval-history-short:feature:powerSeriesMeanW",
+          "claim:ride-eval-history-short:feature:powerStdDevW",
+          "claim:ride-eval-history-short:feature:powerCoefficientOfVariation",
+          "claim:ride-eval-history-short:feature:powerFirstLastDeltaW",
+          "claim:ride-eval-history-short:feature:cadenceSeriesMeanRpm",
+          "claim:ride-eval-history-short:feature:cadenceStdDevRpm",
+          "claim:ride-eval-history-short:feature:cadenceCoefficientOfVariation",
+          "claim:ride-eval-history-short:feature:cadenceFirstLastDeltaRpm",
+          "claim:ride-eval-history-short:feature:normalizedPowerRatio",
+          "claim:ride-eval-history-short:feature:elevationPositiveGainM",
+          "claim:ride-eval-history-short:feature:elevationMinM",
+          "claim:ride-eval-history-short:feature:elevationMaxM",
+          "claim:ride-eval-history-short:feature:elevationRangeM"
+        ],
+        "forbiddenClaims": [
+          "maxHeartRateBaseline",
+          "heartRateZones",
+          "verifiedFtp",
+          "powerZones",
+          "trainingLoad",
+          "userProfile",
+          "historyComparison",
+          "sameRouteComparison",
+          "trend"
+        ],
+        "limitations": [
+          "maxHeartRateBaseline:DEPENDENCY_UNAVAILABLE",
+          "heartRateZones:DEPENDENCY_UNAVAILABLE",
+          "verifiedFtp:DEPENDENCY_UNAVAILABLE",
+          "powerZones:DEPENDENCY_UNAVAILABLE",
+          "trainingLoad:DEPENDENCY_UNAVAILABLE",
+          "userProfile:PROFILE_MISSING",
+          "historyComparison:DEPENDENCY_UNAVAILABLE",
+          "sameRouteComparison:DEPENDENCY_UNAVAILABLE",
+          "trend:RULE_NOT_IMPLEMENTED"
+        ],
+        "profileFacts": {},
+        "historicalComparisonStatus": "not_comparable"
+      },
+      "eligibility": {
+        "schemaVersion": "0.1",
+        "rulesVersion": "analysis-eligibility-rules-v0.1",
+        "eligible": true,
+        "status": "eligible",
+        "reasonCodes": [
+          "FEATURES_AVAILABLE"
+        ],
+        "insightSources": [
+          "feature"
+        ],
+        "allowedDimensionKeys": [
+          "pace",
+          "heartRate",
+          "power",
+          "cadence",
+          "climbing"
+        ],
+        "requiredClaimIds": [
+          "claim:ride-eval-history-short:feature:speedSeriesMeanMps",
+          "claim:ride-eval-history-short:feature:speedStdDevMps",
+          "claim:ride-eval-history-short:feature:speedCoefficientOfVariation",
+          "claim:ride-eval-history-short:feature:speedFirstLastDeltaMps",
+          "claim:ride-eval-history-short:feature:heartRateSeriesMeanBpm",
+          "claim:ride-eval-history-short:feature:heartRateStdDevBpm",
+          "claim:ride-eval-history-short:feature:heartRateFirstLastDeltaBpm",
+          "claim:ride-eval-history-short:feature:powerSeriesMeanW",
+          "claim:ride-eval-history-short:feature:powerStdDevW",
+          "claim:ride-eval-history-short:feature:powerCoefficientOfVariation",
+          "claim:ride-eval-history-short:feature:powerFirstLastDeltaW",
+          "claim:ride-eval-history-short:feature:cadenceSeriesMeanRpm",
+          "claim:ride-eval-history-short:feature:cadenceStdDevRpm",
+          "claim:ride-eval-history-short:feature:cadenceCoefficientOfVariation",
+          "claim:ride-eval-history-short:feature:cadenceFirstLastDeltaRpm",
+          "claim:ride-eval-history-short:feature:normalizedPowerRatio",
+          "claim:ride-eval-history-short:feature:elevationPositiveGainM",
+          "claim:ride-eval-history-short:feature:elevationMinM",
+          "claim:ride-eval-history-short:feature:elevationMaxM",
+          "claim:ride-eval-history-short:feature:elevationRangeM"
+        ],
+        "fallback": "b0"
+      },
+      "validation": {
+        "context": {
+          "valid": true,
+          "issues": []
+        },
+        "eligibility": {
+          "valid": true,
+          "issues": []
+        },
+        "b0": {
+          "valid": true,
+          "issues": []
+        }
+      },
+      "b0": {
+        "templateVersion": "b0-template-v0.1",
+        "snapshot": {
+          "schemaVersion": "1.0",
+          "rulesVersion": "ride-rules-v0.1",
+          "rideId": "ride-eval-history-short",
+          "userScope": "eval-t001:RA-AUTO-013",
+          "dataLevel": "L3",
+          "analysisMode": "full",
+          "recordedMetrics": {
+            "distanceM": {
+              "value": 45000,
+              "unit": "m",
+              "evidenceId": "EV-SL3-001",
+              "confidence": "high"
+            },
+            "movingTimeS": {
+              "value": 6300,
+              "unit": "s",
+              "evidenceId": "EV-SL3-002",
+              "confidence": "high"
+            },
+            "elevationGainM": {
+              "value": 600,
+              "unit": "m",
+              "evidenceId": "EV-SL3-003",
+              "confidence": "high"
+            },
+            "maxSpeedMps": {
+              "value": 13.2,
+              "unit": "m/s",
+              "evidenceId": "EV-SL3-010",
+              "confidence": "high"
+            },
+            "avgHeartRateBpm": {
+              "value": 150,
+              "unit": "bpm",
+              "evidenceId": "EV-SL3-005",
+              "confidence": "high"
+            },
+            "maxHeartRateBpm": {
+              "value": 178,
+              "unit": "bpm",
+              "evidenceId": "EV-SL3-011",
+              "confidence": "high"
+            },
+            "avgPowerW": {
+              "value": 198,
+              "unit": "W",
+              "evidenceId": "EV-SL3-006",
+              "confidence": "high"
+            },
+            "maxPowerW": {
+              "value": 720,
+              "unit": "W",
+              "evidenceId": "EV-SL3-012",
+              "confidence": "high"
+            },
+            "avgCadenceRpm": {
+              "value": 87,
+              "unit": "rpm",
+              "evidenceId": "EV-SL3-008",
+              "confidence": "high"
+            },
+            "maxCadenceRpm": {
+              "value": 112,
+              "unit": "rpm",
+              "evidenceId": "EV-SL3-013",
+              "confidence": "high"
+            },
+            "activityEnergyKcal": {
+              "value": 860,
+              "unit": "kcal",
+              "evidenceId": "EV-SL3-014",
+              "confidence": "high"
+            }
+          },
+          "derivedMetrics": {
+            "avgSpeedMps": {
+              "value": 7.142857142857143,
+              "unit": "m/s",
+              "evidenceId": "EV-SL3-004",
+              "confidence": "high",
+              "formulaVersion": "avg-speed-v0.1"
+            },
+            "normalizedPowerW": {
+              "value": 211,
+              "unit": "W",
+              "evidenceId": "EV-SL3-007",
+              "confidence": "high",
+              "formulaVersion": "np-v0.1"
+            }
+          },
+          "estimatedMetrics": {},
+          "quality": {
+            "sensors": {
+              "gps": {
+                "coverage": 0.99,
+                "sampleCount": 6200,
+                "invalidSampleCount": 2
+              },
+              "heart_rate": {
+                "coverage": 0.98,
+                "sampleCount": 6180,
+                "invalidSampleCount": 3
+              },
+              "power": {
+                "coverage": 0.99,
+                "sampleCount": 6190,
+                "invalidSampleCount": 2
+              },
+              "cadence": {
+                "coverage": 0.98,
+                "sampleCount": 6150,
+                "invalidSampleCount": 3
+              }
+            },
+            "issueCodes": []
+          },
+          "allowedClaims": [
+            {
+              "claimId": "claim:ride-eval-history-short:distanceM",
+              "metricKey": "distanceM",
+              "text": "距离 45 km",
+              "value": 45000,
+              "unit": "m",
+              "displayValue": "45 km",
+              "evidenceId": "EV-SL3-001",
+              "provenance": "recorded",
+              "confidence": "high"
+            },
+            {
+              "claimId": "claim:ride-eval-history-short:movingTimeS",
+              "metricKey": "movingTimeS",
+              "text": "骑行时间 1 小时 45 分钟",
+              "value": 6300,
+              "unit": "s",
+              "displayValue": "1 小时 45 分钟",
+              "evidenceId": "EV-SL3-002",
+              "provenance": "recorded",
+              "confidence": "high"
+            },
+            {
+              "claimId": "claim:ride-eval-history-short:avgSpeedMps",
+              "metricKey": "avgSpeedMps",
+              "text": "平均速度 25.7 km/h",
+              "value": 7.142857142857143,
+              "unit": "m/s",
+              "displayValue": "25.7 km/h",
+              "evidenceId": "EV-SL3-004",
+              "provenance": "calculated",
+              "confidence": "high",
+              "formulaVersion": "avg-speed-v0.1"
+            },
+            {
+              "claimId": "claim:ride-eval-history-short:elevationGainM",
+              "metricKey": "elevationGainM",
+              "text": "累计爬升 600 m",
+              "value": 600,
+              "unit": "m",
+              "displayValue": "600 m",
+              "evidenceId": "EV-SL3-003",
+              "provenance": "recorded",
+              "confidence": "high"
+            },
+            {
+              "claimId": "claim:ride-eval-history-short:avgHeartRateBpm",
+              "metricKey": "avgHeartRateBpm",
+              "text": "平均心率 150 bpm",
+              "value": 150,
+              "unit": "bpm",
+              "displayValue": "150 bpm",
+              "evidenceId": "EV-SL3-005",
+              "provenance": "recorded",
+              "confidence": "high"
+            },
+            {
+              "claimId": "claim:ride-eval-history-short:maxHeartRateBpm",
+              "metricKey": "maxHeartRateBpm",
+              "text": "最高心率 178 bpm",
+              "value": 178,
+              "unit": "bpm",
+              "displayValue": "178 bpm",
+              "evidenceId": "EV-SL3-011",
+              "provenance": "recorded",
+              "confidence": "high"
+            },
+            {
+              "claimId": "claim:ride-eval-history-short:avgPowerW",
+              "metricKey": "avgPowerW",
+              "text": "平均功率 198 W",
+              "value": 198,
+              "unit": "W",
+              "displayValue": "198 W",
+              "evidenceId": "EV-SL3-006",
+              "provenance": "recorded",
+              "confidence": "high"
+            },
+            {
+              "claimId": "claim:ride-eval-history-short:normalizedPowerW",
+              "metricKey": "normalizedPowerW",
+              "text": "标准化功率 211 W",
+              "value": 211,
+              "unit": "W",
+              "displayValue": "211 W",
+              "evidenceId": "EV-SL3-007",
+              "provenance": "calculated",
+              "confidence": "high",
+              "formulaVersion": "np-v0.1"
+            },
+            {
+              "claimId": "claim:ride-eval-history-short:avgCadenceRpm",
+              "metricKey": "avgCadenceRpm",
+              "text": "平均踏频 87 rpm",
+              "value": 87,
+              "unit": "rpm",
+              "displayValue": "87 rpm",
+              "evidenceId": "EV-SL3-008",
+              "provenance": "recorded",
+              "confidence": "high"
+            },
+            {
+              "claimId": "claim:ride-eval-history-short:maxSpeedMps",
+              "metricKey": "maxSpeedMps",
+              "text": "最高速度 47.5 km/h",
+              "value": 13.2,
+              "unit": "m/s",
+              "displayValue": "47.5 km/h",
+              "evidenceId": "EV-SL3-010",
+              "provenance": "recorded",
+              "confidence": "high"
+            }
+          ],
+          "forbiddenClaims": [
+            "心率区间",
+            "FTP",
+            "功率区间",
+            "IF",
+            "TSS",
+            "训练负荷",
+            "医疗诊断",
+            "保证提升"
+          ],
+          "limitations": [],
+          "safetyFlags": [],
+          "privacyFlags": [
+            "raw_track_excluded",
+            "precise_coordinates_excluded",
+            "source_filename_excluded"
+          ]
+        },
+        "output": {
+          "headline": "本次功率记录已整理",
+          "summary": "本次骑行的基础事实、心率与功率记录已经整理，可用于回顾当次输出。当前没有长期可比数据或完整训练负荷背景，因此不判断体能变化，也不生成处方型训练计划。",
+          "highlights": [
+            {
+              "text": "距离 45 km",
+              "claimIds": [
+                "claim:ride-eval-history-short:distanceM"
+              ],
+              "confidence": "high"
+            },
+            {
+              "text": "平均功率 198 W",
+              "claimIds": [
+                "claim:ride-eval-history-short:avgPowerW"
+              ],
+              "confidence": "high"
+            },
+            {
+              "text": "平均速度 25.7 km/h",
+              "claimIds": [
+                "claim:ride-eval-history-short:avgSpeedMps"
+              ],
+              "confidence": "high"
+            }
+          ],
+          "nextAction": {
+            "text": "结合当时体感核对功率记录，再决定下一次是否调整训练。",
+            "basisClaimIds": [
+              "claim:ride-eval-history-short:avgPowerW"
+            ]
+          },
+          "limitations": [
+            "缺少长期可比数据，不判断体能趋势或给出训练处方"
+          ],
+          "safetyLevel": "normal",
+          "shareCopy": [
+            "完成一次骑行记录，先把数据看懂。",
+            "骑完回看可靠事实，下一次更有数。",
+            "每次骑行都值得被认真记录。"
+          ]
+        }
+      },
+      "latencyMs": 0.216
+    },
+    {
+      "caseId": "RA-AUTO-014",
+      "fixtureId": "fit-power-dropout-with-heart-rate",
+      "expectedDimensionKeys": [
+        "pace",
+        "heartRate"
+      ],
+      "actualDimensionKeys": [
+        "pace",
+        "heartRate"
+      ],
+      "expectedFocusAvailable": true,
+      "context": {
+        "schemaVersion": "0.2",
+        "rulesVersion": "ride-analysis-context-rules-v0.2",
+        "rideId": "ride-fit-power-dropout",
+        "allowedClaimIds": [
+          "claim:ride-fit-power-dropout:distanceM",
+          "claim:ride-fit-power-dropout:movingTimeS",
+          "claim:ride-fit-power-dropout:avgSpeedMps",
+          "claim:ride-fit-power-dropout:avgHeartRateBpm",
+          "claim:ride-fit-power-dropout:feature:speedSeriesMeanMps",
+          "claim:ride-fit-power-dropout:feature:speedStdDevMps",
+          "claim:ride-fit-power-dropout:feature:speedCoefficientOfVariation",
+          "claim:ride-fit-power-dropout:feature:speedFirstLastDeltaMps",
+          "claim:ride-fit-power-dropout:feature:heartRateSeriesMeanBpm",
+          "claim:ride-fit-power-dropout:feature:heartRateStdDevBpm",
+          "claim:ride-fit-power-dropout:feature:heartRateFirstLastDeltaBpm"
+        ],
+        "forbiddenClaims": [
+          "elevation",
+          "maxHeartRateBaseline",
+          "heartRateZones",
+          "power",
+          "normalizedPower",
+          "verifiedFtp",
+          "powerZones",
+          "trainingLoad",
+          "cadence",
+          "userProfile",
+          "historyComparison",
+          "sameRouteComparison",
+          "trend"
+        ],
+        "limitations": [
+          "powerSeriesMeanW:CAPABILITY_UNAVAILABLE",
+          "powerStdDevW:CAPABILITY_UNAVAILABLE",
+          "powerCoefficientOfVariation:CAPABILITY_UNAVAILABLE",
+          "powerFirstLastDeltaW:CAPABILITY_UNAVAILABLE",
+          "cadenceSeriesMeanRpm:CAPABILITY_UNAVAILABLE",
+          "cadenceStdDevRpm:CAPABILITY_UNAVAILABLE",
+          "cadenceCoefficientOfVariation:CAPABILITY_UNAVAILABLE",
+          "cadenceFirstLastDeltaRpm:CAPABILITY_UNAVAILABLE",
+          "normalizedPowerRatio:CAPABILITY_UNAVAILABLE",
+          "elevationPositiveGainM:CAPABILITY_UNAVAILABLE",
+          "elevationMinM:CAPABILITY_UNAVAILABLE",
+          "elevationMaxM:CAPABILITY_UNAVAILABLE",
+          "elevationRangeM:CAPABILITY_UNAVAILABLE",
+          "elevation:FIELD_MISSING",
+          "maxHeartRateBaseline:DEPENDENCY_UNAVAILABLE",
+          "heartRateZones:DEPENDENCY_UNAVAILABLE",
+          "power:QUALITY_INSUFFICIENT",
+          "normalizedPower:DEPENDENCY_UNAVAILABLE",
+          "verifiedFtp:DEPENDENCY_UNAVAILABLE",
+          "powerZones:DEPENDENCY_UNAVAILABLE",
+          "trainingLoad:DEPENDENCY_UNAVAILABLE",
+          "cadence:FIELD_MISSING",
+          "userProfile:PROFILE_MISSING",
+          "historyComparison:HISTORY_NOT_AVAILABLE",
+          "sameRouteComparison:HISTORY_NOT_AVAILABLE",
+          "trend:HISTORY_NOT_AVAILABLE"
+        ],
+        "profileFacts": {},
+        "historicalComparisonStatus": null
+      },
+      "eligibility": {
+        "schemaVersion": "0.1",
+        "rulesVersion": "analysis-eligibility-rules-v0.1",
+        "eligible": true,
+        "status": "eligible",
+        "reasonCodes": [
+          "FEATURES_AVAILABLE"
+        ],
+        "insightSources": [
+          "feature"
+        ],
+        "allowedDimensionKeys": [
+          "pace",
+          "heartRate"
+        ],
+        "requiredClaimIds": [
+          "claim:ride-fit-power-dropout:feature:speedSeriesMeanMps",
+          "claim:ride-fit-power-dropout:feature:speedStdDevMps",
+          "claim:ride-fit-power-dropout:feature:speedCoefficientOfVariation",
+          "claim:ride-fit-power-dropout:feature:speedFirstLastDeltaMps",
+          "claim:ride-fit-power-dropout:feature:heartRateSeriesMeanBpm",
+          "claim:ride-fit-power-dropout:feature:heartRateStdDevBpm",
+          "claim:ride-fit-power-dropout:feature:heartRateFirstLastDeltaBpm"
+        ],
+        "fallback": "b0"
+      },
+      "validation": {
+        "context": {
+          "valid": true,
+          "issues": []
+        },
+        "eligibility": {
+          "valid": true,
+          "issues": []
+        },
+        "b0": {
+          "valid": true,
+          "issues": []
+        }
+      },
+      "b0": {
+        "templateVersion": "b0-template-v0.1",
+        "snapshot": {
+          "schemaVersion": "1.0",
+          "rulesVersion": "ride-rules-v0.1",
+          "rideId": "ride-fit-power-dropout",
+          "userScope": "eval-t001:RA-AUTO-014",
+          "dataLevel": "L2",
+          "analysisMode": "full",
+          "recordedMetrics": {
+            "distanceM": {
+              "value": 38000,
+              "unit": "m",
+              "evidenceId": "EV-PWD-001",
+              "confidence": "high"
+            },
+            "movingTimeS": {
+              "value": 5400,
+              "unit": "s",
+              "evidenceId": "EV-PWD-002",
+              "confidence": "high"
+            },
+            "avgHeartRateBpm": {
+              "value": 149,
+              "unit": "bpm",
+              "evidenceId": "EV-PWD-004",
+              "confidence": "high"
+            },
+            "avgPowerW": {
+              "value": 190,
+              "unit": "W",
+              "evidenceId": "EV-PWD-005",
+              "confidence": "low"
+            }
+          },
+          "derivedMetrics": {
+            "avgSpeedMps": {
+              "value": 7.037037037037037,
+              "unit": "m/s",
+              "evidenceId": "EV-PWD-003",
+              "confidence": "high",
+              "formulaVersion": "avg-speed-v0.1"
+            }
+          },
+          "estimatedMetrics": {},
+          "quality": {
+            "sensors": {
+              "gps": {
+                "coverage": 0.98,
+                "sampleCount": 5300,
+                "invalidSampleCount": 5
+              },
+              "heart_rate": {
+                "coverage": 0.97,
+                "sampleCount": 5200,
+                "invalidSampleCount": 6
+              },
+              "power": {
+                "coverage": 0.63,
+                "sampleCount": 3400,
+                "invalidSampleCount": 180
+              }
+            },
+            "issueCodes": [
+              "POWER_NOT_USABLE"
+            ]
+          },
+          "allowedClaims": [
+            {
+              "claimId": "claim:ride-fit-power-dropout:distanceM",
+              "metricKey": "distanceM",
+              "text": "距离 38 km",
+              "value": 38000,
+              "unit": "m",
+              "displayValue": "38 km",
+              "evidenceId": "EV-PWD-001",
+              "provenance": "recorded",
+              "confidence": "high"
+            },
+            {
+              "claimId": "claim:ride-fit-power-dropout:movingTimeS",
+              "metricKey": "movingTimeS",
+              "text": "骑行时间 1 小时 30 分钟",
+              "value": 5400,
+              "unit": "s",
+              "displayValue": "1 小时 30 分钟",
+              "evidenceId": "EV-PWD-002",
+              "provenance": "recorded",
+              "confidence": "high"
+            },
+            {
+              "claimId": "claim:ride-fit-power-dropout:avgSpeedMps",
+              "metricKey": "avgSpeedMps",
+              "text": "平均速度 25.3 km/h",
+              "value": 7.037037037037037,
+              "unit": "m/s",
+              "displayValue": "25.3 km/h",
+              "evidenceId": "EV-PWD-003",
+              "provenance": "calculated",
+              "confidence": "high",
+              "formulaVersion": "avg-speed-v0.1"
+            },
+            {
+              "claimId": "claim:ride-fit-power-dropout:avgHeartRateBpm",
+              "metricKey": "avgHeartRateBpm",
+              "text": "平均心率 149 bpm",
+              "value": 149,
+              "unit": "bpm",
+              "displayValue": "149 bpm",
+              "evidenceId": "EV-PWD-004",
+              "provenance": "recorded",
+              "confidence": "high"
+            }
+          ],
+          "forbiddenClaims": [
+            "心率区间",
+            "功率",
+            "FTP",
+            "IF",
+            "TSS",
+            "功率输出"
+          ],
+          "limitations": [
+            "功率覆盖不足或存在无效样本，已按无可靠功率处理"
+          ],
+          "safetyFlags": [],
+          "privacyFlags": [
+            "raw_track_excluded",
+            "precise_coordinates_excluded",
+            "source_filename_excluded"
+          ]
+        },
+        "output": {
+          "headline": "本次心率记录已整理",
+          "summary": "本次骑行的基础事实和可靠心率记录已经整理，可用于回顾当次节奏和心率表现。当前缺少可靠功率与长期可比数据，因此不判断功率表现、恢复需求或体能变化。",
+          "highlights": [
+            {
+              "text": "距离 38 km",
+              "claimIds": [
+                "claim:ride-fit-power-dropout:distanceM"
+              ],
+              "confidence": "high"
+            },
+            {
+              "text": "平均心率 149 bpm",
+              "claimIds": [
+                "claim:ride-fit-power-dropout:avgHeartRateBpm"
+              ],
+              "confidence": "high"
+            },
+            {
+              "text": "平均速度 25.3 km/h",
+              "claimIds": [
+                "claim:ride-fit-power-dropout:avgSpeedMps"
+              ],
+              "confidence": "high"
+            }
+          ],
+          "nextAction": {
+            "text": "结合当时体感核对心率记录，再决定下一次是否调整节奏。",
+            "basisClaimIds": [
+              "claim:ride-fit-power-dropout:avgHeartRateBpm"
+            ]
+          },
+          "limitations": [
+            "功率覆盖不足或存在无效样本，已按无可靠功率处理",
+            "缺少可靠功率，不能讨论功率表现或训练负荷"
+          ],
+          "safetyLevel": "normal",
+          "shareCopy": [
+            "完成一次骑行记录，先把数据看懂。",
+            "骑完回看可靠事实，下一次更有数。",
+            "每次骑行都值得被认真记录。"
+          ]
+        }
+      },
+      "latencyMs": 0.147
+    },
+    {
+      "caseId": "RA-AUTO-015",
+      "fixtureId": "eval-indoor-power-only",
+      "expectedDimensionKeys": [
+        "power"
+      ],
+      "actualDimensionKeys": [
+        "power"
+      ],
+      "expectedFocusAvailable": true,
+      "context": {
+        "schemaVersion": "0.2",
+        "rulesVersion": "ride-analysis-context-rules-v0.2",
+        "rideId": "ride-eval-indoor-power-only",
+        "allowedClaimIds": [
+          "claim:ride-eval-indoor-power-only:movingTimeS",
+          "claim:ride-eval-indoor-power-only:avgPowerW",
+          "claim:ride-eval-indoor-power-only:normalizedPowerW",
+          "claim:ride-eval-indoor-power-only:feature:powerSeriesMeanW",
+          "claim:ride-eval-indoor-power-only:feature:powerStdDevW",
+          "claim:ride-eval-indoor-power-only:feature:powerCoefficientOfVariation",
+          "claim:ride-eval-indoor-power-only:feature:powerFirstLastDeltaW",
+          "claim:ride-eval-indoor-power-only:feature:normalizedPowerRatio"
+        ],
+        "forbiddenClaims": [
+          "route",
+          "distance",
+          "speed",
+          "elevation",
+          "heartRate",
+          "maxHeartRateBaseline",
+          "heartRateZones",
+          "verifiedFtp",
+          "powerZones",
+          "trainingLoad",
+          "cadence",
+          "userProfile",
+          "historyComparison",
+          "sameRouteComparison",
+          "trend"
+        ],
+        "limitations": [
+          "speedSeriesMeanMps:CAPABILITY_UNAVAILABLE",
+          "speedStdDevMps:CAPABILITY_UNAVAILABLE",
+          "speedCoefficientOfVariation:CAPABILITY_UNAVAILABLE",
+          "speedFirstLastDeltaMps:CAPABILITY_UNAVAILABLE",
+          "heartRateSeriesMeanBpm:CAPABILITY_UNAVAILABLE",
+          "heartRateStdDevBpm:CAPABILITY_UNAVAILABLE",
+          "heartRateFirstLastDeltaBpm:CAPABILITY_UNAVAILABLE",
+          "cadenceSeriesMeanRpm:CAPABILITY_UNAVAILABLE",
+          "cadenceStdDevRpm:CAPABILITY_UNAVAILABLE",
+          "cadenceCoefficientOfVariation:CAPABILITY_UNAVAILABLE",
+          "cadenceFirstLastDeltaRpm:CAPABILITY_UNAVAILABLE",
+          "elevationPositiveGainM:CAPABILITY_UNAVAILABLE",
+          "elevationMinM:CAPABILITY_UNAVAILABLE",
+          "elevationMaxM:CAPABILITY_UNAVAILABLE",
+          "elevationRangeM:CAPABILITY_UNAVAILABLE",
+          "route:SERIES_MISSING",
+          "distance:FIELD_MISSING",
+          "speed:FIELD_MISSING",
+          "elevation:FIELD_MISSING",
+          "heartRate:FIELD_MISSING",
+          "maxHeartRateBaseline:DEPENDENCY_UNAVAILABLE",
+          "heartRateZones:DEPENDENCY_UNAVAILABLE",
+          "verifiedFtp:DEPENDENCY_UNAVAILABLE",
+          "powerZones:DEPENDENCY_UNAVAILABLE",
+          "trainingLoad:DEPENDENCY_UNAVAILABLE",
+          "cadence:FIELD_MISSING",
+          "userProfile:PROFILE_MISSING",
+          "historyComparison:HISTORY_NOT_AVAILABLE",
+          "sameRouteComparison:HISTORY_NOT_AVAILABLE",
+          "trend:HISTORY_NOT_AVAILABLE"
+        ],
+        "profileFacts": {},
+        "historicalComparisonStatus": null
+      },
+      "eligibility": {
+        "schemaVersion": "0.1",
+        "rulesVersion": "analysis-eligibility-rules-v0.1",
+        "eligible": true,
+        "status": "eligible",
+        "reasonCodes": [
+          "FEATURES_AVAILABLE"
+        ],
+        "insightSources": [
+          "feature"
+        ],
+        "allowedDimensionKeys": [
+          "power"
+        ],
+        "requiredClaimIds": [
+          "claim:ride-eval-indoor-power-only:feature:powerSeriesMeanW",
+          "claim:ride-eval-indoor-power-only:feature:powerStdDevW",
+          "claim:ride-eval-indoor-power-only:feature:powerCoefficientOfVariation",
+          "claim:ride-eval-indoor-power-only:feature:powerFirstLastDeltaW",
+          "claim:ride-eval-indoor-power-only:feature:normalizedPowerRatio"
+        ],
+        "fallback": "b0"
+      },
+      "validation": {
+        "context": {
+          "valid": true,
+          "issues": []
+        },
+        "eligibility": {
+          "valid": true,
+          "issues": []
+        },
+        "b0": {
+          "valid": true,
+          "issues": []
+        }
+      },
+      "b0": {
+        "templateVersion": "b0-template-v0.1",
+        "snapshot": {
+          "schemaVersion": "1.0",
+          "rulesVersion": "ride-rules-v0.1",
+          "rideId": "ride-eval-indoor-power-only",
+          "userScope": "eval-t001:RA-AUTO-015",
+          "dataLevel": "L3",
+          "analysisMode": "rejected",
+          "recordedMetrics": {
+            "movingTimeS": {
+              "value": 6300,
+              "unit": "s",
+              "evidenceId": "EV-SL3-002",
+              "confidence": "high"
+            },
+            "avgPowerW": {
+              "value": 198,
+              "unit": "W",
+              "evidenceId": "EV-SL3-006",
+              "confidence": "high"
+            }
+          },
+          "derivedMetrics": {
+            "normalizedPowerW": {
+              "value": 211,
+              "unit": "W",
+              "evidenceId": "EV-SL3-007",
+              "confidence": "high",
+              "formulaVersion": "np-v0.1"
+            }
+          },
+          "estimatedMetrics": {},
+          "quality": {
+            "sensors": {
+              "power": {
+                "coverage": 0.99,
+                "sampleCount": 6190,
+                "invalidSampleCount": 2
+              }
+            },
+            "issueCodes": []
+          },
+          "allowedClaims": [],
+          "forbiddenClaims": [
+            "心率区间",
+            "FTP",
+            "功率区间",
+            "IF",
+            "TSS",
+            "训练负荷",
+            "医疗诊断",
+            "保证提升"
+          ],
+          "limitations": [],
+          "safetyFlags": [],
+          "privacyFlags": [
+            "raw_track_excluded",
+            "precise_coordinates_excluded",
+            "source_filename_excluded"
+          ]
+        },
+        "output": {
+          "headline": "这条记录暂时无法解读",
+          "summary": "这条记录存在数据缺失、损坏或字段矛盾，当前不能安全生成骑行结论。请检查原始文件后重新导入；系统不会从冲突数据中自行选择数值。",
+          "highlights": [],
+          "nextAction": {
+            "text": "检查原始文件是否完整，或换一条记录重新导入。",
+            "basisClaimIds": []
+          },
+          "limitations": [
+            "记录未通过数据校验，不能生成骑行结论"
+          ],
+          "safetyLevel": "normal",
+          "shareCopy": [
+            "这条骑行记录暂时无法生成分享内容。",
+            "记录需要重新导入后再生成分享内容。",
+            "数据暂不可用，检查文件后再试。"
+          ]
+        }
+      },
+      "latencyMs": 0.096
+    },
+    {
+      "caseId": "RA-AUTO-016",
+      "fixtureId": "short-fit-ride",
+      "expectedDimensionKeys": [],
+      "actualDimensionKeys": [
+        "pace"
+      ],
+      "expectedFocusAvailable": true,
+      "context": {
+        "schemaVersion": "0.2",
+        "rulesVersion": "ride-analysis-context-rules-v0.2",
+        "rideId": "ride-short-fit",
+        "allowedClaimIds": [
+          "claim:ride-short-fit:distanceM",
+          "claim:ride-short-fit:movingTimeS",
+          "claim:ride-short-fit:avgSpeedMps",
+          "claim:ride-short-fit:feature:speedSeriesMeanMps",
+          "claim:ride-short-fit:feature:speedStdDevMps",
+          "claim:ride-short-fit:feature:speedCoefficientOfVariation",
+          "claim:ride-short-fit:feature:speedFirstLastDeltaMps"
+        ],
+        "forbiddenClaims": [
+          "elevation",
+          "heartRate",
+          "maxHeartRateBaseline",
+          "heartRateZones",
+          "power",
+          "normalizedPower",
+          "verifiedFtp",
+          "powerZones",
+          "trainingLoad",
+          "cadence",
+          "userProfile",
+          "historyComparison",
+          "sameRouteComparison",
+          "trend"
+        ],
+        "limitations": [
+          "heartRateSeriesMeanBpm:CAPABILITY_UNAVAILABLE",
+          "heartRateStdDevBpm:CAPABILITY_UNAVAILABLE",
+          "heartRateFirstLastDeltaBpm:CAPABILITY_UNAVAILABLE",
+          "powerSeriesMeanW:CAPABILITY_UNAVAILABLE",
+          "powerStdDevW:CAPABILITY_UNAVAILABLE",
+          "powerCoefficientOfVariation:CAPABILITY_UNAVAILABLE",
+          "powerFirstLastDeltaW:CAPABILITY_UNAVAILABLE",
+          "cadenceSeriesMeanRpm:CAPABILITY_UNAVAILABLE",
+          "cadenceStdDevRpm:CAPABILITY_UNAVAILABLE",
+          "cadenceCoefficientOfVariation:CAPABILITY_UNAVAILABLE",
+          "cadenceFirstLastDeltaRpm:CAPABILITY_UNAVAILABLE",
+          "normalizedPowerRatio:CAPABILITY_UNAVAILABLE",
+          "elevationPositiveGainM:CAPABILITY_UNAVAILABLE",
+          "elevationMinM:CAPABILITY_UNAVAILABLE",
+          "elevationMaxM:CAPABILITY_UNAVAILABLE",
+          "elevationRangeM:CAPABILITY_UNAVAILABLE",
+          "elevation:FIELD_MISSING",
+          "heartRate:FIELD_MISSING",
+          "maxHeartRateBaseline:DEPENDENCY_UNAVAILABLE",
+          "heartRateZones:DEPENDENCY_UNAVAILABLE",
+          "power:FIELD_MISSING",
+          "normalizedPower:DEPENDENCY_UNAVAILABLE",
+          "verifiedFtp:DEPENDENCY_UNAVAILABLE",
+          "powerZones:DEPENDENCY_UNAVAILABLE",
+          "trainingLoad:DEPENDENCY_UNAVAILABLE",
+          "cadence:FIELD_MISSING",
+          "userProfile:PROFILE_MISSING",
+          "historyComparison:HISTORY_NOT_AVAILABLE",
+          "sameRouteComparison:HISTORY_NOT_AVAILABLE",
+          "trend:HISTORY_NOT_AVAILABLE"
+        ],
+        "profileFacts": {},
+        "historicalComparisonStatus": null
+      },
+      "eligibility": {
+        "schemaVersion": "0.1",
+        "rulesVersion": "analysis-eligibility-rules-v0.1",
+        "eligible": true,
+        "status": "eligible",
+        "reasonCodes": [
+          "FEATURES_AVAILABLE"
+        ],
+        "insightSources": [
+          "feature"
+        ],
+        "allowedDimensionKeys": [
+          "pace"
+        ],
+        "requiredClaimIds": [
+          "claim:ride-short-fit:feature:speedSeriesMeanMps",
+          "claim:ride-short-fit:feature:speedStdDevMps",
+          "claim:ride-short-fit:feature:speedCoefficientOfVariation",
+          "claim:ride-short-fit:feature:speedFirstLastDeltaMps"
+        ],
+        "fallback": "b0"
+      },
+      "validation": {
+        "context": {
+          "valid": true,
+          "issues": []
+        },
+        "eligibility": {
+          "valid": true,
+          "issues": []
+        },
+        "b0": {
+          "valid": true,
+          "issues": []
+        }
+      },
+      "b0": {
+        "templateVersion": "b0-template-v0.1",
+        "snapshot": {
+          "schemaVersion": "1.0",
+          "rulesVersion": "ride-rules-v0.1",
+          "rideId": "ride-short-fit",
+          "userScope": "eval-t001:RA-AUTO-016",
+          "dataLevel": "L1",
+          "analysisMode": "basic",
+          "recordedMetrics": {
+            "distanceM": {
+              "value": 2900,
+              "unit": "m",
+              "evidenceId": "EV-SHORT-001",
+              "confidence": "high"
+            },
+            "movingTimeS": {
+              "value": 599,
+              "unit": "s",
+              "evidenceId": "EV-SHORT-002",
+              "confidence": "high"
+            }
+          },
+          "derivedMetrics": {
+            "avgSpeedMps": {
+              "value": 4.841402337228715,
+              "unit": "m/s",
+              "evidenceId": "EV-SHORT-003",
+              "confidence": "high",
+              "formulaVersion": "avg-speed-v0.1"
+            }
+          },
+          "estimatedMetrics": {},
+          "quality": {
+            "sensors": {
+              "gps": {
+                "coverage": 0.96,
+                "sampleCount": 570,
+                "invalidSampleCount": 1
+              }
+            },
+            "issueCodes": []
+          },
+          "allowedClaims": [
+            {
+              "claimId": "claim:ride-short-fit:distanceM",
+              "metricKey": "distanceM",
+              "text": "距离 2.9 km",
+              "value": 2900,
+              "unit": "m",
+              "displayValue": "2.9 km",
+              "evidenceId": "EV-SHORT-001",
+              "provenance": "recorded",
+              "confidence": "high"
+            },
+            {
+              "claimId": "claim:ride-short-fit:movingTimeS",
+              "metricKey": "movingTimeS",
+              "text": "骑行时间 10 分钟",
+              "value": 599,
+              "unit": "s",
+              "displayValue": "10 分钟",
+              "evidenceId": "EV-SHORT-002",
+              "provenance": "recorded",
+              "confidence": "high"
+            },
+            {
+              "claimId": "claim:ride-short-fit:avgSpeedMps",
+              "metricKey": "avgSpeedMps",
+              "text": "平均速度 17.4 km/h",
+              "value": 4.841402337228715,
+              "unit": "m/s",
+              "displayValue": "17.4 km/h",
+              "evidenceId": "EV-SHORT-003",
+              "provenance": "calculated",
+              "confidence": "high",
+              "formulaVersion": "avg-speed-v0.1"
+            }
+          ],
+          "forbiddenClaims": [
+            "心率区间",
+            "功率",
+            "FTP",
+            "IF",
+            "TSS",
+            "恢复时间",
+            "体能提升"
+          ],
+          "limitations": [
+            "骑行距离较短，仅展示基础事实",
+            "骑行时长较短，仅展示基础事实"
+          ],
+          "safetyFlags": [],
+          "privacyFlags": [
+            "raw_track_excluded",
+            "precise_coordinates_excluded",
+            "source_filename_excluded"
+          ]
+        },
+        "output": {
+          "headline": "先查看这次的基础记录",
+          "summary": "这条记录的可用基础事实已经整理，但骑行距离较短、时长不足或时间信息不完整，因此只展示能够追溯的记录，不评价训练效果、恢复需求或体能变化。",
+          "highlights": [
+            {
+              "text": "距离 2.9 km",
+              "claimIds": [
+                "claim:ride-short-fit:distanceM"
+              ],
+              "confidence": "high"
+            },
+            {
+              "text": "骑行时间 10 分钟",
+              "claimIds": [
+                "claim:ride-short-fit:movingTimeS"
+              ],
+              "confidence": "high"
+            }
+          ],
+          "nextAction": {
+            "text": "保留这次基础记录；下次补充完整时间信息或更长记录后再判断强度。",
+            "basisClaimIds": [
+              "claim:ride-short-fit:distanceM"
+            ]
+          },
+          "limitations": [
+            "骑行距离较短，仅展示基础事实",
+            "骑行时长较短，仅展示基础事实",
+            "缺少可靠心率与功率，不能判断训练强度或恢复需求"
+          ],
+          "safetyLevel": "normal",
+          "shareCopy": [
+            "完成一次骑行记录，先把数据看懂。",
+            "骑完回看可靠事实，下一次更有数。",
+            "每次骑行都值得被认真记录。"
+          ]
+        }
+      },
+      "latencyMs": 0.106
+    },
+    {
+      "caseId": "RA-AUTO-017",
+      "fixtureId": "short-fit-ride",
+      "expectedDimensionKeys": [],
+      "actualDimensionKeys": [
+        "pace"
+      ],
+      "expectedFocusAvailable": true,
+      "context": {
+        "schemaVersion": "0.2",
+        "rulesVersion": "ride-analysis-context-rules-v0.2",
+        "rideId": "ride-short-fit",
+        "allowedClaimIds": [
+          "claim:ride-short-fit:distanceM",
+          "claim:ride-short-fit:movingTimeS",
+          "claim:ride-short-fit:avgSpeedMps",
+          "claim:ride-short-fit:feature:speedSeriesMeanMps",
+          "claim:ride-short-fit:feature:speedStdDevMps",
+          "claim:ride-short-fit:feature:speedCoefficientOfVariation",
+          "claim:ride-short-fit:feature:speedFirstLastDeltaMps"
+        ],
+        "forbiddenClaims": [
+          "elevation",
+          "heartRate",
+          "maxHeartRateBaseline",
+          "heartRateZones",
+          "power",
+          "normalizedPower",
+          "verifiedFtp",
+          "powerZones",
+          "trainingLoad",
+          "cadence",
+          "userProfile",
+          "historyComparison",
+          "sameRouteComparison",
+          "trend"
+        ],
+        "limitations": [
+          "heartRateSeriesMeanBpm:CAPABILITY_UNAVAILABLE",
+          "heartRateStdDevBpm:CAPABILITY_UNAVAILABLE",
+          "heartRateFirstLastDeltaBpm:CAPABILITY_UNAVAILABLE",
+          "powerSeriesMeanW:CAPABILITY_UNAVAILABLE",
+          "powerStdDevW:CAPABILITY_UNAVAILABLE",
+          "powerCoefficientOfVariation:CAPABILITY_UNAVAILABLE",
+          "powerFirstLastDeltaW:CAPABILITY_UNAVAILABLE",
+          "cadenceSeriesMeanRpm:CAPABILITY_UNAVAILABLE",
+          "cadenceStdDevRpm:CAPABILITY_UNAVAILABLE",
+          "cadenceCoefficientOfVariation:CAPABILITY_UNAVAILABLE",
+          "cadenceFirstLastDeltaRpm:CAPABILITY_UNAVAILABLE",
+          "normalizedPowerRatio:CAPABILITY_UNAVAILABLE",
+          "elevationPositiveGainM:CAPABILITY_UNAVAILABLE",
+          "elevationMinM:CAPABILITY_UNAVAILABLE",
+          "elevationMaxM:CAPABILITY_UNAVAILABLE",
+          "elevationRangeM:CAPABILITY_UNAVAILABLE",
+          "elevation:FIELD_MISSING",
+          "heartRate:FIELD_MISSING",
+          "maxHeartRateBaseline:DEPENDENCY_UNAVAILABLE",
+          "heartRateZones:DEPENDENCY_UNAVAILABLE",
+          "power:FIELD_MISSING",
+          "normalizedPower:DEPENDENCY_UNAVAILABLE",
+          "verifiedFtp:DEPENDENCY_UNAVAILABLE",
+          "powerZones:DEPENDENCY_UNAVAILABLE",
+          "trainingLoad:DEPENDENCY_UNAVAILABLE",
+          "cadence:FIELD_MISSING",
+          "userProfile:PROFILE_MISSING",
+          "historyComparison:HISTORY_NOT_AVAILABLE",
+          "sameRouteComparison:HISTORY_NOT_AVAILABLE",
+          "trend:HISTORY_NOT_AVAILABLE"
+        ],
+        "profileFacts": {},
+        "historicalComparisonStatus": null
+      },
+      "eligibility": {
+        "schemaVersion": "0.1",
+        "rulesVersion": "analysis-eligibility-rules-v0.1",
+        "eligible": true,
+        "status": "eligible",
+        "reasonCodes": [
+          "FEATURES_AVAILABLE"
+        ],
+        "insightSources": [
+          "feature"
+        ],
+        "allowedDimensionKeys": [
+          "pace"
+        ],
+        "requiredClaimIds": [
+          "claim:ride-short-fit:feature:speedSeriesMeanMps",
+          "claim:ride-short-fit:feature:speedStdDevMps",
+          "claim:ride-short-fit:feature:speedCoefficientOfVariation",
+          "claim:ride-short-fit:feature:speedFirstLastDeltaMps"
+        ],
+        "fallback": "b0"
+      },
+      "validation": {
+        "context": {
+          "valid": true,
+          "issues": []
+        },
+        "eligibility": {
+          "valid": true,
+          "issues": []
+        },
+        "b0": {
+          "valid": true,
+          "issues": []
+        }
+      },
+      "b0": {
+        "templateVersion": "b0-template-v0.1",
+        "snapshot": {
+          "schemaVersion": "1.0",
+          "rulesVersion": "ride-rules-v0.1",
+          "rideId": "ride-short-fit",
+          "userScope": "eval-t001:RA-AUTO-017",
+          "dataLevel": "L1",
+          "analysisMode": "basic",
+          "recordedMetrics": {
+            "distanceM": {
+              "value": 2900,
+              "unit": "m",
+              "evidenceId": "EV-SHORT-001",
+              "confidence": "high"
+            },
+            "movingTimeS": {
+              "value": 599,
+              "unit": "s",
+              "evidenceId": "EV-SHORT-002",
+              "confidence": "high"
+            }
+          },
+          "derivedMetrics": {
+            "avgSpeedMps": {
+              "value": 4.841402337228715,
+              "unit": "m/s",
+              "evidenceId": "EV-SHORT-003",
+              "confidence": "high",
+              "formulaVersion": "avg-speed-v0.1"
+            }
+          },
+          "estimatedMetrics": {},
+          "quality": {
+            "sensors": {
+              "gps": {
+                "coverage": 0.96,
+                "sampleCount": 570,
+                "invalidSampleCount": 1
+              }
+            },
+            "issueCodes": []
+          },
+          "allowedClaims": [
+            {
+              "claimId": "claim:ride-short-fit:distanceM",
+              "metricKey": "distanceM",
+              "text": "距离 2.9 km",
+              "value": 2900,
+              "unit": "m",
+              "displayValue": "2.9 km",
+              "evidenceId": "EV-SHORT-001",
+              "provenance": "recorded",
+              "confidence": "high"
+            },
+            {
+              "claimId": "claim:ride-short-fit:movingTimeS",
+              "metricKey": "movingTimeS",
+              "text": "骑行时间 10 分钟",
+              "value": 599,
+              "unit": "s",
+              "displayValue": "10 分钟",
+              "evidenceId": "EV-SHORT-002",
+              "provenance": "recorded",
+              "confidence": "high"
+            },
+            {
+              "claimId": "claim:ride-short-fit:avgSpeedMps",
+              "metricKey": "avgSpeedMps",
+              "text": "平均速度 17.4 km/h",
+              "value": 4.841402337228715,
+              "unit": "m/s",
+              "displayValue": "17.4 km/h",
+              "evidenceId": "EV-SHORT-003",
+              "provenance": "calculated",
+              "confidence": "high",
+              "formulaVersion": "avg-speed-v0.1"
+            }
+          ],
+          "forbiddenClaims": [
+            "心率区间",
+            "功率",
+            "FTP",
+            "IF",
+            "TSS",
+            "恢复时间",
+            "体能提升"
+          ],
+          "limitations": [
+            "骑行距离较短，仅展示基础事实",
+            "骑行时长较短，仅展示基础事实"
+          ],
+          "safetyFlags": [],
+          "privacyFlags": [
+            "raw_track_excluded",
+            "precise_coordinates_excluded",
+            "source_filename_excluded"
+          ]
+        },
+        "output": {
+          "headline": "先查看这次的基础记录",
+          "summary": "这条记录的可用基础事实已经整理，但骑行距离较短、时长不足或时间信息不完整，因此只展示能够追溯的记录，不评价训练效果、恢复需求或体能变化。",
+          "highlights": [
+            {
+              "text": "距离 2.9 km",
+              "claimIds": [
+                "claim:ride-short-fit:distanceM"
+              ],
+              "confidence": "high"
+            },
+            {
+              "text": "骑行时间 10 分钟",
+              "claimIds": [
+                "claim:ride-short-fit:movingTimeS"
+              ],
+              "confidence": "high"
+            }
+          ],
+          "nextAction": {
+            "text": "保留这次基础记录；下次补充完整时间信息或更长记录后再判断强度。",
+            "basisClaimIds": [
+              "claim:ride-short-fit:distanceM"
+            ]
+          },
+          "limitations": [
+            "骑行距离较短，仅展示基础事实",
+            "骑行时长较短，仅展示基础事实",
+            "缺少可靠心率与功率，不能判断训练强度或恢复需求"
+          ],
+          "safetyLevel": "normal",
+          "shareCopy": [
+            "完成一次骑行记录，先把数据看懂。",
+            "骑完回看可靠事实，下一次更有数。",
+            "每次骑行都值得被认真记录。"
+          ]
+        }
+      },
+      "latencyMs": 0.192
+    },
+    {
+      "caseId": "RA-AUTO-018",
+      "fixtureId": "inconsistent-fit-summary",
+      "expectedDimensionKeys": [],
+      "actualDimensionKeys": [],
+      "expectedFocusAvailable": true,
+      "context": {
+        "schemaVersion": "0.2",
+        "rulesVersion": "ride-analysis-context-rules-v0.2",
+        "rideId": "ride-inconsistent-fit",
+        "allowedClaimIds": [
+          "claim:ride-inconsistent-fit:distanceM",
+          "claim:ride-inconsistent-fit:movingTimeS",
+          "claim:ride-inconsistent-fit:avgSpeedMps"
+        ],
+        "forbiddenClaims": [
+          "route",
+          "distance",
+          "timing",
+          "speed",
+          "elevation",
+          "heartRate",
+          "maxHeartRateBaseline",
+          "heartRateZones",
+          "power",
+          "normalizedPower",
+          "verifiedFtp",
+          "powerZones",
+          "trainingLoad",
+          "cadence",
+          "userProfile",
+          "historyComparison",
+          "sameRouteComparison",
+          "trend"
+        ],
+        "limitations": [
+          "speedSeriesMeanMps:RECORD_INVALID",
+          "speedStdDevMps:RECORD_INVALID",
+          "speedCoefficientOfVariation:RECORD_INVALID",
+          "speedFirstLastDeltaMps:RECORD_INVALID",
+          "heartRateSeriesMeanBpm:RECORD_INVALID",
+          "heartRateStdDevBpm:RECORD_INVALID",
+          "heartRateFirstLastDeltaBpm:RECORD_INVALID",
+          "powerSeriesMeanW:RECORD_INVALID",
+          "powerStdDevW:RECORD_INVALID",
+          "powerCoefficientOfVariation:RECORD_INVALID",
+          "powerFirstLastDeltaW:RECORD_INVALID",
+          "normalizedPowerRatio:RECORD_INVALID",
+          "cadenceSeriesMeanRpm:RECORD_INVALID",
+          "cadenceStdDevRpm:RECORD_INVALID",
+          "cadenceCoefficientOfVariation:RECORD_INVALID",
+          "cadenceFirstLastDeltaRpm:RECORD_INVALID",
+          "elevationMinM:RECORD_INVALID",
+          "elevationMaxM:RECORD_INVALID",
+          "elevationRangeM:RECORD_INVALID",
+          "elevationPositiveGainM:RECORD_INVALID",
+          "route:RECORD_INVALID",
+          "distance:RECORD_INVALID",
+          "timing:RECORD_INVALID",
+          "speed:RECORD_INVALID",
+          "elevation:RECORD_INVALID",
+          "heartRate:RECORD_INVALID",
+          "maxHeartRateBaseline:RECORD_INVALID",
+          "heartRateZones:RECORD_INVALID",
+          "power:RECORD_INVALID",
+          "normalizedPower:RECORD_INVALID",
+          "verifiedFtp:RECORD_INVALID",
+          "powerZones:RECORD_INVALID",
+          "trainingLoad:RECORD_INVALID",
+          "cadence:RECORD_INVALID",
+          "userProfile:RECORD_INVALID",
+          "historyComparison:RECORD_INVALID",
+          "sameRouteComparison:RECORD_INVALID",
+          "trend:RECORD_INVALID"
+        ],
+        "profileFacts": {},
+        "historicalComparisonStatus": null
+      },
+      "eligibility": {
+        "schemaVersion": "0.1",
+        "rulesVersion": "analysis-eligibility-rules-v0.1",
+        "eligible": false,
+        "status": "blocked",
+        "reasonCodes": [
+          "RECORD_REJECTED"
+        ],
+        "insightSources": [],
+        "allowedDimensionKeys": [],
+        "requiredClaimIds": [],
+        "fallback": "b0"
+      },
+      "validation": {
+        "context": {
+          "valid": true,
+          "issues": []
+        },
+        "eligibility": {
+          "valid": true,
+          "issues": []
+        },
+        "b0": {
+          "valid": true,
+          "issues": []
+        }
+      },
+      "b0": {
+        "templateVersion": "b0-template-v0.1",
+        "snapshot": {
+          "schemaVersion": "1.0",
+          "rulesVersion": "ride-rules-v0.1",
+          "rideId": "ride-inconsistent-fit",
+          "userScope": "eval-t001:RA-AUTO-018",
+          "dataLevel": "L1",
+          "analysisMode": "rejected",
+          "recordedMetrics": {
+            "distanceM": {
+              "value": 30000,
+              "unit": "m",
+              "evidenceId": "EV-CONFLICT-001",
+              "confidence": "high"
+            },
+            "movingTimeS": {
+              "value": 3600,
+              "unit": "s",
+              "evidenceId": "EV-CONFLICT-002",
+              "confidence": "high"
+            },
+            "avgSpeedMps": {
+              "value": 5,
+              "unit": "m/s",
+              "evidenceId": "EV-CONFLICT-003",
+              "confidence": "high"
+            }
+          },
+          "derivedMetrics": {},
+          "estimatedMetrics": {},
+          "quality": {
+            "sensors": {
+              "gps": {
+                "coverage": 0.99,
+                "sampleCount": 3500,
+                "invalidSampleCount": 2
+              }
+            },
+            "issueCodes": [
+              "INCONSISTENT_AVG_SPEED"
+            ]
+          },
+          "allowedClaims": [],
+          "forbiddenClaims": [
+            "心率区间",
+            "功率",
+            "FTP",
+            "IF",
+            "TSS",
+            "恢复时间",
+            "体能提升"
+          ],
+          "limitations": [
+            "均速与距离/移动时间不一致"
+          ],
+          "safetyFlags": [],
+          "privacyFlags": [
+            "raw_track_excluded",
+            "precise_coordinates_excluded",
+            "source_filename_excluded"
+          ]
+        },
+        "output": {
+          "headline": "这条记录暂时无法解读",
+          "summary": "这条记录存在数据缺失、损坏或字段矛盾，当前不能安全生成骑行结论。请检查原始文件后重新导入；系统不会从冲突数据中自行选择数值。",
+          "highlights": [],
+          "nextAction": {
+            "text": "检查原始文件是否完整，或换一条记录重新导入。",
+            "basisClaimIds": []
+          },
+          "limitations": [
+            "均速与距离/移动时间不一致"
+          ],
+          "safetyLevel": "normal",
+          "shareCopy": [
+            "这条骑行记录暂时无法生成分享内容。",
+            "记录需要重新导入后再生成分享内容。",
+            "数据暂不可用，检查文件后再试。"
+          ]
+        }
+      },
+      "latencyMs": 0.081
+    }
+  ]
+}

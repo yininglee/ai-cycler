@@ -351,9 +351,9 @@ flowchart TD
     S -->|"再失败/超时/供应商错误"| F1["服务端 B0 兜底"]
 ```
 
-`ITEM-V005`的旧Prompt v1.2单条样例曾完成一次受限修复，但洞察价值未通过用户评审，不能继续发布。`ITEM-V014`的L1/L2/L3无Few-shot冒烟、一次受限修复和B0降级已完成工程验收；模型质量转入T001固定集验证。当前基线为Prompt v3.1.2、`ride-analysis-input-v0.2`和`ride_analysis_v2-dev.15`。v3.1、v3.1.1、v3.2.1和此前候选均保存在独立归档文件中，不得覆盖或作为当前候选误用。v3.1.2保留v3.1的整体评价逻辑，并补充跨维度整体评价选择：当速度、心率、功率、踏频或可比历史共同决定整体判断时，整体评价应合并这些有认知增量的证据并补齐Claim；无整体增量的维度可只留在dimensions。Prompt同时补充传感器缺失限制说明、低风险分享文案、事实降级、pace“事实 + 直接意义”以及内部统计量无明确用户价值时省略的规则；基础Claim可作为已开放维度的证据，但不能被拆成字段型维度；`endurance`在服务端未开放前，模型不得自行从距离/时间推断耐力。Few-shot v0.1因内容质量问题标为草稿并关闭注入。确定性检查仍统一放在服务端，扣子只保留开始、LLM和可选结束节点；不能把结构化输出成功称为模型质量通过。
+`ITEM-V005`的旧Prompt v1.2单条样例曾完成一次受限修复，但洞察价值未通过用户评审，不能继续发布。`ITEM-V014`的v3.1.1 L1/L2/L3无Few-shot冒烟、一次受限修复和自动化B0降级已留存；最终Prompt v3.1.2的L3归档与合同修复、L1/L2试运行、真实受限修复与二次失败转B0三个切片及V014整体均已验收。T001已按`DEC-065`完成并验收Service v1.5/特征规则v0.2的v0.2 manifest、18输入SHA-256、54槽接收合同和同矩阵B0 `RUN-20260824-028`。在新Git冻结基线完成前不发布扣子工作流、不接入API/UI、不运行真实固定集。当前候选为Prompt v3.1.2、`ride-analysis-input-v0.2`和`ride_analysis_v2-dev.15`。v3.1、v3.1.1、v3.2.1和此前候选均保存在独立归档文件中，不得覆盖或作为当前候选误用。v3.1.2保留v3.1的整体评价逻辑，并补充跨维度整体评价选择：当速度、心率、功率、踏频或可比历史共同决定整体判断时，整体评价应合并这些有认知增量的证据并补齐Claim；无整体增量的维度可只留在dimensions。Prompt同时补充传感器缺失限制说明、低风险分享文案、事实降级、pace“事实 + 直接意义”以及内部统计量无明确用户价值时省略的规则；基础Claim可作为已开放维度的证据，但不能被拆成字段型维度；`endurance`在服务端未开放前，模型不得自行从距离/时间推断耐力。Few-shot v0.1因内容质量问题标为草稿并关闭注入。确定性检查仍统一放在服务端，扣子只保留开始、LLM和可选结束节点；不能把结构化输出成功称为模型质量通过。
 
-输入只接收分析上下文，不接收原始轨迹点。`ITEM-V013`已将以下输出Schema v0.3最小语义冻结为独立合同并完成用户验收；`ITEM-V014`已把它接入Prompt/Few-shot/服务端扣子输入链路，替代旧`summary + highlights`七字段基线：
+输入只接收分析上下文，不接收原始轨迹点。`ITEM-V013`已将以下输出Schema v0.3最小语义冻结为独立合同并完成用户验收；`ITEM-V014`的Prompt/Few-shot/服务端扣子输入链路实现、三个验证切片和整体验收均已完成：
 
 ```json
 {
@@ -643,9 +643,9 @@ v0.1草稿库覆盖10类：仅轨迹/时间/海拔、仅心率、仅功率、心
 
 ### 阶段 3：特征/历史事实链（优先级P0）
 
-- 已完成`RideFeatureSnapshot v0.1`：速度/心率/功率/NP关系/踏频/海拔基础统计与前后段变化；每项带公式版本、claim/evidence，不生成未经校准的冲刺/爬坡事件；
+- 已完成`RideFeatureSnapshot v0.1`：速度/心率/功率/NP关系/踏频/海拔基础统计与前后段变化；当前特征规则为`ride-feature-rules-v0.2`，CV统一使用无量纲`ratio`，均值/标准差/首末差保留物理单位；每项带公式版本、claim/evidence，不生成未经校准的冲刺/爬坡事件；
 - 已完成`HistoricalComparisonSnapshot v0.1`与本地/Fixture `HistoryQueryService`：默认30天、逐指标至少2条有效样本、同路线仅使用可信routeKey；`metric-comparability-v0.2`按来源类别、计算方法、质量和场景敏感性判定；不可比原因和claim/evidence均结构化；
-- `RideAnalysisContext v0.2`、`AnalysisEligibility v0.1`与新AI输出Schema `ride-analysis-output-v0.3`均已验收；Prompt v3.1.2和扣子五变量服务端链路已完成V014工程验收并进入T001固定集基准，`RideAnalysisContext`规则v0.2提供确定性展示值，Few-shot v0.1保留为关闭的草稿候选；
+- `RideAnalysisContext v0.2`、`AnalysisEligibility v0.1`与新AI输出Schema `ride-analysis-output-v0.3`均已验收；Prompt v3.1.2和扣子五变量服务端链路已实现，L3、L1/L2、真实受限修复与B0路径三个切片及V014整体均已验收；`RideAnalysisContext`规则v0.2提供确定性展示值，Few-shot v0.1保留为关闭的草稿候选；
 - 自动解读服务端按需预取历史，首次/不可比不生成历史维度；limitations可说明历史记录不足或无法进行历史对比；
 - Few-shot样例库与能力路由。
 
@@ -817,18 +817,18 @@ v0.1草稿库覆盖10类：仅轨迹/时间/海拔、仅心率、仅功率、心
 
 ### 14.3 当前基准状态
 
-当前仓库已实现并验收`RideActivity v0.2 / RideSeries v0.1`合同、FIT/GPX解析器、GPS质量门、B0确定性摘要和移动Web视觉壳。`RideSeries`只保留相对轨迹和曲线字段，不输出精确经纬度；每条曲线带来源、单位、质量和样本量。ITEM-G0-002以`6 PASS / 0 FAIL`通过G0。`ITEM-V005`的旧七字段B2链路和单条扣子结果只作失败学习证据；T001已把旧30条混合集合拆为18条自动骑后和12条对话集合，并以`RUN-20260823-022`完成18条新合同上下文+B0基线。新AI合同下B1/B2/B3和对话模型基准仍为`NOT_RUN`。
+当前仓库已实现并验收`RideActivity v0.2 / RideSeries v0.1`合同、FIT/GPX解析器、GPS质量门、B0确定性摘要和移动Web视觉壳。`RideSeries`只保留相对轨迹和曲线字段，不输出精确经纬度；每条曲线带来源、单位、质量和样本量。ITEM-G0-002以`6 PASS / 0 FAIL`通过G0。`ITEM-V005`的旧七字段B2链路和单条扣子结果只作失败学习证据；T001已把旧30条混合集合拆为18条自动骑后和12条对话集合，保留历史B0 `RUN-20260823-022`，并以`RUN-20260824-028`完成Service v1.5/特征规则v0.2同矩阵B0。新AI合同下B1/B2/B3和对话模型基准仍为`NOT_RUN`。
 
 当前已经完成的基线资产：
 
 - 明确了 B0–B3 对照组与统一协议；
 - 原30条混合集合保持为历史来源；18条自动骑后已迁移到原子能力、多维输出与历史合同，12条对话场景已独立保存；
 - 定义硬门槛、人工 Rubric、产品验证阈值；
-- 旧B0在`RideActivity v0.2 / RideSeries v0.1`合同下保持14/14；T001新合同上下文+B0基线为18/18，详见`RUN-20260823-022`；历史T0.1/T0.2的13条分母不改写；
+- 旧B0在`RideActivity v0.2 / RideSeries v0.1`合同下保持14/14；T001历史B0 `RUN-20260823-022`和Service v1.5同矩阵B0 `RUN-20260824-028`均为18/18；历史T0.1/T0.2的13条分母不改写；
 - GPS孤立跳点已进入确定性回归集，连续/端点异常按不能安全修复处理；当前总自动测试76/76通过，1条私有真实FIT生成2043个序列点且活动/序列合同均有效，生产构建成功；这些仍是开发验证，不代表多设备兼容；
 - visual-shell-v0.1、`ride-detail-ui-v0.2`、`UserProfile v0.1`、`AtomicCapabilityProfile v0.1`、`RideFeatureSnapshot v0.1`、`HistoricalComparisonSnapshot v0.1`、`RideAnalysisContext v0.2`及`ITEM-V013`的新输出Schema/`AnalysisEligibility`组合合同均已完成用户预览验收，当前矩阵规则为`metric-comparability-v0.2`；
 - G0已通过`DEC-022`正式放行；当前工作项先完成PRD和数据合同重构，不继续沿旧Prompt跑L2/L3；
-- V013、Prompt/Few-shot/扣子输入联调、无AI详情、评测迁移和B0已经完成；新合同B1/B2/B3继续标记为`NOT_RUN`，下一步按18条×3次协议执行并保留全部失败、修复和降级。
+- V013、无AI详情、评测迁移、Prompt/Few-shot/扣子输入联调和V014整体验收均已完成；T001 Service v1.5重冻结实施已完成用户验收。新合同B1/B2/B3继续标记为`NOT_RUN`；当前先建立新Git冻结基线，再单独审查测试环境发布与18条×3次真实运行的必需配置。
 
 骑后AI阶段的发布门：B2硬门槛全部通过，综合质量≥4.2/5，P95≤8秒，且相对B0的洞察价值至少提升1分。对话另过G1-C，不因骑后主Gate通过自动开放。若B2不明显优于B0，就不应为了“有AI”而上线LLM。
 

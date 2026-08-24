@@ -33,7 +33,7 @@ import {
 } from "../domain/ride-summary.ts";
 import type { RideRecord } from "../domain/ride-schema.ts";
 
-export const RIDE_ANALYSIS_SERVICE_VERSION = "ride-analysis-service-v1.4" as const;
+export const RIDE_ANALYSIS_SERVICE_VERSION = "ride-analysis-service-v1.5" as const;
 export const RIDE_ANALYSIS_WORKFLOW_VERSION = "ride_analysis_v2-dev.15" as const;
 export const RIDE_ANALYSIS_PROMPT_VERSION = "3.1.2" as const;
 

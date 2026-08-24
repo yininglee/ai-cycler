@@ -1819,3 +1819,111 @@
 - 提交边界：纳入当前代码、文档、Prompt、非私密fixture、评测清单和可复验证据；排除`.env*`、私有FIT、`node_modules`、`.next`、`.pnpm-store`和TypeScript增量缓存。
 - 安全检查：未发现真实API Token；配置指南中的Token文本均为占位符。
 - 后续规则：真实B2批次必须记录所用commit；本次只建立本地基线，不推送远端。
+
+## LOG-20260824-111｜纠正LOG-20260823-102的V014完成状态
+
+- 元信息：2026-08-24 / v0.1 / ITEM-V014；状态：`CHANGES_REQUESTED`
+- 错误陈述：`LOG-20260823-102`把用户对历史受限修复和B0降级结果的确认解释为V014工程联调范围已完成，并据此启动T001。
+- 正确证据：用户明确澄清，最终Prompt v3.1.2目前只使用L3样例在扣子完成一次试运行；`RUN-20260823-018/019/020`分别属于v3.1.1三能力冒烟、v3.1.1受限修复和自动化B0降级，不能替代最终v3.1.2链路证据。V014评审文件也一直保持`CHANGES_REQUESTED`，没有用户`ACCEPTED`记录。
+- 影响：V014恢复为当前工作项；T001已经完成的fixture、B0、输入导出和B2接收协议资产保留，但真实B2暂停。研发指南、路线图和当前状态中的过度结项同步纠正；不删除或改写原LOG-102。
+- 来源审查：PRD 6.3/7.11、研发指南6/14、路线图v0.1/G1与当前产品行为无新冲突；本次只纠正实际执行和验收状态。
+- 下一步：归档用户提供的v3.1.2 L3原始输出，以同一L3上下文运行Service v1.4合同复验；不补造缺失模型元数据，不外推L1/L2结果。
+
+## LOG-20260824-112｜V014 L3归档与确定性合同修复待预览
+
+- 元信息：2026-08-24 / v0.1 / ITEM-V014；状态：`READY_FOR_PREVIEW`（L3归档与合同修复切片）
+- 变化：用户提供的最终v3.1.2 L3输出已原样归档为`RUN-20260824-023`。原始`feature-rules-v0.1 / Service v1.4`回放暴露CV物理单位错误及同Claim原值舍入缺口；修复为`feature-rules-v0.2 / Service v1.5`，Prompt、Workflow和Few-shot配置不变。T001原Service v1.4矩阵继续冻结，未静默改写。
+- 证据：[V014评审第24节](../reviews/ITEM-V014-prompt-few-shot-coze-input-review.md#24-run-20260824-023v312-l3试运行归档与合同修复复验)、[RUN-20260824-023](../eval/runs/RUN-20260824-023.json)、[T0.57](../eval/benchmark-report.md#68t057v014-v312-l3归档与确定性合同修复2026-08-24)；聚焦36/36、全量176/176、生产构建通过、交付系统0 error / 0 warning。
+- 风险：精确模型ID、请求ID、首次/修复角色、延迟、Token和成本均`NOT_RECORDED`；最终L1/L2及v3.1.2失败链路未运行，本条不代表V014整体或G1通过。
+- 下一步：用户预览并确认本L3归档与合同修复切片；接受后补最终v3.1.2 L1/L2，再复验一次受限修复与B0路径。
+
+## LOG-20260824-113｜用户接受V014 L3归档与合同修复切片
+
+- 元信息：2026-08-24 / v0.1 / ITEM-V014；状态：`ACCEPTED`（仅L3归档与合同修复切片）
+- 用户决定：接受“L3归档与合同修复”切片，包括原始L3证据边界、`feature-rules-v0.2 / Service v1.5`修复和修复后合同回放结果。
+- 边界：`ITEM-V014`整体仍未完成；本次不推断未记录模型元数据，不代表最终L1/L2、受限修复/B0路径、T001或G1通过。
+- 证据：[V014评审第25节](../reviews/ITEM-V014-prompt-few-shot-coze-input-review.md#25-用户验收l3归档与合同修复切片)、[RUN-20260824-023](../eval/runs/RUN-20260824-023.json)。
+- 下一步：使用当前导出的L1/L2五变量输入，在同一Prompt v3.1.2、Workflow dev.15、Few-shot disabled矩阵下执行扣子试运行并归档原始输出。
+
+## LOG-20260824-114｜V014最终v3.1.2 L1/L2试运行待预览
+
+- 元信息：2026-08-24 / v0.1 / ITEM-V014；状态：`READY_FOR_PREVIEW`（L1/L2试运行切片）
+- 变化：归档用户提供的L1/L2原始输出和两张扣子元数据截图；界面显示模型“豆包·2.0-lite”，L1为11秒/8583 Tokens，L2为16秒/11092 Tokens。精确模型ID、请求ID、毫秒延迟、Token拆分和成本保持`NOT_RECORDED`。
+- 证据：[V014评审第26节](../reviews/ITEM-V014-prompt-few-shot-coze-input-review.md#26-run-20260824-024025最终v312-l1l2扣子试运行)、[RUN-024](../eval/runs/RUN-20260824-024.json)、[RUN-025](../eval/runs/RUN-20260824-025.json)、[T0.58](../eval/benchmark-report.md#69t058v014最终v312-l1l2扣子试运行2026-08-24)；两条合同均PASS/0 issue，聚焦6/6、全量180/180通过。
+- 质量边界：L1统计术语偏专业且整体评价重复一条局限；L2均值Claim略冗余，均不构成事实、能力或安全硬失败。本轮未修改Prompt。
+- 下一步：用户预览并确认L1/L2试运行切片；接受后复验最终v3.1.2的一次受限修复与二次失败B0路径。
+
+## LOG-20260824-115｜用户接受V014最终v3.1.2 L1/L2试运行切片
+
+- 元信息：2026-08-24 / v0.1 / ITEM-V014；状态：`ACCEPTED`（仅最终v3.1.2 L1/L2试运行切片）
+- 用户决定：接受“最终Prompt v3.1.2 L1/L2试运行”切片，包括两条原始输出归档、截图可见元数据边界、Service v1.5合同PASS结果和非阻断质量备注。
+- 边界：`ITEM-V014`整体仍未完成；本次不补足未记录模型元数据，不代表稳定性基准、受限修复/B0路径、T001或G1通过。
+- 证据：[V014评审第27节](../reviews/ITEM-V014-prompt-few-shot-coze-input-review.md#27-用户验收最终v312-l1l2试运行切片)、[RUN-024](../eval/runs/RUN-20260824-024.json)、[RUN-025](../eval/runs/RUN-20260824-025.json)。
+- 下一步：使用最终Prompt v3.1.2复验一次受限修复；随后验证第二次校验失败是否停止重试并转入B0。
+
+## LOG-20260824-116｜V014最终v3.1.2受限修复输入已就绪
+
+- 元信息：2026-08-24 / v0.1 / ITEM-V014；状态：`IN_PROGRESS`
+- 变化：新增可复现导出器和五变量修复输入；基于已验收L3输出只注入未知Claim与`999W`，Service v1.5确定性生成三项错误码和受限修复说明，Few-shot保持关闭。
+- 证据：[V014评审第28节](../reviews/ITEM-V014-prompt-few-shot-coze-input-review.md#28-最终v312受限修复输入准备)、[修复输入](../output/coze-inputs/l3-built-in-sample-repair-v3.1.2.json)；聚焦2/2、全量182/182、`git diff --check`和交付系统校验通过。
+- 边界：输入准备没有调用模型，不代表受限修复通过；修复输出、精确模型元数据和质量结论仍未产生。
+- 下一步：用户在当前Prompt v3.1.2 / Workflow dev.15 / Few-shot disabled配置中原样运行五变量修复输入，并返回原始JSON与截图供归档回放。
+
+## LOG-20260824-117｜V014最终v3.1.2受限修复与B0路径待预览
+
+- 元信息：2026-08-24 / v0.1 / ITEM-V014；状态：`READY_FOR_PREVIEW`（最终受限修复/B0切片）
+- 变化：真实扣子修复输出归档为`RUN-20260824-026`并通过Service v1.5回放；确定性二次失败路径归档为`RUN-20260824-027`，两次非法输出后返回`REPAIR_FAILED + B0`且无第三次Provider调用。
+- 证据：[V014评审第29节](../reviews/ITEM-V014-prompt-few-shot-coze-input-review.md#29-run-20260824-026027最终v312受限修复与b0路径复验)、[RUN-026](../eval/runs/RUN-20260824-026.json)、[RUN-027](../eval/runs/RUN-20260824-027.json)、[T0.59](../eval/benchmark-report.md#70t059v014最终v312受限修复与b0路径2026-08-24)；聚焦6/6、全量186/186通过。
+- 证据边界：RUN-026精确模型ID、请求ID、毫秒延迟、Token拆分和成本未记录；RUN-027不调用真实模型。该切片不等于18条稳定性基准、T001或G1通过。
+- 下一步：用户预览并确认最终受限修复/B0切片；接受后再进行`ITEM-V014`整体验收判断，不直接启动T001。
+
+## LOG-20260824-118｜用户接受V014最终修复/B0切片并进入整体验收
+
+- 元信息：2026-08-24 / v0.1 / ITEM-V014；状态：`READY_FOR_PREVIEW`（整体验收）
+- 用户决定：接受“最终v3.1.2受限修复与B0路径”切片，包括RUN-026真实修复、RUN-027确定性B0路径及其元数据边界。
+- 整体审计：最终Prompt、旧版保留、五变量输入、Few-shot关闭、output-v0.3、Service v1.5、L1/L2/L3真实样例、一次修复、二次失败B0和自动回归证据均已齐备，V014具备整体验收条件。
+- 证据：[V014评审第30至31节](../reviews/ITEM-V014-prompt-few-shot-coze-input-review.md#30-用户验收最终v312受限修复与b0路径切片)、[RUN-026](../eval/runs/RUN-20260824-026.json)、[RUN-027](../eval/runs/RUN-20260824-027.json)、[T0.59](../eval/benchmark-report.md#70t059v014最终v312受限修复与b0路径2026-08-24)。
+- 边界：精确模型计量、18条稳定性、B2相对B0价值、UI接入、T001和G1仍未验证；本条不把V014自动标记为`ACCEPTED`。
+- 下一步：用户明确回复`接受 ITEM-V014`或提出整体修改意见；在此之前不启动T001真实B2。
+
+## LOG-20260824-119｜用户接受ITEM-V014整体
+
+- 元信息：2026-08-24 / v0.1 / ITEM-V014；状态：`ACCEPTED`
+- 用户决定：接受`ITEM-V014｜新骑后Prompt/Few-shot/扣子输入联调`整体，包括最终v3.1.2三个已验收切片与第31节整体证据矩阵。
+- 证据：[V014整体用户验收](../reviews/ITEM-V014-prompt-few-shot-coze-input-review.md#32-用户验收item-v014整体)、[T0.57](../eval/benchmark-report.md#68t057v014-v312-l3归档与确定性合同修复2026-08-24)、[T0.58](../eval/benchmark-report.md#69t058v014最终v312-l1l2扣子试运行2026-08-24)、[T0.59](../eval/benchmark-report.md#70t059v014最终v312受限修复与b0路径2026-08-24)。
+- 边界：本次不发布扣子工作流、不接入API/UI、不运行真实B2，也不改变B1/B2/B3和G1的`NOT_RUN`状态。
+- 下一步：审查T001原Service v1.4冻结矩阵与已接受Service v1.5基线的差异，形成可预览的重冻结方案；用户确认方案后才决定测试环境发布与真实B2执行。
+
+## LOG-20260824-120｜T001 Service v1.5版本矩阵重冻结方案待预览
+
+- 元信息：2026-08-24 / v0.1 / ITEM-T001；状态：`READY_FOR_PREVIEW`（重冻结审查切片）
+- 来源审查：PRD 6.3/7.11、研发指南6/13/14、路线图v0.1/G1与已接受决策无新冲突。
+- 审计结论：新矩阵不能只把Service v1.4改成v1.5；V014已使18个输入从`ride-feature-rules-v0.1`变为`v0.2`。`RUN-20260823-022`保留为历史B0，新矩阵需在同输入上生成新B0；首个Git基线`8c16778...`早于这些修复，不能直接绑定未来B2。
+- 建议：升级T001 manifest/raw/evaluated合同为v0.2，冻结Service v1.5/特征规则v0.2，以SHA-256绑定18个五变量输入，新建同矩阵B0，并要求真实B2记录完整`sourceCommit`。
+- 证据：[ITEM-T001评审第12节](../reviews/ITEM-T001-eval-migration-review.md#12-service-v15版本矩阵重冻结审查)、[DEC-065提案](decision-log.md#dec-065t001-service-v15版本矩阵重冻结方案)。现有18/18输入通过五变量、上下文/准入Schema和Few-shot disabled静态检查。
+- 未执行：manifest/协议/导入器尚未修改，新B0、新commit、扣子发布、B1/B2/B3、人工评分和G1判断均未执行。
+- 下一步：用户确认或修改`DEC-065`方案；确认后实施并自动验证Service v1.5重冻结，仍不运行真实B2。
+
+## LOG-20260824-121｜用户接受DEC-065重冻结方案
+
+- 元信息：2026-08-24 / v0.1 / ITEM-T001；状态：`IN_PROGRESS`
+- 用户决定：明确回复“接受 DEC-065 重冻结方案”，授权实施manifest/批次合同v0.2、Service v1.5/特征规则v0.2输入冻结、新B0及`sourceCommit`接收门。
+- 边界：不授权本切片发布扣子、调用模型、创建真实B2、评分或判断G1。
+- 下一步：实施重冻结并运行聚焦、全量、构建和交付系统校验。
+
+## LOG-20260824-122｜T001 Service v1.5重冻结实施待预览
+
+- 元信息：2026-08-24 / v0.1 / ITEM-T001；状态：`READY_FOR_PREVIEW`（重冻结实施切片）
+- 变化：T001 manifest/raw/evaluated合同升为v0.2，冻结Service v1.5/特征规则v0.2、18个五变量输入及SHA-256，新增完整`sourceCommit`接收门；新建同矩阵确定性B0 `RUN-20260824-028`，旧`RUN-20260823-022`保持不变。
+- 证据：[ITEM-T001评审第13节](../reviews/ITEM-T001-eval-migration-review.md#13-service-v15重冻结实施)、[RUN-028](../eval/runs/RUN-20260824-028.json)、[T1准备记录](../eval/benchmark-report.md#71t1准备t001-service-v15版本矩阵重冻结与新b02026-08-24)。
+- 验证：RUN-028上下文/准入/预期维度/B0均18/18 PASS，模型调用/Token/成本为0；T001聚焦7/7、全量187/187、生产构建通过。
+- 未执行：新Git commit、扣子发布、API/UI接入、B1/B2/B3真实运行、人工双评和G1判断。
+- 下一步：用户验收重冻结实施切片；验收后建立包含已验收V014与T001重冻结实现的新本地Git commit。
+
+## LOG-20260824-123｜用户接受T001 Service v1.5重冻结实施切片
+
+- 元信息：2026-08-24 / v0.1 / ITEM-T001；状态：`ACCEPTED`（Service v1.5重冻结实施切片）
+- 用户决定：明确回复“接受 ITEM-T001 Service v1.5重冻结实施切片。进入下一项”，接受第13节的实施、验证证据和未执行边界。
+- 证据：[ITEM-T001第14节](../reviews/ITEM-T001-eval-migration-review.md#14-用户验收service-v15重冻结实施切片)、[RUN-028](../eval/runs/RUN-20260824-028.json)。
+- 边界：不发布扣子、不调用模型、不创建真实B2、不评分或判断G1。
+- 下一步：建立包含已验收V014与T001实现的新本地Git冻结基线，使未来B2可绑定真实`sourceCommit`。

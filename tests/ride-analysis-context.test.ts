@@ -54,6 +54,16 @@ test("context v0.2 assembles facts, features, capabilities and explicit profile 
   assert.equal(speed?.displayUnit, "km/h");
   assert.equal(speedDelta?.displayValue, "-4.62");
   assert.equal(speedDelta?.displayUnit, "km/h");
+  for (const key of ["speedCoefficientOfVariation", "powerCoefficientOfVariation", "cadenceCoefficientOfVariation"]) {
+    const coefficient = context.allowedClaims.find((claim) => claim.key === key);
+    assert.ok(coefficient && coefficient.value !== undefined);
+    assert.equal(coefficient?.unit, "ratio");
+    assert.equal(coefficient?.displayUnit, "ratio");
+    assert.equal(coefficient.displayValue, Number(coefficient.value.toFixed(2)).toString());
+  }
+  assert.equal(context.allowedClaims.find((claim) => claim.key === "speedStdDevMps")?.unit, "m/s");
+  assert.equal(context.allowedClaims.find((claim) => claim.key === "powerStdDevW")?.unit, "W");
+  assert.equal(context.allowedClaims.find((claim) => claim.key === "cadenceStdDevRpm")?.unit, "rpm");
   assert.equal(validateRideAnalysisContext(context).valid, true);
 });
 
