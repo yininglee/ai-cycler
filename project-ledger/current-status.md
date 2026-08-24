@@ -3,12 +3,12 @@
 > 最后更新：2026-08-24  
 > 当前阶段：v0.1 证据型Demo开发  
 > 当前 Gate：G1「Demo核心价值」（G0已`GO`）  
-> 总体状态：`READY_FOR_PREVIEW`
+> 总体状态：`ACCEPTED`（已按用户要求暂停）
 > 人工导航：[台账索引](index.md)
 
 ## 1. 当前目标
 
-ITEM-V009至ITEM-V014均已完成用户确认。用户已接受`DEC-065`及`ITEM-T001` Service v1.5重冻结实施切片；已建立包含V014与T001实现的新本地Git冻结基线`78facde226a738ea0fefe660f38ddaada50a5393`，待用户预览。本轮未发布扣子、未接入API/UI、未运行54槽真实B2。
+ITEM-V009至ITEM-V014均已完成用户确认。用户已接受`DEC-065`、`ITEM-T001` Service v1.5重冻结实施及新Git冻结基线切片；源码冻结基线为`78facde226a738ea0fefe660f38ddaada50a5393`。用户要求先不进入下一项，因此当前不发布扣子、不接入API/UI、不运行54槽真实B2。
 
 ## 2. 当前基线与证据
 
@@ -30,7 +30,7 @@ ITEM-V009至ITEM-V014均已完成用户确认。用户已接受`DEC-065`及`ITEM
 - B1/B2/B3、真实上传、真实GPX/多设备、5人测试和线上部署均未验证，不得对外开放或宣称G1通过。
 - T001的18条自动骑后上下文fixture已补齐；Service v1.5/特征规则v0.2的18个五变量输入、SHA-256、54槽v0.2 manifest/接收合同与新B0 `RUN-20260824-028`已完成，完整模型基准尚未运行。`RUN-20260823-022`保留为Service v1.4/特征规则v0.1历史B0。
 - 本机无`.env.local`。v3.1.1历史冒烟/修复/B0见`RUN-20260823-018/019/020`；最终v3.1.2的L3、L1、L2分别归档为`RUN-20260824-023/024/025`。L1/L2截图只记录模型显示名、整数秒和总Token，精确模型ID、请求ID、毫秒延迟、Token拆分和成本仍未记录；本地合同回放不调用模型，不能补足这些字段。
-- T001 Service v1.5重冻结实施已完成用户验收；新源码冻结提交为`78facde226a738ea0fefe660f38ddaada50a5393`，当前只等待本Git切片预览验收。真实B2继续暂停，B1/B2/B3仍为`NOT_RUN`。
+- T001 Service v1.5重冻结实施与新Git冻结基线切片均已用户验收。真实B2运行配置审查尚未启动；B1/B2/B3仍为`NOT_RUN`。
 - 项目在2026-08-24由用户确认建立首个本地Git基线；基线建立前`main`分支无commit、项目文件均未跟踪。后续真实RUN必须绑定该基线或其后续commit，保持源码、配置与评测证据可追溯。
 - 首个Git基线为`8c1677834c8ab2d8e03035104b9c720ccdd44243`，但它早于后续已验收V014修复；真实B2前必须再建一个包含实际冻结实现的commit，不得把较旧基线冒充为实际源码版本。
 
@@ -52,17 +52,18 @@ ITEM-V009至ITEM-V014均已完成用户确认。用户已接受`DEC-065`及`ITEM
 
 ### ITEM-T001｜新Git冻结基线切片
 
-- 状态：`READY_FOR_PREVIEW`
+- 状态：`ACCEPTED`
 - 目标：提交已验收V014与T001 Service v1.5重冻结实现，使未来B2可绑定不可变的40位`sourceCommit`。
 - 前置：[ITEM-T001第14节](../reviews/ITEM-T001-eval-migration-review.md#14-用户验收service-v15重冻结实施切片)已记录用户验收；旧基线`8c1677834c8ab2d8e03035104b9c720ccdd44243`仅保留为历史。
 - 已完成：源码冻结提交`78facde226a738ea0fefe660f38ddaada50a5393`包含58个V014/T001文件且无文件删除；无关的`findings.md / progress.md / task_plan.md`删除仍未纳入。
-- 当前动作：请用户预览[ITEM-T001第15节](../reviews/ITEM-T001-eval-migration-review.md#15-新git冻结基线)并确认该Git切片。
+- 验收：[ITEM-T001第16节](../reviews/ITEM-T001-eval-migration-review.md#16-用户验收新git冻结基线切片)已记录用户接受及暂停指示。
+- 当前动作：无；等待用户明确恢复下一项。
 - 排除：不发布扣子工作流、不接入API/UI、不调用模型、不创建B2结果、不进行质量评分或G1判断。
 - 证据：[V014整体用户验收](../reviews/ITEM-V014-prompt-few-shot-coze-input-review.md#32-用户验收item-v014整体)、[T001现有评审](../reviews/ITEM-T001-eval-migration-review.md#11-b2真实运行准备项)、[LOG-20260824-119](progress-ledger.md#log-20260824-119用户接受item-v014整体)。
 
 ## 6. 下一工作项
 
-- `ITEM-T001 真实B2运行配置审查切片`（前置：用户验收新Git冻结基线）：确认扣子测试环境发布范围、精确模型ID/区域/参数与Token/成本记录来源；审查本身不运行54槽B2。
+- `ITEM-T001 真实B2运行配置审查切片`（`NOT_STARTED`，等待用户明确恢复）：确认扣子测试环境发布范围、精确模型ID/区域/参数与Token/成本记录来源；审查本身不运行54槽B2。
 
 ## 7. 当前版本矩阵
 
