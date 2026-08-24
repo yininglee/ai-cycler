@@ -15,7 +15,9 @@ import { getRideFixture } from "../src/fixtures/rides.ts";
 
 const config: CozeWorkflowConfig = {
   apiUrl: "https://api.coze.cn/v1/workflow/run",
+  workflowName: "ride_analysis_v2",
   workflowId: "workflow-test",
+  workflowVersion: "v0.0.1",
   apiToken: "secret-test-token",
   modelId: "test-model",
   timeoutMs: 1_000,
@@ -55,18 +57,27 @@ test("Coze adapter sends five short v0.2 inputs with no examples and extracts a 
     return new Response(JSON.stringify({
       code: 0,
       data: JSON.stringify({ analysis_json: JSON.stringify(output()) }),
-      request_id: "coze-request-1",
+      detail: { logid: "coze-log-1" },
+      execute_id: "execute-1",
+      usage: { input_count: 12, output_count: 34, token_count: 46 },
     }), { status: 200, headers: { "Content-Type": "application/json" } });
   };
   const client = new CozeWorkflowClient(config, fetchImpl);
   const result = await client.run(input);
 
   assert.equal(result.rawText, JSON.stringify(output()));
-  assert.equal(result.providerRequestId, "coze-request-1");
+  assert.equal(result.providerRequestId, "coze-log-1");
+  assert.deepEqual(result.telemetry, {
+    logId: "coze-log-1",
+    executeId: "execute-1",
+    usage: { inputTokens: 12, outputTokens: 34, totalTokens: 46 },
+  });
   const headers = new Headers(capturedRequest?.headers);
   assert.equal(headers.get("authorization"), "Bearer secret-test-token");
   const body = JSON.parse(String(capturedRequest?.body)) as Record<string, unknown>;
   assert.equal(body.workflow_id, "workflow-test");
+  assert.equal(body.workflow_version, "v0.0.1");
+  assert.equal(body.is_async, false);
   const parameters = body.parameters as Record<string, unknown>;
   assert.deepEqual(Object.keys(parameters), [...COZE_INPUT_VARIABLES]);
   assert.ok(COZE_INPUT_VARIABLES.every((name) => name.length <= 20));
@@ -103,10 +114,14 @@ test("Coze configuration stays disabled until all server-only secrets exist", ()
   assert.equal(readCozeWorkflowConfig({ AI_ANALYSIS_ENABLED: "true" }), undefined);
   const loaded = readCozeWorkflowConfig({
     COZE_API_URL: "https://api.coze.cn/v1/workflow/run",
+    COZE_WORKFLOW_NAME: "ride_analysis_v2",
     COZE_WORKFLOW_ID: "workflow-id",
+    COZE_WORKFLOW_VERSION: "v0.0.1",
     COZE_API_TOKEN: "token",
     COZE_MODEL_ID: "model-id",
   });
   assert.equal(loaded?.workflowId, "workflow-id");
+  assert.equal(loaded?.workflowName, "ride_analysis_v2");
+  assert.equal(loaded?.workflowVersion, "v0.0.1");
   assert.equal(loaded?.modelId, "model-id");
 });

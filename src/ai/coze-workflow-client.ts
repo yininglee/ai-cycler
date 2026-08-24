@@ -31,7 +31,9 @@ export class CozeWorkflowError extends Error {
 
 export interface CozeWorkflowConfig {
   apiUrl: string;
+  workflowName: string;
   workflowId: string;
+  workflowVersion: string;
   apiToken: string;
   modelId: string;
   timeoutMs: number;
@@ -50,6 +52,15 @@ export interface RideAnalysisInvocation {
 export interface RideAnalysisProviderResult {
   rawText: string;
   providerRequestId?: string;
+  telemetry?: {
+    logId?: string;
+    executeId?: string;
+    usage?: {
+      inputTokens: number;
+      outputTokens: number;
+      totalTokens: number;
+    };
+  };
 }
 
 export interface RideAnalysisProvider {
@@ -71,9 +82,11 @@ export function readCozeWorkflowConfig(
   environment: ServerEnvironment = process.env,
 ): CozeWorkflowConfig | undefined {
   const apiUrl = environment.COZE_API_URL?.trim();
+  const workflowName = environment.COZE_WORKFLOW_NAME?.trim();
   const workflowId = environment.COZE_WORKFLOW_ID?.trim();
+  const workflowVersion = environment.COZE_WORKFLOW_VERSION?.trim();
   const apiToken = environment.COZE_API_TOKEN?.trim();
-  if (!apiUrl || !workflowId || !apiToken) return undefined;
+  if (!apiUrl || !workflowName || !workflowId || !workflowVersion || !apiToken) return undefined;
 
   const parsedUrl = new URL(apiUrl);
   if (parsedUrl.protocol !== "https:" && parsedUrl.hostname !== "localhost" && parsedUrl.hostname !== "127.0.0.1") {
@@ -82,7 +95,9 @@ export function readCozeWorkflowConfig(
 
   return {
     apiUrl: parsedUrl.toString(),
+    workflowName,
     workflowId,
+    workflowVersion,
     apiToken,
     modelId: environment.COZE_MODEL_ID?.trim() || "unrecorded",
     timeoutMs: positiveInteger(environment.AI_ANALYSIS_TIMEOUT_MS, 8_000, 15_000),
@@ -96,10 +111,40 @@ function extractProviderRequestId(
 ): string | undefined {
   const fromHeader = response.headers.get("x-request-id") ?? response.headers.get("x-tt-logid");
   if (fromHeader) return fromHeader;
+  const detail = isRecord(envelope.detail) ? envelope.detail : undefined;
+  if (detail && typeof detail.logid === "string") return detail.logid;
   for (const key of ["request_id", "requestId", "logid"]) {
     if (typeof envelope[key] === "string") return envelope[key] as string;
   }
   return undefined;
+}
+
+function extractTelemetry(envelope: Record<string, unknown>): {
+  logId?: string;
+  executeId?: string;
+  usage?: { inputTokens: number; outputTokens: number; totalTokens: number };
+} {
+  const detail = isRecord(envelope.detail) ? envelope.detail : undefined;
+  const logId = detail && typeof detail.logid === "string"
+    ? detail.logid
+    : typeof envelope.logid === "string" ? envelope.logid : undefined;
+  const executeId = typeof envelope.execute_id === "string"
+    ? envelope.execute_id
+    : typeof envelope.executeId === "string" ? envelope.executeId : undefined;
+  const usageValue = isRecord(envelope.usage)
+    ? envelope.usage
+    : detail && isRecord(detail.usage) ? detail.usage : undefined;
+  const inputCount = usageValue?.input_count;
+  const outputCount = usageValue?.output_count;
+  const tokenCount = usageValue?.token_count;
+  const usage = Number.isInteger(inputCount) && Number.isInteger(outputCount) && Number.isInteger(tokenCount)
+    ? { inputTokens: inputCount as number, outputTokens: outputCount as number, totalTokens: tokenCount as number }
+    : undefined;
+  return {
+    ...(logId ? { logId } : {}),
+    ...(executeId ? { executeId } : {}),
+    ...(usage ? { usage } : {}),
+  };
 }
 
 function parseJsonString(value: string): unknown {
@@ -155,6 +200,8 @@ export class CozeWorkflowClient implements RideAnalysisProvider {
         },
         body: JSON.stringify({
           workflow_id: this.config.workflowId,
+          workflow_version: this.config.workflowVersion,
+          is_async: false,
           parameters: {
             analysis_context: JSON.stringify(input.analysisContext),
             analysis_elig: JSON.stringify(input.eligibility),
@@ -196,11 +243,12 @@ export class CozeWorkflowClient implements RideAnalysisProvider {
       if (!rawText) {
         throw new CozeWorkflowError("PROVIDER_INVALID_RESPONSE", "Provider response did not contain analysis_json");
       }
+      const providerRequestId = extractProviderRequestId(response, envelope);
+      const telemetry = extractTelemetry(envelope);
       return {
         rawText,
-        ...(extractProviderRequestId(response, envelope)
-          ? { providerRequestId: extractProviderRequestId(response, envelope) }
-          : {}),
+        ...(providerRequestId ? { providerRequestId } : {}),
+        ...(Object.keys(telemetry).length > 0 ? { telemetry } : {}),
       };
     } catch (error) {
       if (error instanceof CozeWorkflowError) throw error;

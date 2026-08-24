@@ -13,6 +13,7 @@
     "benchmark:b0": "node scripts/benchmark-b0.ts",
     "benchmark:v014:b0-path": "node scripts/run-v014-b0-path.ts",
     "benchmark:t001:b0": "node scripts/benchmark-t001-b0.ts",
+    "benchmark:t001:b2:coze": "node scripts/run-t001-b2-coze-api.ts",
     "benchmark:t001:b2:validate": "node scripts/validate-t001-b2-results.ts",
     "inspect:capabilities": "node scripts/inspect-atomic-capabilities.ts",
     "inspect:features": "node scripts/inspect-ride-features.ts",
