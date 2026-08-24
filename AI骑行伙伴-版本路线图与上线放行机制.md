@@ -950,7 +950,7 @@ CONDITIONAL GO 必须列出明确截止日和用户上限；到期未解决自�
 1. `ITEM-V007`、`ITEM-V008`和`ITEM-V009`已验收；原子能力事实合同已建立且不使用L1/L2/L3业务硬门；
 2. `RideFeatureSnapshot`、`HistoricalComparisonSnapshot`、`RideAnalysisContext`和`ITEM-V013`的新输出Schema/`AnalysisEligibility`组合合同均已完成用户验收；
 3. 完成V014用户预览，并由用户按v2指南配置扣子后执行当前能力组合真实冒烟；
-4. T001 Service v1.5重冻结实施已验收；当前建立新Git冻结基线，随后先审查测试环境发布、精确模型配置和Token/成本来源，再单独授权使用已冻结的18条自动骑后集执行新合同B1/B2/B3；
+4. T001 Service v1.5重冻结实施已验收，源码冻结基线为`78facde226a738ea0fefe660f38ddaada50a5393`；随后先审查测试环境发布、精确模型配置和Token/成本来源，再单独授权使用已冻结的18条自动骑后集执行新合同B1/B2/B3；
 5. 当前骑行对话作为独立工作项，只接两个只读工具并通过G1-C后打开；RAG和历史对话不得提前；主G1通过后再启动10–15人Alpha。
 
 任何版本路线调整都必须说明“哪条新证据改变了原决策”。这能防止 Vibe Coding 过程中因为某个新技术或临时想法不断扩大范围。

@@ -25,10 +25,10 @@ Codex直接读取[当前状态](current-status.md)，再按其中链接读取当
 | 项目 | 入口 |
 |---|---|
 | 当前工作项 | [ITEM-T001新Git冻结基线](current-status.md#5-当前工作项) |
-| 当前工作项最近进展 | [LOG-20260824-123](progress-ledger.md#log-20260824-123用户接受t001-service-v15重冻结实施切片) |
+| 当前工作项最近进展 | [LOG-20260824-124](progress-ledger.md#log-20260824-124t001新git冻结基线待预览) |
 | 台账规则最近变更 | [LOG-20260821-068](progress-ledger.md#log-20260821-068确认最小充分来源审查规则) |
-| 最近评审 | [ITEM-T001重冻结实施已验收](../reviews/ITEM-T001-eval-migration-review.md#14-用户验收service-v15重冻结实施切片) |
-| 当前基准 | [RUN-028 Service v1.5确定性B0](../eval/runs/RUN-20260824-028.json) |
+| 最近评审 | [ITEM-T001新Git冻结基线](../reviews/ITEM-T001-eval-migration-review.md#15-新git冻结基线) |
+| 当前基准 | 源码冻结提交`78facde226a738ea0fefe660f38ddaada50a5393`；[RUN-028](../eval/runs/RUN-20260824-028.json) |
 | 当前 Gate | G1「Demo核心价值」；G0放行证据见[ITEM-G0-002](../reviews/ITEM-G0-002-g0-reaudit-review.md) |
 | 最新已确认决定 | [DEC-065](decision-log.md#dec-065t001-service-v15版本矩阵重冻结方案) |
 

@@ -1927,3 +1927,11 @@
 - 证据：[ITEM-T001第14节](../reviews/ITEM-T001-eval-migration-review.md#14-用户验收service-v15重冻结实施切片)、[RUN-028](../eval/runs/RUN-20260824-028.json)。
 - 边界：不发布扣子、不调用模型、不创建真实B2、不评分或判断G1。
 - 下一步：建立包含已验收V014与T001实现的新本地Git冻结基线，使未来B2可绑定真实`sourceCommit`。
+
+## LOG-20260824-124｜T001新Git冻结基线待预览
+
+- 元信息：2026-08-24 / v0.1 / ITEM-T001；状态：`READY_FOR_PREVIEW`（新Git冻结基线切片）
+- 变化：建立源码冻结提交`78facde226a738ea0fefe660f38ddaada50a5393`，包含已验收V014与T001 Service v1.5重冻结资产；提交中无文件删除，三个无关删除未纳入。
+- 证据：[ITEM-T001第15节](../reviews/ITEM-T001-eval-migration-review.md#15-新git冻结基线)；提交前差异检查和交付系统校验通过，提交后文件集复核无删除项。
+- 未执行：扣子发布、API/UI接入、B1/B2/B3、人工双评和G1判断。
+- 下一步：用户验收新Git冻结基线；验收后审查真实B2的测试环境发布与模型计量配置。

@@ -3,12 +3,12 @@
 > 最后更新：2026-08-24  
 > 当前阶段：v0.1 证据型Demo开发  
 > 当前 Gate：G1「Demo核心价值」（G0已`GO`）  
-> 总体状态：`IN_PROGRESS`
+> 总体状态：`READY_FOR_PREVIEW`
 > 人工导航：[台账索引](index.md)
 
 ## 1. 当前目标
 
-ITEM-V009至ITEM-V014均已完成用户确认。用户已接受`DEC-065`及`ITEM-T001` Service v1.5重冻结实施切片；当前只建立包含已验收V014与T001实现的新本地Git冻结基线，不发布扣子、不接入API/UI、不运行54槽真实B2。
+ITEM-V009至ITEM-V014均已完成用户确认。用户已接受`DEC-065`及`ITEM-T001` Service v1.5重冻结实施切片；已建立包含V014与T001实现的新本地Git冻结基线`78facde226a738ea0fefe660f38ddaada50a5393`，待用户预览。本轮未发布扣子、未接入API/UI、未运行54槽真实B2。
 
 ## 2. 当前基线与证据
 
@@ -30,7 +30,7 @@ ITEM-V009至ITEM-V014均已完成用户确认。用户已接受`DEC-065`及`ITEM
 - B1/B2/B3、真实上传、真实GPX/多设备、5人测试和线上部署均未验证，不得对外开放或宣称G1通过。
 - T001的18条自动骑后上下文fixture已补齐；Service v1.5/特征规则v0.2的18个五变量输入、SHA-256、54槽v0.2 manifest/接收合同与新B0 `RUN-20260824-028`已完成，完整模型基准尚未运行。`RUN-20260823-022`保留为Service v1.4/特征规则v0.1历史B0。
 - 本机无`.env.local`。v3.1.1历史冒烟/修复/B0见`RUN-20260823-018/019/020`；最终v3.1.2的L3、L1、L2分别归档为`RUN-20260824-023/024/025`。L1/L2截图只记录模型显示名、整数秒和总Token，精确模型ID、请求ID、毫秒延迟、Token拆分和成本仍未记录；本地合同回放不调用模型，不能补足这些字段。
-- T001 Service v1.5重冻结实施已完成用户验收；包含实际冻结实现的新Git commit正在建立。建立并复核前真实B2继续暂停，B1/B2/B3仍为`NOT_RUN`。
+- T001 Service v1.5重冻结实施已完成用户验收；新源码冻结提交为`78facde226a738ea0fefe660f38ddaada50a5393`，当前只等待本Git切片预览验收。真实B2继续暂停，B1/B2/B3仍为`NOT_RUN`。
 - 项目在2026-08-24由用户确认建立首个本地Git基线；基线建立前`main`分支无commit、项目文件均未跟踪。后续真实RUN必须绑定该基线或其后续commit，保持源码、配置与评测证据可追溯。
 - 首个Git基线为`8c1677834c8ab2d8e03035104b9c720ccdd44243`，但它早于后续已验收V014修复；真实B2前必须再建一个包含实际冻结实现的commit，不得把较旧基线冒充为实际源码版本。
 
@@ -52,10 +52,11 @@ ITEM-V009至ITEM-V014均已完成用户确认。用户已接受`DEC-065`及`ITEM
 
 ### ITEM-T001｜新Git冻结基线切片
 
-- 状态：`IN_PROGRESS`
+- 状态：`READY_FOR_PREVIEW`
 - 目标：提交已验收V014与T001 Service v1.5重冻结实现，使未来B2可绑定不可变的40位`sourceCommit`。
 - 前置：[ITEM-T001第14节](../reviews/ITEM-T001-eval-migration-review.md#14-用户验收service-v15重冻结实施切片)已记录用户验收；旧基线`8c1677834c8ab2d8e03035104b9c720ccdd44243`仅保留为历史。
-- 当前动作：只暂存V014/T001相关代码、输入、RUN、评审与台账，排除无关的`findings.md / progress.md / task_plan.md`删除；提交后复核文件集和摘要。
+- 已完成：源码冻结提交`78facde226a738ea0fefe660f38ddaada50a5393`包含58个V014/T001文件且无文件删除；无关的`findings.md / progress.md / task_plan.md`删除仍未纳入。
+- 当前动作：请用户预览[ITEM-T001第15节](../reviews/ITEM-T001-eval-migration-review.md#15-新git冻结基线)并确认该Git切片。
 - 排除：不发布扣子工作流、不接入API/UI、不调用模型、不创建B2结果、不进行质量评分或G1判断。
 - 证据：[V014整体用户验收](../reviews/ITEM-V014-prompt-few-shot-coze-input-review.md#32-用户验收item-v014整体)、[T001现有评审](../reviews/ITEM-T001-eval-migration-review.md#11-b2真实运行准备项)、[LOG-20260824-119](progress-ledger.md#log-20260824-119用户接受item-v014整体)。
 
@@ -67,4 +68,4 @@ ITEM-V009至ITEM-V014均已完成用户确认。用户已接受`DEC-065`及`ITEM
 
 | app / schema / rules | parser / GPS quality | B0 / eval | AI runtime |
 |---|---|---|---|
-| visual-shell-v0.1 + `ride-detail-ui-v0.2`已验收；`RideActivity v0.2 / RideSeries v0.1 / UserProfile v0.1 / AtomicCapability v0.1 / RideFeatureSnapshot v0.1 / HistoricalComparisonSnapshot v0.1 / RideAnalysisContext v0.2 / AnalysisEligibility v0.1 / ride-analysis-output-v0.3`均已验收；当前特征规则`ride-feature-rules-v0.2` | FIT parser v0.2；GPX parser v0.3 / GPS质量v0.1；自动回归187/187、生产构建已通过 | 旧B0 `b0-template-v0.1` 14/14；历史T001 B0 `RUN-20260823-022` 18/18（Service v1.4/特征规则v0.1）；当前T001 B0 `RUN-20260824-028` 18/18，P50/P95=0.192/1.66ms（Service v1.5/特征规则v0.2）；B1/B2/B3 `NOT_RUN` | V014已接受Prompt v3.1.2 + Service v1.5 + Workflow dev.15 + Few-shot disabled；T001 v0.2 manifest固定18条输入摘要/54槽/新B0并要求`sourceCommit`，实施已验收；RAG/Function Calling关闭 |
+| visual-shell-v0.1 + `ride-detail-ui-v0.2`已验收；`RideActivity v0.2 / RideSeries v0.1 / UserProfile v0.1 / AtomicCapability v0.1 / RideFeatureSnapshot v0.1 / HistoricalComparisonSnapshot v0.1 / RideAnalysisContext v0.2 / AnalysisEligibility v0.1 / ride-analysis-output-v0.3`均已验收；当前特征规则`ride-feature-rules-v0.2` | FIT parser v0.2；GPX parser v0.3 / GPS质量v0.1；自动回归187/187、生产构建已通过 | 旧B0 `b0-template-v0.1` 14/14；历史T001 B0 `RUN-20260823-022` 18/18（Service v1.4/特征规则v0.1）；当前T001 B0 `RUN-20260824-028` 18/18，P50/P95=0.192/1.66ms（Service v1.5/特征规则v0.2）；B1/B2/B3 `NOT_RUN` | V014已接受Prompt v3.1.2 + Service v1.5 + Workflow dev.15 + Few-shot disabled；T001 v0.2 manifest固定18条输入摘要/54槽/新B0并要求`sourceCommit`，实施已验收；源码冻结基线`78facde226a738ea0fefe660f38ddaada50a5393`；RAG/Function Calling关闭 |
