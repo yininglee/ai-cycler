@@ -1,14 +1,14 @@
 # AI 骑行伙伴当前状态
 
-> 最后更新：2026-08-24  
+> 最后更新：2026-08-25
 > 当前阶段：v0.1 证据型Demo开发  
 > 当前 Gate：G1「Demo核心价值」（G0已`GO`）  
-> 总体状态：`ACCEPTED`（已按用户要求暂停）
+> 总体状态：`READY_FOR_PREVIEW`（扣子 v0.0.2 受限复测已完成，待用户预览运行与回放证据）
 > 人工导航：[台账索引](index.md)
 
 ## 1. 当前目标
 
-ITEM-V009至ITEM-V014均已完成用户确认。用户已接受`DEC-065`、`ITEM-T001` Service v1.5重冻结实施及新Git冻结基线切片；源码冻结基线为`78facde226a738ea0fefe660f38ddaada50a5393`。用户要求先不进入下一项，因此当前不发布扣子、不接入API/UI、不运行54槽真实B2。
+`ITEM-T001 测试环境发布与计量预检`已完成并获用户接受；分层计量合同适配和54槽范围预览已完成。此前手工扣子证据和 v0.0.1 运行保留为历史控制；当前 v0.0.2 受限复测已完成并回放通过，等待用户预览结果。精确模型ID、计算区域、首Token延迟和成本来源记录为`NOT_OBSERVABLE`，性能与成本保持`NOT_SCORED`。
 
 ## 2. 当前基线与证据
 
@@ -27,10 +27,11 @@ ITEM-V009至ITEM-V014均已完成用户确认。用户已接受`DEC-065`、`ITEM
 - `ride-detail-ui-v0.2`已完成用户验收；历史事实合同和新AI合同已经实现并验收，但尚未接入模型运行链路与UI，因此用户界面继续静默隐藏相应内容。
 - ITEM-V008已验收，边界保持冻结：Demo使用localStorage适配`UserProfile v0.1`，Alpha再切换PostgreSQL；用户保存的FTP为`user_provided + user_confirmed`，不称为实测、不自动估算、不在本项启用IF/TSS/功率区间/训练负荷。
 - 旧`RideContextSnapshot v1.0`及旧B2链路仍作为历史兼容代码存在并含`dataLevel`；新链路已迁移到不含等级字段的`RideAnalysisContext v0.2`与V013合同，后续不得重新使用旧等级作为业务门。
-- B1/B2/B3、真实上传、真实GPX/多设备、5人测试和线上部署均未验证，不得对外开放或宣称G1通过。
-- T001的18条自动骑后上下文fixture已补齐；Service v1.5/特征规则v0.2的18个五变量输入、SHA-256、54槽v0.2 manifest/接收合同与新B0 `RUN-20260824-028`已完成，完整模型基准尚未运行。`RUN-20260823-022`保留为Service v1.4/特征规则v0.1历史B0。
-- 本机无`.env.local`。v3.1.1历史冒烟/修复/B0见`RUN-20260823-018/019/020`；最终v3.1.2的L3、L1、L2分别归档为`RUN-20260824-023/024/025`。L1/L2截图只记录模型显示名、整数秒和总Token，精确模型ID、请求ID、毫秒延迟、Token拆分和成本仍未记录；本地合同回放不调用模型，不能补足这些字段。
-- T001 Service v1.5重冻结实施与新Git冻结基线切片均已用户验收。真实B2运行配置审查尚未启动；B1/B2/B3仍为`NOT_RUN`。
+- B1/B3、真实上传、真实GPX/多设备、5人测试和线上部署均未验证；B2真实批次已运行但质量/性能 Gate 保持未评分，不得对外开放或宣称G1通过。
+- T001的18条自动骑后上下文fixture已补齐；Service v1.5/特征规则v0.2的18个五变量输入、SHA-256、54槽v0.3 manifest/接收合同与新B0 `RUN-20260824-028`已完成；真实B2为`RUN-20260824-367`，B1/B3仍未运行。`RUN-20260823-022`保留为Service v1.4/特征规则v0.1历史B0。
+- 本机已存在`.env.local`并配置扣子PAT；v3.1.1历史冒烟/修复/B0见`RUN-20260823-018/019/020`；最终v3.1.2的L3、L1、L2分别归档为`RUN-20260824-023/024/025`。L1/L2截图只记录模型显示名、整数秒和总Token，精确模型ID、请求ID、毫秒延迟、Token拆分和成本仍未记录；本地合同回放不调用模型，不能补足这些字段。
+- v0.0.2 受限复测已形成 `RUN-20260825-756`：21/21 槽合同回放通过，B2 `7`、B0 `14`、安全停止 `0`，P50/P95=`15002.545/20334.534ms`，总 Token `101712`，成本仍不可观测；这不是完整54槽基准。
+- T001 Service v1.5重冻结实施、新Git冻结基线及真实B2运行配置审查均已用户验收。扣子测试版本`v0.0.1`已发布，唯一预检可取得输入/输出/总Token拆分和LogId；精确模型ID、区域、成本来源和首Token仍不可观测。`RA-AUTO-001#1`已在`v0.0.1`预览中运行：`2026-08-24 17:55:45`，LogId `20260824175533C12F3708B030050D0659`，页面显示约`12s / 8408 Tokens`，输入/输出为`7667/741`；原始输出仍未完整导出，尚不能作为正式 raw batch 槽位。
 - 项目在2026-08-24由用户确认建立首个本地Git基线；基线建立前`main`分支无commit、项目文件均未跟踪。后续真实RUN必须绑定该基线或其后续commit，保持源码、配置与评测证据可追溯。
 - 首个Git基线为`8c1677834c8ab2d8e03035104b9c720ccdd44243`，但它早于后续已验收V014修复；真实B2前必须再建一个包含实际冻结实现的commit，不得把较旧基线冒充为实际源码版本。
 
@@ -45,28 +46,28 @@ ITEM-V009至ITEM-V014均已完成用户确认。用户已接受`DEC-065`、`ITEM
 - `DEC-055`已确认ITEM-V007沿用现有Schema重组字段，并在摘要有可靠值时增加运动消耗；其余参考字段进入后续规划；
 - `DEC-056`已确认V008 Demo使用localStorage、Alpha切换PostgreSQL；`DEC-057`已确认用户保存FTP的可信语义；
 - `DEC-065`已确认T001 Service v1.5版本矩阵重冻结方案，实施切片也已用户验收；
+- `DEC-066`已确认真实B2采用测试环境冻结发布、API批次运行和先计量预检后54槽的方案；发布和模型调用仍需分别授权；
+- `DEC-067`已接受：Demo阶段继续使用扣子验证质量/结构/可靠性，对平台不可观测字段记录`NOT_OBSERVABLE`，性能/成本保持`NOT_SCORED`；不代表G1或生产放行；
 - 完整决定及权衡以[决策日志](decision-log.md#dec-027确认运动消耗替代得分)为准；当前没有未确认的6.2/6.3/6.5方向性决定；
 - `DEC-023 PROPOSED`保留为旧链路实现假设；V013只冻结合同，不自动接受该编排方案，留待下一工作项启动后基于新合同重新评估。
 
 ## 5. 当前工作项
 
-### ITEM-T001｜新Git冻结基线切片
+### ITEM-T001-B2｜受限复测结果预览
 
-- 状态：`ACCEPTED`
-- 目标：提交已验收V014与T001 Service v1.5重冻结实现，使未来B2可绑定不可变的40位`sourceCommit`。
-- 前置：[ITEM-T001第14节](../reviews/ITEM-T001-eval-migration-review.md#14-用户验收service-v15重冻结实施切片)已记录用户验收；旧基线`8c1677834c8ab2d8e03035104b9c720ccdd44243`仅保留为历史。
-- 已完成：源码冻结提交`78facde226a738ea0fefe660f38ddaada50a5393`包含58个V014/T001文件且无文件删除；无关的`findings.md / progress.md / task_plan.md`删除仍未纳入。
-- 验收：[ITEM-T001第16节](../reviews/ITEM-T001-eval-migration-review.md#16-用户验收新git冻结基线切片)已记录用户接受及暂停指示。
-- 当前动作：无；等待用户明确恢复下一项。
-- 排除：不发布扣子工作流、不接入API/UI、不调用模型、不创建B2结果、不进行质量评分或G1判断。
-- 证据：[V014整体用户验收](../reviews/ITEM-V014-prompt-few-shot-coze-input-review.md#32-用户验收item-v014整体)、[T001现有评审](../reviews/ITEM-T001-eval-migration-review.md#11-b2真实运行准备项)、[LOG-20260824-119](progress-ledger.md#log-20260824-119用户接受item-v014整体)。
+- 状态：`READY_FOR_PREVIEW`
+- 目标：在扣子 v0.0.2 验证四条解读质量规则，同时以最小代表性样本复核历史限制、室内传感器能力和不准入 B0 路径。
+- 已完成：v0.0.2 版本同步；零调用预检；21 槽真实批次；本地接收回放 `PASS`。
+- 结果：B2 `7/21`、B0 `14/21`、安全停止 `0/21`；总 Token `101712`；P50/P95=`15002.545/20334.534ms`；成本 `NOT_OBSERVABLE`。
+- 排除：不把本轮外推为完整54槽基准；不运行 B1/B3、不做人评、不评分性能/成本、不判断 G1。
+- 证据：[Prompt同步与受限复测评审](../reviews/ITEM-T001-B2-prompt-sync-review.md)、[原始批次](../eval/runs/RUN-20260825-756-raw.json)、[回放结果](../eval/runs/RUN-20260825-756.json)。
 
 ## 6. 下一工作项
 
-- `ITEM-T001 真实B2运行配置审查切片`（`NOT_STARTED`，等待用户明确恢复）：确认扣子测试环境发布范围、精确模型ID/区域/参数与Token/成本记录来源；审查本身不运行54槽B2。
+- `ITEM-T001-B2 受限复测结果预览与后续评测决策`：用户先预览原始输出/回放；再决定是否人工复评、扩大样本或保持 Demo 边界。
 
 ## 7. 当前版本矩阵
 
 | app / schema / rules | parser / GPS quality | B0 / eval | AI runtime |
 |---|---|---|---|
-| visual-shell-v0.1 + `ride-detail-ui-v0.2`已验收；`RideActivity v0.2 / RideSeries v0.1 / UserProfile v0.1 / AtomicCapability v0.1 / RideFeatureSnapshot v0.1 / HistoricalComparisonSnapshot v0.1 / RideAnalysisContext v0.2 / AnalysisEligibility v0.1 / ride-analysis-output-v0.3`均已验收；当前特征规则`ride-feature-rules-v0.2` | FIT parser v0.2；GPX parser v0.3 / GPS质量v0.1；自动回归187/187、生产构建已通过 | 旧B0 `b0-template-v0.1` 14/14；历史T001 B0 `RUN-20260823-022` 18/18（Service v1.4/特征规则v0.1）；当前T001 B0 `RUN-20260824-028` 18/18，P50/P95=0.192/1.66ms（Service v1.5/特征规则v0.2）；B1/B2/B3 `NOT_RUN` | V014已接受Prompt v3.1.2 + Service v1.5 + Workflow dev.15 + Few-shot disabled；T001 v0.2 manifest固定18条输入摘要/54槽/新B0并要求`sourceCommit`，实施已验收；源码冻结基线`78facde226a738ea0fefe660f38ddaada50a5393`；RAG/Function Calling关闭 |
+| visual-shell-v0.1 + `ride-detail-ui-v0.2`已验收；`RideActivity v0.2 / RideSeries v0.1 / UserProfile v0.1 / AtomicCapability v0.1 / RideFeatureSnapshot v0.1 / HistoricalComparisonSnapshot v0.1 / RideAnalysisContext v0.2 / AnalysisEligibility v0.1 / ride-analysis-output-v0.3`均已验收；当前特征规则`ride-feature-rules-v0.2` | FIT parser v0.2；GPX parser v0.3 / GPS质量v0.1；自动回归197/197、生产构建已通过 | 旧B0 `b0-template-v0.1` 14/14；当前T001 B0 `RUN-20260824-028` 18/18；受限B2 `RUN-20260825-756` 21/21 PASS，B2=7/B0=14，P50/P95=15002.545/20334.534ms，benchmarkStatus=`NOT_SCORED` | V014已接受Prompt v3.1.2 + Service v1.5 + Workflow内部标签dev.15 + Few-shot disabled；扣子Workflow `7676429753852018707`平台`v0.0.2`；四项计量字段不可观测；完整输入集摘要固定18条，受限执行范围7条×3次；RAG/Function Calling关闭 |

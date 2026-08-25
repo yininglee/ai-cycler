@@ -1,0 +1,557 @@
+{
+  "schemaVersion": "t001-b2-raw-batch-v0.3",
+  "batchId": "RUN-20260825-756",
+  "plan": "B2",
+  "versionMatrix": {
+    "appVersion": "visual-shell-v0.1",
+    "outputSchemaVersion": "ride-analysis-output-v0.3",
+    "contextSchemaVersion": "0.2",
+    "contextRulesVersion": "ride-analysis-context-rules-v0.2",
+    "featureRulesVersion": "ride-feature-rules-v0.2",
+    "eligibilitySchemaVersion": "0.1",
+    "eligibilityRulesVersion": "analysis-eligibility-rules-v0.1",
+    "promptVersion": "3.1.2",
+    "serviceVersion": "ride-analysis-service-v1.5",
+    "workflowVersion": "ride_analysis_v2-dev.15",
+    "fewShotMode": "disabled",
+    "b0TemplateVersion": "b0-template-v0.1",
+    "inputSetSha256": "5333b4cd4d5aeb21fbada26357381120e3665ffc2c71bda429d5cdce9b2c7671",
+    "sourceCommit": "c3e8c34afd7ce298446f36ff8cb4fc825a673f9f",
+    "modelId": "NOT_OBSERVABLE",
+    "region": "NOT_OBSERVABLE",
+    "modelParameters": {
+      "workflowName": "ride_analysis_v2",
+      "workflowVersion": "v0.0.2",
+      "isAsync": false
+    }
+  },
+  "executionScope": {
+    "kind": "restricted",
+    "caseIds": [
+      "RA-AUTO-001",
+      "RA-AUTO-005",
+      "RA-AUTO-006",
+      "RA-AUTO-010",
+      "RA-AUTO-011",
+      "RA-AUTO-013",
+      "RA-AUTO-018"
+    ],
+    "repetitionsPerCase": 3,
+    "expectedSlotCount": 21
+  },
+  "records": [
+    {
+      "caseId": "RA-AUTO-001",
+      "repetition": 1,
+      "requestId": "RUN-20260825-756:RA-AUTO-001:1:d576ba57-fb85-4718-ba10-a9d6f58d28a2",
+      "startedAt": "2026-08-25T04:22:08.158Z",
+      "completedAt": "2026-08-25T04:22:21.435Z",
+      "totalLatencyMs": 13276.773,
+      "firstTokenLatencyMs": "NOT_OBSERVABLE",
+      "tokenUsage": {
+        "inputTokens": 7886,
+        "outputTokens": 699,
+        "totalTokens": 8585
+      },
+      "costCny": "NOT_OBSERVABLE",
+      "costSource": "NOT_OBSERVABLE",
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "response",
+          "providerRequestId": "2026082512220810CF1EDBBC7D5E8CB9F9",
+          "latencyMs": 13271.368,
+          "rawText": "{\"dimensions\":[{\"claimIds\":[\"claim:ride-l1-built-in-sample:feature:speedSeriesMeanMps\",\"claim:ride-l1-built-in-sample:feature:speedFirstLastDeltaMps\",\"claim:ride-l1-built-in-sample:feature:speedCoefficientOfVariation\"],\"confidence\":\"high\",\"key\":\"pace\",\"text\":\"平均速度25km/h，结束阶段速度比开始阶段低4.49km/h，说明后程配速出现回落；速度变异系数约11%，相对平均速度的波动较小，整体骑行节奏较为平稳。\"},{\"claimIds\":[\"claim:ride-l1-built-in-sample:feature:elevationPositiveGainM\",\"claim:ride-l1-built-in-sample:feature:elevationMinM\",\"claim:ride-l1-built-in-sample:feature:elevationMaxM\",\"claim:ride-l1-built-in-sample:feature:elevationRangeM\"],\"confidence\":\"high\",\"key\":\"climbing\",\"text\":\"本次骑行累计爬升260米，海拔最低30米，最高71.6米，整体海拔差约41.6米。\"}],\"headline\":\"后程配速回落，速度整体波动较小\",\"limitations\":[\"无心率、功率和踏频数据，因此本次解读不涉及运动强度、发力和踩踏节奏\",\"历史记录不足，无法进行历史对比\"],\"nextAction\":{\"basisClaimIds\":[],\"kind\":\"general\",\"text\":\"骑行后注意拉伸放松，及时补充水分和能量。\"},\"notableEvents\":[],\"overallAssessment\":{\"claimIds\":[\"claim:ride-l1-built-in-sample:feature:speedSeriesMeanMps\",\"claim:ride-l1-built-in-sample:feature:speedFirstLastDeltaMps\",\"claim:ride-l1-built-in-sample:feature:speedCoefficientOfVariation\",\"claim:ride-l1-built-in-sample:feature:elevationPositiveGainM\",\"claim:ride-l1-built-in-sample:feature:elevationRangeM\"],\"text\":\"本次骑行平均速度25km/h，结束阶段速度比开始阶段低4.49km/h，配速出现后程回落；速度变异系数约11%，整体节奏较为平稳，累计爬升260米，海拔范围约41.6米。\"},\"safetyLevel\":\"normal\",\"schemaVersion\":\"ride-analysis-output-v0.3\",\"shareCopy\":[\"享受骑行在路上的感觉～\",\"完成一段骑行，收获舒服的时光\",\"慢慢骑，感受每一段路\"]}"
+        }
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-001",
+      "repetition": 2,
+      "requestId": "RUN-20260825-756:RA-AUTO-001:2:df7aeea5-6604-4409-b41b-0fa024c9aaee",
+      "startedAt": "2026-08-25T04:22:21.436Z",
+      "completedAt": "2026-08-25T04:22:34.928Z",
+      "totalLatencyMs": 13492.349,
+      "firstTokenLatencyMs": "NOT_OBSERVABLE",
+      "tokenUsage": {
+        "inputTokens": 7886,
+        "outputTokens": 699,
+        "totalTokens": 8585
+      },
+      "costCny": "NOT_OBSERVABLE",
+      "costSource": "NOT_OBSERVABLE",
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "response",
+          "providerRequestId": "2026082512222173EF84CBB584F65FA4F9",
+          "latencyMs": 13490.97,
+          "rawText": "{\"dimensions\":[{\"claimIds\":[\"claim:ride-l1-built-in-sample:feature:speedSeriesMeanMps\",\"claim:ride-l1-built-in-sample:feature:speedFirstLastDeltaMps\",\"claim:ride-l1-built-in-sample:feature:speedCoefficientOfVariation\"],\"confidence\":\"high\",\"key\":\"pace\",\"text\":\"平均速度为25km/h，结束阶段速度比开始阶段低4.49km/h，后程配速出现回落；速度变异系数约11%，整体速度波动较小，节奏较为平稳。\"},{\"claimIds\":[\"claim:ride-l1-built-in-sample:feature:elevationPositiveGainM\",\"claim:ride-l1-built-in-sample:feature:elevationMinM\",\"claim:ride-l1-built-in-sample:feature:elevationMaxM\",\"claim:ride-l1-built-in-sample:feature:elevationRangeM\"],\"confidence\":\"high\",\"key\":\"climbing\",\"text\":\"本次骑行累计爬升260米，海拔最低30米，最高71.6米，海拔范围为41.6米。\"}],\"headline\":\"后程配速回落，速度节奏较为平稳\",\"limitations\":[\"无心率、功率和踏频数据，本次解读不涉及运动强度、发力和踩踏节奏\",\"历史记录不足，无法进行历史对比\"],\"nextAction\":{\"basisClaimIds\":[],\"kind\":\"general\",\"text\":\"骑行后注意拉伸放松，及时补充水分。\"},\"notableEvents\":[],\"overallAssessment\":{\"claimIds\":[\"claim:ride-l1-built-in-sample:feature:speedSeriesMeanMps\",\"claim:ride-l1-built-in-sample:feature:speedFirstLastDeltaMps\",\"claim:ride-l1-built-in-sample:feature:speedCoefficientOfVariation\",\"claim:ride-l1-built-in-sample:feature:elevationPositiveGainM\",\"claim:ride-l1-built-in-sample:feature:elevationRangeM\"],\"text\":\"本次骑行平均速度25km/h，结束阶段速度比开始阶段低4.49km/h，后程配速出现回落；速度变异系数约11%，整体速度波动较小，节奏比较平稳。本次骑行累计爬升260米，海拔范围41.6米。\"},\"safetyLevel\":\"normal\",\"schemaVersion\":\"ride-analysis-output-v0.3\",\"shareCopy\":[\"享受骑行，享受在路上的感觉\",\"又是开心骑行的一趟，保持节奏慢慢来\",\"简单记录本次骑行，下次继续出发\"]}"
+        }
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-001",
+      "repetition": 3,
+      "requestId": "RUN-20260825-756:RA-AUTO-001:3:601bc056-219e-4da3-bba6-a35204990590",
+      "startedAt": "2026-08-25T04:22:34.928Z",
+      "completedAt": "2026-08-25T04:23:01.064Z",
+      "totalLatencyMs": 26134.903,
+      "firstTokenLatencyMs": "NOT_OBSERVABLE",
+      "tokenUsage": {
+        "inputTokens": 16460,
+        "outputTokens": 1501,
+        "totalTokens": 17961
+      },
+      "costCny": "NOT_OBSERVABLE",
+      "costSource": "NOT_OBSERVABLE",
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "response",
+          "providerRequestId": "202608251222356A5D40DA98245937C2E6",
+          "latencyMs": 12669.604,
+          "rawText": "{\"dimensions\":[{\"claimIds\":[\"claim:ride-l1-built-in-sample:feature:speedSeriesMeanMps\",\"claim:ride-l1-built-in-sample:feature:speedFirstLastDeltaMps\",\"claim:ride-l1-built-in-sample:feature:speedCoefficientOfVariation\"],\"confidence\":\"high\",\"key\":\"pace\",\"text\":\"平均速度为25km/h，结束阶段速度比开始阶段低4.49km/h，说明后程配速出现回落；速度变异系数约11%，整体速度波动较小，节奏比较平稳。\"},{\"claimIds\":[\"claim:ride-l1-built-in-sample:feature:elevationPositiveGainM\",\"claim:ride-l1-built-in-sample:feature:elevationMinM\",\"claim:ride-l1-built-in-sample:feature:elevationMaxM\",\"claim:ride-l1-built-in-sample:feature:elevationRangeM\"],\"confidence\":\"high\",\"key\":\"climbing\",\"text\":\"本次骑行累计爬升260米，海拔最低30米，最高71.6米，海拔范围约41.6米。\"}],\"headline\":\"配速后程回落，整体速度波动较小\",\"limitations\":[\"无心率、功率和踏频数据，本次解读不涉及运动强度、发力和踩踏节奏相关内容\",\"历史记录不足，无法进行历史对比\"],\"nextAction\":{\"basisClaimIds\":[],\"kind\":\"general\",\"text\":\"骑行后注意拉伸放松，及时补充水分，记录本次骑行的体感感受。\"},\"notableEvents\":[],\"overallAssessment\":{\"claimIds\":[\"claim:ride-l1-built-in-sample:distanceM\",\"claim:ride-l1-built-in-sample:movingTimeS\",\"claim:ride-l1-built-in-sample:feature:speedSeriesMeanMps\",\"claim:ride-l1-built-in-sample:feature:speedFirstLastDeltaMps\",\"claim:ride-l1-built-in-sample:feature:speedCoefficientOfVariation\",\"claim:ride-l1-built-in-sample:feature:elevationPositiveGainM\",\"claim:ride-l1-built-in-sample:feature:elevationRangeM\"],\"text\":\"本次骑行完成25km，用时1小时，平均速度25km/h；结束阶段速度比开始阶段低4.49km/h，配速出现后程回落，整体速度波动较小；累计爬升260米，海拔范围约41.6米。目前缺少心率、功率、踏频数据，无法解读运动强度相关特征，也没有可用历史数据做对比。\"},\"safetyLevel\":\"normal\",\"schemaVersion\":\"ride-analysis-output-v0.3\",\"shareCopy\":[\"完成一段骑行，享受在路上的感觉～\",\"平稳骑行的日常，保持节奏就很好\",\"慢慢骑，骑得远\"]}"
+        },
+        {
+          "attempt": 2,
+          "outcome": "response",
+          "providerRequestId": "202608251222474927EE67116A0493F2F6",
+          "latencyMs": 13460.656,
+          "rawText": "{\"dimensions\":[{\"claimIds\":[\"claim:ride-l1-built-in-sample:feature:speedSeriesMeanMps\",\"claim:ride-l1-built-in-sample:feature:speedFirstLastDeltaMps\",\"claim:ride-l1-built-in-sample:feature:speedCoefficientOfVariation\"],\"confidence\":\"high\",\"key\":\"pace\",\"text\":\"平均速度为25km/h，结束阶段速度比开始阶段低4.49km/h，说明后程配速出现回落；速度变异系数约11%，整体速度波动较小，节奏比较平稳。\"},{\"claimIds\":[\"claim:ride-l1-built-in-sample:feature:elevationPositiveGainM\",\"claim:ride-l1-built-in-sample:feature:elevationMinM\",\"claim:ride-l1-built-in-sample:feature:elevationMaxM\",\"claim:ride-l1-built-in-sample:feature:elevationRangeM\"],\"confidence\":\"high\",\"key\":\"climbing\",\"text\":\"本次骑行累计爬升260米，海拔最低30米，最高71.6米，海拔范围约41.6米。\"}],\"headline\":\"配速后程回落，整体速度波动较小\",\"limitations\":[\"无心率、功率和踏频数据，本次解读不涉及运动强度、发力和踩踏节奏相关内容\",\"历史记录不足，无法进行历史对比\"],\"nextAction\":{\"basisClaimIds\":[],\"kind\":\"general\",\"text\":\"骑行后注意拉伸放松，及时补充水分，记录本次骑行的体感感受。\"},\"notableEvents\":[],\"overallAssessment\":{\"claimIds\":[\"claim:ride-l1-built-in-sample:distanceM\",\"claim:ride-l1-built-in-sample:movingTimeS\",\"claim:ride-l1-built-in-sample:feature:speedSeriesMeanMps\",\"claim:ride-l1-built-in-sample:feature:speedFirstLastDeltaMps\",\"claim:ride-l1-built-in-sample:feature:speedCoefficientOfVariation\",\"claim:ride-l1-built-in-sample:feature:elevationPositiveGainM\",\"claim:ride-l1-built-in-sample:feature:elevationRangeM\"],\"text\":\"本次骑行完成25km，用时1小时，平均速度25km/h；结束阶段速度比开始阶段低4.49km/h，配速出现后程回落，整体速度波动较小；累计爬升260米，海拔范围约41.6米。\"},\"safetyLevel\":\"normal\",\"schemaVersion\":\"ride-analysis-output-v0.3\",\"shareCopy\":[\"完成一段骑行，享受在路上的感觉～\",\"平稳骑行的日常，保持节奏就很好\",\"慢慢骑，骑得远\"]}"
+        }
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-005",
+      "repetition": 1,
+      "requestId": "RUN-20260825-756:RA-AUTO-005:1:65b7c6d4-329c-4c1b-9a1a-06723087bff7",
+      "startedAt": "2026-08-25T04:23:01.076Z",
+      "completedAt": "2026-08-25T04:23:12.247Z",
+      "totalLatencyMs": 11170.559,
+      "firstTokenLatencyMs": "NOT_OBSERVABLE",
+      "tokenUsage": {
+        "inputTokens": 8836,
+        "outputTokens": 660,
+        "totalTokens": 9496
+      },
+      "costCny": "NOT_OBSERVABLE",
+      "costSource": "NOT_OBSERVABLE",
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "response",
+          "providerRequestId": "202608251223016C8DC7082ACA2372FCAD",
+          "latencyMs": 11169.915,
+          "rawText": "{\"dimensions\":[{\"claimIds\":[\"claim:ride-eval-different-route:avgSpeedMps\",\"claim:ride-eval-different-route:feature:speedFirstLastDeltaMps\",\"claim:ride-eval-different-route:feature:speedCoefficientOfVariation\"],\"confidence\":\"high\",\"key\":\"pace\",\"text\":\"平均速度为25.8km/h，结束阶段速度比开始阶段低4.63km/h，说明后程配速出现回落；速度变异系数约11%，整体速度波动较小，节奏比较平稳。\"},{\"claimIds\":[\"claim:ride-eval-different-route:feature:elevationPositiveGainM\",\"claim:ride-eval-different-route:feature:elevationMinM\",\"claim:ride-eval-different-route:feature:elevationMaxM\",\"claim:ride-eval-different-route:feature:elevationRangeM\"],\"confidence\":\"high\",\"key\":\"climbing\",\"text\":\"本次累计爬升386米，海拔范围从最低30米到最高91.8米，整体海拔差61.8米。\"}],\"headline\":\"结束阶段配速低于开始阶段，速度整体平稳\",\"limitations\":[\"无心率、功率和踏频数据，因此本次解读不涉及运动强度、发力和踩踏节奏\",\"历史记录不足，无法进行历史对比\"],\"nextAction\":{\"basisClaimIds\":[],\"kind\":\"general\",\"text\":\"骑行后注意拉伸放松，及时补充水分和能量。\"},\"notableEvents\":[],\"overallAssessment\":{\"claimIds\":[\"claim:ride-eval-different-route:avgSpeedMps\",\"claim:ride-eval-different-route:feature:speedFirstLastDeltaMps\",\"claim:ride-eval-different-route:feature:speedCoefficientOfVariation\",\"claim:ride-eval-different-route:elevationGainM\"],\"text\":\"本次骑行平均速度25.8km/h，结束阶段速度比开始阶段低4.63km/h，配速出现后程回落；速度变异系数约11%，整体速度波动较小，累计爬升386米。\"},\"safetyLevel\":\"normal\",\"schemaVersion\":\"ride-analysis-output-v0.3\",\"shareCopy\":[\"享受骑行，快乐出发\",\"又是顺利完成骑行的一天\",\"保持骑行，感受在路上的状态\"]}"
+        }
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-005",
+      "repetition": 2,
+      "requestId": "RUN-20260825-756:RA-AUTO-005:2:f4b11e86-d3ef-4653-8180-b742ffe6f12f",
+      "startedAt": "2026-08-25T04:23:12.247Z",
+      "completedAt": "2026-08-25T04:23:26.125Z",
+      "totalLatencyMs": 13877.604,
+      "firstTokenLatencyMs": "NOT_OBSERVABLE",
+      "tokenUsage": {
+        "inputTokens": 8836,
+        "outputTokens": 714,
+        "totalTokens": 9550
+      },
+      "costCny": "NOT_OBSERVABLE",
+      "costSource": "NOT_OBSERVABLE",
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "response",
+          "providerRequestId": "2026082512231288E000F4870E9D7CDCE5",
+          "latencyMs": 13876.518,
+          "rawText": "{\"dimensions\":[{\"claimIds\":[\"claim:ride-eval-different-route:avgSpeedMps\",\"claim:ride-eval-different-route:maxSpeedMps\",\"claim:ride-eval-different-route:feature:speedFirstLastDeltaMps\",\"claim:ride-eval-different-route:feature:speedCoefficientOfVariation\"],\"confidence\":\"high\",\"key\":\"pace\",\"text\":\"平均速度为25.8km/h，结束阶段速度比开始阶段低4.63km/h，后程配速出现回落；速度变异系数约11%，速度波动较小，整体节奏较平稳，最高速度达到47.5km/h。\"},{\"claimIds\":[\"claim:ride-eval-different-route:feature:elevationPositiveGainM\",\"claim:ride-eval-different-route:feature:elevationMinM\",\"claim:ride-eval-different-route:feature:elevationMaxM\",\"claim:ride-eval-different-route:feature:elevationRangeM\"],\"confidence\":\"high\",\"key\":\"climbing\",\"text\":\"累计爬升386米，最低海拔30米，最高海拔91.8米，海拔范围61.8米。\"}],\"headline\":\"结束阶段配速回落，速度节奏较平稳\",\"limitations\":[\"无心率、功率和踏频数据，因此本次解读不涉及运动强度、发力和踩踏节奏\",\"历史记录不足，无法进行历史对比\"],\"nextAction\":{\"basisClaimIds\":[],\"kind\":\"general\",\"text\":\"骑行后注意拉伸放松，补充水分和能量\"},\"notableEvents\":[],\"overallAssessment\":{\"claimIds\":[\"claim:ride-eval-different-route:avgSpeedMps\",\"claim:ride-eval-different-route:feature:speedFirstLastDeltaMps\",\"claim:ride-eval-different-route:feature:speedCoefficientOfVariation\",\"claim:ride-eval-different-route:feature:elevationPositiveGainM\",\"claim:ride-eval-different-route:feature:elevationRangeM\"],\"text\":\"本次骑行平均速度25.8km/h，结束阶段速度比开始阶段低4.63km/h，配速出现回落；速度变异系数约11%，整体速度波动较小，节奏相对平稳；累计爬升386米，海拔变化范围61.8米。\"},\"safetyLevel\":\"normal\",\"schemaVersion\":\"ride-analysis-output-v0.3\",\"shareCopy\":[\"享受骑行，在路上\",\"又是顺利完成骑行的一天✨\",\"保持热爱，奔赴下一程\"]}"
+        }
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-005",
+      "repetition": 3,
+      "requestId": "RUN-20260825-756:RA-AUTO-005:3:00efbf68-9d27-4769-b7f6-3a449f1a5817",
+      "startedAt": "2026-08-25T04:23:26.125Z",
+      "completedAt": "2026-08-25T04:23:38.457Z",
+      "totalLatencyMs": 12332.195,
+      "firstTokenLatencyMs": "NOT_OBSERVABLE",
+      "tokenUsage": {
+        "inputTokens": 8836,
+        "outputTokens": 664,
+        "totalTokens": 9500
+      },
+      "costCny": "NOT_OBSERVABLE",
+      "costSource": "NOT_OBSERVABLE",
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "response",
+          "providerRequestId": "20260825122326BB11657B47F243B7D334",
+          "latencyMs": 12330.538,
+          "rawText": "{\"dimensions\":[{\"claimIds\":[\"claim:ride-eval-different-route:avgSpeedMps\",\"claim:ride-eval-different-route:feature:speedFirstLastDeltaMps\",\"claim:ride-eval-different-route:feature:speedCoefficientOfVariation\"],\"confidence\":\"high\",\"key\":\"pace\",\"text\":\"平均速度为25.8km/h，结束阶段速度比开始阶段低4.63km/h，说明后程配速出现回落；速度变异系数约11%，速度波动较小，整体节奏相对平稳。\"},{\"claimIds\":[\"claim:ride-eval-different-route:feature:elevationPositiveGainM\",\"claim:ride-eval-different-route:feature:elevationMinM\",\"claim:ride-eval-different-route:feature:elevationMaxM\",\"claim:ride-eval-different-route:feature:elevationRangeM\"],\"confidence\":\"high\",\"key\":\"climbing\",\"text\":\"本次骑行累计爬升386米，海拔最低30米，最高91.8米，海拔区间为61.8米。\"}],\"headline\":\"后程配速回落，速度节奏相对平稳\",\"limitations\":[\"历史记录不足，无法进行历史对比\",\"无心率、功率和踏频数据，本次解读不涉及运动强度、发力和踩踏节奏分析\"],\"nextAction\":{\"basisClaimIds\":[],\"kind\":\"general\",\"text\":\"骑行后注意拉伸放松，补充水分和能量\"},\"notableEvents\":[],\"overallAssessment\":{\"claimIds\":[\"claim:ride-eval-different-route:feature:speedFirstLastDeltaMps\",\"claim:ride-eval-different-route:feature:speedCoefficientOfVariation\",\"claim:ride-eval-different-route:feature:elevationPositiveGainM\",\"claim:ride-eval-different-route:feature:elevationRangeM\"],\"text\":\"本次骑行结束阶段速度低于开始阶段，配速有所回落；速度变异系数约11%，整体速度波动较小，节奏相对平稳。累计爬升386米，海拔区间为61.8米。\"},\"safetyLevel\":\"normal\",\"schemaVersion\":\"ride-analysis-output-v0.3\",\"shareCopy\":[\"享受骑行，保持节奏就是最好的状态～\",\"又是开心骑行的一段路程，圆满完成✅\",\"在路上，感受骑行的快乐\"]}"
+        }
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-006",
+      "repetition": 1,
+      "requestId": "RUN-20260825-756:RA-AUTO-006:1:248023d3-74dd-449a-966b-8f4c127ee808",
+      "startedAt": "2026-08-25T04:23:38.461Z",
+      "completedAt": "2026-08-25T04:23:53.465Z",
+      "totalLatencyMs": 15004.07,
+      "firstTokenLatencyMs": "NOT_OBSERVABLE",
+      "tokenUsage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "totalTokens": 0
+      },
+      "costCny": "NOT_OBSERVABLE",
+      "costSource": "NOT_OBSERVABLE",
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "timeout",
+          "providerRequestId": "NOT_OBSERVABLE",
+          "latencyMs": 15003.951
+        }
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-006",
+      "repetition": 2,
+      "requestId": "RUN-20260825-756:RA-AUTO-006:2:d676659c-18bd-4c3c-9709-86b09e7794be",
+      "startedAt": "2026-08-25T04:23:53.465Z",
+      "completedAt": "2026-08-25T04:24:08.470Z",
+      "totalLatencyMs": 15004.831,
+      "firstTokenLatencyMs": "NOT_OBSERVABLE",
+      "tokenUsage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "totalTokens": 0
+      },
+      "costCny": "NOT_OBSERVABLE",
+      "costSource": "NOT_OBSERVABLE",
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "timeout",
+          "providerRequestId": "NOT_OBSERVABLE",
+          "latencyMs": 15004.67
+        }
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-006",
+      "repetition": 3,
+      "requestId": "RUN-20260825-756:RA-AUTO-006:3:731ed9fd-dc80-4599-9ba5-9ea555cfe38a",
+      "startedAt": "2026-08-25T04:24:08.470Z",
+      "completedAt": "2026-08-25T04:24:23.473Z",
+      "totalLatencyMs": 15002.863,
+      "firstTokenLatencyMs": "NOT_OBSERVABLE",
+      "tokenUsage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "totalTokens": 0
+      },
+      "costCny": "NOT_OBSERVABLE",
+      "costSource": "NOT_OBSERVABLE",
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "timeout",
+          "providerRequestId": "NOT_OBSERVABLE",
+          "latencyMs": 15002.741
+        }
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-010",
+      "repetition": 1,
+      "requestId": "RUN-20260825-756:RA-AUTO-010:1:6a3b5306-dcf2-4bd6-96f7-809c8795ca8e",
+      "startedAt": "2026-08-25T04:24:23.476Z",
+      "completedAt": "2026-08-25T04:24:43.810Z",
+      "totalLatencyMs": 20334.534,
+      "firstTokenLatencyMs": "NOT_OBSERVABLE",
+      "tokenUsage": {
+        "inputTokens": 14136,
+        "outputTokens": 1167,
+        "totalTokens": 15303
+      },
+      "costCny": "NOT_OBSERVABLE",
+      "costSource": "NOT_OBSERVABLE",
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "response",
+          "providerRequestId": "202608251224235AFD448EA9DDB72B2957",
+          "latencyMs": 9134.912,
+          "rawText": "{\"dimensions\":[{\"claimIds\":[\"claim:ride-eval-indoor-hr-only:avgHeartRateBpm\",\"claim:ride-eval-indoor-hr-only:maxHeartRateBpm\",\"claim:ride-eval-indoor-hr-only:feature:heartRateSeriesMeanBpm\",\"claim:ride-eval-indoor-hr-only:feature:heartRateStdDevBpm\",\"claim:ride-eval-indoor-hr-only:feature:heartRateFirstLastDeltaBpm\"],\"confidence\":\"high\",\"key\":\"heartRate\",\"text\":\"本次骑行平均心率约146.73bpm，最高心率176bpm，心率波动幅度为7.44bpm，整体波动较小；结束阶段心率比开始阶段低约9.77bpm。\"}],\"headline\":\"本次心率波动较小，结束阶段略有下降\",\"limitations\":[\"无速度、功率、踏频、海拔等数据，本次解读不涉及配速、发力、路线相关分析\",\"缺少用户最大心率基线，无法进行心率强度分区评估\",\"历史记录不足，无法进行历史对比\"],\"nextAction\":{\"basisClaimIds\":[],\"kind\":\"general\",\"text\":\"骑行后做好拉伸放松，记得补充水分，记录本次骑行的体感感受\"},\"notableEvents\":[],\"overallAssessment\":{\"claimIds\":[\"claim:ride-eval-indoor-hr-only:movingTimeS\",\"claim:ride-eval-indoor-hr-only:feature:heartRateSeriesMeanBpm\",\"claim:ride-eval-indoor-hr-only:feature:heartRateStdDevBpm\",\"claim:ride-eval-indoor-hr-only:feature:heartRateFirstLastDeltaBpm\"],\"text\":\"本次骑行时长1小时20分钟，平均心率约146bpm，心率波动较小，结束阶段心率比开始阶段低约9.77bpm。因缺少最大心率基准，无法评估心率强度。\"},\"safetyLevel\":\"normal\",\"schemaVersion\":\"ride-analysis-output-v0.3\",\"shareCopy\":[\"享受骑行带来的平静，享受每一次心跳\",\"完成一次骑行，又多了一份运动收获\",\"保持运动节奏，继续出发\"]}"
+        },
+        {
+          "attempt": 2,
+          "outcome": "response",
+          "providerRequestId": "20260825122432796E45377260C613611C",
+          "latencyMs": 11197.807,
+          "rawText": "{\"dimensions\":[{\"claimIds\":[\"claim:ride-eval-indoor-hr-only:avgHeartRateBpm\",\"claim:ride-eval-indoor-hr-only:maxHeartRateBpm\",\"claim:ride-eval-indoor-hr-only:feature:heartRateSeriesMeanBpm\",\"claim:ride-eval-indoor-hr-only:feature:heartRateStdDevBpm\",\"claim:ride-eval-indoor-hr-only:feature:heartRateFirstLastDeltaBpm\"],\"confidence\":\"high\",\"key\":\"heartRate\",\"text\":\"本次骑行平均心率约146.73bpm，最高心率176bpm，心率波动幅度为7.44bpm，整体波动较小；结束阶段心率比开始阶段低约9.8bpm。\"}],\"headline\":\"心率波动较小，结束阶段略有下降\",\"limitations\":[\"无速度、功率、踏频、海拔等数据，本次解读不涉及配速、发力、路线相关分析\",\"缺少用户最大心率基线，无法进行心率强度分区评估\",\"历史记录不足，无法进行历史对比\"],\"nextAction\":{\"basisClaimIds\":[],\"kind\":\"general\",\"text\":\"骑行后做好拉伸放松，记得补充水分，记录本次骑行的体感感受\"},\"notableEvents\":[],\"overallAssessment\":{\"claimIds\":[\"claim:ride-eval-indoor-hr-only:movingTimeS\",\"claim:ride-eval-indoor-hr-only:feature:heartRateSeriesMeanBpm\",\"claim:ride-eval-indoor-hr-only:feature:heartRateStdDevBpm\",\"claim:ride-eval-indoor-hr-only:feature:heartRateFirstLastDeltaBpm\"],\"text\":\"本次骑行时长1小时20分钟，平均心率约146bpm，心率波动较小，结束阶段心率比开始阶段低约9.8bpm。因缺少最大心率基准，无法评估心率强度。\"},\"safetyLevel\":\"normal\",\"schemaVersion\":\"ride-analysis-output-v0.3\",\"shareCopy\":[\"享受骑行带来的平静，享受每一次心跳\",\"完成一次骑行，又多了一份运动收获\",\"保持运动节奏，继续出发\"]}"
+        }
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-010",
+      "repetition": 2,
+      "requestId": "RUN-20260825-756:RA-AUTO-010:2:108e6fa2-1a70-446f-9bbf-5bb61400ac57",
+      "startedAt": "2026-08-25T04:24:43.811Z",
+      "completedAt": "2026-08-25T04:25:02.913Z",
+      "totalLatencyMs": 19102.098,
+      "firstTokenLatencyMs": "NOT_OBSERVABLE",
+      "tokenUsage": {
+        "inputTokens": 14145,
+        "outputTokens": 1228,
+        "totalTokens": 15373
+      },
+      "costCny": "NOT_OBSERVABLE",
+      "costSource": "NOT_OBSERVABLE",
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "response",
+          "providerRequestId": "20260825122444D4AF7BB1CF4ADBA27755",
+          "latencyMs": 10200.336,
+          "rawText": "{\"dimensions\":[{\"claimIds\":[\"claim:ride-eval-indoor-hr-only:avgHeartRateBpm\",\"claim:ride-eval-indoor-hr-only:maxHeartRateBpm\",\"claim:ride-eval-indoor-hr-only:feature:heartRateSeriesMeanBpm\",\"claim:ride-eval-indoor-hr-only:feature:heartRateStdDevBpm\",\"claim:ride-eval-indoor-hr-only:feature:heartRateFirstLastDeltaBpm\"],\"confidence\":\"high\",\"key\":\"heartRate\",\"text\":\"本次骑行平均心率145bpm，最高心率176bpm；心率序列标准差约7.44bpm，整体波动较小；结束阶段心率比开始阶段低约9.77bpm，心率出现下降变化。\"}],\"headline\":\"结束阶段心率低于开始阶段\",\"limitations\":[\"无距离、速度、海拔、功率和踏频数据，本次解读不涉及这些维度\",\"缺少最大心率基线，无法划分心率强度区间\",\"历史记录不足，无法进行历史对比\"],\"nextAction\":{\"basisClaimIds\":[],\"kind\":\"general\",\"text\":\"骑行结束后做好拉伸放松，及时补充水分\"},\"notableEvents\":[],\"overallAssessment\":{\"claimIds\":[\"claim:ride-eval-indoor-hr-only:movingTimeS\",\"claim:ride-eval-indoor-hr-only:avgHeartRateBpm\",\"claim:ride-eval-indoor-hr-only:maxHeartRateBpm\",\"claim:ride-eval-indoor-hr-only:feature:heartRateSeriesMeanBpm\",\"claim:ride-eval-indoor-hr-only:feature:heartRateStdDevBpm\",\"claim:ride-eval-indoor-hr-only:feature:heartRateFirstLastDeltaBpm\"],\"text\":\"本次骑行时长1小时20分钟，平均心率145bpm，最高心率176bpm；心率整体波动较小，结束阶段心率比开始阶段低约9.77bpm。由于缺少最大心率基线，无法判断心率强度区间。\"},\"safetyLevel\":\"normal\",\"schemaVersion\":\"ride-analysis-output-v0.3\",\"shareCopy\":[\"完成本次骑行，享受运动的快乐\",\"记录一次骑行，保持运动节奏\",\"慢慢骑，坚持就是收获\"]}"
+        },
+        {
+          "attempt": 2,
+          "outcome": "response",
+          "providerRequestId": "20260825122454B9D8E33276AE0A907D55",
+          "latencyMs": 8900.636,
+          "rawText": "{\"dimensions\":[{\"claimIds\":[\"claim:ride-eval-indoor-hr-only:avgHeartRateBpm\",\"claim:ride-eval-indoor-hr-only:maxHeartRateBpm\",\"claim:ride-eval-indoor-hr-only:feature:heartRateSeriesMeanBpm\",\"claim:ride-eval-indoor-hr-only:feature:heartRateStdDevBpm\",\"claim:ride-eval-indoor-hr-only:feature:heartRateFirstLastDeltaBpm\"],\"confidence\":\"high\",\"key\":\"heartRate\",\"text\":\"本次骑行平均心率145bpm，最高心率176bpm；心率序列标准差约7.44bpm，整体波动较小；结束阶段心率比开始阶段低约9.77bpm，心率出现下降变化。\"}],\"headline\":\"后程心率下降，整体波动平稳\",\"limitations\":[\"无距离、速度、海拔、功率和踏频数据，本次解读不涉及这些维度\",\"缺少最大心率基线，无法划分心率强度区间\",\"历史记录不足，无法进行历史对比\"],\"nextAction\":{\"basisClaimIds\":[],\"kind\":\"general\",\"text\":\"骑行结束后做好拉伸放松，及时补充水分\"},\"notableEvents\":[],\"overallAssessment\":{\"claimIds\":[\"claim:ride-eval-indoor-hr-only:movingTimeS\",\"claim:ride-eval-indoor-hr-only:avgHeartRateBpm\",\"claim:ride-eval-indoor-hr-only:maxHeartRateBpm\",\"claim:ride-eval-indoor-hr-only:feature:heartRateSeriesMeanBpm\",\"claim:ride-eval-indoor-hr-only:feature:heartRateStdDevBpm\",\"claim:ride-eval-indoor-hr-only:feature:heartRateFirstLastDeltaBpm\"],\"text\":\"本次骑行时长1小时20分钟，平均心率145bpm，最高心率176bpm；心率整体波动较小，结束阶段心率比开始阶段低约9.77bpm。由于缺少最大心率基线，无法判断心率强度区间。\"},\"safetyLevel\":\"normal\",\"schemaVersion\":\"ride-analysis-output-v0.3\",\"shareCopy\":[\"完成本次骑行，享受运动的快乐\",\"记录一次骑行，保持运动节奏\",\"慢慢骑，坚持就是收获\"]}"
+        }
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-010",
+      "repetition": 3,
+      "requestId": "RUN-20260825-756:RA-AUTO-010:3:21ae8edd-b63d-4b48-b985-968677eb8561",
+      "startedAt": "2026-08-25T04:25:02.913Z",
+      "completedAt": "2026-08-25T04:25:11.581Z",
+      "totalLatencyMs": 8667.735,
+      "firstTokenLatencyMs": "NOT_OBSERVABLE",
+      "tokenUsage": {
+        "inputTokens": 6794,
+        "outputTokens": 565,
+        "totalTokens": 7359
+      },
+      "costCny": "NOT_OBSERVABLE",
+      "costSource": "NOT_OBSERVABLE",
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "response",
+          "providerRequestId": "202608251225035F93D8A59DCA9EA29C28",
+          "latencyMs": 8666.481,
+          "rawText": "{\"dimensions\":[{\"claimIds\":[\"claim:ride-eval-indoor-hr-only:avgHeartRateBpm\",\"claim:ride-eval-indoor-hr-only:maxHeartRateBpm\",\"claim:ride-eval-indoor-hr-only:feature:heartRateSeriesMeanBpm\",\"claim:ride-eval-indoor-hr-only:feature:heartRateStdDevBpm\",\"claim:ride-eval-indoor-hr-only:feature:heartRateFirstLastDeltaBpm\"],\"confidence\":\"high\",\"key\":\"heartRate\",\"text\":\"本次骑行平均心率146.73bpm，最高心率176bpm，心率波动范围约7.44bpm，波动较小，整体节奏平稳，结束阶段心率较开始阶段低约9.77bpm。\"}],\"headline\":\"心率整体平稳，结束阶段略有降低\",\"limitations\":[\"无距离、速度、海拔、功率、踏频数据，本次解读不涉及这些维度\",\"无用户最大心率基线数据，无法做心率区间分析\",\"历史记录不足，无法进行历史对比\"],\"nextAction\":{\"basisClaimIds\":[],\"kind\":\"general\",\"text\":\"骑行后做好拉伸放松，记录自己的骑行体感\"},\"notableEvents\":[],\"overallAssessment\":{\"claimIds\":[\"claim:ride-eval-indoor-hr-only:movingTimeS\",\"claim:ride-eval-indoor-hr-only:feature:heartRateSeriesMeanBpm\",\"claim:ride-eval-indoor-hr-only:feature:heartRateStdDevBpm\",\"claim:ride-eval-indoor-hr-only:feature:heartRateFirstLastDeltaBpm\"],\"text\":\"本次骑行时长1小时20分钟，平均心率约147bpm，结束阶段心率比开始阶段低约9.77bpm，心率波动较小，整体处于平稳状态。\"},\"safetyLevel\":\"normal\",\"schemaVersion\":\"ride-analysis-output-v0.3\",\"shareCopy\":[\"享受骑行，保持节奏\",\"一次平稳的骑行，感受运动的状态\",\"慢慢骑，感受骑行的快乐\"]}"
+        }
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-011",
+      "repetition": 1,
+      "requestId": "RUN-20260825-756:RA-AUTO-011:1:1c67fad2-f213-4fb2-8669-09ac06fa4ae6",
+      "startedAt": "2026-08-25T04:25:11.586Z",
+      "completedAt": "2026-08-25T04:25:26.589Z",
+      "totalLatencyMs": 15003.049,
+      "firstTokenLatencyMs": "NOT_OBSERVABLE",
+      "tokenUsage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "totalTokens": 0
+      },
+      "costCny": "NOT_OBSERVABLE",
+      "costSource": "NOT_OBSERVABLE",
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "timeout",
+          "providerRequestId": "NOT_OBSERVABLE",
+          "latencyMs": 15002.858
+        }
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-011",
+      "repetition": 2,
+      "requestId": "RUN-20260825-756:RA-AUTO-011:2:b8819176-25ee-4cb7-a9ae-a92b3ee74917",
+      "startedAt": "2026-08-25T04:25:26.589Z",
+      "completedAt": "2026-08-25T04:25:41.592Z",
+      "totalLatencyMs": 15002.545,
+      "firstTokenLatencyMs": "NOT_OBSERVABLE",
+      "tokenUsage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "totalTokens": 0
+      },
+      "costCny": "NOT_OBSERVABLE",
+      "costSource": "NOT_OBSERVABLE",
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "timeout",
+          "providerRequestId": "NOT_OBSERVABLE",
+          "latencyMs": 15002.436
+        }
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-011",
+      "repetition": 3,
+      "requestId": "RUN-20260825-756:RA-AUTO-011:3:309ff9ff-1247-4162-aca2-cd7221c9941a",
+      "startedAt": "2026-08-25T04:25:41.592Z",
+      "completedAt": "2026-08-25T04:25:56.596Z",
+      "totalLatencyMs": 15003.946,
+      "firstTokenLatencyMs": "NOT_OBSERVABLE",
+      "tokenUsage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "totalTokens": 0
+      },
+      "costCny": "NOT_OBSERVABLE",
+      "costSource": "NOT_OBSERVABLE",
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "timeout",
+          "providerRequestId": "NOT_OBSERVABLE",
+          "latencyMs": 15003.764
+        }
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-013",
+      "repetition": 1,
+      "requestId": "RUN-20260825-756:RA-AUTO-013:1:8984aab7-6588-4f07-8190-eb6944289fad",
+      "startedAt": "2026-08-25T04:25:56.604Z",
+      "completedAt": "2026-08-25T04:26:11.613Z",
+      "totalLatencyMs": 15008.928,
+      "firstTokenLatencyMs": "NOT_OBSERVABLE",
+      "tokenUsage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "totalTokens": 0
+      },
+      "costCny": "NOT_OBSERVABLE",
+      "costSource": "NOT_OBSERVABLE",
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "timeout",
+          "providerRequestId": "NOT_OBSERVABLE",
+          "latencyMs": 15008.68
+        }
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-013",
+      "repetition": 2,
+      "requestId": "RUN-20260825-756:RA-AUTO-013:2:2b72e985-9bf4-4aa2-948c-14edf0ac78e7",
+      "startedAt": "2026-08-25T04:26:11.613Z",
+      "completedAt": "2026-08-25T04:26:26.615Z",
+      "totalLatencyMs": 15001.551,
+      "firstTokenLatencyMs": "NOT_OBSERVABLE",
+      "tokenUsage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "totalTokens": 0
+      },
+      "costCny": "NOT_OBSERVABLE",
+      "costSource": "NOT_OBSERVABLE",
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "timeout",
+          "providerRequestId": "NOT_OBSERVABLE",
+          "latencyMs": 15001.492
+        }
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-013",
+      "repetition": 3,
+      "requestId": "RUN-20260825-756:RA-AUTO-013:3:0aa54f26-68ea-420d-a5f9-3a7c2226fef9",
+      "startedAt": "2026-08-25T04:26:26.615Z",
+      "completedAt": "2026-08-25T04:26:41.618Z",
+      "totalLatencyMs": 15002.644,
+      "firstTokenLatencyMs": "NOT_OBSERVABLE",
+      "tokenUsage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "totalTokens": 0
+      },
+      "costCny": "NOT_OBSERVABLE",
+      "costSource": "NOT_OBSERVABLE",
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "timeout",
+          "providerRequestId": "NOT_OBSERVABLE",
+          "latencyMs": 15002.547
+        }
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-018",
+      "repetition": 1,
+      "requestId": "RUN-20260825-756:RA-AUTO-018:1:147a5c5a-d3dc-46e0-b3f4-315f2e6a47b3",
+      "startedAt": "2026-08-25T04:26:41.619Z",
+      "completedAt": "2026-08-25T04:26:41.619Z",
+      "totalLatencyMs": 1,
+      "firstTokenLatencyMs": 0,
+      "tokenUsage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "totalTokens": 0
+      },
+      "costCny": 0,
+      "costSource": "NOT_APPLICABLE",
+      "attempts": []
+    },
+    {
+      "caseId": "RA-AUTO-018",
+      "repetition": 2,
+      "requestId": "RUN-20260825-756:RA-AUTO-018:2:5052d4a3-d94a-45ea-9c66-4de38f0a8720",
+      "startedAt": "2026-08-25T04:26:41.619Z",
+      "completedAt": "2026-08-25T04:26:41.619Z",
+      "totalLatencyMs": 1,
+      "firstTokenLatencyMs": 0,
+      "tokenUsage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "totalTokens": 0
+      },
+      "costCny": 0,
+      "costSource": "NOT_APPLICABLE",
+      "attempts": []
+    },
+    {
+      "caseId": "RA-AUTO-018",
+      "repetition": 3,
+      "requestId": "RUN-20260825-756:RA-AUTO-018:3:42b3fd12-e1a9-4c3d-adea-5d75edd04e8b",
+      "startedAt": "2026-08-25T04:26:41.619Z",
+      "completedAt": "2026-08-25T04:26:41.619Z",
+      "totalLatencyMs": 1,
+      "firstTokenLatencyMs": 0,
+      "tokenUsage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "totalTokens": 0
+      },
+      "costCny": 0,
+      "costSource": "NOT_APPLICABLE",
+      "attempts": []
+    }
+  ]
+}
