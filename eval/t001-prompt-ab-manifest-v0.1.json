@@ -1,0 +1,76 @@
+{
+  "schemaVersion": "t001-prompt-ab-manifest-v0.1",
+  "experimentId": "T001-PROMPT-AB-v0.1",
+  "decision": "比较压缩 Prompt 候选是否在相同运行预算下改善可靠性，同时不降低 Claim 完整性和人工可读性",
+  "arms": {
+    "A": {
+      "promptAsset": "prompts/cycling-buddy-ride-analysis-v3.1.2.md",
+      "platformWorkflowVersion": "v0.0.2",
+      "baselineRunId": "RUN-20260825-756"
+    },
+    "B": {
+      "promptAsset": "prompts/cycling-buddy-ride-analysis-v3.1.2-compact-candidate.md",
+      "platformWorkflowVersion": "TO_BE_PUBLISHED",
+      "status": "NOT_DEPLOYED"
+    }
+  },
+  "frozenConditions": {
+    "caseIds": [
+      "RA-AUTO-001",
+      "RA-AUTO-005",
+      "RA-AUTO-006",
+      "RA-AUTO-010",
+      "RA-AUTO-011",
+      "RA-AUTO-013",
+      "RA-AUTO-018"
+    ],
+    "repetitionsPerCase": 3,
+    "expectedSlotCountPerArm": 21,
+    "timeoutMs": 15000,
+    "modelId": "NOT_OBSERVABLE",
+    "fewShotMode": "disabled",
+    "inputSetSha256": "5333b4cd4d5aeb21fbada26357381120e3665ffc2c71bda429d5cdce9b2c7671",
+    "executionMode": "serial",
+    "maxAttemptsPerSlot": 2,
+    "ineligibleCase": "RA-AUTO-018",
+    "ineligibleCaseCalls": 0
+  },
+  "metrics": {
+    "machine": [
+      "b2SuccessRate",
+      "firstAttemptContractSuccessRate",
+      "timeoutSlotRate",
+      "repairTriggerRate",
+      "repairSuccessRate",
+      "b0FallbackRate",
+      "providerCallCount",
+      "tokenCount"
+    ],
+    "claimIntegrity": [
+      "contractValidRate",
+      "unknownClaimReferenceCount",
+      "unusedAllowedClaimCount",
+      "overallReferencedClaimCount"
+    ],
+    "human": {
+      "status": "NOT_SCORED",
+      "rubric": ["事实忠实", "洞察价值", "清晰易读", "限制表达", "行动区分"],
+      "reviewersRequired": 2,
+      "blind": true
+    }
+  },
+  "stopConditions": [
+    "任一槽位触发安全停止或出现提示词/密钥泄露",
+    "B 组 workflow、Prompt 资产、输入摘要或 15 秒超时与合同不一致",
+    "平台返回无法解析的批次证据，不能完成逐槽关联",
+    "RA-AUTO-018 发生任何 Provider 调用"
+  ],
+  "outOfScope": [
+    "不重新运行 A 基线",
+    "不运行完整 54 槽",
+    "不修改 ride-analysis-output-v0.3",
+    "不优化输出字段或文案",
+    "不评分成本、精确模型 ID、区域或首 Token 延迟",
+    "不据此判断 G1 或生产放行"
+  ]
+}

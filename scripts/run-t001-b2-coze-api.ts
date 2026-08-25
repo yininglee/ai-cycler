@@ -37,6 +37,8 @@ import {
   T001_B2_RESTRICTED_CASE_IDS,
   T001_B2_FROZEN_INPUT_SET_SHA256,
   T001_B2_RAW_BATCH_SCHEMA_VERSION,
+  type T001PromptAbArm,
+  type T001PromptAbExperiment,
   type T001B2Attempt,
   type T001B2RawBatch,
   type T001B2RawRecord,
@@ -49,10 +51,31 @@ import {
 
 const WORKFLOW_NAME = "ride_analysis_v2";
 const WORKFLOW_ID = "7676429753852018707";
-const WORKFLOW_VERSION = "v0.0.2";
+const A_PLATFORM_WORKFLOW_VERSION = "v0.0.2";
+const A_PROMPT_ASSET = "prompts/cycling-buddy-ride-analysis-v3.1.2.md" as const;
+const B_PROMPT_ASSET = "prompts/cycling-buddy-ride-analysis-v3.1.2-compact-candidate.md" as const;
+const EXPERIMENT_ID = "T001-PROMPT-AB-v0.1" as const;
 const ROOT = process.cwd();
 
 type ExecutionScope = "restricted" | "full";
+
+interface PromptAbSelection {
+  arm: T001PromptAbArm;
+  workflowName: string;
+  workflowId: string;
+  workflowVersion: string;
+  promptAsset: typeof A_PROMPT_ASSET | typeof B_PROMPT_ASSET;
+}
+
+function argumentValue(name: string): string | undefined {
+  return process.argv.find((argument) => argument.startsWith(`${name}=`))?.slice(name.length + 1);
+}
+
+function requestedArm(): T001PromptAbArm {
+  const value = argumentValue("--arm") ?? "A";
+  if (value === "A" || value === "B") return value;
+  throw new Error("ARM_REQUIRED: use --arm=A or --arm=B");
+}
 
 function requestedScope(): ExecutionScope {
   const value = process.argv.find((argument) => argument.startsWith("--scope="))?.slice("--scope=".length);
@@ -62,6 +85,25 @@ function requestedScope(): ExecutionScope {
 
 function caseIdsForScope(scope: ExecutionScope): readonly T001AutomaticRideAnalysisCaseId[] {
   return scope === "restricted" ? T001_B2_RESTRICTED_CASE_IDS : t001AutomaticRideAnalysisCaseIds;
+}
+
+function promptAbSelection(config: CozeWorkflowConfig, arm: T001PromptAbArm): PromptAbSelection {
+  if (arm === "A") {
+    if (config.workflowName !== WORKFLOW_NAME || config.workflowId !== WORKFLOW_ID || config.workflowVersion !== A_PLATFORM_WORKFLOW_VERSION) {
+      throw new Error("A_WORKFLOW_MISMATCH: A must use ride_analysis_v2/7676429753852018707/v0.0.2");
+    }
+    return { arm, workflowName: config.workflowName, workflowId: config.workflowId, workflowVersion: config.workflowVersion, promptAsset: A_PROMPT_ASSET };
+  }
+  const workflowName = argumentValue("--workflow-name");
+  const workflowId = argumentValue("--workflow-id");
+  const workflowVersion = argumentValue("--workflow-version");
+  if (!workflowName || !workflowId || !workflowVersion) {
+    throw new Error("B_WORKFLOW_REQUIRED: provide --workflow-name=... --workflow-id=... --workflow-version=...");
+  }
+  if (workflowName === WORKFLOW_NAME && workflowId === WORKFLOW_ID && workflowVersion === A_PLATFORM_WORKFLOW_VERSION) {
+    throw new Error("B_WORKFLOW_MUST_DIFFER_FROM_A");
+  }
+  return { arm, workflowName, workflowId, workflowVersion, promptAsset: B_PROMPT_ASSET };
 }
 
 function loadEnvLocal(): ServerEnvironment {
@@ -157,15 +199,15 @@ function usageFor(attempts: CapturedAttempt[]): { inputTokens: number; outputTok
   );
 }
 
-function validateEnvironment(environment: ServerEnvironment): CozeWorkflowConfig {
+function validateEnvironment(environment: ServerEnvironment, arm: T001PromptAbArm): { config: CozeWorkflowConfig; selection: PromptAbSelection } {
   const config = readCozeWorkflowConfig(environment);
   if (!config) throw new Error("COZE_ENV_INCOMPLETE: .env.local must contain API URL, workflow name/id/version and PAT");
-  if (config.workflowName !== WORKFLOW_NAME) throw new Error(`WORKFLOW_NAME_MISMATCH:${config.workflowName}`);
-  if (config.workflowId !== WORKFLOW_ID) throw new Error(`WORKFLOW_ID_MISMATCH:${config.workflowId}`);
-  if (config.workflowVersion !== WORKFLOW_VERSION) throw new Error(`WORKFLOW_VERSION_MISMATCH:${config.workflowVersion}`);
   if (!config.apiToken.startsWith("pat_")) throw new Error("COZE_API_TOKEN_FORMAT_INVALID");
   if (config.modelId !== NOT_OBSERVABLE) throw new Error("COZE_MODEL_ID_MUST_BE_NOT_OBSERVABLE");
-  return config;
+  const selection = promptAbSelection(config, arm);
+  const selectedConfig = { ...config, workflowName: selection.workflowName, workflowId: selection.workflowId, workflowVersion: selection.workflowVersion };
+  if (selectedConfig.timeoutMs !== 15_000) throw new Error(`AB_TIMEOUT_MISMATCH:${selectedConfig.timeoutMs}`);
+  return { config: selectedConfig, selection };
 }
 
 async function validateInputs(): Promise<void> {
@@ -188,13 +230,17 @@ async function validateInputs(): Promise<void> {
 
 async function preflight(): Promise<void> {
   const scope = requestedScope();
+  const arm = requestedArm();
   const environment = loadEnvLocal();
-  const config = validateEnvironment(environment);
+  const { config, selection } = validateEnvironment(environment, arm);
   await validateInputs();
+  await readFile(join(ROOT, selection.promptAsset), "utf8");
   const commit = currentCommit();
   assertRuntimeFilesCommitted();
   console.log(JSON.stringify({
     preflight: "PASS",
+    arm,
+    promptAsset: selection.promptAsset,
     workflow: { name: config.workflowName, id: config.workflowId, version: config.workflowVersion },
     inputSetSha256: T001_B2_FROZEN_INPUT_SET_SHA256,
     sourceCommit: commit,
@@ -208,9 +254,10 @@ async function preflight(): Promise<void> {
 
 async function runBatch(): Promise<void> {
   const scope = requestedScope();
+  const arm = requestedArm();
   await preflight();
   const environment = loadEnvLocal();
-  const config = validateEnvironment(environment);
+  const { config, selection } = validateEnvironment(environment, arm);
   const batchId = nextRunId();
   const client = new CozeWorkflowClient(config);
   const records: T001B2RawRecord[] = [];
@@ -269,8 +316,18 @@ async function runBatch(): Promise<void> {
       sourceCommit: currentCommit(),
       modelId: NOT_OBSERVABLE,
       region: NOT_OBSERVABLE,
-      modelParameters: { workflowName: WORKFLOW_NAME, workflowVersion: WORKFLOW_VERSION, isAsync: false },
+      modelParameters: { workflowName: selection.workflowName, workflowId: selection.workflowId, workflowVersion: selection.workflowVersion, isAsync: false },
     },
+    experiment: {
+      experimentId: EXPERIMENT_ID,
+      arm,
+      promptAsset: selection.promptAsset,
+      platformWorkflowVersion: selection.workflowVersion,
+      ...(arm === "A" ? { baselineRunId: "RUN-20260825-756" } : {}),
+      timeoutMs: 15_000,
+      sameModel: true,
+      sameInputSet: true,
+    } satisfies T001PromptAbExperiment,
     executionScope: {
       kind: scope,
       caseIds: [...caseIdsForScope(scope)],

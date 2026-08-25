@@ -46,6 +46,20 @@ export const NOT_OBSERVABLE = "NOT_OBSERVABLE" as const;
 export type ObservableNumber = number | typeof NOT_OBSERVABLE;
 export type ObservableString = string | typeof NOT_OBSERVABLE;
 
+export type T001PromptAbArm = "A" | "B";
+
+export interface T001PromptAbExperiment {
+  experimentId: "T001-PROMPT-AB-v0.1";
+  arm: T001PromptAbArm;
+  promptAsset: "prompts/cycling-buddy-ride-analysis-v3.1.2.md"
+    | "prompts/cycling-buddy-ride-analysis-v3.1.2-compact-candidate.md";
+  platformWorkflowVersion: string;
+  baselineRunId?: "RUN-20260825-756";
+  timeoutMs: 15_000;
+  sameModel: true;
+  sameInputSet: true;
+}
+
 export interface T001B2VersionMatrix {
   appVersion: "visual-shell-v0.1";
   outputSchemaVersion: typeof RIDE_ANALYSIS_OUTPUT_SCHEMA_VERSION;
@@ -104,6 +118,7 @@ export interface T001B2RawBatch {
   batchId: string;
   plan: "B2";
   versionMatrix: T001B2VersionMatrix;
+  experiment?: T001PromptAbExperiment;
   executionScope?: T001B2ExecutionScope;
   records: T001B2RawRecord[];
 }
@@ -122,6 +137,7 @@ export interface T001B2EvaluatedBatch {
   validationStatus: "PASS" | "FAIL";
   benchmarkStatus: "NOT_SCORED";
   versionMatrix: T001B2VersionMatrix;
+  experiment?: T001PromptAbExperiment;
   dataset: {
     caseCount: number;
     repetitionsPerCase: typeof T001_B2_REPETITIONS;
@@ -443,6 +459,7 @@ export async function evaluateT001B2Batch(batch: T001B2RawBatch): Promise<T001B2
     validationStatus: issues.length === 0 ? "PASS" : "FAIL",
     benchmarkStatus: "NOT_SCORED",
     versionMatrix: batch.versionMatrix,
+    ...(batch.experiment ? { experiment: batch.experiment } : {}),
     dataset: {
       caseCount: executionScope.caseIds.length,
       repetitionsPerCase: T001_B2_REPETITIONS,
