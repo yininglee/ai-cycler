@@ -141,6 +141,22 @@ test("provider timeout degrades immediately without an unconstrained retry", asy
   assert.equal(provider.calls.length, 1);
 });
 
+test("a repair timeout degrades immediately without a third provider call", async () => {
+  const invalid = validOutput();
+  invalid.overallAssessment = { text: "本次功率达到999瓦。", claimIds: ["claim:other-ride:avgPowerW"] };
+  const provider = new QueuedProvider([
+    JSON.stringify(invalid),
+    new CozeWorkflowError("AI_TIMEOUT", "repair timeout"),
+    JSON.stringify(validOutput()),
+  ]);
+  const result = await runRideAnalysis(prepared(), { enabled: true, provider });
+
+  assert.equal(result.source, "b0");
+  assert.equal(result.fallbackCode, "AI_TIMEOUT");
+  assert.equal(result.attempts, 2);
+  assert.equal(provider.calls.length, 2);
+});
+
 test("provider errors degrade without returning provider details", async () => {
   const provider = new QueuedProvider([new Error("upstream secret detail")]);
   const result = await runRideAnalysis(prepared(), { enabled: true, provider });

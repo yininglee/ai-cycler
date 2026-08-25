@@ -277,7 +277,10 @@ function summaryText(snapshot: RideContextSnapshot): string {
     return "这条记录存在数据缺失、损坏或字段矛盾，当前不能安全生成骑行结论。请检查原始文件后重新导入；系统不会从冲突数据中自行选择数值。";
   }
   if (snapshot.analysisMode === "basic") {
-    return "这条记录的可用基础事实已经整理，但骑行距离较短、时长不足或时间信息不完整，因此只展示能够追溯的记录，不评价训练效果、恢复需求或体能变化。";
+    const hasRouteDistance = Boolean(snapshot.recordedMetrics.distanceM || snapshot.derivedMetrics.distanceM);
+    return hasRouteDistance
+      ? "这条记录的可用基础事实已经整理，但骑行距离较短、时长不足或时间信息不完整，因此只展示能够追溯的记录，不评价训练效果、恢复需求或体能变化。"
+      : "这条记录缺少完整路线距离背景，但已有的传感器或时间事实可以追溯；本次仅展示这些事实，不评价训练效果、恢复需求或体能变化。";
   }
   if (snapshot.dataLevel === "L1") {
     return "本次骑行的距离、时间、速度与爬升等基础事实已经整理。当前缺少可靠的心率和功率依据，因此只回顾记录本身，不判断训练强度、恢复需求或体能变化。";
@@ -297,7 +300,12 @@ function headline(snapshot: RideContextSnapshot): string {
 }
 
 function preferredHighlightKeys(snapshot: RideContextSnapshot): MetricKey[] {
-  if (snapshot.analysisMode === "basic") return ["distanceM", "movingTimeS", "elevationGainM"];
+  if (snapshot.analysisMode === "basic") {
+    const hasRouteDistance = snapshot.allowedClaims.some((claim) => claim.metricKey === "distanceM");
+    if (!hasRouteDistance && snapshot.dataLevel === "L3") return ["avgPowerW", "normalizedPowerW", "movingTimeS"];
+    if (!hasRouteDistance && snapshot.dataLevel === "L2") return ["avgHeartRateBpm", "maxHeartRateBpm", "movingTimeS"];
+    return ["distanceM", "movingTimeS", "elevationGainM"];
+  }
   if (snapshot.dataLevel === "L3") return ["distanceM", "avgPowerW", "avgSpeedMps"];
   if (snapshot.dataLevel === "L2") return ["distanceM", "avgHeartRateBpm", "avgSpeedMps"];
   return ["distanceM", "movingTimeS", "avgSpeedMps"];

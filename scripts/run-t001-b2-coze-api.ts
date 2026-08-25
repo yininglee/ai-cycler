@@ -34,6 +34,7 @@ import { RIDE_FEATURE_RULES_VERSION } from "../src/domain/ride-features.ts";
 import { B0_TEMPLATE_VERSION } from "../src/domain/ride-summary.ts";
 import {
   NOT_OBSERVABLE,
+  T001_B2_RESTRICTED_CASE_IDS,
   T001_B2_FROZEN_INPUT_SET_SHA256,
   T001_B2_RAW_BATCH_SCHEMA_VERSION,
   type T001B2Attempt,
@@ -50,6 +51,18 @@ const WORKFLOW_NAME = "ride_analysis_v2";
 const WORKFLOW_ID = "7676429753852018707";
 const WORKFLOW_VERSION = "v0.0.2";
 const ROOT = process.cwd();
+
+type ExecutionScope = "restricted" | "full";
+
+function requestedScope(): ExecutionScope {
+  const value = process.argv.find((argument) => argument.startsWith("--scope="))?.slice("--scope=".length);
+  if (value === "restricted" || value === "full") return value;
+  throw new Error("SCOPE_REQUIRED: use --scope=restricted or --scope=full");
+}
+
+function caseIdsForScope(scope: ExecutionScope): readonly T001AutomaticRideAnalysisCaseId[] {
+  return scope === "restricted" ? T001_B2_RESTRICTED_CASE_IDS : t001AutomaticRideAnalysisCaseIds;
+}
 
 function loadEnvLocal(): ServerEnvironment {
   const values: Record<string, string> = {};
@@ -174,6 +187,7 @@ async function validateInputs(): Promise<void> {
 }
 
 async function preflight(): Promise<void> {
+  const scope = requestedScope();
   const environment = loadEnvLocal();
   const config = validateEnvironment(environment);
   await validateInputs();
@@ -186,19 +200,21 @@ async function preflight(): Promise<void> {
     sourceCommit: commit,
     apiToken: "PRESENT_REDACTED",
     timeoutMs: config.timeoutMs,
+    executionScope: { kind: scope, caseCount: caseIdsForScope(scope).length, expectedSlotCount: caseIdsForScope(scope).length * 3 },
     modelId: NOT_OBSERVABLE,
     externalCalls: 0,
   }, null, 2));
 }
 
 async function runBatch(): Promise<void> {
+  const scope = requestedScope();
   await preflight();
   const environment = loadEnvLocal();
   const config = validateEnvironment(environment);
   const batchId = nextRunId();
   const client = new CozeWorkflowClient(config);
   const records: T001B2RawRecord[] = [];
-  for (const caseId of t001AutomaticRideAnalysisCaseIds) {
+  for (const caseId of caseIdsForScope(scope)) {
     const item = getT001AutomaticRideAnalysisCase(caseId);
     const prepared = prepareRideAnalysis(item.record, `eval-t001:${caseId}`, item.contextOptions);
     for (const repetition of [1, 2, 3] as const) {
@@ -254,6 +270,12 @@ async function runBatch(): Promise<void> {
       modelId: NOT_OBSERVABLE,
       region: NOT_OBSERVABLE,
       modelParameters: { workflowName: WORKFLOW_NAME, workflowVersion: WORKFLOW_VERSION, isAsync: false },
+    },
+    executionScope: {
+      kind: scope,
+      caseIds: [...caseIdsForScope(scope)],
+      repetitionsPerCase: 3,
+      expectedSlotCount: caseIdsForScope(scope).length * 3,
     },
     records,
   };

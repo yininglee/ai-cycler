@@ -45,6 +45,7 @@ export interface RideAnalysisOutputV03 {
 export interface RideAnalysisOutputV03ValidationResult {
   valid: boolean;
   issues: string[];
+  qualityWarnings?: string[];
   output?: RideAnalysisOutputV03;
 }
 
@@ -78,6 +79,13 @@ const UNSCOPED_CONSISTENCY_PATTERN = /(?:功率|速度|心率|踏频)(?:输出|�
 const HEADLINE_EVALUATION_PATTERNS = [
   /整体/, /节奏/, /配速/, /表现/, /完成度/, /连贯/, /一致/, /变化/, /回落/, /起伏/, /稳定/, /平稳/, /均衡/, /衔接/,
 ];
+
+const MEANINGFUL_FEATURE_KEYS = new Set([
+  "speedStdDevMps", "speedCoefficientOfVariation", "speedFirstLastDeltaMps",
+  "heartRateStdDevBpm", "heartRateFirstLastDeltaBpm",
+  "powerStdDevW", "powerCoefficientOfVariation", "powerFirstLastDeltaW", "normalizedPowerRatio",
+  "cadenceStdDevRpm", "cadenceCoefficientOfVariation", "cadenceFirstLastDeltaRpm",
+]);
 
 function hasPattern(texts: string[], patterns: RegExp[]): boolean {
   return texts.some((text) => patterns.some((pattern) => pattern.test(text)));
@@ -206,6 +214,23 @@ function hasUnscopedConsistencyConclusion(texts: string[]): boolean {
     }
   }
   return false;
+}
+
+function insightQualityWarnings(
+  context: RideAnalysisContext,
+  overallClaimIds: string[],
+  dimensions: RideAnalysisDimensionInsight[],
+): string[] {
+  const meaningfulAvailable = context.allowedClaims.some((claim) => claim.kind === "feature" && MEANINGFUL_FEATURE_KEYS.has(claim.key));
+  if (!meaningfulAvailable) return [];
+  const usedClaimIds = new Set([
+    ...overallClaimIds,
+    ...dimensions.flatMap((dimension) => dimension.claimIds),
+  ]);
+  const meaningfulUsed = context.allowedClaims.some(
+    (claim) => claim.kind === "feature" && MEANINGFUL_FEATURE_KEYS.has(claim.key) && usedClaimIds.has(claim.claimId),
+  );
+  return meaningfulUsed ? [] : ["FEATURE_EVIDENCE_AVAILABLE_NOT_USED"];
 }
 
 export function validateRideAnalysisOutputV03(
@@ -359,9 +384,11 @@ export function validateRideAnalysisOutputV03(
   if (issues.length > 0 || !headline || !overall || !limitations || !shareCopy || !safetyLevel) return { valid: false, issues: [...new Set(issues)] };
   const overallClaimIds = asStringArray(overall.claimIds);
   if (!overallClaimIds) return { valid: false, issues: [...new Set([...issues, "INVALID_OVERALL_CLAIMS"]) ] };
+  const qualityWarnings = insightQualityWarnings(context, overallClaimIds, parsedDimensions);
   return {
     valid: true,
     issues: [],
+    ...(qualityWarnings.length > 0 ? { qualityWarnings } : {}),
     output: {
       schemaVersion: RIDE_ANALYSIS_OUTPUT_SCHEMA_VERSION,
       headline,

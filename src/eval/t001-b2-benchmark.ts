@@ -33,11 +33,18 @@ import {
   type T001AutomaticRideAnalysisCaseId,
 } from "../fixtures/ride-analysis-t001.ts";
 
-export const T001_B2_RAW_BATCH_SCHEMA_VERSION = "t001-b2-raw-batch-v0.2" as const;
-export const T001_B2_RESULT_SCHEMA_VERSION = "t001-b2-evaluated-run-v0.2" as const;
+export const T001_B2_RAW_BATCH_SCHEMA_VERSION = "t001-b2-raw-batch-v0.3" as const;
+export const T001_B2_RESULT_SCHEMA_VERSION = "t001-b2-evaluated-run-v0.3" as const;
 export const T001_B2_REPETITIONS = 3 as const;
 export const T001_B2_B0_RUN_ID = "RUN-20260824-028" as const;
 export const T001_B2_FROZEN_INPUT_SET_SHA256 = "5333b4cd4d5aeb21fbada26357381120e3665ffc2c71bda429d5cdce9b2c7671" as const;
+export const T001_B2_RESTRICTED_CASE_IDS = [
+  "RA-AUTO-001", "RA-AUTO-005", "RA-AUTO-006", "RA-AUTO-010",
+  "RA-AUTO-011", "RA-AUTO-013", "RA-AUTO-018",
+] as const satisfies readonly T001AutomaticRideAnalysisCaseId[];
+export const NOT_OBSERVABLE = "NOT_OBSERVABLE" as const;
+export type ObservableNumber = number | typeof NOT_OBSERVABLE;
+export type ObservableString = string | typeof NOT_OBSERVABLE;
 
 export interface T001B2VersionMatrix {
   appVersion: "visual-shell-v0.1";
@@ -54,8 +61,8 @@ export interface T001B2VersionMatrix {
   b0TemplateVersion: typeof B0_TEMPLATE_VERSION;
   inputSetSha256: typeof T001_B2_FROZEN_INPUT_SET_SHA256;
   sourceCommit: string;
-  modelId: string;
-  region: string;
+  modelId: ObservableString;
+  region: ObservableString;
   modelParameters: Record<string, unknown>;
 }
 
@@ -74,13 +81,22 @@ export interface T001B2RawRecord {
   startedAt: string;
   completedAt: string;
   totalLatencyMs: number;
+  firstTokenLatencyMs: ObservableNumber;
   tokenUsage: {
     inputTokens: number;
     outputTokens: number;
     totalTokens: number;
   };
-  costCny: number;
+  costCny: ObservableNumber;
+  costSource: ObservableString;
   attempts: T001B2Attempt[];
+}
+
+export interface T001B2ExecutionScope {
+  kind: "full" | "restricted";
+  caseIds: T001AutomaticRideAnalysisCaseId[];
+  repetitionsPerCase: typeof T001_B2_REPETITIONS;
+  expectedSlotCount: number;
 }
 
 export interface T001B2RawBatch {
@@ -88,6 +104,7 @@ export interface T001B2RawBatch {
   batchId: string;
   plan: "B2";
   versionMatrix: T001B2VersionMatrix;
+  executionScope?: T001B2ExecutionScope;
   records: T001B2RawRecord[];
 }
 
@@ -106,11 +123,12 @@ export interface T001B2EvaluatedBatch {
   benchmarkStatus: "NOT_SCORED";
   versionMatrix: T001B2VersionMatrix;
   dataset: {
-    caseCount: 18;
-    repetitionsPerCase: 3;
-    expectedSlotCount: 54;
+    caseCount: number;
+    repetitionsPerCase: typeof T001_B2_REPETITIONS;
+    expectedSlotCount: number;
     b0RunId: typeof T001_B2_B0_RUN_ID;
   };
+  executionScope?: T001B2ExecutionScope;
   summary: {
     slotCount: number;
     firstAttemptContractValidCount: number;
@@ -120,7 +138,7 @@ export interface T001B2EvaluatedBatch {
     safetyStopCount: number;
     modelCallCount: number;
     tokenCount: number;
-    costCny: number;
+    costCny: ObservableNumber;
     latencyMs: { p50: number; p95: number };
   };
   issues: string[];
@@ -205,9 +223,13 @@ function validateVersionMatrix(value: unknown, issues: string[]): void {
   if (
     typeof matrix.modelId !== "string"
     || !matrix.modelId.trim()
-    || UNRECORDED_MODEL_IDS.has(matrix.modelId.trim().toLowerCase())
+    || (matrix.modelId !== NOT_OBSERVABLE && UNRECORDED_MODEL_IDS.has(matrix.modelId.trim().toLowerCase()))
   ) issues.push("MODEL_ID_NOT_RECORDED");
-  if (typeof matrix.region !== "string" || !matrix.region.trim()) issues.push("MODEL_REGION_NOT_RECORDED");
+  if (
+    typeof matrix.region !== "string"
+    || !matrix.region.trim()
+    || (matrix.region !== NOT_OBSERVABLE && matrix.region.trim().toLowerCase() === "unrecorded")
+  ) issues.push("MODEL_REGION_NOT_RECORDED");
   if (
     !matrix.modelParameters
     || typeof matrix.modelParameters !== "object"
@@ -227,8 +249,18 @@ function validateRecordMetadata(record: T001B2RawRecord, eligibility: boolean, i
   const completed = validDate(record.completedAt);
   if (started === undefined || completed === undefined || completed < started) issues.push(`${prefix}:INVALID_TIMESTAMPS`);
   if (!positive(record.totalLatencyMs)) issues.push(`${prefix}:MISSING_TOTAL_LATENCY`);
-  if (!finiteNonNegative(record.costCny)) issues.push(`${prefix}:MISSING_COST`);
+  const costObservable = record.costCny === NOT_OBSERVABLE || finiteNonNegative(record.costCny);
+  if (!costObservable) issues.push(`${prefix}:MISSING_COST`);
   else if (!eligibility && record.costCny !== 0) issues.push(`${prefix}:INELIGIBLE_WITH_MODEL_COST`);
+  if (typeof record.costSource !== "string" || !record.costSource.trim()) issues.push(`${prefix}:MISSING_COST_SOURCE`);
+  if (!eligibility && record.costSource !== "NOT_APPLICABLE") issues.push(`${prefix}:INELIGIBLE_WITH_COST_SOURCE`);
+  const firstTokenObservable = record.firstTokenLatencyMs === NOT_OBSERVABLE
+    || finiteNonNegative(record.firstTokenLatencyMs);
+  if (!firstTokenObservable) issues.push(`${prefix}:MISSING_FIRST_TOKEN_LATENCY`);
+  else if (!eligibility && record.firstTokenLatencyMs !== 0) issues.push(`${prefix}:INELIGIBLE_WITH_FIRST_TOKEN_LATENCY`);
+  else if (eligibility && record.firstTokenLatencyMs !== NOT_OBSERVABLE && !positive(record.firstTokenLatencyMs)) {
+    issues.push(`${prefix}:INVALID_FIRST_TOKEN_LATENCY`);
+  }
   const tokenUsageValid = Boolean(
     record.tokenUsage
     && Number.isInteger(record.tokenUsage.inputTokens)
@@ -291,8 +323,43 @@ class RecordedAttemptProvider implements RideAnalysisProvider {
   }
 }
 
-export function expectedT001B2SlotIds(): string[] {
-  return t001AutomaticRideAnalysisCaseIds.flatMap((caseId) => [1, 2, 3].map((repetition) => `${caseId}#${repetition}`));
+export function expectedT001B2SlotIds(
+  caseIds: readonly T001AutomaticRideAnalysisCaseId[] = t001AutomaticRideAnalysisCaseIds,
+): string[] {
+  return caseIds.flatMap((caseId) => [1, 2, 3].map((repetition) => `${caseId}#${repetition}`));
+}
+
+function executionScopeFor(batch: T001B2RawBatch): T001B2ExecutionScope {
+  const scope = batch.executionScope;
+  if (!scope) {
+    return {
+      kind: "full",
+      caseIds: [...t001AutomaticRideAnalysisCaseIds],
+      repetitionsPerCase: T001_B2_REPETITIONS,
+      expectedSlotCount: expectedT001B2SlotIds().length,
+    };
+  }
+  return scope;
+}
+
+function validateExecutionScope(batch: T001B2RawBatch, issues: string[]): T001B2ExecutionScope {
+  const scope = executionScopeFor(batch);
+  if (scope.kind !== "full" && scope.kind !== "restricted") issues.push("INVALID_EXECUTION_SCOPE_KIND");
+  if (!Array.isArray(scope.caseIds) || scope.caseIds.length === 0) issues.push("INVALID_EXECUTION_SCOPE_CASES");
+  const uniqueCaseIds = Array.isArray(scope.caseIds) ? [...new Set(scope.caseIds)] : [];
+  if (uniqueCaseIds.length !== (Array.isArray(scope.caseIds) ? scope.caseIds.length : 0)) issues.push("DUPLICATE_EXECUTION_SCOPE_CASE");
+  if (uniqueCaseIds.some((caseId) => !CASE_IDS.has(caseId))) issues.push("UNKNOWN_EXECUTION_SCOPE_CASE");
+  if (scope.kind === "full" && uniqueCaseIds.length !== t001AutomaticRideAnalysisCaseIds.length) issues.push("FULL_SCOPE_CASE_COUNT_MISMATCH");
+  if (scope.kind === "restricted" && uniqueCaseIds.length >= t001AutomaticRideAnalysisCaseIds.length) issues.push("RESTRICTED_SCOPE_NOT_RESTRICTED");
+  if (scope.repetitionsPerCase !== T001_B2_REPETITIONS) issues.push("INVALID_EXECUTION_SCOPE_REPETITIONS");
+  const expectedSlotCount = uniqueCaseIds.length * T001_B2_REPETITIONS;
+  if (scope.expectedSlotCount !== expectedSlotCount) issues.push("INVALID_EXECUTION_SCOPE_SLOT_COUNT");
+  return {
+    ...scope,
+    caseIds: uniqueCaseIds as T001AutomaticRideAnalysisCaseId[],
+    repetitionsPerCase: T001_B2_REPETITIONS,
+    expectedSlotCount,
+  };
 }
 
 export function validateT001B2BatchMetadata(batch: T001B2RawBatch): string[] {
@@ -301,6 +368,7 @@ export function validateT001B2BatchMetadata(batch: T001B2RawBatch): string[] {
   if (typeof batch.batchId !== "string" || !/^RUN-\d{8}-\d{3}$/.test(batch.batchId)) issues.push("INVALID_BATCH_ID");
   if (batch.plan !== "B2") issues.push("INVALID_BENCHMARK_PLAN");
   validateVersionMatrix(batch.versionMatrix, issues);
+  const executionScope = validateExecutionScope(batch, issues);
   if (!Array.isArray(batch.records)) return [...issues, "INVALID_RECORDS"];
 
   const seenSlots = new Set<string>();
@@ -322,8 +390,8 @@ export function validateT001B2BatchMetadata(batch: T001B2RawBatch): string[] {
       seenRequests.add(record.requestId);
     }
   }
-  for (const expected of expectedT001B2SlotIds()) if (!seenSlots.has(expected)) issues.push(`${expected}:MISSING_SLOT`);
-  if (batch.records.length !== 54) issues.push(`INVALID_SLOT_COUNT:${batch.records.length}`);
+  for (const expected of expectedT001B2SlotIds(executionScope.caseIds)) if (!seenSlots.has(expected)) issues.push(`${expected}:MISSING_SLOT`);
+  if (batch.records.length !== executionScope.expectedSlotCount) issues.push(`INVALID_SLOT_COUNT:${batch.records.length}`);
   return [...new Set(issues)];
 }
 
@@ -351,6 +419,7 @@ export async function evaluateT001B2Record(
 
 export async function evaluateT001B2Batch(batch: T001B2RawBatch): Promise<T001B2EvaluatedBatch> {
   const issues = validateT001B2BatchMetadata(batch);
+  const executionScope = executionScopeFor(batch);
   const records: T001B2EvaluatedRecord[] = [];
   if (issues.length === 0) {
     for (const record of batch.records) {
@@ -374,7 +443,13 @@ export async function evaluateT001B2Batch(batch: T001B2RawBatch): Promise<T001B2
     validationStatus: issues.length === 0 ? "PASS" : "FAIL",
     benchmarkStatus: "NOT_SCORED",
     versionMatrix: batch.versionMatrix,
-    dataset: { caseCount: 18, repetitionsPerCase: 3, expectedSlotCount: 54, b0RunId: T001_B2_B0_RUN_ID },
+    dataset: {
+      caseCount: executionScope.caseIds.length,
+      repetitionsPerCase: T001_B2_REPETITIONS,
+      expectedSlotCount: executionScope.expectedSlotCount,
+      b0RunId: T001_B2_B0_RUN_ID,
+    },
+    ...(batch.executionScope ? { executionScope } : {}),
     summary: {
       slotCount: records.length,
       firstAttemptContractValidCount,
@@ -384,7 +459,9 @@ export async function evaluateT001B2Batch(batch: T001B2RawBatch): Promise<T001B2
       safetyStopCount,
       modelCallCount: records.reduce((sum, record) => sum + record.attempts.length, 0),
       tokenCount: records.reduce((sum, record) => sum + record.tokenUsage.totalTokens, 0),
-      costCny: Number(records.reduce((sum, record) => sum + record.costCny, 0).toFixed(6)),
+      costCny: records.some((record) => record.costCny === NOT_OBSERVABLE)
+        ? NOT_OBSERVABLE
+        : Number(records.reduce((sum, record) => sum + (record.costCny as number), 0).toFixed(6)),
       latencyMs: {
         p50: percentile(records.map((record) => record.totalLatencyMs), 0.5),
         p95: percentile(records.map((record) => record.totalLatencyMs), 0.95),

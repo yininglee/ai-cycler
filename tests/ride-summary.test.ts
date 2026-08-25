@@ -6,6 +6,7 @@ import {
   generateB0RideAnalysis,
   validateB0RideAnalysis,
 } from "../src/domain/ride-summary.ts";
+import { getRideAnalysisEvalFixture } from "../src/fixtures/ride-analysis-eval.ts";
 import { getRideFixture, rideFixtures } from "../src/fixtures/rides.ts";
 
 test("B0 returns a valid output contract for every accepted fixture state", () => {
@@ -50,6 +51,21 @@ test("unreliable heart-rate and power metrics never enter allowed claims", () =>
   assert.ok(!heartRateDropout.snapshot.allowedClaims.some((claim) => claim.metricKey === "avgHeartRateBpm"));
   assert.equal(powerDropout.snapshot.dataLevel, "L2");
   assert.ok(!powerDropout.snapshot.allowedClaims.some((claim) => claim.metricKey === "avgPowerW"));
+});
+
+test("sensor-only indoor B0 keeps reliable heart-rate and power facts", () => {
+  const heartRate = generateB0RideAnalysis(getRideAnalysisEvalFixture("RA-AUTO-010").record.activity);
+  const power = generateB0RideAnalysis(getRideAnalysisEvalFixture("RA-AUTO-015").record.activity);
+
+  assert.equal(heartRate.snapshot.analysisMode, "basic");
+  assert.ok(heartRate.snapshot.allowedClaims.some((claim) => claim.metricKey === "avgHeartRateBpm"));
+  assert.ok(heartRate.output.highlights.some((highlight) => highlight.claimIds.some((id) => id.endsWith(":avgHeartRateBpm"))));
+  assert.equal(heartRate.output.summary.includes("数据缺失、损坏或字段矛盾"), false);
+
+  assert.equal(power.snapshot.analysisMode, "basic");
+  assert.ok(power.snapshot.allowedClaims.some((claim) => claim.metricKey === "avgPowerW"));
+  assert.ok(power.output.highlights.some((highlight) => highlight.claimIds.some((id) => id.endsWith(":avgPowerW"))));
+  assert.equal(power.output.summary.includes("数据缺失、损坏或字段矛盾"), false);
 });
 
 test("GPX without timestamps stays basic and never invents time or speed claims", () => {

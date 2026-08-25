@@ -56,6 +56,10 @@ test("Prompt v3.1.2 preserves product boundaries and never uses legacy levels as
   assert.match(prompt, /kind="grounded"时必须绑定直接相关的basisClaimIds/);
   assert.match(prompt, /kind="general"且basisClaimIds=\[\]/);
   assert.match(prompt, /证据不足则返回null/);
+  assert.match(prompt, /有可靠且有意义的特征时，不能退化为只复述/);
+  assert.match(prompt, /没有安全、直接的解释价值时，允许准确罗列事实/);
+  assert.match(prompt, /行动建议可以是通用建议，但必须通过`kind="general"`/);
+  assert.match(prompt, /overallAssessment只整合对“这次骑得怎么样”结论必要的1—3组维度/);
   assert.doesNotMatch(prompt, /L1|L2|L3/);
   assert.doesNotMatch(prompt, /ride_snapshot/);
 });

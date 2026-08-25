@@ -18,22 +18,24 @@
 - Prompt：`3.1.2`
 - Service：`ride-analysis-service-v1.5`
 - 特征规则：`ride-feature-rules-v0.2`
-- Workflow：`ride_analysis_v2-dev.15`
+- Workflow：`ride_analysis_v2-dev.15`（扣子平台测试版本：`v0.0.2`；`v0.0.1`仅作历史控制版本）
 - Few-shot：`disabled`
 - 输入集SHA-256：`5333b4cd4d5aeb21fbada26357381120e3665ffc2c71bda429d5cdce9b2c7671`
 
-精确`modelId`、区域和模型参数必须由真实运行补充，不能使用`unrecorded`或营销系列名替代。
+精确`modelId`、区域和模型参数应由真实运行补充。扣子当前无法提供精确模型ID和区域时，批次可显式记录`NOT_OBSERVABLE`，不得使用`unrecorded`或营销系列名替代。模型参数仍需记录已暴露配置或明确的`platform_default_unexposed`。
 
 ## 3. 原始批次结构
 
-输入为一个JSON对象，`schemaVersion`固定为`t001-b2-raw-batch-v0.2`，包含：
+输入为一个JSON对象，`schemaVersion`固定为`t001-b2-raw-batch-v0.3`，包含：
 
 - `batchId`：未使用过的`RUN-YYYYMMDD-NNN`；
 - `plan`：固定`B2`；
 - `versionMatrix`：清单中的固定版本和输入摘要，加精确`modelId`、`region`、非空`modelParameters`和40位小写Git `sourceCommit`；
 - `records`：54条记录，每个`caseId + repetition`只能出现一次。
 
-每条记录必须保存本地`requestId`、开始/结束时间、端到端延迟、输入/输出Token、成本，以及0至2次Provider尝试。可准入案例必须有模型尝试；服务端不准入案例必须是0次模型调用、0 Token、0模型成本。
+受限复测可额外携带`executionScope`，明确`kind=restricted`、案例白名单、每案例3次和预期槽位数；此时校验器按白名单接收部分批次。没有该字段的批次仍按完整54槽校验，不能用部分结果冒充完整B2。
+
+每条记录必须保存本地`requestId`、开始/结束时间、端到端延迟、首Token延迟、输入/输出Token、成本来源和成本，以及0至2次Provider尝试。扣子无法提供首Token延迟或成本时， eligible 记录对应字段写`NOT_OBSERVABLE`；服务端不准入案例仍必须是0次模型调用、0 Token、0模型成本，首Token写`0`、成本来源写`NOT_APPLICABLE`。
 
 每次Provider尝试记录：
 
@@ -52,7 +54,7 @@ pnpm benchmark:t001:b2:validate <raw-batch.json>
 
 以下情况拒绝落盘：
 
-- 模型ID、区域、参数、Token、成本或延迟未记录；
+- 请求ID、参数、Token、端到端延迟、槽位或尝试未记录；平台未暴露的模型ID、区域、首Token延迟和成本可以写`NOT_OBSERVABLE`，但不得使用估算值或不明字符串；
 - 槽位缺失、重复，或request ID重复；
 - 可准入案例没有模型尝试，或不可准入案例调用了模型；
 - 首次有效后仍记录第二次调用，或修复所需的第二次响应缺失；

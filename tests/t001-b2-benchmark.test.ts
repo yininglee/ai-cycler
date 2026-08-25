@@ -9,6 +9,8 @@ import {
   T001_B2_B0_RUN_ID,
   T001_B2_FROZEN_INPUT_SET_SHA256,
   T001_B2_RAW_BATCH_SCHEMA_VERSION,
+  T001_B2_RESTRICTED_CASE_IDS,
+  NOT_OBSERVABLE,
   calculateCurrentT001InputSetSha256,
   evaluateT001B2Batch,
   evaluateT001B2Record,
@@ -97,10 +99,12 @@ function rawRecord(caseId: typeof t001AutomaticRideAnalysisCaseIds[number], repe
     startedAt: "2026-08-24T08:00:00.000Z",
     completedAt: "2026-08-24T08:00:00.010Z",
     totalLatencyMs: 10,
+    firstTokenLatencyMs: eligible ? 5 : 0,
     tokenUsage: eligible
       ? { inputTokens: 10, outputTokens: 5, totalTokens: 15 }
       : { inputTokens: 0, outputTokens: 0, totalTokens: 0 },
     costCny: eligible ? 0.001 : 0,
+    costSource: eligible ? "test-fixture-price-table" : "NOT_APPLICABLE",
     attempts: eligible
       ? [{ attempt: 1, outcome: "response", providerRequestId: `provider-${caseId}-${repetition}`, latencyMs: 5, rawText: validOutput(caseId) }]
       : [],
@@ -136,7 +140,7 @@ function completeBatch(): T001B2RawBatch {
 }
 
 test("T001 B2 manifest freezes 18 cases and 54 unique run slots", () => {
-  assert.equal(manifest.schemaVersion, "t001-b2-benchmark-manifest-v0.2");
+  assert.equal(manifest.schemaVersion, "t001-b2-benchmark-manifest-v0.3");
   assert.deepEqual(manifest.dataset.caseIds, t001AutomaticRideAnalysisCaseIds);
   assert.equal(manifest.dataset.repetitionsPerCase, 3);
   assert.equal(manifest.dataset.expectedSlotCount, 54);
@@ -152,6 +156,21 @@ test("T001 B2 manifest freezes 18 cases and 54 unique run slots", () => {
   assert.equal(calculateCurrentT001InputSetSha256(), T001_B2_FROZEN_INPUT_SET_SHA256);
   assert.equal(expectedT001B2SlotIds().length, 54);
   assert.equal(new Set(expectedT001B2SlotIds()).size, 54);
+});
+
+test("T001 restricted B2 scope accepts only its explicit 21 slots", () => {
+  const batch = completeBatch();
+  const caseIds = [...T001_B2_RESTRICTED_CASE_IDS];
+  batch.executionScope = {
+    kind: "restricted",
+    caseIds,
+    repetitionsPerCase: 3,
+    expectedSlotCount: caseIds.length * 3,
+  };
+  const caseIdSet = new Set<string>(caseIds);
+  batch.records = batch.records.filter((record) => caseIdSet.has(record.caseId));
+  assert.equal(expectedT001B2SlotIds(caseIds).length, 21);
+  assert.deepEqual(validateT001B2BatchMetadata(batch), []);
 });
 
 test("T001 Service v1.5 B0 run is frozen to the same input set", () => {
@@ -194,6 +213,26 @@ test("T001 B2 metadata gate reports malformed nested input without throwing", ()
   assert.ok(issues.includes("SOURCE_COMMIT_NOT_RECORDED"));
   assert.ok(issues.includes("INVALID_RECORD:0"));
   assert.ok(issues.includes("INVALID_RECORD:1"));
+});
+
+test("T001 Coze metadata gate accepts explicit NOT_OBSERVABLE fields", () => {
+  const batch = completeBatch();
+  batch.versionMatrix.modelId = NOT_OBSERVABLE;
+  batch.versionMatrix.region = NOT_OBSERVABLE;
+  for (const record of batch.records) {
+    const eligible = prepareRideAnalysis(
+      getT001AutomaticRideAnalysisCase(record.caseId).record,
+      `test-t001:${record.caseId}`,
+      getT001AutomaticRideAnalysisCase(record.caseId).contextOptions,
+    ).eligibility.eligible;
+    if (eligible) {
+      record.firstTokenLatencyMs = NOT_OBSERVABLE;
+      record.costCny = NOT_OBSERVABLE;
+      record.costSource = NOT_OBSERVABLE;
+    }
+  }
+  const issues = validateT001B2BatchMetadata(batch);
+  assert.deepEqual(issues, []);
 });
 
 test("T001 B2 metadata gate rejects model cost on service-ineligible records", () => {

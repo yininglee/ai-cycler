@@ -4,6 +4,7 @@ import test from "node:test";
 import { buildRideCapability, rideRuleThresholds, validateRideActivity } from "../src/domain/ride-rules.ts";
 import type { RideActivity } from "../src/domain/ride-schema.ts";
 import { getRideFixture, rideFixtures } from "../src/fixtures/rides.ts";
+import { getRideAnalysisEvalFixture } from "../src/fixtures/ride-analysis-eval.ts";
 
 test("all fixtures match their expected validation and capability", () => {
   for (const fixture of rideFixtures) {
@@ -54,6 +55,16 @@ test("power dropout downgrades to reliable heart-rate capability", () => {
   const capability = buildRideCapability(getRideFixture("fit-power-dropout-with-heart-rate").activity);
   assert.equal(capability.dataLevel, "L2");
   assert.ok(capability.limitations.some((item) => item.includes("功率覆盖不足")));
+});
+
+test("sensor-only indoor records keep their available capability without route distance", () => {
+  const heartRate = buildRideCapability(getRideAnalysisEvalFixture("RA-AUTO-010").record.activity);
+  const power = buildRideCapability(getRideAnalysisEvalFixture("RA-AUTO-015").record.activity);
+
+  assert.equal(heartRate.analysisMode, "basic");
+  assert.equal(heartRate.dataLevel, "L2");
+  assert.equal(power.analysisMode, "basic");
+  assert.equal(power.dataLevel, "L3");
 });
 
 test("GPX without timestamps never fabricates duration or speed", () => {

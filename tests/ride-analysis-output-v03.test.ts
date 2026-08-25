@@ -238,6 +238,128 @@ test("grounded fact-only headline and prose remain valid when meaning is unsafe"
   assert.equal(result.valid, true, result.issues.join(","));
 });
 
+test("fact-only output remains valid when no meaningful feature evidence is available", () => {
+  const { analysisContext } = context("l1-built-in-sample");
+  analysisContext.featureSnapshot = {
+    ...analysisContext.featureSnapshot,
+    features: analysisContext.featureSnapshot.features.filter(
+      (feature) => feature.dimension === "elevation" || feature.key === "speedSeriesMeanMps",
+    ),
+  };
+  analysisContext.allowedClaims = analysisContext.allowedClaims.filter(
+    (claim) => claim.kind !== "feature" || claim.key.startsWith("elevation") || claim.key === "speedSeriesMeanMps",
+  );
+  const eligibility = buildAnalysisEligibility(analysisContext);
+  const output = validOutput();
+  output.headline = "平均配速25km/h，累计爬升260米";
+  output.overallAssessment = {
+    text: "本次骑行完成25公里，用时1小时，平均速度25km/h，累计爬升260米。",
+    claimIds: [
+      "claim:ride-l1-built-in-sample:distanceM",
+      "claim:ride-l1-built-in-sample:movingTimeS",
+      "claim:ride-l1-built-in-sample:avgSpeedMps",
+      "claim:ride-l1-built-in-sample:elevationGainM",
+    ],
+  };
+  output.dimensions = [
+    {
+      key: "pace",
+      text: "平均速度25km/h。",
+      claimIds: ["claim:ride-l1-built-in-sample:avgSpeedMps"],
+      confidence: "high",
+    },
+    {
+      key: "climbing",
+      text: "累计爬升260米。",
+      claimIds: ["claim:ride-l1-built-in-sample:elevationGainM"],
+      confidence: "high",
+    },
+  ];
+  output.nextAction = null;
+  const result = validateRideAnalysisOutputV03(output, analysisContext, eligibility);
+  assert.equal(result.valid, true, result.issues.join(","));
+  assert.equal(result.qualityWarnings, undefined);
+});
+
+test("base-fact output is quality-warned when meaningful feature evidence is available", () => {
+  const { analysisContext, eligibility } = context("l1-built-in-sample");
+  const output = validOutput();
+  output.headline = "平均配速25km/h，记录完成";
+  output.overallAssessment = {
+    text: "本次骑行完成25公里，用时1小时，平均速度25km/h，累计爬升260米。",
+    claimIds: [
+      "claim:ride-l1-built-in-sample:distanceM",
+      "claim:ride-l1-built-in-sample:movingTimeS",
+      "claim:ride-l1-built-in-sample:avgSpeedMps",
+      "claim:ride-l1-built-in-sample:elevationGainM",
+    ],
+  };
+  output.dimensions = [
+    { key: "pace", text: "平均速度25km/h。", claimIds: ["claim:ride-l1-built-in-sample:avgSpeedMps"], confidence: "high" },
+    { key: "climbing", text: "累计爬升260米。", claimIds: ["claim:ride-l1-built-in-sample:elevationGainM"], confidence: "high" },
+  ];
+  output.nextAction = null;
+  const factOnly = validateRideAnalysisOutputV03(output, analysisContext, eligibility);
+  assert.equal(factOnly.valid, true, factOnly.issues.join(","));
+  assert.deepEqual(factOnly.qualityWarnings, ["FEATURE_EVIDENCE_AVAILABLE_NOT_USED"]);
+
+  output.overallAssessment = {
+    text: "本次骑行平均速度25km/h，结束阶段速度低于开始阶段，说明后程配速出现回落。",
+    claimIds: [
+      "claim:ride-l1-built-in-sample:avgSpeedMps",
+      "claim:ride-l1-built-in-sample:feature:speedFirstLastDeltaMps",
+    ],
+  };
+  output.dimensions = [{
+    key: "pace",
+    text: "结束阶段速度低于开始阶段，说明后程配速出现回落。",
+    claimIds: ["claim:ride-l1-built-in-sample:feature:speedFirstLastDeltaMps"],
+    confidence: "high",
+  }];
+  const featureBacked = validateRideAnalysisOutputV03(output, analysisContext, eligibility);
+  assert.equal(featureBacked.valid, true, featureBacked.issues.join(","));
+  assert.equal(featureBacked.qualityWarnings, undefined);
+});
+
+test("general and grounded actions remain structurally distinct", () => {
+  const { analysisContext, eligibility } = context();
+  const general = validOutput();
+  general.nextAction = {
+    kind: "general",
+    text: "骑行后做好拉伸放松，及时补充水分。",
+    basisClaimIds: [],
+  };
+  const generalResult = validateRideAnalysisOutputV03(general, analysisContext, eligibility);
+  assert.equal(generalResult.valid, true, generalResult.issues.join(","));
+
+  const grounded = validOutput();
+  grounded.nextAction = {
+    kind: "grounded",
+    text: "根据结束阶段速度回落，下一次可关注结束阶段配速。",
+    basisClaimIds: ["claim:ride-l3-built-in-sample:feature:speedFirstLastDeltaMps"],
+  };
+  const groundedResult = validateRideAnalysisOutputV03(grounded, analysisContext, eligibility);
+  assert.equal(groundedResult.valid, true, groundedResult.issues.join(","));
+});
+
+test("overall assessment integrates only necessary dimensions with topic-complete claims", () => {
+  const { analysisContext, eligibility } = context("l3-built-in-sample");
+  const output = validOutput();
+  output.headline = "后程配速回落，功率首末阶段一致";
+  output.overallAssessment = {
+    text: "结束阶段速度低于开始阶段，说明后程配速出现回落；功率首末阶段没有变化。",
+    claimIds: [
+      "claim:ride-l3-built-in-sample:feature:speedFirstLastDeltaMps",
+      "claim:ride-l3-built-in-sample:feature:powerFirstLastDeltaW",
+    ],
+  };
+  output.dimensions = [];
+  output.nextAction = null;
+  const result = validateRideAnalysisOutputV03(output, analysisContext, eligibility);
+  assert.equal(result.valid, true, result.issues.join(","));
+  assert.equal(result.qualityWarnings, undefined);
+});
+
 test("reasonable statistical interpretation is allowed when sensor limitation has an impact", () => {
   const { analysisContext, eligibility } = context("l1-built-in-sample");
   const output = validOutput();

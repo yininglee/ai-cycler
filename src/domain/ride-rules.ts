@@ -195,13 +195,27 @@ export function buildRideCapability(activity: RideActivity): RideCapabilityProfi
       duration !== undefined &&
       duration >= MIN_FULL_DURATION_S,
   );
+  // Indoor or sensor-only records can intentionally omit route distance while
+  // still carrying reliable heart-rate/power evidence. Keep those records in
+  // the basic deterministic path instead of treating the missing route field
+  // as a contradiction that invalidates every capability.
+  const hasUsableAnalysisMetric = Boolean(
+    activity.metrics.movingTimeS ||
+    activity.metrics.elapsedTimeS ||
+    activity.metrics.avgSpeedMps ||
+    activity.metrics.avgHeartRateBpm && usableHeartRate ||
+    activity.metrics.avgPowerW && usablePower ||
+    activity.metrics.avgCadenceRpm ||
+    activity.metrics.elevationGainM,
+  );
 
   let analysisMode: RideCapabilityProfile["analysisMode"];
-  if (!validation.valid || distance === undefined || distance <= 0) {
+  if (!validation.valid || (!hasUsableAnalysisMetric && (distance === undefined || distance <= 0))) {
     analysisMode = "rejected";
   } else if (!hasMinimumSample) {
     analysisMode = "basic";
-    if (distance < MIN_FULL_DISTANCE_M) limitations.push("骑行距离不足 3 km，仅展示基础事实");
+    if (distance === undefined) limitations.push("缺少完整路线距离，仅展示可追溯的基础事实");
+    else if (distance < MIN_FULL_DISTANCE_M) limitations.push("骑行距离不足 3 km，仅展示基础事实");
     if (duration === undefined) limitations.push("缺少可靠时长，不能生成速度或完整强度解读");
     else if (duration < MIN_FULL_DURATION_S) limitations.push("骑行时长不足 10 分钟，仅展示基础事实");
   } else {
