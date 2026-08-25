@@ -48,7 +48,7 @@ import {
 
 const WORKFLOW_NAME = "ride_analysis_v2";
 const WORKFLOW_ID = "7676429753852018707";
-const WORKFLOW_VERSION = "v0.0.1";
+const WORKFLOW_VERSION = "v0.0.2";
 const ROOT = process.cwd();
 
 function loadEnvLocal(): ServerEnvironment {
