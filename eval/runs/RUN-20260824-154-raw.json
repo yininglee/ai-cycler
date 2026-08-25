@@ -1,0 +1,1305 @@
+{
+  "schemaVersion": "t001-b2-raw-batch-v0.3",
+  "batchId": "RUN-20260824-154",
+  "plan": "B2",
+  "versionMatrix": {
+    "appVersion": "visual-shell-v0.1",
+    "outputSchemaVersion": "ride-analysis-output-v0.3",
+    "contextSchemaVersion": "0.2",
+    "contextRulesVersion": "ride-analysis-context-rules-v0.2",
+    "featureRulesVersion": "ride-feature-rules-v0.2",
+    "eligibilitySchemaVersion": "0.1",
+    "eligibilityRulesVersion": "analysis-eligibility-rules-v0.1",
+    "promptVersion": "3.1.2",
+    "serviceVersion": "ride-analysis-service-v1.5",
+    "workflowVersion": "ride_analysis_v2-dev.15",
+    "fewShotMode": "disabled",
+    "b0TemplateVersion": "b0-template-v0.1",
+    "inputSetSha256": "5333b4cd4d5aeb21fbada26357381120e3665ffc2c71bda429d5cdce9b2c7671",
+    "sourceCommit": "bbed93dd8816b2a37696f4d25361078059a0acb8",
+    "modelId": "NOT_OBSERVABLE",
+    "region": "NOT_OBSERVABLE",
+    "modelParameters": {
+      "workflowName": "ride_analysis_v2",
+      "workflowVersion": "v0.0.1",
+      "isAsync": false
+    }
+  },
+  "records": [
+    {
+      "caseId": "RA-AUTO-001",
+      "repetition": 1,
+      "requestId": "RUN-20260824-154:RA-AUTO-001:1:8b2989c4-46a3-47a3-bb40-f8c8fee7089f",
+      "startedAt": "2026-08-24T11:39:26.156Z",
+      "completedAt": "2026-08-24T11:39:26.175Z",
+      "totalLatencyMs": 19.122,
+      "firstTokenLatencyMs": "NOT_OBSERVABLE",
+      "tokenUsage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "totalTokens": 0
+      },
+      "costCny": "NOT_OBSERVABLE",
+      "costSource": "NOT_OBSERVABLE",
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "provider_error",
+          "providerRequestId": "NOT_OBSERVABLE",
+          "latencyMs": 18.965
+        }
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-001",
+      "repetition": 2,
+      "requestId": "RUN-20260824-154:RA-AUTO-001:2:facd8fad-0457-4972-b50b-d9286626f1da",
+      "startedAt": "2026-08-24T11:39:26.175Z",
+      "completedAt": "2026-08-24T11:39:26.176Z",
+      "totalLatencyMs": 1.058,
+      "firstTokenLatencyMs": "NOT_OBSERVABLE",
+      "tokenUsage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "totalTokens": 0
+      },
+      "costCny": "NOT_OBSERVABLE",
+      "costSource": "NOT_OBSERVABLE",
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "provider_error",
+          "providerRequestId": "NOT_OBSERVABLE",
+          "latencyMs": 1.041
+        }
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-001",
+      "repetition": 3,
+      "requestId": "RUN-20260824-154:RA-AUTO-001:3:e381966f-c6c3-4a6e-93b3-4dfccad1fd00",
+      "startedAt": "2026-08-24T11:39:26.176Z",
+      "completedAt": "2026-08-24T11:39:26.177Z",
+      "totalLatencyMs": 1,
+      "firstTokenLatencyMs": "NOT_OBSERVABLE",
+      "tokenUsage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "totalTokens": 0
+      },
+      "costCny": "NOT_OBSERVABLE",
+      "costSource": "NOT_OBSERVABLE",
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "provider_error",
+          "providerRequestId": "NOT_OBSERVABLE",
+          "latencyMs": 1
+        }
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-002",
+      "repetition": 1,
+      "requestId": "RUN-20260824-154:RA-AUTO-002:1:2e83dfef-5255-4869-905f-396b5c484ae4",
+      "startedAt": "2026-08-24T11:39:26.177Z",
+      "completedAt": "2026-08-24T11:39:26.178Z",
+      "totalLatencyMs": 1.163,
+      "firstTokenLatencyMs": "NOT_OBSERVABLE",
+      "tokenUsage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "totalTokens": 0
+      },
+      "costCny": "NOT_OBSERVABLE",
+      "costSource": "NOT_OBSERVABLE",
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "provider_error",
+          "providerRequestId": "NOT_OBSERVABLE",
+          "latencyMs": 1.136
+        }
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-002",
+      "repetition": 2,
+      "requestId": "RUN-20260824-154:RA-AUTO-002:2:6a1c1b79-56a9-48de-912b-50986538e572",
+      "startedAt": "2026-08-24T11:39:26.178Z",
+      "completedAt": "2026-08-24T11:39:26.179Z",
+      "totalLatencyMs": 1,
+      "firstTokenLatencyMs": "NOT_OBSERVABLE",
+      "tokenUsage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "totalTokens": 0
+      },
+      "costCny": "NOT_OBSERVABLE",
+      "costSource": "NOT_OBSERVABLE",
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "provider_error",
+          "providerRequestId": "NOT_OBSERVABLE",
+          "latencyMs": 1
+        }
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-002",
+      "repetition": 3,
+      "requestId": "RUN-20260824-154:RA-AUTO-002:3:61529a2a-2b77-4888-8827-564af9be5863",
+      "startedAt": "2026-08-24T11:39:26.179Z",
+      "completedAt": "2026-08-24T11:39:26.180Z",
+      "totalLatencyMs": 1,
+      "firstTokenLatencyMs": "NOT_OBSERVABLE",
+      "tokenUsage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "totalTokens": 0
+      },
+      "costCny": "NOT_OBSERVABLE",
+      "costSource": "NOT_OBSERVABLE",
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "provider_error",
+          "providerRequestId": "NOT_OBSERVABLE",
+          "latencyMs": 1
+        }
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-003",
+      "repetition": 1,
+      "requestId": "RUN-20260824-154:RA-AUTO-003:1:1894ea44-7435-49d5-82de-af55b909f728",
+      "startedAt": "2026-08-24T11:39:26.180Z",
+      "completedAt": "2026-08-24T11:39:26.181Z",
+      "totalLatencyMs": 1,
+      "firstTokenLatencyMs": "NOT_OBSERVABLE",
+      "tokenUsage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "totalTokens": 0
+      },
+      "costCny": "NOT_OBSERVABLE",
+      "costSource": "NOT_OBSERVABLE",
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "provider_error",
+          "providerRequestId": "NOT_OBSERVABLE",
+          "latencyMs": 1
+        }
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-003",
+      "repetition": 2,
+      "requestId": "RUN-20260824-154:RA-AUTO-003:2:04c80b96-bd5e-4060-befb-aed0cf768009",
+      "startedAt": "2026-08-24T11:39:26.181Z",
+      "completedAt": "2026-08-24T11:39:26.181Z",
+      "totalLatencyMs": 1,
+      "firstTokenLatencyMs": "NOT_OBSERVABLE",
+      "tokenUsage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "totalTokens": 0
+      },
+      "costCny": "NOT_OBSERVABLE",
+      "costSource": "NOT_OBSERVABLE",
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "provider_error",
+          "providerRequestId": "NOT_OBSERVABLE",
+          "latencyMs": 1
+        }
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-003",
+      "repetition": 3,
+      "requestId": "RUN-20260824-154:RA-AUTO-003:3:90518533-c023-43c5-9782-0f8e32fad528",
+      "startedAt": "2026-08-24T11:39:26.182Z",
+      "completedAt": "2026-08-24T11:39:26.182Z",
+      "totalLatencyMs": 1,
+      "firstTokenLatencyMs": "NOT_OBSERVABLE",
+      "tokenUsage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "totalTokens": 0
+      },
+      "costCny": "NOT_OBSERVABLE",
+      "costSource": "NOT_OBSERVABLE",
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "provider_error",
+          "providerRequestId": "NOT_OBSERVABLE",
+          "latencyMs": 1
+        }
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-004",
+      "repetition": 1,
+      "requestId": "RUN-20260824-154:RA-AUTO-004:1:fb3f01dc-0ead-4de4-8e3e-6d5952b951c2",
+      "startedAt": "2026-08-24T11:39:26.182Z",
+      "completedAt": "2026-08-24T11:39:26.183Z",
+      "totalLatencyMs": 1,
+      "firstTokenLatencyMs": "NOT_OBSERVABLE",
+      "tokenUsage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "totalTokens": 0
+      },
+      "costCny": "NOT_OBSERVABLE",
+      "costSource": "NOT_OBSERVABLE",
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "provider_error",
+          "providerRequestId": "NOT_OBSERVABLE",
+          "latencyMs": 1
+        }
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-004",
+      "repetition": 2,
+      "requestId": "RUN-20260824-154:RA-AUTO-004:2:b8e6e396-d489-4167-a2d9-7ebb5a07c479",
+      "startedAt": "2026-08-24T11:39:26.183Z",
+      "completedAt": "2026-08-24T11:39:26.184Z",
+      "totalLatencyMs": 1,
+      "firstTokenLatencyMs": "NOT_OBSERVABLE",
+      "tokenUsage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "totalTokens": 0
+      },
+      "costCny": "NOT_OBSERVABLE",
+      "costSource": "NOT_OBSERVABLE",
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "provider_error",
+          "providerRequestId": "NOT_OBSERVABLE",
+          "latencyMs": 1
+        }
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-004",
+      "repetition": 3,
+      "requestId": "RUN-20260824-154:RA-AUTO-004:3:b8b55d92-b102-4f8c-9026-46e09e725bc1",
+      "startedAt": "2026-08-24T11:39:26.184Z",
+      "completedAt": "2026-08-24T11:39:26.184Z",
+      "totalLatencyMs": 1,
+      "firstTokenLatencyMs": "NOT_OBSERVABLE",
+      "tokenUsage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "totalTokens": 0
+      },
+      "costCny": "NOT_OBSERVABLE",
+      "costSource": "NOT_OBSERVABLE",
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "provider_error",
+          "providerRequestId": "NOT_OBSERVABLE",
+          "latencyMs": 1
+        }
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-005",
+      "repetition": 1,
+      "requestId": "RUN-20260824-154:RA-AUTO-005:1:701a46c7-a997-4ed9-9153-094f5c67ddcd",
+      "startedAt": "2026-08-24T11:39:26.185Z",
+      "completedAt": "2026-08-24T11:39:26.186Z",
+      "totalLatencyMs": 1,
+      "firstTokenLatencyMs": "NOT_OBSERVABLE",
+      "tokenUsage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "totalTokens": 0
+      },
+      "costCny": "NOT_OBSERVABLE",
+      "costSource": "NOT_OBSERVABLE",
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "provider_error",
+          "providerRequestId": "NOT_OBSERVABLE",
+          "latencyMs": 1
+        }
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-005",
+      "repetition": 2,
+      "requestId": "RUN-20260824-154:RA-AUTO-005:2:ac0050c2-493a-4e1b-ab3e-ddf086fb394b",
+      "startedAt": "2026-08-24T11:39:26.186Z",
+      "completedAt": "2026-08-24T11:39:26.187Z",
+      "totalLatencyMs": 1,
+      "firstTokenLatencyMs": "NOT_OBSERVABLE",
+      "tokenUsage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "totalTokens": 0
+      },
+      "costCny": "NOT_OBSERVABLE",
+      "costSource": "NOT_OBSERVABLE",
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "provider_error",
+          "providerRequestId": "NOT_OBSERVABLE",
+          "latencyMs": 1
+        }
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-005",
+      "repetition": 3,
+      "requestId": "RUN-20260824-154:RA-AUTO-005:3:7a46ef69-ef12-4c70-b6ef-9494ff77a375",
+      "startedAt": "2026-08-24T11:39:26.187Z",
+      "completedAt": "2026-08-24T11:39:26.187Z",
+      "totalLatencyMs": 1,
+      "firstTokenLatencyMs": "NOT_OBSERVABLE",
+      "tokenUsage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "totalTokens": 0
+      },
+      "costCny": "NOT_OBSERVABLE",
+      "costSource": "NOT_OBSERVABLE",
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "provider_error",
+          "providerRequestId": "NOT_OBSERVABLE",
+          "latencyMs": 1
+        }
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-006",
+      "repetition": 1,
+      "requestId": "RUN-20260824-154:RA-AUTO-006:1:e70380cf-7fde-44e5-b73b-4190ed4033ac",
+      "startedAt": "2026-08-24T11:39:26.188Z",
+      "completedAt": "2026-08-24T11:39:26.189Z",
+      "totalLatencyMs": 1,
+      "firstTokenLatencyMs": "NOT_OBSERVABLE",
+      "tokenUsage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "totalTokens": 0
+      },
+      "costCny": "NOT_OBSERVABLE",
+      "costSource": "NOT_OBSERVABLE",
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "provider_error",
+          "providerRequestId": "NOT_OBSERVABLE",
+          "latencyMs": 1
+        }
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-006",
+      "repetition": 2,
+      "requestId": "RUN-20260824-154:RA-AUTO-006:2:f568e9c2-9e00-4682-b4f6-02c92cb88dac",
+      "startedAt": "2026-08-24T11:39:26.189Z",
+      "completedAt": "2026-08-24T11:39:26.189Z",
+      "totalLatencyMs": 1,
+      "firstTokenLatencyMs": "NOT_OBSERVABLE",
+      "tokenUsage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "totalTokens": 0
+      },
+      "costCny": "NOT_OBSERVABLE",
+      "costSource": "NOT_OBSERVABLE",
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "provider_error",
+          "providerRequestId": "NOT_OBSERVABLE",
+          "latencyMs": 1
+        }
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-006",
+      "repetition": 3,
+      "requestId": "RUN-20260824-154:RA-AUTO-006:3:2a0b0d5a-71af-4d8a-8003-410f2be6243c",
+      "startedAt": "2026-08-24T11:39:26.189Z",
+      "completedAt": "2026-08-24T11:39:26.190Z",
+      "totalLatencyMs": 1,
+      "firstTokenLatencyMs": "NOT_OBSERVABLE",
+      "tokenUsage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "totalTokens": 0
+      },
+      "costCny": "NOT_OBSERVABLE",
+      "costSource": "NOT_OBSERVABLE",
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "provider_error",
+          "providerRequestId": "NOT_OBSERVABLE",
+          "latencyMs": 1
+        }
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-007",
+      "repetition": 1,
+      "requestId": "RUN-20260824-154:RA-AUTO-007:1:0b764444-ae89-403c-af33-31b28371ab24",
+      "startedAt": "2026-08-24T11:39:26.190Z",
+      "completedAt": "2026-08-24T11:39:26.191Z",
+      "totalLatencyMs": 1,
+      "firstTokenLatencyMs": "NOT_OBSERVABLE",
+      "tokenUsage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "totalTokens": 0
+      },
+      "costCny": "NOT_OBSERVABLE",
+      "costSource": "NOT_OBSERVABLE",
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "provider_error",
+          "providerRequestId": "NOT_OBSERVABLE",
+          "latencyMs": 1
+        }
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-007",
+      "repetition": 2,
+      "requestId": "RUN-20260824-154:RA-AUTO-007:2:ed31dfcb-7c03-436b-921c-944932f25a86",
+      "startedAt": "2026-08-24T11:39:26.191Z",
+      "completedAt": "2026-08-24T11:39:26.191Z",
+      "totalLatencyMs": 1,
+      "firstTokenLatencyMs": "NOT_OBSERVABLE",
+      "tokenUsage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "totalTokens": 0
+      },
+      "costCny": "NOT_OBSERVABLE",
+      "costSource": "NOT_OBSERVABLE",
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "provider_error",
+          "providerRequestId": "NOT_OBSERVABLE",
+          "latencyMs": 1
+        }
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-007",
+      "repetition": 3,
+      "requestId": "RUN-20260824-154:RA-AUTO-007:3:7d830406-a100-48ba-8adb-3206bf567923",
+      "startedAt": "2026-08-24T11:39:26.191Z",
+      "completedAt": "2026-08-24T11:39:26.192Z",
+      "totalLatencyMs": 1,
+      "firstTokenLatencyMs": "NOT_OBSERVABLE",
+      "tokenUsage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "totalTokens": 0
+      },
+      "costCny": "NOT_OBSERVABLE",
+      "costSource": "NOT_OBSERVABLE",
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "provider_error",
+          "providerRequestId": "NOT_OBSERVABLE",
+          "latencyMs": 1
+        }
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-008",
+      "repetition": 1,
+      "requestId": "RUN-20260824-154:RA-AUTO-008:1:a99e45ba-5ead-43b4-951c-73d9221dc445",
+      "startedAt": "2026-08-24T11:39:26.192Z",
+      "completedAt": "2026-08-24T11:39:26.193Z",
+      "totalLatencyMs": 1,
+      "firstTokenLatencyMs": "NOT_OBSERVABLE",
+      "tokenUsage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "totalTokens": 0
+      },
+      "costCny": "NOT_OBSERVABLE",
+      "costSource": "NOT_OBSERVABLE",
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "provider_error",
+          "providerRequestId": "NOT_OBSERVABLE",
+          "latencyMs": 1
+        }
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-008",
+      "repetition": 2,
+      "requestId": "RUN-20260824-154:RA-AUTO-008:2:1af0cbff-e3d6-4917-a700-8c9876826604",
+      "startedAt": "2026-08-24T11:39:26.193Z",
+      "completedAt": "2026-08-24T11:39:26.193Z",
+      "totalLatencyMs": 1,
+      "firstTokenLatencyMs": "NOT_OBSERVABLE",
+      "tokenUsage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "totalTokens": 0
+      },
+      "costCny": "NOT_OBSERVABLE",
+      "costSource": "NOT_OBSERVABLE",
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "provider_error",
+          "providerRequestId": "NOT_OBSERVABLE",
+          "latencyMs": 1
+        }
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-008",
+      "repetition": 3,
+      "requestId": "RUN-20260824-154:RA-AUTO-008:3:8c8e2bd9-b5d3-443f-ac59-c6104bf4b0c1",
+      "startedAt": "2026-08-24T11:39:26.193Z",
+      "completedAt": "2026-08-24T11:39:26.194Z",
+      "totalLatencyMs": 1,
+      "firstTokenLatencyMs": "NOT_OBSERVABLE",
+      "tokenUsage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "totalTokens": 0
+      },
+      "costCny": "NOT_OBSERVABLE",
+      "costSource": "NOT_OBSERVABLE",
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "provider_error",
+          "providerRequestId": "NOT_OBSERVABLE",
+          "latencyMs": 1
+        }
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-009",
+      "repetition": 1,
+      "requestId": "RUN-20260824-154:RA-AUTO-009:1:31979a67-fcc0-4f30-a2a0-746b0bb76d24",
+      "startedAt": "2026-08-24T11:39:26.194Z",
+      "completedAt": "2026-08-24T11:39:26.195Z",
+      "totalLatencyMs": 1,
+      "firstTokenLatencyMs": "NOT_OBSERVABLE",
+      "tokenUsage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "totalTokens": 0
+      },
+      "costCny": "NOT_OBSERVABLE",
+      "costSource": "NOT_OBSERVABLE",
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "provider_error",
+          "providerRequestId": "NOT_OBSERVABLE",
+          "latencyMs": 1
+        }
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-009",
+      "repetition": 2,
+      "requestId": "RUN-20260824-154:RA-AUTO-009:2:44f349e6-c596-4a2d-a7c8-8e6b6cc564e6",
+      "startedAt": "2026-08-24T11:39:26.195Z",
+      "completedAt": "2026-08-24T11:39:26.195Z",
+      "totalLatencyMs": 1,
+      "firstTokenLatencyMs": "NOT_OBSERVABLE",
+      "tokenUsage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "totalTokens": 0
+      },
+      "costCny": "NOT_OBSERVABLE",
+      "costSource": "NOT_OBSERVABLE",
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "provider_error",
+          "providerRequestId": "NOT_OBSERVABLE",
+          "latencyMs": 1
+        }
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-009",
+      "repetition": 3,
+      "requestId": "RUN-20260824-154:RA-AUTO-009:3:dbda1a87-1726-4760-b4c7-a83c5d7938ea",
+      "startedAt": "2026-08-24T11:39:26.195Z",
+      "completedAt": "2026-08-24T11:39:26.196Z",
+      "totalLatencyMs": 1,
+      "firstTokenLatencyMs": "NOT_OBSERVABLE",
+      "tokenUsage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "totalTokens": 0
+      },
+      "costCny": "NOT_OBSERVABLE",
+      "costSource": "NOT_OBSERVABLE",
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "provider_error",
+          "providerRequestId": "NOT_OBSERVABLE",
+          "latencyMs": 1
+        }
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-010",
+      "repetition": 1,
+      "requestId": "RUN-20260824-154:RA-AUTO-010:1:c5ac6ee5-c1a1-4298-aa35-6f1459ecc8a5",
+      "startedAt": "2026-08-24T11:39:26.196Z",
+      "completedAt": "2026-08-24T11:39:26.196Z",
+      "totalLatencyMs": 1,
+      "firstTokenLatencyMs": "NOT_OBSERVABLE",
+      "tokenUsage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "totalTokens": 0
+      },
+      "costCny": "NOT_OBSERVABLE",
+      "costSource": "NOT_OBSERVABLE",
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "provider_error",
+          "providerRequestId": "NOT_OBSERVABLE",
+          "latencyMs": 1
+        }
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-010",
+      "repetition": 2,
+      "requestId": "RUN-20260824-154:RA-AUTO-010:2:419778bc-5ef8-4841-bd35-2e2ba76a2084",
+      "startedAt": "2026-08-24T11:39:26.196Z",
+      "completedAt": "2026-08-24T11:39:26.197Z",
+      "totalLatencyMs": 1,
+      "firstTokenLatencyMs": "NOT_OBSERVABLE",
+      "tokenUsage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "totalTokens": 0
+      },
+      "costCny": "NOT_OBSERVABLE",
+      "costSource": "NOT_OBSERVABLE",
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "provider_error",
+          "providerRequestId": "NOT_OBSERVABLE",
+          "latencyMs": 1
+        }
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-010",
+      "repetition": 3,
+      "requestId": "RUN-20260824-154:RA-AUTO-010:3:e177341e-db54-48e0-8e75-38ce1f2c544d",
+      "startedAt": "2026-08-24T11:39:26.197Z",
+      "completedAt": "2026-08-24T11:39:26.197Z",
+      "totalLatencyMs": 1,
+      "firstTokenLatencyMs": "NOT_OBSERVABLE",
+      "tokenUsage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "totalTokens": 0
+      },
+      "costCny": "NOT_OBSERVABLE",
+      "costSource": "NOT_OBSERVABLE",
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "provider_error",
+          "providerRequestId": "NOT_OBSERVABLE",
+          "latencyMs": 1
+        }
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-011",
+      "repetition": 1,
+      "requestId": "RUN-20260824-154:RA-AUTO-011:1:6b4a93da-60f6-42eb-b85e-b7a17d02f5e9",
+      "startedAt": "2026-08-24T11:39:26.197Z",
+      "completedAt": "2026-08-24T11:39:26.198Z",
+      "totalLatencyMs": 1,
+      "firstTokenLatencyMs": "NOT_OBSERVABLE",
+      "tokenUsage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "totalTokens": 0
+      },
+      "costCny": "NOT_OBSERVABLE",
+      "costSource": "NOT_OBSERVABLE",
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "provider_error",
+          "providerRequestId": "NOT_OBSERVABLE",
+          "latencyMs": 1
+        }
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-011",
+      "repetition": 2,
+      "requestId": "RUN-20260824-154:RA-AUTO-011:2:ee471ced-d4c7-488e-832c-9660cb12f156",
+      "startedAt": "2026-08-24T11:39:26.198Z",
+      "completedAt": "2026-08-24T11:39:26.198Z",
+      "totalLatencyMs": 1,
+      "firstTokenLatencyMs": "NOT_OBSERVABLE",
+      "tokenUsage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "totalTokens": 0
+      },
+      "costCny": "NOT_OBSERVABLE",
+      "costSource": "NOT_OBSERVABLE",
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "provider_error",
+          "providerRequestId": "NOT_OBSERVABLE",
+          "latencyMs": 1
+        }
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-011",
+      "repetition": 3,
+      "requestId": "RUN-20260824-154:RA-AUTO-011:3:87eb5408-1689-4ae5-b301-e0bf69bf7ec1",
+      "startedAt": "2026-08-24T11:39:26.198Z",
+      "completedAt": "2026-08-24T11:39:26.199Z",
+      "totalLatencyMs": 1,
+      "firstTokenLatencyMs": "NOT_OBSERVABLE",
+      "tokenUsage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "totalTokens": 0
+      },
+      "costCny": "NOT_OBSERVABLE",
+      "costSource": "NOT_OBSERVABLE",
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "provider_error",
+          "providerRequestId": "NOT_OBSERVABLE",
+          "latencyMs": 1
+        }
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-012",
+      "repetition": 1,
+      "requestId": "RUN-20260824-154:RA-AUTO-012:1:89f7ba8e-e135-4c90-99d3-edde5d0d5844",
+      "startedAt": "2026-08-24T11:39:26.200Z",
+      "completedAt": "2026-08-24T11:39:26.200Z",
+      "totalLatencyMs": 1,
+      "firstTokenLatencyMs": "NOT_OBSERVABLE",
+      "tokenUsage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "totalTokens": 0
+      },
+      "costCny": "NOT_OBSERVABLE",
+      "costSource": "NOT_OBSERVABLE",
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "provider_error",
+          "providerRequestId": "NOT_OBSERVABLE",
+          "latencyMs": 1
+        }
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-012",
+      "repetition": 2,
+      "requestId": "RUN-20260824-154:RA-AUTO-012:2:e5bd4c1d-6688-4342-931b-da03388a4ce6",
+      "startedAt": "2026-08-24T11:39:26.200Z",
+      "completedAt": "2026-08-24T11:39:26.201Z",
+      "totalLatencyMs": 1,
+      "firstTokenLatencyMs": "NOT_OBSERVABLE",
+      "tokenUsage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "totalTokens": 0
+      },
+      "costCny": "NOT_OBSERVABLE",
+      "costSource": "NOT_OBSERVABLE",
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "provider_error",
+          "providerRequestId": "NOT_OBSERVABLE",
+          "latencyMs": 1
+        }
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-012",
+      "repetition": 3,
+      "requestId": "RUN-20260824-154:RA-AUTO-012:3:ac3b651c-0a11-4c2b-b9f4-8a68fb3b8e62",
+      "startedAt": "2026-08-24T11:39:26.201Z",
+      "completedAt": "2026-08-24T11:39:26.201Z",
+      "totalLatencyMs": 1,
+      "firstTokenLatencyMs": "NOT_OBSERVABLE",
+      "tokenUsage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "totalTokens": 0
+      },
+      "costCny": "NOT_OBSERVABLE",
+      "costSource": "NOT_OBSERVABLE",
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "provider_error",
+          "providerRequestId": "NOT_OBSERVABLE",
+          "latencyMs": 1
+        }
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-013",
+      "repetition": 1,
+      "requestId": "RUN-20260824-154:RA-AUTO-013:1:50bd3440-308d-4f0f-b239-bafe706ac1c1",
+      "startedAt": "2026-08-24T11:39:26.202Z",
+      "completedAt": "2026-08-24T11:39:26.202Z",
+      "totalLatencyMs": 1,
+      "firstTokenLatencyMs": "NOT_OBSERVABLE",
+      "tokenUsage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "totalTokens": 0
+      },
+      "costCny": "NOT_OBSERVABLE",
+      "costSource": "NOT_OBSERVABLE",
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "provider_error",
+          "providerRequestId": "NOT_OBSERVABLE",
+          "latencyMs": 1
+        }
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-013",
+      "repetition": 2,
+      "requestId": "RUN-20260824-154:RA-AUTO-013:2:034fcec5-6871-4ada-b5ac-5cd58224dff1",
+      "startedAt": "2026-08-24T11:39:26.202Z",
+      "completedAt": "2026-08-24T11:39:26.203Z",
+      "totalLatencyMs": 1,
+      "firstTokenLatencyMs": "NOT_OBSERVABLE",
+      "tokenUsage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "totalTokens": 0
+      },
+      "costCny": "NOT_OBSERVABLE",
+      "costSource": "NOT_OBSERVABLE",
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "provider_error",
+          "providerRequestId": "NOT_OBSERVABLE",
+          "latencyMs": 1
+        }
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-013",
+      "repetition": 3,
+      "requestId": "RUN-20260824-154:RA-AUTO-013:3:a3d95736-522e-42de-8053-9b64bae27af2",
+      "startedAt": "2026-08-24T11:39:26.203Z",
+      "completedAt": "2026-08-24T11:39:26.203Z",
+      "totalLatencyMs": 1,
+      "firstTokenLatencyMs": "NOT_OBSERVABLE",
+      "tokenUsage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "totalTokens": 0
+      },
+      "costCny": "NOT_OBSERVABLE",
+      "costSource": "NOT_OBSERVABLE",
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "provider_error",
+          "providerRequestId": "NOT_OBSERVABLE",
+          "latencyMs": 1
+        }
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-014",
+      "repetition": 1,
+      "requestId": "RUN-20260824-154:RA-AUTO-014:1:4f939fe2-00bb-438a-89df-b6ea8469cbec",
+      "startedAt": "2026-08-24T11:39:26.203Z",
+      "completedAt": "2026-08-24T11:39:26.204Z",
+      "totalLatencyMs": 1,
+      "firstTokenLatencyMs": "NOT_OBSERVABLE",
+      "tokenUsage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "totalTokens": 0
+      },
+      "costCny": "NOT_OBSERVABLE",
+      "costSource": "NOT_OBSERVABLE",
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "provider_error",
+          "providerRequestId": "NOT_OBSERVABLE",
+          "latencyMs": 1
+        }
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-014",
+      "repetition": 2,
+      "requestId": "RUN-20260824-154:RA-AUTO-014:2:a97cb848-d86b-4d15-885c-5698acff6175",
+      "startedAt": "2026-08-24T11:39:26.204Z",
+      "completedAt": "2026-08-24T11:39:26.204Z",
+      "totalLatencyMs": 1,
+      "firstTokenLatencyMs": "NOT_OBSERVABLE",
+      "tokenUsage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "totalTokens": 0
+      },
+      "costCny": "NOT_OBSERVABLE",
+      "costSource": "NOT_OBSERVABLE",
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "provider_error",
+          "providerRequestId": "NOT_OBSERVABLE",
+          "latencyMs": 1
+        }
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-014",
+      "repetition": 3,
+      "requestId": "RUN-20260824-154:RA-AUTO-014:3:3b2fb378-d51e-4711-8283-0c0a0d37715d",
+      "startedAt": "2026-08-24T11:39:26.204Z",
+      "completedAt": "2026-08-24T11:39:26.205Z",
+      "totalLatencyMs": 1,
+      "firstTokenLatencyMs": "NOT_OBSERVABLE",
+      "tokenUsage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "totalTokens": 0
+      },
+      "costCny": "NOT_OBSERVABLE",
+      "costSource": "NOT_OBSERVABLE",
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "provider_error",
+          "providerRequestId": "NOT_OBSERVABLE",
+          "latencyMs": 1
+        }
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-015",
+      "repetition": 1,
+      "requestId": "RUN-20260824-154:RA-AUTO-015:1:1751340a-7e07-4834-a251-60808a8ab7e3",
+      "startedAt": "2026-08-24T11:39:26.205Z",
+      "completedAt": "2026-08-24T11:39:26.205Z",
+      "totalLatencyMs": 1,
+      "firstTokenLatencyMs": "NOT_OBSERVABLE",
+      "tokenUsage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "totalTokens": 0
+      },
+      "costCny": "NOT_OBSERVABLE",
+      "costSource": "NOT_OBSERVABLE",
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "provider_error",
+          "providerRequestId": "NOT_OBSERVABLE",
+          "latencyMs": 1
+        }
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-015",
+      "repetition": 2,
+      "requestId": "RUN-20260824-154:RA-AUTO-015:2:55e20e63-4e13-4c43-8b53-be7afbc80f64",
+      "startedAt": "2026-08-24T11:39:26.205Z",
+      "completedAt": "2026-08-24T11:39:26.206Z",
+      "totalLatencyMs": 1,
+      "firstTokenLatencyMs": "NOT_OBSERVABLE",
+      "tokenUsage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "totalTokens": 0
+      },
+      "costCny": "NOT_OBSERVABLE",
+      "costSource": "NOT_OBSERVABLE",
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "provider_error",
+          "providerRequestId": "NOT_OBSERVABLE",
+          "latencyMs": 1
+        }
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-015",
+      "repetition": 3,
+      "requestId": "RUN-20260824-154:RA-AUTO-015:3:67b6af9d-ea31-43ed-90f8-ca670d71256d",
+      "startedAt": "2026-08-24T11:39:26.206Z",
+      "completedAt": "2026-08-24T11:39:26.206Z",
+      "totalLatencyMs": 1,
+      "firstTokenLatencyMs": "NOT_OBSERVABLE",
+      "tokenUsage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "totalTokens": 0
+      },
+      "costCny": "NOT_OBSERVABLE",
+      "costSource": "NOT_OBSERVABLE",
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "provider_error",
+          "providerRequestId": "NOT_OBSERVABLE",
+          "latencyMs": 1
+        }
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-016",
+      "repetition": 1,
+      "requestId": "RUN-20260824-154:RA-AUTO-016:1:d4eabde6-0a3b-4780-9224-d2ea544ad0d6",
+      "startedAt": "2026-08-24T11:39:26.206Z",
+      "completedAt": "2026-08-24T11:39:26.207Z",
+      "totalLatencyMs": 1,
+      "firstTokenLatencyMs": "NOT_OBSERVABLE",
+      "tokenUsage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "totalTokens": 0
+      },
+      "costCny": "NOT_OBSERVABLE",
+      "costSource": "NOT_OBSERVABLE",
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "provider_error",
+          "providerRequestId": "NOT_OBSERVABLE",
+          "latencyMs": 1
+        }
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-016",
+      "repetition": 2,
+      "requestId": "RUN-20260824-154:RA-AUTO-016:2:6ee774f2-cc5c-405f-b599-05646d42cb1d",
+      "startedAt": "2026-08-24T11:39:26.207Z",
+      "completedAt": "2026-08-24T11:39:26.207Z",
+      "totalLatencyMs": 1,
+      "firstTokenLatencyMs": "NOT_OBSERVABLE",
+      "tokenUsage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "totalTokens": 0
+      },
+      "costCny": "NOT_OBSERVABLE",
+      "costSource": "NOT_OBSERVABLE",
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "provider_error",
+          "providerRequestId": "NOT_OBSERVABLE",
+          "latencyMs": 1
+        }
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-016",
+      "repetition": 3,
+      "requestId": "RUN-20260824-154:RA-AUTO-016:3:cfc7a764-0ebf-4309-b039-9b779c891e0f",
+      "startedAt": "2026-08-24T11:39:26.207Z",
+      "completedAt": "2026-08-24T11:39:26.208Z",
+      "totalLatencyMs": 1,
+      "firstTokenLatencyMs": "NOT_OBSERVABLE",
+      "tokenUsage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "totalTokens": 0
+      },
+      "costCny": "NOT_OBSERVABLE",
+      "costSource": "NOT_OBSERVABLE",
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "provider_error",
+          "providerRequestId": "NOT_OBSERVABLE",
+          "latencyMs": 1
+        }
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-017",
+      "repetition": 1,
+      "requestId": "RUN-20260824-154:RA-AUTO-017:1:69442e3d-b838-409d-9b92-d98375b9a665",
+      "startedAt": "2026-08-24T11:39:26.208Z",
+      "completedAt": "2026-08-24T11:39:26.209Z",
+      "totalLatencyMs": 1,
+      "firstTokenLatencyMs": "NOT_OBSERVABLE",
+      "tokenUsage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "totalTokens": 0
+      },
+      "costCny": "NOT_OBSERVABLE",
+      "costSource": "NOT_OBSERVABLE",
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "provider_error",
+          "providerRequestId": "NOT_OBSERVABLE",
+          "latencyMs": 1
+        }
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-017",
+      "repetition": 2,
+      "requestId": "RUN-20260824-154:RA-AUTO-017:2:151a2b57-576d-4850-a16a-ef8d02e87033",
+      "startedAt": "2026-08-24T11:39:26.209Z",
+      "completedAt": "2026-08-24T11:39:26.209Z",
+      "totalLatencyMs": 1,
+      "firstTokenLatencyMs": "NOT_OBSERVABLE",
+      "tokenUsage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "totalTokens": 0
+      },
+      "costCny": "NOT_OBSERVABLE",
+      "costSource": "NOT_OBSERVABLE",
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "provider_error",
+          "providerRequestId": "NOT_OBSERVABLE",
+          "latencyMs": 1
+        }
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-017",
+      "repetition": 3,
+      "requestId": "RUN-20260824-154:RA-AUTO-017:3:c24ebb9e-f05b-4e04-89cc-de94b13c7a5f",
+      "startedAt": "2026-08-24T11:39:26.209Z",
+      "completedAt": "2026-08-24T11:39:26.209Z",
+      "totalLatencyMs": 1,
+      "firstTokenLatencyMs": "NOT_OBSERVABLE",
+      "tokenUsage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "totalTokens": 0
+      },
+      "costCny": "NOT_OBSERVABLE",
+      "costSource": "NOT_OBSERVABLE",
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "provider_error",
+          "providerRequestId": "NOT_OBSERVABLE",
+          "latencyMs": 1
+        }
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-018",
+      "repetition": 1,
+      "requestId": "RUN-20260824-154:RA-AUTO-018:1:5d192103-e6cd-4600-9ead-8c182e473534",
+      "startedAt": "2026-08-24T11:39:26.210Z",
+      "completedAt": "2026-08-24T11:39:26.210Z",
+      "totalLatencyMs": 1,
+      "firstTokenLatencyMs": 0,
+      "tokenUsage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "totalTokens": 0
+      },
+      "costCny": 0,
+      "costSource": "NOT_APPLICABLE",
+      "attempts": []
+    },
+    {
+      "caseId": "RA-AUTO-018",
+      "repetition": 2,
+      "requestId": "RUN-20260824-154:RA-AUTO-018:2:7f32f2b4-f961-4450-964c-93af8971f739",
+      "startedAt": "2026-08-24T11:39:26.210Z",
+      "completedAt": "2026-08-24T11:39:26.210Z",
+      "totalLatencyMs": 1,
+      "firstTokenLatencyMs": 0,
+      "tokenUsage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "totalTokens": 0
+      },
+      "costCny": 0,
+      "costSource": "NOT_APPLICABLE",
+      "attempts": []
+    },
+    {
+      "caseId": "RA-AUTO-018",
+      "repetition": 3,
+      "requestId": "RUN-20260824-154:RA-AUTO-018:3:ab24d86f-c5bb-4de6-b380-b8b550793121",
+      "startedAt": "2026-08-24T11:39:26.210Z",
+      "completedAt": "2026-08-24T11:39:26.210Z",
+      "totalLatencyMs": 1,
+      "firstTokenLatencyMs": 0,
+      "tokenUsage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "totalTokens": 0
+      },
+      "costCny": 0,
+      "costSource": "NOT_APPLICABLE",
+      "attempts": []
+    }
+  ]
+}

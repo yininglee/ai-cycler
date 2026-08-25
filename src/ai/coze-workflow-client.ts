@@ -101,7 +101,7 @@ export function readCozeWorkflowConfig(
     workflowVersion,
     apiToken,
     modelId: environment.COZE_MODEL_ID?.trim() || "unrecorded",
-    timeoutMs: positiveInteger(environment.AI_ANALYSIS_TIMEOUT_MS, 8_000, 15_000),
+    timeoutMs: positiveInteger(environment.AI_ANALYSIS_TIMEOUT_MS, 8_000, 25_000),
     maxResponseBytes: positiveInteger(environment.AI_MAX_RESPONSE_BYTES, 262_144, 524_288),
   };
 }

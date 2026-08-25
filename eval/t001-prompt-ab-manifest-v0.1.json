@@ -10,8 +10,11 @@
     },
     "B": {
       "promptAsset": "prompts/cycling-buddy-ride-analysis-v3.1.2-compact-candidate.md",
-      "platformWorkflowVersion": "TO_BE_PUBLISHED",
-      "status": "NOT_DEPLOYED"
+      "workflowName": "ride_analysis_v2_Cam_Candidate",
+      "workflowId": "7677880281836503082",
+      "platformWorkflowVersion": "v0.0.1",
+      "status": "RUN_COMPLETED",
+      "runId": "RUN-20260825-960"
     }
   },
   "frozenConditions": {

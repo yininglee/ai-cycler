@@ -154,18 +154,4 @@ If the ledger conflicts with workspace reality, trust observable state, record a
 
 Use `index.md` only for human navigation or when the authoritative file/link is unclear; reading it is not part of the default Codex recovery sequence.
 
-## 9. Progressive source audit
-
-Starting an item requires checking the PRD, R&D guide, and roadmap, but the default is a targeted audit rather than a full-document reread. The minimum packet is:
-
-1. `current-status.md`;
-2. the latest relevant progress entry and item review;
-3. observable workspace/code/tests;
-4. the PRD sections directly related to the item;
-5. the corresponding R&D-guide sections;
-6. the roadmap module row, stage scope and Gate;
-7. the latest related decisions.
-
-Record a compact audit card with the section references, scope, non-goals, material-conflict status and acceptance criteria. Read `index.md` only when fact ownership or links are unclear. Do not reread accepted unchanged sections.
-
-Full review of the PRD, R&D guide and roadmap is required only when entering a new Demo/Alpha/Beta/RC/GA stage, changing Agent/model/RAG/tool/privacy/safety/data boundaries materially, changing product direction, finding a material conflict, performing a 3–5-item stage review, or preparing a Gate/release decision. This controls context cost without weakening the requirement that every item remains grounded in all three development authorities.
+For item source selection, follow `SKILL.md` “Minimum sufficient source audit.” The ledger records its compact section-reference card, not copied source passages.

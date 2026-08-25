@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "t001-b2-benchmark-manifest-v0.2",
+  "schemaVersion": "t001-b2-benchmark-manifest-v0.3",
   "benchmarkId": "T001-B2",
   "plan": "B2",
   "dataset": {
@@ -81,8 +81,10 @@
     "startedAt",
     "completedAt",
     "totalLatencyMs",
+    "firstTokenLatencyMs",
     "tokenUsage",
     "costCny",
+    "costSource",
     "attempts"
   ]
 }

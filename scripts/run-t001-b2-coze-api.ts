@@ -91,6 +91,15 @@ function repetitionsForScope(scope: ExecutionScope): 1 | 3 {
   return scope === "restricted" ? 1 : 3;
 }
 
+function requestedTimeoutMs(): number {
+  const value = argumentValue("--timeout-ms") ?? "15000";
+  const timeoutMs = Number(value);
+  if (!Number.isInteger(timeoutMs) || timeoutMs <= 0 || timeoutMs > 25_000) {
+    throw new Error("TIMEOUT_REQUIRED: use --timeout-ms=15000 or --timeout-ms=25000");
+  }
+  return timeoutMs;
+}
+
 function promptAbSelection(config: CozeWorkflowConfig, arm: T001PromptAbArm): PromptAbSelection {
   if (arm === "A") {
     if (config.workflowName !== WORKFLOW_NAME || config.workflowId !== WORKFLOW_ID || config.workflowVersion !== A_PLATFORM_WORKFLOW_VERSION) {
@@ -203,14 +212,18 @@ function usageFor(attempts: CapturedAttempt[]): { inputTokens: number; outputTok
   );
 }
 
-function validateEnvironment(environment: ServerEnvironment, arm: T001PromptAbArm): { config: CozeWorkflowConfig; selection: PromptAbSelection } {
+function validateEnvironment(
+  environment: ServerEnvironment,
+  arm: T001PromptAbArm,
+  timeoutMs: number,
+): { config: CozeWorkflowConfig; selection: PromptAbSelection } {
   const config = readCozeWorkflowConfig(environment);
   if (!config) throw new Error("COZE_ENV_INCOMPLETE: .env.local must contain API URL, workflow name/id/version and PAT");
   if (!config.apiToken.startsWith("pat_")) throw new Error("COZE_API_TOKEN_FORMAT_INVALID");
   if (config.modelId !== NOT_OBSERVABLE) throw new Error("COZE_MODEL_ID_MUST_BE_NOT_OBSERVABLE");
   const selection = promptAbSelection(config, arm);
   const selectedConfig = { ...config, workflowName: selection.workflowName, workflowId: selection.workflowId, workflowVersion: selection.workflowVersion };
-  if (selectedConfig.timeoutMs !== 15_000) throw new Error(`AB_TIMEOUT_MISMATCH:${selectedConfig.timeoutMs}`);
+  if (selectedConfig.timeoutMs !== timeoutMs) throw new Error(`TIMEOUT_MISMATCH:${selectedConfig.timeoutMs}:${timeoutMs}`);
   return { config: selectedConfig, selection };
 }
 
@@ -235,8 +248,9 @@ async function validateInputs(): Promise<void> {
 async function preflight(): Promise<void> {
   const scope = requestedScope();
   const arm = requestedArm();
+  const timeoutMs = requestedTimeoutMs();
   const environment = loadEnvLocal();
-  const { config, selection } = validateEnvironment(environment, arm);
+  const { config, selection } = validateEnvironment(environment, arm, timeoutMs);
   await validateInputs();
   await readFile(join(ROOT, selection.promptAsset), "utf8");
   const commit = currentCommit();
@@ -264,9 +278,10 @@ async function preflight(): Promise<void> {
 async function runBatch(): Promise<void> {
   const scope = requestedScope();
   const arm = requestedArm();
+  const timeoutMs = requestedTimeoutMs();
   await preflight();
   const environment = loadEnvLocal();
-  const { config, selection } = validateEnvironment(environment, arm);
+  const { config, selection } = validateEnvironment(environment, arm, timeoutMs);
   const batchId = nextRunId();
   const client = new CozeWorkflowClient(config);
   const records: T001B2RawRecord[] = [];
@@ -327,16 +342,18 @@ async function runBatch(): Promise<void> {
       region: NOT_OBSERVABLE,
       modelParameters: { workflowName: selection.workflowName, workflowId: selection.workflowId, workflowVersion: selection.workflowVersion, isAsync: false },
     },
-    experiment: {
-      experimentId: EXPERIMENT_ID,
-      arm,
-      promptAsset: selection.promptAsset,
-      platformWorkflowVersion: selection.workflowVersion,
-      ...(arm === "A" ? { baselineRunId: "RUN-20260825-756" } : {}),
-      timeoutMs: 15_000,
-      sameModel: true,
-      sameInputSet: true,
-    } satisfies T001PromptAbExperiment,
+    ...(timeoutMs === 15_000 ? {
+      experiment: {
+        experimentId: EXPERIMENT_ID,
+        arm,
+        promptAsset: selection.promptAsset,
+        platformWorkflowVersion: selection.workflowVersion,
+        ...(arm === "A" ? { baselineRunId: "RUN-20260825-756" } : {}),
+        timeoutMs: 15_000,
+        sameModel: true,
+        sameInputSet: true,
+      } satisfies T001PromptAbExperiment,
+    } : {}),
     executionScope: {
       kind: scope,
       caseIds: [...caseIdsForScope(scope)],

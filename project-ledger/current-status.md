@@ -3,12 +3,12 @@
 > 最后更新：2026-08-25
 > 当前阶段：v0.1 证据型Demo开发  
 > 当前 Gate：G1「Demo核心价值」（G0已`GO`）  
-> 总体状态：`READY_FOR_PREVIEW`（扣子 v0.0.2 受限复测已完成，待用户预览运行与回放证据）
+> 总体状态：`READY_FOR_PREVIEW`（已接受25秒同步等待配置；尚未重新调用扣子）
 > 人工导航：[台账索引](index.md)
 
 ## 1. 当前目标
 
-`ITEM-T001 测试环境发布与计量预检`已完成并获用户接受；分层计量合同适配和54槽范围预览已完成。此前手工扣子证据和 v0.0.1 运行保留为历史控制；当前 v0.0.2 受限复测已完成并回放通过，等待用户预览结果。精确模型ID、计算区域、首Token延迟和成本来源记录为`NOT_OBSERVABLE`，性能与成本保持`NOT_SCORED`。
+`ITEM-T001 测试环境发布与计量预检`已完成并获用户接受；分层计量合同适配、54槽范围预览和v0.0.2受限复测均已完成。A/B后保留原版 Prompt v3.1.2；输入投影4槽复测显著减小载荷但未恢复两个15秒超时案例。用户已决定 Demo 服务端同步等待上限改为`25000ms`，尚未重新调用扣子。精确模型ID、计算区域、首Token延迟和成本来源记录为`NOT_OBSERVABLE`，性能与成本保持`NOT_SCORED`；25秒不是G1的8秒P95目标。
 
 ## 2. 当前基线与证据
 
@@ -48,26 +48,27 @@
 - `DEC-065`已确认T001 Service v1.5版本矩阵重冻结方案，实施切片也已用户验收；
 - `DEC-066`已确认真实B2采用测试环境冻结发布、API批次运行和先计量预检后54槽的方案；发布和模型调用仍需分别授权；
 - `DEC-067`已接受：Demo阶段继续使用扣子验证质量/结构/可靠性，对平台不可观测字段记录`NOT_OBSERVABLE`，性能/成本保持`NOT_SCORED`；不代表G1或生产放行；
+- `DEC-069`已接受：Demo服务端同步等待上限改为`25000ms`；历史`15000ms`证据不改写，不自动重新调用扣子；25秒不是G1的8秒P95目标；
 - 完整决定及权衡以[决策日志](decision-log.md#dec-027确认运动消耗替代得分)为准；当前没有未确认的6.2/6.3/6.5方向性决定；
 - `DEC-023 PROPOSED`保留为旧链路实现假设；V013只冻结合同，不自动接受该编排方案，留待下一工作项启动后基于新合同重新评估。
 
 ## 5. 当前工作项
 
-### ITEM-T001-B2｜受限复测结果预览
+### ITEM-T001｜原版 Prompt v3.1.2 输入投影受限复测
 
 - 状态：`READY_FOR_PREVIEW`
-- 目标：在扣子 v0.0.2 验证四条解读质量规则，同时以最小代表性样本复核历史限制、室内传感器能力和不准入 B0 路径。
-- 已完成：v0.0.2 版本同步；零调用预检；21 槽真实批次；本地接收回放 `PASS`。
-- 结果：B2 `7/21`、B0 `14/21`、安全停止 `0/21`；总 Token `101712`；P50/P95=`15002.545/20334.534ms`；成本 `NOT_OBSERVABLE`。
-- 排除：不把本轮外推为完整54槽基准；不运行 B1/B3、不做人评、不评分性能/成本、不判断 G1。
-- 证据：[Prompt同步与受限复测评审](../reviews/ITEM-T001-B2-prompt-sync-review.md)、[原始批次](../eval/runs/RUN-20260825-756-raw.json)、[回放结果](../eval/runs/RUN-20260825-756.json)。
+- 目标：在保留原版 Prompt `v3.1.2` 的前提下，验证削减模型输入冗余字段能否降低15秒超时与B0降级。
+- 已完成：18条等价性测试、零调用预检和4槽真实复测；4/4回放PASS，B2/B0=`1/3`，`006/011`仍超时，`018`保持0调用。
+- 结论：本次4条输入减少`57.88%`，Claim合同完整，但投影前后B2/超时/修复/B0结果未变化；不扩大样本，不将冗余载荷判为主要原因。
+- 冻结边界：Prompt、Schema、模型、扣子Workflow、Few-shot、Claim/能力/历史/安全规则均未改变；当前服务端同步等待为`25000ms`，历史`15000ms`证据不改写；人工可读性未运行。
+- 证据：[RUN-20260825-918](../eval/runs/RUN-20260825-918.json)、[比较结果](../eval/runs/T001-original-prompt-projection-comparison-v0.1.json)、[LOG-20260825-155](progress-ledger.md#log-20260825-155原版prompt输入投影4槽受限复测完成)。
 
 ## 6. 下一工作项
 
-- `ITEM-T001 Prompt v3.1.2 Compact Candidate A/B`：候选已生成但未接入扣子；下一步用同一7个受限案例、同模型和同超时预算做小批量对照，再决定是否发布新测试版本。
+- `ITEM-T001 25秒同步等待受限可靠性复测范围预览`：4案例×1次（`RA-AUTO-001/006/011/018`）；等待用户确认范围和停止条件。确认后先做零调用预检，再单独请求真实调用；不自动扩大到54槽、不改Prompt、不判断G1。
 
 ## 7. 当前版本矩阵
 
 | app / schema / rules | parser / GPS quality | B0 / eval | AI runtime |
 |---|---|---|---|
-| visual-shell-v0.1 + `ride-detail-ui-v0.2`已验收；`RideActivity v0.2 / RideSeries v0.1 / UserProfile v0.1 / AtomicCapability v0.1 / RideFeatureSnapshot v0.1 / HistoricalComparisonSnapshot v0.1 / RideAnalysisContext v0.2 / AnalysisEligibility v0.1 / ride-analysis-output-v0.3`均已验收；当前特征规则`ride-feature-rules-v0.2` | FIT parser v0.2；GPX parser v0.3 / GPS质量v0.1；自动回归197/197、生产构建已通过 | 旧B0 `b0-template-v0.1` 14/14；当前T001 B0 `RUN-20260824-028` 18/18；受限B2 `RUN-20260825-756` 21/21 PASS，B2=7/B0=14，P50/P95=15002.545/20334.534ms，benchmarkStatus=`NOT_SCORED` | V014已接受Prompt v3.1.2 + Service v1.5 + Workflow内部标签dev.15 + Few-shot disabled；扣子Workflow `7676429753852018707`平台`v0.0.2`；四项计量字段不可观测；完整输入集摘要固定18条，受限执行范围7条×3次；RAG/Function Calling关闭 |
+| visual-shell-v0.1 + `ride-detail-ui-v0.2`已验收；`RideActivity v0.2 / RideSeries v0.1 / UserProfile v0.1 / AtomicCapability v0.1 / RideFeatureSnapshot v0.1 / HistoricalComparisonSnapshot v0.1 / RideAnalysisContext v0.2 / AnalysisEligibility v0.1 / ride-analysis-output-v0.3`均已验收；当前特征规则`ride-feature-rules-v0.2` | FIT parser v0.2；GPX parser v0.3 / GPS质量v0.1；自动回归201/201通过 | 旧B0 `b0-template-v0.1` 14/14；A `RUN-20260825-756` 21/21 PASS，B `RUN-20260825-960` 21/21 PASS；投影复测`RUN-20260825-918` 4/4 PASS、B2=1/B0=3；benchmarkStatus=`NOT_SCORED` | A active：Prompt v3.1.2 + 扣子`v0.0.2`；模型传输投影v0.1；B archived：Compact Candidate；Service v1.5 + Workflow内部标签dev.15 + Few-shot disabled；四项计量字段不可观测；RAG/Function Calling关闭 |

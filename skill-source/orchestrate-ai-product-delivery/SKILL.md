@@ -27,6 +27,22 @@ Build and operate one evidence-driven delivery system, not three disconnected do
 - Use templates under `assets/templates/` as structural starting points. Customize them to the source evidence; do not leave bracketed placeholders.
 - Run `scripts/validate_delivery_system.py <project-root>` after creating or materially changing the coordinated documents.
 
+These rules govern bundled Skill references. For project PRDs and delivery documents, use the minimum sufficient audit below.
+
+## Minimum sufficient source audit
+
+For every `ITEM`, audit all three development authorities without reading all three documents in full by default:
+
+1. Read `current-status.md`, the latest relevant log/review, observable workspace/code/tests and latest related decisions.
+2. Search headings first, then read only the PRD sections directly related to the item.
+3. Read only the corresponding R&D-guide implementation/evaluation sections.
+4. Read only the roadmap module row, current-stage scope and applicable Gate.
+5. Record a compact audit card with source section references, scope, non-goals, material-conflict status and acceptance criteria. Cite sections; do not copy source passages or whole documents into the ledger.
+
+Do not reread accepted unchanged sections. Read `index.md` only when ownership or links are unclear. Resuming work, updating the ledger or starting an ordinary item is not a reason to load full documents.
+
+Read the PRD, R&D guide and roadmap in full only when at least one trigger applies: entering a new Demo/Alpha/Beta/RC/GA stage; materially changing Agent/model/RAG/tool/privacy/safety/data boundaries; the user changes product direction; a material conflict is found; performing a 3–5-item stage review; or preparing a Gate/release decision. Otherwise, the targeted audit is required.
+
 ## Decide the operating mode
 
 Choose one mode from the request and workspace state:
@@ -46,7 +62,7 @@ Use when product documents exist but the coordinated delivery system does not.
 
 Use when some or all documents already exist.
 
-1. Read all three current documents and the latest ledger entries.
+1. Apply the minimum sufficient source audit. Start with the fields or sections being reconciled; expand to full documents only when a listed trigger applies.
 2. Compare stage names, scope, versions, Gate metrics, sample sizes, current status, next work item, and decision states.
 3. Treat source facts as higher priority than generated summaries; flag genuine product conflicts.
 4. Repair cross-links and inconsistencies without silently rewriting append-only history.
@@ -60,19 +76,13 @@ Use when the user wants step-by-step implementation, testing, release, or iterat
 2. Verify the workspace reality; do not trust stale status blindly.
 3. Select exactly one small, previewable work item whose prerequisites are satisfied.
 4. Before implementation, state purpose, scope, non-goals, acceptance criteria, user action, and risks.
-5. Apply the progressive source-audit rule: always read the PRD sections relevant to the selected work item, the corresponding R&D-guide sections, the roadmap module row/Gate, current status, latest decisions, and existing code. Do not load all three documents by default. Record the section references in a compact start-audit card.
+5. Apply the minimum sufficient source audit and record its compact audit card.
 6. Reconcile the PRD and roadmap before coding. If they materially conflict on product behavior, scope, data handling, risk, or acceptance, preserve both statements and ask the user to decide; do not silently choose one.
 7. Record the source audit and any pending clarification in the ledger before implementation.
 8. Implement and test proportionally to risk.
 9. Present a preview with actual evidence and unverified items clearly labeled.
 10. Await user acceptance when the item affects product behavior or a documented approval Gate.
 11. Append the result and feedback to the ledger; update current status; then select the next item.
-
-#### Progressive source audit and token control
-
-Every item must be checked against the PRD, R&D guide, and roadmap, but “checked” means the minimum sufficient relevant sections, not a full reread. Use this recovery packet: `current-status.md` → latest item log/review → actual workspace/code/tests → relevant PRD sections → relevant R&D-guide sections → roadmap module row/Gate → latest related decisions. Read `index.md` only when ownership or links are unclear, and do not reload accepted unchanged sections.
-
-Create a compact start-audit card with: item, PRD references, R&D references, roadmap references, decisions, scope, non-goals, material-conflict status, and acceptance criteria. Trigger a full three-document review only for a new Demo/Alpha/Beta/RC/GA stage, a material Agent/model/RAG/tool/privacy/safety/data-boundary change, a user direction change, a material conflict, a 3–5-item stage review, or a Gate/release decision. Keep PRD as the product-behavior source, the R&D guide as the implementation/testing source, the roadmap as the release-scope/Gate source, the ledger as the actual-state source, and the decision log as the accepted-choice source.
 
 ### D. Release decision
 

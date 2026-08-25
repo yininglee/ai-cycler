@@ -1,0 +1,237 @@
+{
+  "warning": "仅项目维护者使用，不发送给评审",
+  "runId": "RUN-20260824-367",
+  "items": [
+    {
+      "itemId": "ITEM-001",
+      "source": "B2",
+      "caseId": "RA-AUTO-001",
+      "repetition": 1,
+      "pairKey": "RA-AUTO-001"
+    },
+    {
+      "itemId": "ITEM-002",
+      "source": "B2",
+      "caseId": "RA-AUTO-001",
+      "repetition": 3,
+      "pairKey": "RA-AUTO-001"
+    },
+    {
+      "itemId": "ITEM-003",
+      "source": "B2",
+      "caseId": "RA-AUTO-002",
+      "repetition": 2,
+      "pairKey": "RA-AUTO-002"
+    },
+    {
+      "itemId": "ITEM-004",
+      "source": "B2",
+      "caseId": "RA-AUTO-002",
+      "repetition": 3,
+      "pairKey": "RA-AUTO-002"
+    },
+    {
+      "itemId": "ITEM-005",
+      "source": "B2",
+      "caseId": "RA-AUTO-004",
+      "repetition": 1,
+      "pairKey": "RA-AUTO-004"
+    },
+    {
+      "itemId": "ITEM-006",
+      "source": "B2",
+      "caseId": "RA-AUTO-004",
+      "repetition": 2,
+      "pairKey": "RA-AUTO-004"
+    },
+    {
+      "itemId": "ITEM-007",
+      "source": "B2",
+      "caseId": "RA-AUTO-004",
+      "repetition": 3,
+      "pairKey": "RA-AUTO-004"
+    },
+    {
+      "itemId": "ITEM-008",
+      "source": "B2",
+      "caseId": "RA-AUTO-005",
+      "repetition": 1,
+      "pairKey": "RA-AUTO-005"
+    },
+    {
+      "itemId": "ITEM-009",
+      "source": "B2",
+      "caseId": "RA-AUTO-005",
+      "repetition": 3,
+      "pairKey": "RA-AUTO-005"
+    },
+    {
+      "itemId": "ITEM-010",
+      "source": "B2",
+      "caseId": "RA-AUTO-008",
+      "repetition": 1,
+      "pairKey": "RA-AUTO-008"
+    },
+    {
+      "itemId": "ITEM-011",
+      "source": "B2",
+      "caseId": "RA-AUTO-010",
+      "repetition": 1,
+      "pairKey": "RA-AUTO-010"
+    },
+    {
+      "itemId": "ITEM-012",
+      "source": "B2",
+      "caseId": "RA-AUTO-010",
+      "repetition": 3,
+      "pairKey": "RA-AUTO-010"
+    },
+    {
+      "itemId": "ITEM-013",
+      "source": "B2",
+      "caseId": "RA-AUTO-014",
+      "repetition": 1,
+      "pairKey": "RA-AUTO-014"
+    },
+    {
+      "itemId": "ITEM-014",
+      "source": "B2",
+      "caseId": "RA-AUTO-014",
+      "repetition": 3,
+      "pairKey": "RA-AUTO-014"
+    },
+    {
+      "itemId": "ITEM-015",
+      "source": "B2",
+      "caseId": "RA-AUTO-015",
+      "repetition": 1,
+      "pairKey": "RA-AUTO-015"
+    },
+    {
+      "itemId": "ITEM-016",
+      "source": "B2",
+      "caseId": "RA-AUTO-015",
+      "repetition": 2,
+      "pairKey": "RA-AUTO-015"
+    },
+    {
+      "itemId": "ITEM-017",
+      "source": "B2",
+      "caseId": "RA-AUTO-015",
+      "repetition": 3,
+      "pairKey": "RA-AUTO-015"
+    },
+    {
+      "itemId": "ITEM-018",
+      "source": "B2",
+      "caseId": "RA-AUTO-016",
+      "repetition": 1,
+      "pairKey": "RA-AUTO-016"
+    },
+    {
+      "itemId": "ITEM-019",
+      "source": "B2",
+      "caseId": "RA-AUTO-016",
+      "repetition": 2,
+      "pairKey": "RA-AUTO-016"
+    },
+    {
+      "itemId": "ITEM-020",
+      "source": "B2",
+      "caseId": "RA-AUTO-016",
+      "repetition": 3,
+      "pairKey": "RA-AUTO-016"
+    },
+    {
+      "itemId": "ITEM-021",
+      "source": "B2",
+      "caseId": "RA-AUTO-017",
+      "repetition": 1,
+      "pairKey": "RA-AUTO-017"
+    },
+    {
+      "itemId": "ITEM-022",
+      "source": "B2",
+      "caseId": "RA-AUTO-017",
+      "repetition": 2,
+      "pairKey": "RA-AUTO-017"
+    },
+    {
+      "itemId": "ITEM-023",
+      "source": "B2",
+      "caseId": "RA-AUTO-017",
+      "repetition": 3,
+      "pairKey": "RA-AUTO-017"
+    },
+    {
+      "itemId": "ITEM-024",
+      "source": "B0",
+      "caseId": "RA-AUTO-001",
+      "repetition": null,
+      "pairKey": "RA-AUTO-001"
+    },
+    {
+      "itemId": "ITEM-025",
+      "source": "B0",
+      "caseId": "RA-AUTO-002",
+      "repetition": null,
+      "pairKey": "RA-AUTO-002"
+    },
+    {
+      "itemId": "ITEM-026",
+      "source": "B0",
+      "caseId": "RA-AUTO-004",
+      "repetition": null,
+      "pairKey": "RA-AUTO-004"
+    },
+    {
+      "itemId": "ITEM-027",
+      "source": "B0",
+      "caseId": "RA-AUTO-005",
+      "repetition": null,
+      "pairKey": "RA-AUTO-005"
+    },
+    {
+      "itemId": "ITEM-028",
+      "source": "B0",
+      "caseId": "RA-AUTO-008",
+      "repetition": null,
+      "pairKey": "RA-AUTO-008"
+    },
+    {
+      "itemId": "ITEM-029",
+      "source": "B0",
+      "caseId": "RA-AUTO-010",
+      "repetition": null,
+      "pairKey": "RA-AUTO-010"
+    },
+    {
+      "itemId": "ITEM-030",
+      "source": "B0",
+      "caseId": "RA-AUTO-014",
+      "repetition": null,
+      "pairKey": "RA-AUTO-014"
+    },
+    {
+      "itemId": "ITEM-031",
+      "source": "B0",
+      "caseId": "RA-AUTO-015",
+      "repetition": null,
+      "pairKey": "RA-AUTO-015"
+    },
+    {
+      "itemId": "ITEM-032",
+      "source": "B0",
+      "caseId": "RA-AUTO-016",
+      "repetition": null,
+      "pairKey": "RA-AUTO-016"
+    },
+    {
+      "itemId": "ITEM-033",
+      "source": "B0",
+      "caseId": "RA-AUTO-017",
+      "repetition": null,
+      "pairKey": "RA-AUTO-017"
+    }
+  ]
+}

@@ -10,6 +10,7 @@ import {
 } from "../src/ai/coze-workflow-client.ts";
 import { prepareRideAnalysis } from "../src/ai/ride-analysis-service.ts";
 import { disabledRideAnalysisFewShots } from "../src/ai/ride-analysis-few-shot.ts";
+import { projectRideAnalysisContextForModel } from "../src/ai/ride-analysis-context-projection.ts";
 import type { RideAnalysisOutputV03 } from "../src/ai/ride-analysis-output-v03.ts";
 import { getRideFixture } from "../src/fixtures/rides.ts";
 
@@ -81,7 +82,12 @@ test("Coze adapter sends five short v0.2 inputs with no examples and extracts a 
   const parameters = body.parameters as Record<string, unknown>;
   assert.deepEqual(Object.keys(parameters), [...COZE_INPUT_VARIABLES]);
   assert.ok(COZE_INPUT_VARIABLES.every((name) => name.length <= 20));
-  assert.equal(parameters.analysis_context, JSON.stringify(input.analysisContext));
+  assert.equal(parameters.analysis_context, JSON.stringify(projectRideAnalysisContextForModel(input.analysisContext)));
+  const modelContext = JSON.parse(String(parameters.analysis_context)) as Record<string, unknown>;
+  assert.equal("featureSnapshot" in modelContext, false);
+  assert.equal("recordedMetrics" in modelContext, false);
+  assert.equal("capabilities" in modelContext, false);
+  assert.equal("historicalComparison" in modelContext, false);
   assert.equal(parameters.analysis_elig, JSON.stringify(input.eligibility));
   assert.equal(parameters.few_shot_json, JSON.stringify(input.fewShotSelection));
   assert.deepEqual(input.fewShotSelection.examples, []);
@@ -124,4 +130,16 @@ test("Coze configuration stays disabled until all server-only secrets exist", ()
   assert.equal(loaded?.workflowName, "ride_analysis_v2");
   assert.equal(loaded?.workflowVersion, "v0.0.1");
   assert.equal(loaded?.modelId, "model-id");
+});
+
+test("Coze configuration keeps the model timeout within the 25-second demo sync guardrail", () => {
+  const loaded = readCozeWorkflowConfig({
+    COZE_API_URL: "https://api.coze.cn/v1/workflow/run",
+    COZE_WORKFLOW_NAME: "ride_analysis_v2",
+    COZE_WORKFLOW_ID: "workflow-id",
+    COZE_WORKFLOW_VERSION: "v0.0.1",
+    COZE_API_TOKEN: "token",
+    AI_ANALYSIS_TIMEOUT_MS: "60000",
+  });
+  assert.equal(loaded?.timeoutMs, 25_000);
 });

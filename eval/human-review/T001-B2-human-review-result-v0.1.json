@@ -1,0 +1,48 @@
+{
+  "schemaVersion": "t001-b2-human-review-result-v0.1",
+  "runId": "RUN-20260824-367",
+  "reviewers": 2,
+  "completion": {
+    "reviewerA": "33/33",
+    "reviewerB": "33/33",
+    "disagreementsRequiringReview": 0
+  },
+  "sample": {
+    "b2ValidOutputItems": 23,
+    "pairedB0Items": 10,
+    "fullBatchSlots": 54
+  },
+  "b2Means": {
+    "factualFaithfulness": 5,
+    "insightValue": 3.609,
+    "actionability": 3,
+    "clarity": 3.978,
+    "tone": 4,
+    "uncertainty": 3.978,
+    "weightedOverall": 3.998
+  },
+  "reviewerMeans": {
+    "A": { "factualFaithfulness": 5, "insightValue": 3.348, "actionability": 3, "clarity": 4, "tone": 4, "uncertainty": 3.957, "weightedOverall": 3.933 },
+    "B": { "factualFaithfulness": 5, "insightValue": 3.87, "actionability": 3, "clarity": 3.957, "tone": 4, "uncertainty": 4, "weightedOverall": 4.063 }
+  },
+  "pairedInsightDelta": {
+    "metric": "B2 insightValue minus paired B0 insightValue",
+    "reviewerA": 2.5,
+    "reviewerB": 2.1,
+    "combinedMean": 2.3,
+    "pairedCaseCount": 10
+  },
+  "b0BaselineFlags": [
+    { "itemId": "ITEM-029", "issue": "available heart-rate evidence described as missing or damaged" },
+    { "itemId": "ITEM-031", "issue": "available power evidence described as missing or damaged" }
+  ],
+  "runtimeEvidence": {
+    "b2SuccessCount": 23,
+    "b0FallbackCount": 31,
+    "p95LatencyMs": 23541.581,
+    "costCny": "NOT_OBSERVABLE"
+  },
+  "status": "DIAGNOSTIC_ONLY",
+  "g1Decision": "NOT_DECIDED",
+  "nextAction": "Fix runtime timeout/degradation and B0 capability handling, add regression cases for fact-only outputs and generic actions, then decide on a constrained B2 rerun."
+}

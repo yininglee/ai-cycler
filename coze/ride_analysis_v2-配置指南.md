@@ -74,7 +74,7 @@ pnpm export:coze-inputs -- gpx-no-timestamps
 
 1. 选择支持JSON结构化输出的中文快速模型，关闭深度思考。
 2. 先选择“精确模式”预设；若修改最大回复长度或深度思考后界面显示“自定义”，属于正常状态。记录最终参数组合，不只记录模式名。
-3. 最大回复长度先设约`1200`，因为v0.3包含整体评价、多维分析和3条分享文案；后续用真实运行的截断率、延迟和成本调整。
+3. 最大回复长度固定为`2400`，与最终Prompt v3.1.2已归档的L1/L2/L3及受限修复试运行配置一致；后续只有在冻结同条件对照并取得截断率、延迟和成本证据后才调整。
 4. 若界面没有temperature，记录`NOT_CONFIGURED`，不用寻找隐藏配置或增加节点。
 5. 将`prompts/cycling-buddy-ride-analysis-v3.1.2.md` v3.1.2的`System Prompt`代码块完整放入系统提示词。v3.1.1、v3.1原文保持不变，不要覆盖历史Prompt。
 6. 将同文件的`User Prompt`代码块放入用户提示词，并把5个占位符分别绑定到开始节点同名变量。运行时数据放在用户提示词更合适，系统提示词只维护稳定角色、事实、安全和输出规则。
@@ -119,7 +119,8 @@ COZE_API_URL=https://api.coze.cn/v1/workflow/run
 COZE_WORKFLOW_ID=新版v2工作流ID
 COZE_API_TOKEN=仅保存在本机的开发Token
 COZE_MODEL_ID=控制台中实际模型ID
-AI_ANALYSIS_TIMEOUT_MS=8000
+# Demo当前同步等待上限；不代表G1的P95性能目标或生产放行
+AI_ANALYSIS_TIMEOUT_MS=25000
 AI_MAX_RESPONSE_BYTES=262144
 ```
 

@@ -1,0 +1,132 @@
+{
+  "warning": "仅项目维护者使用，不发送给评审",
+  "experimentId": "T001-PROMPT-AB-v0.1",
+  "items": [
+    {
+      "itemId": "AB-ITEM-001",
+      "slot": "RA-AUTO-001#1",
+      "variantX": "A_or_B_per_reviewer",
+      "variantY": "A_or_B_per_reviewer"
+    },
+    {
+      "itemId": "AB-ITEM-002",
+      "slot": "RA-AUTO-001#2",
+      "variantX": "A_or_B_per_reviewer",
+      "variantY": "A_or_B_per_reviewer"
+    },
+    {
+      "itemId": "AB-ITEM-003",
+      "slot": "RA-AUTO-001#3",
+      "variantX": "A_or_B_per_reviewer",
+      "variantY": "A_or_B_per_reviewer"
+    },
+    {
+      "itemId": "AB-ITEM-004",
+      "slot": "RA-AUTO-005#1",
+      "variantX": "A_or_B_per_reviewer",
+      "variantY": "A_or_B_per_reviewer"
+    },
+    {
+      "itemId": "AB-ITEM-005",
+      "slot": "RA-AUTO-005#2",
+      "variantX": "A_or_B_per_reviewer",
+      "variantY": "A_or_B_per_reviewer"
+    },
+    {
+      "itemId": "AB-ITEM-006",
+      "slot": "RA-AUTO-005#3",
+      "variantX": "A_or_B_per_reviewer",
+      "variantY": "A_or_B_per_reviewer"
+    },
+    {
+      "itemId": "AB-ITEM-007",
+      "slot": "RA-AUTO-006#1",
+      "variantX": "A_or_B_per_reviewer",
+      "variantY": "A_or_B_per_reviewer"
+    },
+    {
+      "itemId": "AB-ITEM-008",
+      "slot": "RA-AUTO-006#2",
+      "variantX": "A_or_B_per_reviewer",
+      "variantY": "A_or_B_per_reviewer"
+    },
+    {
+      "itemId": "AB-ITEM-009",
+      "slot": "RA-AUTO-006#3",
+      "variantX": "A_or_B_per_reviewer",
+      "variantY": "A_or_B_per_reviewer"
+    },
+    {
+      "itemId": "AB-ITEM-010",
+      "slot": "RA-AUTO-010#1",
+      "variantX": "A_or_B_per_reviewer",
+      "variantY": "A_or_B_per_reviewer"
+    },
+    {
+      "itemId": "AB-ITEM-011",
+      "slot": "RA-AUTO-010#2",
+      "variantX": "A_or_B_per_reviewer",
+      "variantY": "A_or_B_per_reviewer"
+    },
+    {
+      "itemId": "AB-ITEM-012",
+      "slot": "RA-AUTO-010#3",
+      "variantX": "A_or_B_per_reviewer",
+      "variantY": "A_or_B_per_reviewer"
+    },
+    {
+      "itemId": "AB-ITEM-013",
+      "slot": "RA-AUTO-011#1",
+      "variantX": "A_or_B_per_reviewer",
+      "variantY": "A_or_B_per_reviewer"
+    },
+    {
+      "itemId": "AB-ITEM-014",
+      "slot": "RA-AUTO-011#2",
+      "variantX": "A_or_B_per_reviewer",
+      "variantY": "A_or_B_per_reviewer"
+    },
+    {
+      "itemId": "AB-ITEM-015",
+      "slot": "RA-AUTO-011#3",
+      "variantX": "A_or_B_per_reviewer",
+      "variantY": "A_or_B_per_reviewer"
+    },
+    {
+      "itemId": "AB-ITEM-016",
+      "slot": "RA-AUTO-013#1",
+      "variantX": "A_or_B_per_reviewer",
+      "variantY": "A_or_B_per_reviewer"
+    },
+    {
+      "itemId": "AB-ITEM-017",
+      "slot": "RA-AUTO-013#2",
+      "variantX": "A_or_B_per_reviewer",
+      "variantY": "A_or_B_per_reviewer"
+    },
+    {
+      "itemId": "AB-ITEM-018",
+      "slot": "RA-AUTO-013#3",
+      "variantX": "A_or_B_per_reviewer",
+      "variantY": "A_or_B_per_reviewer"
+    },
+    {
+      "itemId": "AB-ITEM-019",
+      "slot": "RA-AUTO-018#1",
+      "variantX": "A_or_B_per_reviewer",
+      "variantY": "A_or_B_per_reviewer"
+    },
+    {
+      "itemId": "AB-ITEM-020",
+      "slot": "RA-AUTO-018#2",
+      "variantX": "A_or_B_per_reviewer",
+      "variantY": "A_or_B_per_reviewer"
+    },
+    {
+      "itemId": "AB-ITEM-021",
+      "slot": "RA-AUTO-018#3",
+      "variantX": "A_or_B_per_reviewer",
+      "variantY": "A_or_B_per_reviewer"
+    }
+  ]
+}

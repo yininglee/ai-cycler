@@ -1,0 +1,67 @@
+{
+  "schemaVersion": "t001-prompt-ab-human-review-result-v0.1",
+  "experimentId": "T001-PROMPT-AB-v0.1",
+  "status": "DIAGNOSTIC_ONLY",
+  "completeness": {
+    "reviewerA": 21,
+    "reviewerB": 21,
+    "expectedPerReviewer": 21,
+    "hardNotes": 0,
+    "disagreementsAtLeast2": 3
+  },
+  "means": {
+    "A": {
+      "factualFaithfulness": 4.405,
+      "insightValue": 2.214,
+      "actionability": 3,
+      "clarity": 3.976,
+      "tone": 4,
+      "uncertainty": 4.071
+    },
+    "B": {
+      "factualFaithfulness": 4.31,
+      "insightValue": 2,
+      "actionability": 3,
+      "clarity": 4,
+      "tone": 4,
+      "uncertainty": 4.071
+    }
+  },
+  "deltaAminusB": {
+    "factualFaithfulness": 0.095,
+    "insightValue": 0.214,
+    "actionability": 0,
+    "clarity": -0.024,
+    "tone": 0,
+    "uncertainty": 0
+  },
+  "preferenceVotes": {
+    "A": 7,
+    "B": 5,
+    "tie": 30
+  },
+  "disagreements": [
+    {
+      "itemId": "AB-ITEM-001",
+      "dimension": "insightValue",
+      "difference": 3
+    },
+    {
+      "itemId": "AB-ITEM-002",
+      "dimension": "insightValue",
+      "difference": 3
+    },
+    {
+      "itemId": "AB-ITEM-006",
+      "dimension": "insightValue",
+      "difference": 3
+    }
+  ],
+  "hardNotes": [],
+  "boundaries": [
+    "人工评分不改变机器运行结果",
+    "不把一次小样本评分外推为生产质量",
+    "不据此判断G1",
+    "成本、精确模型ID、区域和首Token延迟仍未评分"
+  ]
+}

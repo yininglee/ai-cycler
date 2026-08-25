@@ -1,0 +1,70 @@
+{
+  "schemaVersion": "t001-prompt-ab-comparison-v0.1",
+  "experimentId": "T001-PROMPT-AB-v0.1",
+  "status": "READY_FOR_HUMAN_REVIEW",
+  "conditions": {
+    "sameInputSet": true,
+    "sameModel": true,
+    "timeoutMs": 15000,
+    "repetitionsPerCase": 3
+  },
+  "arms": {
+    "A": {
+      "arm": "A",
+      "runId": "RUN-20260825-756",
+      "slotCount": 21,
+      "b2SuccessRate": 0.3333,
+      "firstAttemptContractSuccessRate": 0.2857,
+      "timeoutSlotRate": 0.4286,
+      "repairTriggerRate": 0.1429,
+      "repairSuccessRate": 0.3333,
+      "b0FallbackRate": 0.6667,
+      "providerCallCount": 21,
+      "tokenCount": 101712,
+      "claimIntegrity": {
+        "contractValidRate": 1,
+        "unknownClaimReferenceCount": 0,
+        "unusedAllowedClaimCount": 29,
+        "overallReferencedClaimCount": 4.86,
+        "b2OutputCount": 7
+      },
+      "humanReadability": "NOT_SCORED"
+    },
+    "B": {
+      "arm": "B",
+      "runId": "RUN-20260825-960",
+      "slotCount": 21,
+      "b2SuccessRate": 0.0952,
+      "firstAttemptContractSuccessRate": 0,
+      "timeoutSlotRate": 0.4762,
+      "repairTriggerRate": 0.381,
+      "repairSuccessRate": 0.25,
+      "b0FallbackRate": 0.9048,
+      "providerCallCount": 26,
+      "tokenCount": 111825,
+      "claimIntegrity": {
+        "contractValidRate": 1,
+        "unknownClaimReferenceCount": 0,
+        "unusedAllowedClaimCount": 11,
+        "overallReferencedClaimCount": 5,
+        "b2OutputCount": 2
+      },
+      "humanReadability": "NOT_SCORED"
+    }
+  },
+  "delta": {
+    "b2SuccessRate": -0.2381,
+    "firstAttemptContractSuccessRate": -0.2857,
+    "timeoutSlotRate": 0.0476,
+    "repairTriggerRate": 0.2381,
+    "repairSuccessRate": -0.0833,
+    "b0FallbackRate": 0.2381,
+    "providerCallCount": 5,
+    "tokenCount": 10113
+  },
+  "humanReview": {
+    "status": "NOT_SCORED",
+    "packageRequired": true,
+    "reviewersRequired": 2
+  }
+}

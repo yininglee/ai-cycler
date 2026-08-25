@@ -23,10 +23,10 @@ AI 产品的运行结果不仅取决于代码，还取决于规则、数据 Sche
 | `current-status.md` | 每次状态变化时覆盖更新 | Codex唯一恢复入口；当前阶段、阻塞、版本和下一项 |
 | `progress-ledger.md` | 只追加，不重写历史 | 每次实施、测试、预览和验收的事实记录 |
 | `decision-log.md` | 只追加；变更决定新增记录 | 产品、Agent、技术、范围和上线决策 |
-| `eval/benchmark-report.md` | 按测试轮次追加 | 模型、Prompt、Workflow 基准测试结果 |
+| `eval/benchmark-report.md` | 按测试轮次追加 | 模型、Prompt、Workflow 基准测试结果及人工评测摘要；不复制 raw RUN |
 | `AI骑行伙伴-版本路线图与上线放行机制.md` | Gate 规则改变时版本化 | 阶段目标、放行、灰度和回滚规则 |
 
-工作项验证放在`reviews/ITEM-*.md`，跨版本基准放在`eval/benchmark-report.md`，原始AI运行放在`eval/runs/`；进展日志只记录结果摘要和证据链接。
+工作项验证放在`reviews/ITEM-*.md`，跨版本基准及可比较批次摘要放在`eval/benchmark-report.md`，人工评测详细结果放在`eval/human-review/`，原始AI运行放在`eval/runs/`；进展日志只记录结果摘要和证据链接。每次真实批次或人工评测完成后，必须在 benchmark report 追加摘要并链接详细事实源。
 
 ## 3. 后续协作方式
 
