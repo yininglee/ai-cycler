@@ -34,7 +34,7 @@ import { RIDE_FEATURE_RULES_VERSION } from "../src/domain/ride-features.ts";
 import { B0_TEMPLATE_VERSION } from "../src/domain/ride-summary.ts";
 import {
   NOT_OBSERVABLE,
-  T001_B2_RESTRICTED_CASE_IDS,
+  T001_B2_RELIABILITY_CASE_IDS,
   T001_B2_FROZEN_INPUT_SET_SHA256,
   T001_B2_RAW_BATCH_SCHEMA_VERSION,
   type T001PromptAbArm,
@@ -84,7 +84,7 @@ function requestedScope(): ExecutionScope {
 }
 
 function caseIdsForScope(scope: ExecutionScope): readonly T001AutomaticRideAnalysisCaseId[] {
-  return scope === "restricted" ? T001_B2_RESTRICTED_CASE_IDS : t001AutomaticRideAnalysisCaseIds;
+  return scope === "restricted" ? T001_B2_RELIABILITY_CASE_IDS : t001AutomaticRideAnalysisCaseIds;
 }
 
 function repetitionsForScope(scope: ExecutionScope): 1 | 3 {

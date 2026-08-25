@@ -42,6 +42,9 @@ export const T001_B2_RESTRICTED_CASE_IDS = [
   "RA-AUTO-001", "RA-AUTO-005", "RA-AUTO-006", "RA-AUTO-010",
   "RA-AUTO-011", "RA-AUTO-013", "RA-AUTO-018",
 ] as const satisfies readonly T001AutomaticRideAnalysisCaseId[];
+export const T001_B2_RELIABILITY_CASE_IDS = [
+  "RA-AUTO-001", "RA-AUTO-006", "RA-AUTO-011", "RA-AUTO-018",
+] as const satisfies readonly T001AutomaticRideAnalysisCaseId[];
 export const NOT_OBSERVABLE = "NOT_OBSERVABLE" as const;
 export type ObservableNumber = number | typeof NOT_OBSERVABLE;
 export type ObservableString = string | typeof NOT_OBSERVABLE;
