@@ -1,0 +1,522 @@
+{
+  "schemaVersion": "t001-b2-evaluated-run-v0.3",
+  "runId": "RUN-20260825-510",
+  "benchmark": "T001",
+  "plan": "B2",
+  "validationStatus": "PASS",
+  "benchmarkStatus": "NOT_SCORED",
+  "versionMatrix": {
+    "appVersion": "visual-shell-v0.1",
+    "outputSchemaVersion": "ride-analysis-output-v0.3",
+    "contextSchemaVersion": "0.2",
+    "contextRulesVersion": "ride-analysis-context-rules-v0.2",
+    "featureRulesVersion": "ride-feature-rules-v0.2",
+    "eligibilitySchemaVersion": "0.1",
+    "eligibilityRulesVersion": "analysis-eligibility-rules-v0.1",
+    "promptVersion": "3.1.2",
+    "serviceVersion": "ride-analysis-service-v1.5",
+    "workflowVersion": "ride_analysis_v2-dev.15",
+    "fewShotMode": "disabled",
+    "b0TemplateVersion": "b0-template-v0.1",
+    "inputSetSha256": "5333b4cd4d5aeb21fbada26357381120e3665ffc2c71bda429d5cdce9b2c7671",
+    "sourceCommit": "56acf9230f7cfb30713eb0eaf826385b6483763d",
+    "modelId": "NOT_OBSERVABLE",
+    "region": "NOT_OBSERVABLE",
+    "modelParameters": {
+      "workflowName": "ride_analysis_v2",
+      "workflowId": "7676429753852018707",
+      "workflowVersion": "v0.0.2",
+      "isAsync": false
+    }
+  },
+  "dataset": {
+    "caseCount": 4,
+    "repetitionsPerCase": 1,
+    "expectedSlotCount": 4,
+    "b0RunId": "RUN-20260824-028"
+  },
+  "executionScope": {
+    "kind": "restricted",
+    "caseIds": [
+      "RA-AUTO-001",
+      "RA-AUTO-006",
+      "RA-AUTO-011",
+      "RA-AUTO-018"
+    ],
+    "repetitionsPerCase": 1,
+    "expectedSlotCount": 4
+  },
+  "summary": {
+    "slotCount": 4,
+    "firstAttemptContractValidCount": 1,
+    "repairedSuccessCount": 2,
+    "b2SuccessCount": 3,
+    "b0FallbackCount": 1,
+    "safetyStopCount": 0,
+    "modelCallCount": 5,
+    "tokenCount": 40865,
+    "costCny": "NOT_OBSERVABLE",
+    "latencyMs": {
+      "p50": 11643.478,
+      "p95": 34591.961
+    }
+  },
+  "issues": [],
+  "records": [
+    {
+      "caseId": "RA-AUTO-001",
+      "repetition": 1,
+      "requestId": "RUN-20260825-510:RA-AUTO-001:1:1a1a9a06-f3df-4084-aa5a-6da2d79c223e",
+      "startedAt": "2026-08-25T10:39:49.015Z",
+      "completedAt": "2026-08-25T10:40:00.658Z",
+      "totalLatencyMs": 11643.478,
+      "firstTokenLatencyMs": "NOT_OBSERVABLE",
+      "tokenUsage": {
+        "inputTokens": 5392,
+        "outputTokens": 709,
+        "totalTokens": 6101
+      },
+      "costCny": "NOT_OBSERVABLE",
+      "costSource": "NOT_OBSERVABLE",
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "response",
+          "providerRequestId": "20260825183949A7A458D0425929EC6174",
+          "latencyMs": 11638.301,
+          "rawText": "{\"dimensions\":[{\"claimIds\":[\"claim:ride-l1-built-in-sample:feature:speedSeriesMeanMps\",\"claim:ride-l1-built-in-sample:feature:speedStdDevMps\",\"claim:ride-l1-built-in-sample:feature:speedCoefficientOfVariation\",\"claim:ride-l1-built-in-sample:feature:speedFirstLastDeltaMps\"],\"confidence\":\"high\",\"key\":\"pace\",\"text\":\"平均速度为25km/h，速度变异系数约11%，整体速度波动较小，结束阶段速度比开始阶段低4.49km/h，后程配速出现回落。\"},{\"claimIds\":[\"claim:ride-l1-built-in-sample:feature:elevationPositiveGainM\",\"claim:ride-l1-built-in-sample:feature:elevationMinM\",\"claim:ride-l1-built-in-sample:feature:elevationMaxM\",\"claim:ride-l1-built-in-sample:feature:elevationRangeM\"],\"confidence\":\"high\",\"key\":\"climbing\",\"text\":\"累计爬升260米，海拔最低30米，最高71.6米，整体海拔变化范围为41.6米。\"}],\"headline\":\"后程配速回落，整体速度节奏较稳\",\"limitations\":[\"无心率、功率和踏频数据，本次解读不涉及运动强度、发力与踩踏节奏分析\",\"历史记录不足，无法进行历史对比\"],\"nextAction\":{\"basisClaimIds\":[],\"kind\":\"general\",\"text\":\"骑行后注意拉伸放松，及时补充水分。\"},\"notableEvents\":[],\"overallAssessment\":{\"claimIds\":[\"claim:ride-l1-built-in-sample:feature:speedSeriesMeanMps\",\"claim:ride-l1-built-in-sample:feature:speedCoefficientOfVariation\",\"claim:ride-l1-built-in-sample:feature:speedFirstLastDeltaMps\",\"claim:ride-l1-built-in-sample:feature:elevationPositiveGainM\",\"claim:ride-l1-built-in-sample:feature:elevationRangeM\"],\"text\":\"本次骑行平均速度25km/h，速度波动较小，但结束阶段速度比开始阶段低4.49km/h，后程配速出现回落；累计爬升260米，整体海拔变化范围为41.6米。\"},\"safetyLevel\":\"normal\",\"schemaVersion\":\"ride-analysis-output-v0.3\",\"shareCopy\":[\"享受骑行的快乐，一路向前～\",\"完成一次畅快骑行，保持热爱🚴\",\"慢慢骑，骑得远，享受沿途风景\"]}"
+        }
+      ],
+      "slotId": "RA-AUTO-001#1",
+      "firstAttemptContractValid": true,
+      "runtimeResult": {
+        "source": "b2",
+        "output": {
+          "schemaVersion": "ride-analysis-output-v0.3",
+          "headline": "后程配速回落，整体速度节奏较稳",
+          "overallAssessment": {
+            "text": "本次骑行平均速度25km/h，速度波动较小，但结束阶段速度比开始阶段低4.49km/h，后程配速出现回落；累计爬升260米，整体海拔变化范围为41.6米。",
+            "claimIds": [
+              "claim:ride-l1-built-in-sample:feature:speedSeriesMeanMps",
+              "claim:ride-l1-built-in-sample:feature:speedCoefficientOfVariation",
+              "claim:ride-l1-built-in-sample:feature:speedFirstLastDeltaMps",
+              "claim:ride-l1-built-in-sample:feature:elevationPositiveGainM",
+              "claim:ride-l1-built-in-sample:feature:elevationRangeM"
+            ]
+          },
+          "dimensions": [
+            {
+              "key": "pace",
+              "text": "平均速度为25km/h，速度变异系数约11%，整体速度波动较小，结束阶段速度比开始阶段低4.49km/h，后程配速出现回落。",
+              "claimIds": [
+                "claim:ride-l1-built-in-sample:feature:speedSeriesMeanMps",
+                "claim:ride-l1-built-in-sample:feature:speedStdDevMps",
+                "claim:ride-l1-built-in-sample:feature:speedCoefficientOfVariation",
+                "claim:ride-l1-built-in-sample:feature:speedFirstLastDeltaMps"
+              ],
+              "confidence": "high"
+            },
+            {
+              "key": "climbing",
+              "text": "累计爬升260米，海拔最低30米，最高71.6米，整体海拔变化范围为41.6米。",
+              "claimIds": [
+                "claim:ride-l1-built-in-sample:feature:elevationPositiveGainM",
+                "claim:ride-l1-built-in-sample:feature:elevationMinM",
+                "claim:ride-l1-built-in-sample:feature:elevationMaxM",
+                "claim:ride-l1-built-in-sample:feature:elevationRangeM"
+              ],
+              "confidence": "high"
+            }
+          ],
+          "notableEvents": [],
+          "nextAction": {
+            "kind": "general",
+            "text": "骑行后注意拉伸放松，及时补充水分。",
+            "basisClaimIds": []
+          },
+          "limitations": [
+            "无心率、功率和踏频数据，本次解读不涉及运动强度、发力与踩踏节奏分析",
+            "历史记录不足，无法进行历史对比"
+          ],
+          "safetyLevel": "normal",
+          "shareCopy": [
+            "享受骑行的快乐，一路向前～",
+            "完成一次畅快骑行，保持热爱🚴",
+            "慢慢骑，骑得远，享受沿途风景"
+          ]
+        },
+        "attempts": 1,
+        "latencyMs": 5,
+        "validationIssues": [],
+        "providerRequestIds": [
+          "20260825183949A7A458D0425929EC6174"
+        ],
+        "selectedExampleIds": [],
+        "versions": {
+          "service": "ride-analysis-service-v1.5",
+          "outputSchema": "ride-analysis-output-v0.3",
+          "prompt": "3.1.2",
+          "workflow": "ride_analysis_v2-dev.15",
+          "modelId": "NOT_OBSERVABLE",
+          "context": "0.2",
+          "contextRules": "ride-analysis-context-rules-v0.2",
+          "eligibility": "0.1",
+          "eligibilityRules": "analysis-eligibility-rules-v0.1",
+          "fewShotLibrary": "ride-analysis-few-shot-v0.1",
+          "fewShotRouter": "few-shot-router-v0.1",
+          "fewShotMode": "disabled",
+          "b0Template": "b0-template-v0.1"
+        }
+      }
+    },
+    {
+      "caseId": "RA-AUTO-006",
+      "repetition": 1,
+      "requestId": "RUN-20260825-510:RA-AUTO-006:1:ea555e5a-341e-4209-9ce6-1d3aef25855e",
+      "startedAt": "2026-08-25T10:40:00.660Z",
+      "completedAt": "2026-08-25T10:40:33.560Z",
+      "totalLatencyMs": 32899.547,
+      "firstTokenLatencyMs": "NOT_OBSERVABLE",
+      "tokenUsage": {
+        "inputTokens": 13983,
+        "outputTokens": 2160,
+        "totalTokens": 16143
+      },
+      "costCny": "NOT_OBSERVABLE",
+      "costSource": "NOT_OBSERVABLE",
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "response",
+          "providerRequestId": "2026082518400057D916EA6687BD04F375",
+          "latencyMs": 19161.567,
+          "rawText": "{\"dimensions\":[{\"claimIds\":[\"claim:ride-l2-built-in-sample:avgSpeedMps\",\"claim:ride-l2-built-in-sample:feature:speedFirstLastDeltaMps\",\"claim:ride-l2-built-in-sample:feature:speedCoefficientOfVariation\"],\"confidence\":\"high\",\"key\":\"pace\",\"text\":\"平均速度26.3km/h，结束阶段比开始阶段低约4.72km/h，速度变异系数约11%，速度波动较小，整体节奏平稳。\"},{\"claimIds\":[\"claim:ride-l2-built-in-sample:avgHeartRateBpm\",\"claim:ride-l2-built-in-sample:maxHeartRateBpm\",\"claim:ride-l2-built-in-sample:feature:heartRateSeriesMeanBpm\",\"claim:ride-l2-built-in-sample:feature:heartRateStdDevBpm\",\"claim:ride-l2-built-in-sample:feature:heartRateFirstLastDeltaBpm\"],\"confidence\":\"high\",\"key\":\"heartRate\",\"text\":\"平均心率约147bpm，最高心率176bpm，心率标准差约7.44bpm，心率波动小，结束阶段比开始阶段低约9.77bpm。\"},{\"claimIds\":[\"claim:ride-l2-built-in-sample:avgCadenceRpm\",\"claim:ride-l2-built-in-sample:feature:cadenceSeriesMeanRpm\",\"claim:ride-l2-built-in-sample:feature:cadenceCoefficientOfVariation\",\"claim:ride-l2-built-in-sample:feature:cadenceFirstLastDeltaRpm\"],\"confidence\":\"high\",\"key\":\"cadence\",\"text\":\"平均踏频84rpm，踏频变异系数约7%，踩踏节奏非常平稳，结束阶段比开始阶段低约8.33rpm。\"},{\"claimIds\":[\"claim:ride-l2-built-in-sample:elevationGainM\",\"claim:ride-l2-built-in-sample:feature:elevationRangeM\",\"claim:ride-l2-built-in-sample:feature:elevationMinM\",\"claim:ride-l2-built-in-sample:feature:elevationMaxM\"],\"confidence\":\"high\",\"key\":\"climbing\",\"text\":\"本次累计爬升410m，海拔范围为65.6m，最低海拔30m，最高海拔95.6m。\"}],\"headline\":\"多指标后程回落，踩踏节奏平稳\",\"limitations\":[\"无功率相关数据，本次解读不涉及功率相关分析\",\"无法进行历史对比分析\",\"本次解读不包含运动强度等级和体能评价\"],\"nextAction\":{\"basisClaimIds\":[],\"kind\":\"general\",\"text\":\"骑行后注意做好拉伸放松，补充水分和能量\"},\"notableEvents\":[],\"overallAssessment\":{\"claimIds\":[\"claim:ride-l2-built-in-sample:distanceM\",\"claim:ride-l2-built-in-sample:avgSpeedMps\",\"claim:ride-l2-built-in-sample:feature:speedFirstLastDeltaMps\",\"claim:ride-l2-built-in-sample:feature:heartRateFirstLastDeltaBpm\",\"claim:ride-l2-built-in-sample:feature:cadenceFirstLastDeltaRpm\",\"claim:ride-l2-built-in-sample:feature:speedCoefficientOfVariation\",\"claim:ride-l2-built-in-sample:feature:cadenceCoefficientOfVariation\"],\"text\":\"本次骑行完成35公里，平均速度26.3km/h，速度、心率和踏频的结束阶段均低于开始阶段，其中速度低约4.72km/h，心率低约9.77bpm，踏频低约8.33rpm，整体节奏波动很小。\"},\"safetyLevel\":\"normal\",\"schemaVersion\":\"ride-analysis-output-v0.3\",\"shareCopy\":[\"保持节奏，享受骑行在路上的感觉～\",\"平稳完成一次骑行，收获开心🥳\",\"今日份骑行运动达成✅\"]}"
+        },
+        {
+          "attempt": 2,
+          "outcome": "response",
+          "providerRequestId": "20260825184019FA0F1432A51CD98D9564",
+          "latencyMs": 13735.119,
+          "rawText": "{\"dimensions\":[{\"claimIds\":[\"claim:ride-l2-built-in-sample:avgSpeedMps\",\"claim:ride-l2-built-in-sample:feature:speedFirstLastDeltaMps\",\"claim:ride-l2-built-in-sample:feature:speedCoefficientOfVariation\"],\"confidence\":\"high\",\"key\":\"pace\",\"text\":\"平均速度26.3km/h，结束阶段比开始阶段低约4.72km/h，速度变异系数约11%，速度波动较小，整体节奏平稳。\"},{\"claimIds\":[\"claim:ride-l2-built-in-sample:avgHeartRateBpm\",\"claim:ride-l2-built-in-sample:maxHeartRateBpm\",\"claim:ride-l2-built-in-sample:feature:heartRateSeriesMeanBpm\",\"claim:ride-l2-built-in-sample:feature:heartRateStdDevBpm\",\"claim:ride-l2-built-in-sample:feature:heartRateFirstLastDeltaBpm\"],\"confidence\":\"high\",\"key\":\"heartRate\",\"text\":\"平均心率约147bpm，最高心率176bpm，心率标准差约7.44bpm，心率波动小，结束阶段比开始阶段低约9.77bpm。\"},{\"claimIds\":[\"claim:ride-l2-built-in-sample:avgCadenceRpm\",\"claim:ride-l2-built-in-sample:feature:cadenceSeriesMeanRpm\",\"claim:ride-l2-built-in-sample:feature:cadenceCoefficientOfVariation\",\"claim:ride-l2-built-in-sample:feature:cadenceFirstLastDeltaRpm\"],\"confidence\":\"high\",\"key\":\"cadence\",\"text\":\"平均踏频84rpm，踏频变异系数约7%，踩踏节奏平稳，结束阶段比开始阶段低约8.33rpm。\"},{\"claimIds\":[\"claim:ride-l2-built-in-sample:elevationGainM\",\"claim:ride-l2-built-in-sample:feature:elevationRangeM\",\"claim:ride-l2-built-in-sample:feature:elevationMinM\",\"claim:ride-l2-built-in-sample:feature:elevationMaxM\"],\"confidence\":\"high\",\"key\":\"climbing\",\"text\":\"本次累计爬升410m，海拔范围为65.6m，最低海拔30m，最高海拔95.6m。\"}],\"headline\":\"多指标后程回落，踩踏节奏平稳\",\"limitations\":[\"无功率相关数据，本次解读不涉及功率相关分析\",\"无法进行历史对比分析\",\"本次解读不包含运动强度等级和体能评价\"],\"nextAction\":{\"basisClaimIds\":[],\"kind\":\"general\",\"text\":\"骑行后注意做好拉伸放松，补充水分和能量\"},\"notableEvents\":[],\"overallAssessment\":{\"claimIds\":[\"claim:ride-l2-built-in-sample:distanceM\",\"claim:ride-l2-built-in-sample:avgSpeedMps\",\"claim:ride-l2-built-in-sample:feature:speedFirstLastDeltaMps\",\"claim:ride-l2-built-in-sample:feature:heartRateFirstLastDeltaBpm\",\"claim:ride-l2-built-in-sample:feature:cadenceFirstLastDeltaRpm\",\"claim:ride-l2-built-in-sample:feature:speedCoefficientOfVariation\",\"claim:ride-l2-built-in-sample:feature:cadenceCoefficientOfVariation\"],\"text\":\"本次骑行完成35公里，平均速度26.3km/h，速度、心率和踏频的结束阶段均低于开始阶段，其中速度低约4.72km/h，心率低约9.77bpm，踏频低约8.33rpm，整体节奏波动很小。\"},\"safetyLevel\":\"normal\",\"schemaVersion\":\"ride-analysis-output-v0.3\",\"shareCopy\":[\"保持节奏，享受骑行在路上的感觉～\",\"平稳完成一次骑行，收获开心🥳\",\"骑行运动完成，来记录日常啦✅\"]}"
+        }
+      ],
+      "slotId": "RA-AUTO-006#1",
+      "firstAttemptContractValid": false,
+      "runtimeResult": {
+        "source": "b2",
+        "output": {
+          "schemaVersion": "ride-analysis-output-v0.3",
+          "headline": "多指标后程回落，踩踏节奏平稳",
+          "overallAssessment": {
+            "text": "本次骑行完成35公里，平均速度26.3km/h，速度、心率和踏频的结束阶段均低于开始阶段，其中速度低约4.72km/h，心率低约9.77bpm，踏频低约8.33rpm，整体节奏波动很小。",
+            "claimIds": [
+              "claim:ride-l2-built-in-sample:distanceM",
+              "claim:ride-l2-built-in-sample:avgSpeedMps",
+              "claim:ride-l2-built-in-sample:feature:speedFirstLastDeltaMps",
+              "claim:ride-l2-built-in-sample:feature:heartRateFirstLastDeltaBpm",
+              "claim:ride-l2-built-in-sample:feature:cadenceFirstLastDeltaRpm",
+              "claim:ride-l2-built-in-sample:feature:speedCoefficientOfVariation",
+              "claim:ride-l2-built-in-sample:feature:cadenceCoefficientOfVariation"
+            ]
+          },
+          "dimensions": [
+            {
+              "key": "pace",
+              "text": "平均速度26.3km/h，结束阶段比开始阶段低约4.72km/h，速度变异系数约11%，速度波动较小，整体节奏平稳。",
+              "claimIds": [
+                "claim:ride-l2-built-in-sample:avgSpeedMps",
+                "claim:ride-l2-built-in-sample:feature:speedFirstLastDeltaMps",
+                "claim:ride-l2-built-in-sample:feature:speedCoefficientOfVariation"
+              ],
+              "confidence": "high"
+            },
+            {
+              "key": "heartRate",
+              "text": "平均心率约147bpm，最高心率176bpm，心率标准差约7.44bpm，心率波动小，结束阶段比开始阶段低约9.77bpm。",
+              "claimIds": [
+                "claim:ride-l2-built-in-sample:avgHeartRateBpm",
+                "claim:ride-l2-built-in-sample:maxHeartRateBpm",
+                "claim:ride-l2-built-in-sample:feature:heartRateSeriesMeanBpm",
+                "claim:ride-l2-built-in-sample:feature:heartRateStdDevBpm",
+                "claim:ride-l2-built-in-sample:feature:heartRateFirstLastDeltaBpm"
+              ],
+              "confidence": "high"
+            },
+            {
+              "key": "cadence",
+              "text": "平均踏频84rpm，踏频变异系数约7%，踩踏节奏平稳，结束阶段比开始阶段低约8.33rpm。",
+              "claimIds": [
+                "claim:ride-l2-built-in-sample:avgCadenceRpm",
+                "claim:ride-l2-built-in-sample:feature:cadenceSeriesMeanRpm",
+                "claim:ride-l2-built-in-sample:feature:cadenceCoefficientOfVariation",
+                "claim:ride-l2-built-in-sample:feature:cadenceFirstLastDeltaRpm"
+              ],
+              "confidence": "high"
+            },
+            {
+              "key": "climbing",
+              "text": "本次累计爬升410m，海拔范围为65.6m，最低海拔30m，最高海拔95.6m。",
+              "claimIds": [
+                "claim:ride-l2-built-in-sample:elevationGainM",
+                "claim:ride-l2-built-in-sample:feature:elevationRangeM",
+                "claim:ride-l2-built-in-sample:feature:elevationMinM",
+                "claim:ride-l2-built-in-sample:feature:elevationMaxM"
+              ],
+              "confidence": "high"
+            }
+          ],
+          "notableEvents": [],
+          "nextAction": {
+            "kind": "general",
+            "text": "骑行后注意做好拉伸放松，补充水分和能量",
+            "basisClaimIds": []
+          },
+          "limitations": [
+            "无功率相关数据，本次解读不涉及功率相关分析",
+            "无法进行历史对比分析",
+            "本次解读不包含运动强度等级和体能评价"
+          ],
+          "safetyLevel": "normal",
+          "shareCopy": [
+            "保持节奏，享受骑行在路上的感觉～",
+            "平稳完成一次骑行，收获开心🥳",
+            "骑行运动完成，来记录日常啦✅"
+          ]
+        },
+        "attempts": 2,
+        "latencyMs": 2,
+        "validationIssues": [
+          "UNSUPPORTED_CONTEXT_LABEL"
+        ],
+        "providerRequestIds": [
+          "2026082518400057D916EA6687BD04F375",
+          "20260825184019FA0F1432A51CD98D9564"
+        ],
+        "selectedExampleIds": [],
+        "versions": {
+          "service": "ride-analysis-service-v1.5",
+          "outputSchema": "ride-analysis-output-v0.3",
+          "prompt": "3.1.2",
+          "workflow": "ride_analysis_v2-dev.15",
+          "modelId": "NOT_OBSERVABLE",
+          "context": "0.2",
+          "contextRules": "ride-analysis-context-rules-v0.2",
+          "eligibility": "0.1",
+          "eligibilityRules": "analysis-eligibility-rules-v0.1",
+          "fewShotLibrary": "ride-analysis-few-shot-v0.1",
+          "fewShotRouter": "few-shot-router-v0.1",
+          "fewShotMode": "disabled",
+          "b0Template": "b0-template-v0.1"
+        }
+      }
+    },
+    {
+      "caseId": "RA-AUTO-011",
+      "repetition": 1,
+      "requestId": "RUN-20260825-510:RA-AUTO-011:1:f399e3fb-409d-476f-b14b-5cbbce721740",
+      "startedAt": "2026-08-25T10:40:33.562Z",
+      "completedAt": "2026-08-25T10:41:08.155Z",
+      "totalLatencyMs": 34591.961,
+      "firstTokenLatencyMs": "NOT_OBSERVABLE",
+      "tokenUsage": {
+        "inputTokens": 16369,
+        "outputTokens": 2252,
+        "totalTokens": 18621
+      },
+      "costCny": "NOT_OBSERVABLE",
+      "costSource": "NOT_OBSERVABLE",
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "response",
+          "providerRequestId": "20260825184033D00989AE3E47620ABEEE",
+          "latencyMs": 20964.88,
+          "rawText": "{\"dimensions\":[{\"claimIds\":[\"claim:ride-l3-built-in-sample:avgSpeedMps\",\"claim:ride-l3-built-in-sample:feature:speedCoefficientOfVariation\",\"claim:ride-l3-built-in-sample:feature:speedFirstLastDeltaMps\"],\"confidence\":\"high\",\"key\":\"pace\",\"text\":\"平均速度为25.7km/h，速度变异系数约0.11，说明整体速度波动较小，节奏相对平稳；结束阶段速度比开始阶段低4.62km/h，后程配速出现回落。\"},{\"claimIds\":[\"claim:ride-l3-built-in-sample:feature:heartRateSeriesMeanBpm\",\"claim:ride-l3-built-in-sample:feature:heartRateFirstLastDeltaBpm\"],\"confidence\":\"high\",\"key\":\"heartRate\",\"text\":\"平均心率为151.73bpm，心率变异系数较小，整体心率波动不大；结束阶段心率比开始阶段低约9.77bpm，心率随配速同步回落。\"},{\"claimIds\":[\"claim:ride-l3-built-in-sample:avgPowerW\",\"claim:ride-l3-built-in-sample:normalizedPowerW\",\"claim:ride-l3-built-in-sample:feature:normalizedPowerRatio\",\"claim:ride-l3-built-in-sample:feature:powerFirstLastDeltaW\"],\"confidence\":\"high\",\"key\":\"power\",\"text\":\"平均功率198W，标准化功率211W，标准化功率比平均功率高约7%；首末阶段功率差值为0，全程首末功率输出保持一致。\"},{\"claimIds\":[\"claim:ride-l3-built-in-sample:avgCadenceRpm\",\"claim:ride-l3-built-in-sample:feature:cadenceCoefficientOfVariation\",\"claim:ride-l3-built-in-sample:feature:cadenceFirstLastDeltaRpm\"],\"confidence\":\"high\",\"key\":\"cadence\",\"text\":\"平均踏频87rpm，踏频变异系数约0.06，说明踏频波动非常小，踩踏节奏很稳定；结束阶段踏频比开始阶段低约8.33rpm，踏频随配速同步降低。\"},{\"claimIds\":[\"claim:ride-l3-built-in-sample:feature:elevationPositiveGainM\",\"claim:ride-l3-built-in-sample:feature:elevationRangeM\",\"claim:ride-l3-built-in-sample:feature:elevationMinM\",\"claim:ride-l3-built-in-sample:feature:elevationMaxM\"],\"confidence\":\"high\",\"key\":\"climbing\",\"text\":\"本次骑行累计爬升600m，海拔范围96m，最低海拔30m，最高海拔126m。\"}],\"headline\":\"后程配速心率回落，功率输出平稳\",\"limitations\":[\"历史记录不足，无法进行历史对比\",\"缺少心率分区、功率分区和训练负荷相关分析\"],\"nextAction\":{\"basisClaimIds\":[],\"kind\":\"general\",\"text\":\"骑行后注意充分拉伸放松，补充水分和能量\"},\"notableEvents\":[],\"overallAssessment\":{\"claimIds\":[\"claim:ride-l3-built-in-sample:feature:speedFirstLastDeltaMps\",\"claim:ride-l3-built-in-sample:feature:heartRateFirstLastDeltaBpm\",\"claim:ride-l3-built-in-sample:feature:powerFirstLastDeltaW\",\"claim:ride-l3-built-in-sample:feature:cadenceFirstLastDeltaRpm\",\"claim:ride-l3-built-in-sample:feature:speedCoefficientOfVariation\",\"claim:ride-l3-built-in-sample:distanceM\",\"claim:ride-l3-built-in-sample:movingTimeS\",\"claim:ride-l3-built-in-sample:elevationGainM\",\"claim:ride-l3-built-in-sample:activityEnergyKcal\"],\"text\":\"本次骑行平均速度25.7km/h，结束阶段速度比开始阶段低4.62km/h，心率和踏频也同步回落，仅功率输出首末阶段保持一致，骑行中速度变化整体波动较小，节奏相对平稳。本次骑行累计骑行距离45km，移动时间1小时45分钟，累计爬升600m，消耗热量860kcal。\"},\"safetyLevel\":\"normal\",\"schemaVersion\":\"ride-analysis-output-v0.3\",\"shareCopy\":[\"稳稳的骑行，享受在路上的感觉～\",\"完成今日骑行，保持节奏就是胜利\",\"骑行路上，慢慢来也挺好\"]}"
+        },
+        {
+          "attempt": 2,
+          "outcome": "response",
+          "providerRequestId": "202608251840542B3C2E9E33EF6D288D15",
+          "latencyMs": 13622.961,
+          "rawText": "{\"dimensions\":[{\"claimIds\":[\"claim:ride-l3-built-in-sample:avgSpeedMps\",\"claim:ride-l3-built-in-sample:feature:speedCoefficientOfVariation\",\"claim:ride-l3-built-in-sample:feature:speedFirstLastDeltaMps\"],\"confidence\":\"high\",\"key\":\"pace\",\"text\":\"平均速度为25.7km/h，速度变异系数约0.11，说明整体速度波动较小，节奏相对平稳；结束阶段速度比开始阶段低4.62km/h，后程配速出现回落。\"},{\"claimIds\":[\"claim:ride-l3-built-in-sample:feature:heartRateSeriesMeanBpm\",\"claim:ride-l3-built-in-sample:feature:heartRateFirstLastDeltaBpm\"],\"confidence\":\"high\",\"key\":\"heartRate\",\"text\":\"平均心率为151.73bpm，结束阶段心率比开始阶段低约9.77bpm，心率随配速同步回落。\"},{\"claimIds\":[\"claim:ride-l3-built-in-sample:avgPowerW\",\"claim:ride-l3-built-in-sample:normalizedPowerW\",\"claim:ride-l3-built-in-sample:feature:normalizedPowerRatio\",\"claim:ride-l3-built-in-sample:feature:powerFirstLastDeltaW\"],\"confidence\":\"high\",\"key\":\"power\",\"text\":\"平均功率198W，标准化功率211W，标准化功率比平均功率高约7%；首末阶段功率差值为0，首末功率输出一致。\"},{\"claimIds\":[\"claim:ride-l3-built-in-sample:avgCadenceRpm\",\"claim:ride-l3-built-in-sample:feature:cadenceCoefficientOfVariation\",\"claim:ride-l3-built-in-sample:feature:cadenceFirstLastDeltaRpm\"],\"confidence\":\"high\",\"key\":\"cadence\",\"text\":\"平均踏频87rpm，踏频变异系数约0.06，说明踏频波动非常小，踩踏节奏很稳定；结束阶段踏频比开始阶段低约8.33rpm，踏频随配速同步降低。\"},{\"claimIds\":[\"claim:ride-l3-built-in-sample:feature:elevationPositiveGainM\",\"claim:ride-l3-built-in-sample:feature:elevationRangeM\",\"claim:ride-l3-built-in-sample:feature:elevationMinM\",\"claim:ride-l3-built-in-sample:feature:elevationMaxM\"],\"confidence\":\"high\",\"key\":\"climbing\",\"text\":\"本次骑行累计爬升600m，海拔范围96m，最低海拔30m，最高海拔126m。\"}],\"headline\":\"后程配速心率回落，功率输出平稳\",\"limitations\":[\"历史记录不足，无法进行历史对比\",\"缺少心率分区、功率分区和训练负荷相关分析，无法做强度区间解读\"],\"nextAction\":{\"basisClaimIds\":[],\"kind\":\"general\",\"text\":\"骑行后注意充分拉伸放松，补充水分和能量\"},\"notableEvents\":[],\"overallAssessment\":{\"claimIds\":[\"claim:ride-l3-built-in-sample:feature:speedFirstLastDeltaMps\",\"claim:ride-l3-built-in-sample:feature:heartRateFirstLastDeltaBpm\",\"claim:ride-l3-built-in-sample:feature:powerFirstLastDeltaW\",\"claim:ride-l3-built-in-sample:feature:cadenceFirstLastDeltaRpm\",\"claim:ride-l3-built-in-sample:feature:speedCoefficientOfVariation\"],\"text\":\"本次骑行速度变化整体波动较小，节奏相对平稳；结束阶段速度、心率、踏频同步回落，仅首末阶段功率输出保持一致。\"},\"safetyLevel\":\"normal\",\"schemaVersion\":\"ride-analysis-output-v0.3\",\"shareCopy\":[\"稳稳的骑行，享受在路上的感觉～\",\"完成骑行，保持节奏就是胜利\",\"骑行路上，慢慢来也挺好\"]}"
+        }
+      ],
+      "slotId": "RA-AUTO-011#1",
+      "firstAttemptContractValid": false,
+      "runtimeResult": {
+        "source": "b2",
+        "output": {
+          "schemaVersion": "ride-analysis-output-v0.3",
+          "headline": "后程配速心率回落，功率输出平稳",
+          "overallAssessment": {
+            "text": "本次骑行速度变化整体波动较小，节奏相对平稳；结束阶段速度、心率、踏频同步回落，仅首末阶段功率输出保持一致。",
+            "claimIds": [
+              "claim:ride-l3-built-in-sample:feature:speedFirstLastDeltaMps",
+              "claim:ride-l3-built-in-sample:feature:heartRateFirstLastDeltaBpm",
+              "claim:ride-l3-built-in-sample:feature:powerFirstLastDeltaW",
+              "claim:ride-l3-built-in-sample:feature:cadenceFirstLastDeltaRpm",
+              "claim:ride-l3-built-in-sample:feature:speedCoefficientOfVariation"
+            ]
+          },
+          "dimensions": [
+            {
+              "key": "pace",
+              "text": "平均速度为25.7km/h，速度变异系数约0.11，说明整体速度波动较小，节奏相对平稳；结束阶段速度比开始阶段低4.62km/h，后程配速出现回落。",
+              "claimIds": [
+                "claim:ride-l3-built-in-sample:avgSpeedMps",
+                "claim:ride-l3-built-in-sample:feature:speedCoefficientOfVariation",
+                "claim:ride-l3-built-in-sample:feature:speedFirstLastDeltaMps"
+              ],
+              "confidence": "high"
+            },
+            {
+              "key": "heartRate",
+              "text": "平均心率为151.73bpm，结束阶段心率比开始阶段低约9.77bpm，心率随配速同步回落。",
+              "claimIds": [
+                "claim:ride-l3-built-in-sample:feature:heartRateSeriesMeanBpm",
+                "claim:ride-l3-built-in-sample:feature:heartRateFirstLastDeltaBpm"
+              ],
+              "confidence": "high"
+            },
+            {
+              "key": "power",
+              "text": "平均功率198W，标准化功率211W，标准化功率比平均功率高约7%；首末阶段功率差值为0，首末功率输出一致。",
+              "claimIds": [
+                "claim:ride-l3-built-in-sample:avgPowerW",
+                "claim:ride-l3-built-in-sample:normalizedPowerW",
+                "claim:ride-l3-built-in-sample:feature:normalizedPowerRatio",
+                "claim:ride-l3-built-in-sample:feature:powerFirstLastDeltaW"
+              ],
+              "confidence": "high"
+            },
+            {
+              "key": "cadence",
+              "text": "平均踏频87rpm，踏频变异系数约0.06，说明踏频波动非常小，踩踏节奏很稳定；结束阶段踏频比开始阶段低约8.33rpm，踏频随配速同步降低。",
+              "claimIds": [
+                "claim:ride-l3-built-in-sample:avgCadenceRpm",
+                "claim:ride-l3-built-in-sample:feature:cadenceCoefficientOfVariation",
+                "claim:ride-l3-built-in-sample:feature:cadenceFirstLastDeltaRpm"
+              ],
+              "confidence": "high"
+            },
+            {
+              "key": "climbing",
+              "text": "本次骑行累计爬升600m，海拔范围96m，最低海拔30m，最高海拔126m。",
+              "claimIds": [
+                "claim:ride-l3-built-in-sample:feature:elevationPositiveGainM",
+                "claim:ride-l3-built-in-sample:feature:elevationRangeM",
+                "claim:ride-l3-built-in-sample:feature:elevationMinM",
+                "claim:ride-l3-built-in-sample:feature:elevationMaxM"
+              ],
+              "confidence": "high"
+            }
+          ],
+          "notableEvents": [],
+          "nextAction": {
+            "kind": "general",
+            "text": "骑行后注意充分拉伸放松，补充水分和能量",
+            "basisClaimIds": []
+          },
+          "limitations": [
+            "历史记录不足，无法进行历史对比",
+            "缺少心率分区、功率分区和训练负荷相关分析，无法做强度区间解读"
+          ],
+          "safetyLevel": "normal",
+          "shareCopy": [
+            "稳稳的骑行，享受在路上的感觉～",
+            "完成骑行，保持节奏就是胜利",
+            "骑行路上，慢慢来也挺好"
+          ]
+        },
+        "attempts": 2,
+        "latencyMs": 4,
+        "validationIssues": [
+          "OVERALL_UNSUPPORTED_NUMBER",
+          "UNSUPPORTED_CONTEXT_LABEL",
+          "MISSING_INPUT_IMPACT"
+        ],
+        "providerRequestIds": [
+          "20260825184033D00989AE3E47620ABEEE",
+          "202608251840542B3C2E9E33EF6D288D15"
+        ],
+        "selectedExampleIds": [],
+        "versions": {
+          "service": "ride-analysis-service-v1.5",
+          "outputSchema": "ride-analysis-output-v0.3",
+          "prompt": "3.1.2",
+          "workflow": "ride_analysis_v2-dev.15",
+          "modelId": "NOT_OBSERVABLE",
+          "context": "0.2",
+          "contextRules": "ride-analysis-context-rules-v0.2",
+          "eligibility": "0.1",
+          "eligibilityRules": "analysis-eligibility-rules-v0.1",
+          "fewShotLibrary": "ride-analysis-few-shot-v0.1",
+          "fewShotRouter": "few-shot-router-v0.1",
+          "fewShotMode": "disabled",
+          "b0Template": "b0-template-v0.1"
+        }
+      }
+    },
+    {
+      "caseId": "RA-AUTO-018",
+      "repetition": 1,
+      "requestId": "RUN-20260825-510:RA-AUTO-018:1:270f17fb-3439-4e57-ac94-f6048ec4b5eb",
+      "startedAt": "2026-08-25T10:41:08.156Z",
+      "completedAt": "2026-08-25T10:41:08.157Z",
+      "totalLatencyMs": 1,
+      "firstTokenLatencyMs": 0,
+      "tokenUsage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "totalTokens": 0
+      },
+      "costCny": 0,
+      "costSource": "NOT_APPLICABLE",
+      "attempts": [],
+      "slotId": "RA-AUTO-018#1",
+      "firstAttemptContractValid": null,
+      "runtimeResult": {
+        "source": "b0",
+        "output": {
+          "headline": "这条记录暂时无法解读",
+          "summary": "这条记录存在数据缺失、损坏或字段矛盾，当前不能安全生成骑行结论。请检查原始文件后重新导入；系统不会从冲突数据中自行选择数值。",
+          "highlights": [],
+          "nextAction": {
+            "text": "检查原始文件是否完整，或换一条记录重新导入。",
+            "basisClaimIds": []
+          },
+          "limitations": [
+            "均速与距离/移动时间不一致"
+          ],
+          "safetyLevel": "normal",
+          "shareCopy": [
+            "这条骑行记录暂时无法生成分享内容。",
+            "记录需要重新导入后再生成分享内容。",
+            "数据暂不可用，检查文件后再试。"
+          ]
+        },
+        "fallbackCode": "DATA_NOT_ELIGIBLE",
+        "attempts": 0,
+        "latencyMs": 1,
+        "validationIssues": [],
+        "providerRequestIds": [],
+        "selectedExampleIds": [],
+        "versions": {
+          "service": "ride-analysis-service-v1.5",
+          "outputSchema": "ride-analysis-output-v0.3",
+          "prompt": "3.1.2",
+          "workflow": "ride_analysis_v2-dev.15",
+          "modelId": "NOT_OBSERVABLE",
+          "context": "0.2",
+          "contextRules": "ride-analysis-context-rules-v0.2",
+          "eligibility": "0.1",
+          "eligibilityRules": "analysis-eligibility-rules-v0.1",
+          "fewShotLibrary": "ride-analysis-few-shot-v0.1",
+          "fewShotRouter": "few-shot-router-v0.1",
+          "fewShotMode": "disabled",
+          "b0Template": "b0-template-v0.1"
+        }
+      }
+    }
+  ]
+}
