@@ -1,0 +1,142 @@
+{
+  "schemaVersion": "t001-b2-raw-batch-v0.3",
+  "batchId": "RUN-20260825-918",
+  "plan": "B2",
+  "versionMatrix": {
+    "appVersion": "visual-shell-v0.1",
+    "outputSchemaVersion": "ride-analysis-output-v0.3",
+    "contextSchemaVersion": "0.2",
+    "contextRulesVersion": "ride-analysis-context-rules-v0.2",
+    "featureRulesVersion": "ride-feature-rules-v0.2",
+    "eligibilitySchemaVersion": "0.1",
+    "eligibilityRulesVersion": "analysis-eligibility-rules-v0.1",
+    "promptVersion": "3.1.2",
+    "serviceVersion": "ride-analysis-service-v1.5",
+    "workflowVersion": "ride_analysis_v2-dev.15",
+    "fewShotMode": "disabled",
+    "b0TemplateVersion": "b0-template-v0.1",
+    "inputSetSha256": "5333b4cd4d5aeb21fbada26357381120e3665ffc2c71bda429d5cdce9b2c7671",
+    "sourceCommit": "68e1f70ac6fefa998ab540618c64b4239aba0ba5",
+    "modelId": "NOT_OBSERVABLE",
+    "region": "NOT_OBSERVABLE",
+    "modelParameters": {
+      "workflowName": "ride_analysis_v2",
+      "workflowId": "7676429753852018707",
+      "workflowVersion": "v0.0.2",
+      "isAsync": false
+    }
+  },
+  "experiment": {
+    "experimentId": "T001-PROMPT-AB-v0.1",
+    "arm": "A",
+    "promptAsset": "prompts/cycling-buddy-ride-analysis-v3.1.2.md",
+    "platformWorkflowVersion": "v0.0.2",
+    "baselineRunId": "RUN-20260825-756",
+    "timeoutMs": 15000,
+    "sameModel": true,
+    "sameInputSet": true
+  },
+  "executionScope": {
+    "kind": "restricted",
+    "caseIds": [
+      "RA-AUTO-001",
+      "RA-AUTO-006",
+      "RA-AUTO-011",
+      "RA-AUTO-018"
+    ],
+    "repetitionsPerCase": 1,
+    "expectedSlotCount": 4
+  },
+  "records": [
+    {
+      "caseId": "RA-AUTO-001",
+      "repetition": 1,
+      "requestId": "RUN-20260825-918:RA-AUTO-001:1:db6f4251-26cb-44a1-8220-55aca9c33754",
+      "startedAt": "2026-08-25T09:52:58.725Z",
+      "completedAt": "2026-08-25T09:53:13.183Z",
+      "totalLatencyMs": 14457.543,
+      "firstTokenLatencyMs": "NOT_OBSERVABLE",
+      "tokenUsage": {
+        "inputTokens": 5392,
+        "outputTokens": 707,
+        "totalTokens": 6099
+      },
+      "costCny": "NOT_OBSERVABLE",
+      "costSource": "NOT_OBSERVABLE",
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "response",
+          "providerRequestId": "20260825175259ECA0F31E3A2623F2D1C4",
+          "latencyMs": 14447.799,
+          "rawText": "{\"dimensions\":[{\"claimIds\":[\"claim:ride-l1-built-in-sample:feature:speedSeriesMeanMps\",\"claim:ride-l1-built-in-sample:feature:speedStdDevMps\",\"claim:ride-l1-built-in-sample:feature:speedCoefficientOfVariation\",\"claim:ride-l1-built-in-sample:feature:speedFirstLastDeltaMps\"],\"confidence\":\"high\",\"key\":\"pace\",\"text\":\"平均速度为25km/h，速度标准差为2.75km/h，变异系数约11%，速度波动较小；结束阶段速度比开始阶段低4.49km/h，后程配速出现回落。\"},{\"claimIds\":[\"claim:ride-l1-built-in-sample:feature:elevationPositiveGainM\",\"claim:ride-l1-built-in-sample:feature:elevationMinM\",\"claim:ride-l1-built-in-sample:feature:elevationMaxM\",\"claim:ride-l1-built-in-sample:feature:elevationRangeM\"],\"confidence\":\"high\",\"key\":\"climbing\",\"text\":\"累计爬升260米，海拔最低30米，最高71.6米，海拔范围为41.6米。\"}],\"headline\":\"后程配速回落，速度整体波动较小\",\"limitations\":[\"历史记录不足，无法进行历史对比\",\"无心率、功率和踏频数据，本次解读不涉及运动强度、发力和踩踏节奏\"],\"nextAction\":{\"basisClaimIds\":[],\"kind\":\"general\",\"text\":\"骑行后注意拉伸放松，补充水分和能量\"},\"notableEvents\":[],\"overallAssessment\":{\"claimIds\":[\"claim:ride-l1-built-in-sample:avgSpeedMps\",\"claim:ride-l1-built-in-sample:feature:speedFirstLastDeltaMps\",\"claim:ride-l1-built-in-sample:feature:speedCoefficientOfVariation\",\"claim:ride-l1-built-in-sample:feature:elevationPositiveGainM\",\"claim:ride-l1-built-in-sample:feature:elevationRangeM\"],\"text\":\"本次骑行平均速度25km/h，结束阶段速度比开始阶段低4.49km/h，配速出现回落；速度变异系数约11%，整体波动较小，累计爬升260米，海拔范围为41.6米。\"},\"safetyLevel\":\"normal\",\"schemaVersion\":\"ride-analysis-output-v0.3\",\"shareCopy\":[\"完成本次骑行，享受在路上的感觉\",\"平稳骑行，慢慢感受路途风光\",\"又是享受骑行的一天\"]}"
+        }
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-006",
+      "repetition": 1,
+      "requestId": "RUN-20260825-918:RA-AUTO-006:1:67e5adcb-593f-4db7-af72-d9ab6b213b7c",
+      "startedAt": "2026-08-25T09:53:13.185Z",
+      "completedAt": "2026-08-25T09:53:28.194Z",
+      "totalLatencyMs": 15008.052,
+      "firstTokenLatencyMs": "NOT_OBSERVABLE",
+      "tokenUsage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "totalTokens": 0
+      },
+      "costCny": "NOT_OBSERVABLE",
+      "costSource": "NOT_OBSERVABLE",
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "timeout",
+          "providerRequestId": "NOT_OBSERVABLE",
+          "latencyMs": 15007.903
+        }
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-011",
+      "repetition": 1,
+      "requestId": "RUN-20260825-918:RA-AUTO-011:1:59ca921d-25bb-4a16-a52f-77f6c840dc72",
+      "startedAt": "2026-08-25T09:53:28.195Z",
+      "completedAt": "2026-08-25T09:53:43.205Z",
+      "totalLatencyMs": 15009.6,
+      "firstTokenLatencyMs": "NOT_OBSERVABLE",
+      "tokenUsage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "totalTokens": 0
+      },
+      "costCny": "NOT_OBSERVABLE",
+      "costSource": "NOT_OBSERVABLE",
+      "attempts": [
+        {
+          "attempt": 1,
+          "outcome": "timeout",
+          "providerRequestId": "NOT_OBSERVABLE",
+          "latencyMs": 15009.228
+        }
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-018",
+      "repetition": 1,
+      "requestId": "RUN-20260825-918:RA-AUTO-018:1:0418472f-f8e1-47d3-bd89-8ba887a6575c",
+      "startedAt": "2026-08-25T09:53:43.209Z",
+      "completedAt": "2026-08-25T09:53:43.209Z",
+      "totalLatencyMs": 1,
+      "firstTokenLatencyMs": 0,
+      "tokenUsage": {
+        "inputTokens": 0,
+        "outputTokens": 0,
+        "totalTokens": 0
+      },
+      "costCny": 0,
+      "costSource": "NOT_APPLICABLE",
+      "attempts": []
+    }
+  ]
+}

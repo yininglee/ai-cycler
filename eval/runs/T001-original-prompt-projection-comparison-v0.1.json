@@ -1,0 +1,61 @@
+{
+  "schemaVersion": "t001-original-prompt-projection-comparison-v0.1",
+  "status": "DIAGNOSTIC_ONLY",
+  "promptVersion": "3.1.2",
+  "workflow": {
+    "name": "ride_analysis_v2",
+    "id": "7676429753852018707",
+    "version": "v0.0.2"
+  },
+  "timeoutMs": 15000,
+  "caseIds": [
+    "RA-AUTO-001",
+    "RA-AUTO-006",
+    "RA-AUTO-011",
+    "RA-AUTO-018"
+  ],
+  "repetitionsPerCase": 1,
+  "before": {
+    "runId": "RUN-20260825-756",
+    "projection": "full-domain-context",
+    "b2SuccessCount": 1,
+    "b0FallbackCount": 3,
+    "timeoutCount": 2,
+    "repairAttemptCount": 0,
+    "providerCallCount": 3,
+    "observedTokenCount": 8585
+  },
+  "after": {
+    "runId": "RUN-20260825-918",
+    "projection": "ride-analysis-model-context-projection-v0.1",
+    "sourceCommit": "68e1f70ac6fefa998ab540618c64b4239aba0ba5",
+    "validationStatus": "PASS",
+    "benchmarkStatus": "NOT_SCORED",
+    "b2SuccessCount": 1,
+    "b0FallbackCount": 3,
+    "timeoutCount": 2,
+    "repairAttemptCount": 0,
+    "providerCallCount": 3,
+    "observedTokenCount": 6099,
+    "safetyStopCount": 0,
+    "notEligibleProviderCallCount": 0
+  },
+  "inputProjection": {
+    "selectedOriginalBytes": 69181,
+    "selectedProjectedBytes": 29141,
+    "reductionBytes": 40040,
+    "reductionRate": 0.5788,
+    "all18OriginalBytes": 292091,
+    "all18ProjectedBytes": 116999,
+    "all18ReductionRate": 0.5994
+  },
+  "claimCompleteness": {
+    "validB2OutputCount": 1,
+    "unknownClaimReferenceCount": 0,
+    "topicClaimCoverageFailureCount": 0,
+    "overallAssessmentClaimCount": 5,
+    "dimensionUniqueClaimCount": 8
+  },
+  "humanReadability": "NOT_RUN",
+  "conclusion": "The projection preserved the output contract and reduced selected context bytes by 57.88%, but did not change B2 success, timeout, repair, or B0 outcomes in this four-slot diagnostic run."
+}
