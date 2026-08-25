@@ -173,6 +173,21 @@ test("T001 restricted B2 scope accepts only its explicit 21 slots", () => {
   assert.deepEqual(validateT001B2BatchMetadata(batch), []);
 });
 
+test("T001 restricted reliability preview accepts four explicit one-shot slots", () => {
+  const batch = completeBatch();
+  const caseIds = ["RA-AUTO-001", "RA-AUTO-006", "RA-AUTO-011", "RA-AUTO-018"] as const;
+  batch.executionScope = {
+    kind: "restricted",
+    caseIds: [...caseIds],
+    repetitionsPerCase: 1,
+    expectedSlotCount: 4,
+  };
+  const caseIdSet = new Set<string>(caseIds);
+  batch.records = batch.records.filter((record) => caseIdSet.has(record.caseId) && record.repetition === 1);
+  assert.equal(expectedT001B2SlotIds(caseIds, 1).length, 4);
+  assert.deepEqual(validateT001B2BatchMetadata(batch), []);
+});
+
 test("T001 Service v1.5 B0 run is frozen to the same input set", () => {
   assert.equal(b0Run.runId, T001_B2_B0_RUN_ID);
   assert.equal(b0Run.status, "PASS");

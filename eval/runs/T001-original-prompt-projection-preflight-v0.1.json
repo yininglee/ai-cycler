@@ -1,0 +1,397 @@
+{
+  "schemaVersion": "t001-original-prompt-projection-preflight-v0.1",
+  "projectionVersion": "ride-analysis-model-context-projection-v0.1",
+  "externalCalls": 0,
+  "promptVersion": "3.1.2",
+  "workflow": {
+    "name": "ride_analysis_v2",
+    "id": "7676429753852018707",
+    "version": "v0.0.2"
+  },
+  "timeoutMs": 15000,
+  "caseCount": 18,
+  "originalBytes": 292091,
+  "projectedBytes": 116999,
+  "reductionBytes": 175092,
+  "reductionRate": 0.5994,
+  "cases": [
+    {
+      "caseId": "RA-AUTO-001",
+      "originalBytes": 14263,
+      "projectedBytes": 5635,
+      "reductionBytes": 8628,
+      "originalSha256": "dd35ebfbc3130c8174441edd7c8625c8cf02d58731afa3206dac4319f19325f0",
+      "projectedSha256": "87e1904707a06d860ea48d0d60ef7099995892d9899f6492a15d3ed9cf9a688f",
+      "allowedClaimCount": 12,
+      "projectedKeys": [
+        "schemaVersion",
+        "rulesVersion",
+        "contextType",
+        "rideId",
+        "userScope",
+        "allowedClaims",
+        "forbiddenClaims",
+        "limitations",
+        "safetyFlags",
+        "privacyFlags"
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-002",
+      "originalBytes": 14263,
+      "projectedBytes": 5635,
+      "reductionBytes": 8628,
+      "originalSha256": "966fd36f31e7ce4308a2d4d57bf84fd3267bda4d0c62065af709470730d962cf",
+      "projectedSha256": "a3d9dcf3ccb1934ead691952c906a8c4f210bf9e6b6d90ce833671bc6e9e4ed0",
+      "allowedClaimCount": 12,
+      "projectedKeys": [
+        "schemaVersion",
+        "rulesVersion",
+        "contextType",
+        "rideId",
+        "userScope",
+        "allowedClaims",
+        "forbiddenClaims",
+        "limitations",
+        "safetyFlags",
+        "privacyFlags"
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-003",
+      "originalBytes": 10854,
+      "projectedBytes": 3808,
+      "reductionBytes": 7046,
+      "originalSha256": "4fdf6aedbaedb71a917f78f5636f68c3983ea410afd721027c511b43c6dbdbc4",
+      "projectedSha256": "6209768dbc4c936ca6d68983da2f4787b52d551b8679666c0d870b095da02e73",
+      "allowedClaimCount": 6,
+      "projectedKeys": [
+        "schemaVersion",
+        "rulesVersion",
+        "contextType",
+        "rideId",
+        "userScope",
+        "allowedClaims",
+        "forbiddenClaims",
+        "limitations",
+        "safetyFlags",
+        "privacyFlags"
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-004",
+      "originalBytes": 11513,
+      "projectedBytes": 4045,
+      "reductionBytes": 7468,
+      "originalSha256": "842bc6330d59d57ddab8b4a58477c9757b2b0749c3bf8126a218c56505634a97",
+      "projectedSha256": "fbe7738b8edf00d6c1ebdbe2d51c7041fb86f7f053723933c70fba948cbd9d58",
+      "allowedClaimCount": 7,
+      "projectedKeys": [
+        "schemaVersion",
+        "rulesVersion",
+        "contextType",
+        "rideId",
+        "userScope",
+        "allowedClaims",
+        "forbiddenClaims",
+        "limitations",
+        "safetyFlags",
+        "privacyFlags"
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-005",
+      "originalBytes": 17377,
+      "projectedBytes": 6013,
+      "reductionBytes": 11364,
+      "originalSha256": "093db9068d9125295d021aa1fc36e63987e689c6460235b0ab01dc063a05f9e3",
+      "projectedSha256": "a29e5ed5814e8b6a0db983c8ea5dbf352821301691009a68b8be6985249fdf11",
+      "allowedClaimCount": 13,
+      "projectedKeys": [
+        "schemaVersion",
+        "rulesVersion",
+        "contextType",
+        "rideId",
+        "userScope",
+        "allowedClaims",
+        "forbiddenClaims",
+        "limitations",
+        "safetyFlags",
+        "privacyFlags"
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-006",
+      "originalBytes": 19934,
+      "projectedBytes": 8774,
+      "reductionBytes": 11160,
+      "originalSha256": "ec02cf5ec801268d93b542538437c2136f2eb164dcc53cc3c66a5ab99745788e",
+      "projectedSha256": "25019fbb33b0865b68ea412fc2ae6300600e52dc7e5137cfe3849ee9c9b0e8da",
+      "allowedClaimCount": 22,
+      "projectedKeys": [
+        "schemaVersion",
+        "rulesVersion",
+        "contextType",
+        "rideId",
+        "userScope",
+        "allowedClaims",
+        "forbiddenClaims",
+        "limitations",
+        "safetyFlags",
+        "privacyFlags"
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-007",
+      "originalBytes": 20211,
+      "projectedBytes": 8759,
+      "reductionBytes": 11452,
+      "originalSha256": "391f965f94ce66714870afa9529d12ab57bf603bf11da8b5e0600855c3c72d6f",
+      "projectedSha256": "9a13c697df4a3a5ce93306b16f48119e84f1056cc9a8013aa266d38820f7ecd5",
+      "allowedClaimCount": 22,
+      "projectedKeys": [
+        "schemaVersion",
+        "rulesVersion",
+        "contextType",
+        "rideId",
+        "userScope",
+        "allowedClaims",
+        "forbiddenClaims",
+        "limitations",
+        "safetyFlags",
+        "privacyFlags"
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-008",
+      "originalBytes": 11892,
+      "projectedBytes": 4268,
+      "reductionBytes": 7624,
+      "originalSha256": "fb31aa47e1b16079b88abcd6ee7e54d076d1eff2e04896588e33612ccf81e821",
+      "projectedSha256": "53be835194a67df698f17aa32c69e93f0d3ceda49d49c32321be35a321b0127e",
+      "allowedClaimCount": 7,
+      "projectedKeys": [
+        "schemaVersion",
+        "rulesVersion",
+        "contextType",
+        "rideId",
+        "userScope",
+        "allowedClaims",
+        "forbiddenClaims",
+        "limitations",
+        "safetyFlags",
+        "privacyFlags"
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-009",
+      "originalBytes": 20332,
+      "projectedBytes": 8994,
+      "reductionBytes": 11338,
+      "originalSha256": "4fd635bb53b828f28537d7a37262f1de1fdbf1354d07c1073c4ff8a37149b1bb",
+      "projectedSha256": "44acf6db0e8143b6568bc697768d5a493ac4958b75fca7ab500ed40bd001f684",
+      "allowedClaimCount": 22,
+      "projectedKeys": [
+        "schemaVersion",
+        "rulesVersion",
+        "contextType",
+        "rideId",
+        "userScope",
+        "allowedClaims",
+        "forbiddenClaims",
+        "limitations",
+        "safetyFlags",
+        "privacyFlags"
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-010",
+      "originalBytes": 11317,
+      "projectedBytes": 3929,
+      "reductionBytes": 7388,
+      "originalSha256": "ab7668db1c25f0054089ee1a7c8b7d64bf00990d24cf93c8d4d86f707cc2cfcf",
+      "projectedSha256": "49e5c19f813f7b76c3e9dfa7bfc2c6bd135eb24c539c44c2c8dc7ca2ff55cf56",
+      "allowedClaimCount": 6,
+      "projectedKeys": [
+        "schemaVersion",
+        "rulesVersion",
+        "contextType",
+        "rideId",
+        "userScope",
+        "allowedClaims",
+        "forbiddenClaims",
+        "limitations",
+        "safetyFlags",
+        "privacyFlags"
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-011",
+      "originalBytes": 26160,
+      "projectedBytes": 12013,
+      "reductionBytes": 14147,
+      "originalSha256": "55b0e11d22eb2afd059afa937d91944b45d8cb37281a0576df264226fa5556ab",
+      "projectedSha256": "ed2d80af1054ca287af29bd3246787124f14ee35410f4708ece8c7b72a3d6054",
+      "allowedClaimCount": 33,
+      "projectedKeys": [
+        "schemaVersion",
+        "rulesVersion",
+        "contextType",
+        "rideId",
+        "userScope",
+        "allowedClaims",
+        "forbiddenClaims",
+        "limitations",
+        "safetyFlags",
+        "privacyFlags"
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-012",
+      "originalBytes": 26429,
+      "projectedBytes": 12167,
+      "reductionBytes": 14262,
+      "originalSha256": "f7067accb1de098868ef619c72b08d1af5a9db58655feef68e166f4cc06d65ab",
+      "projectedSha256": "df97b00ea8ae7cc9d1ff23e300ae8509d1e1b41ccc0e15ca14e90822d25b4b55",
+      "allowedClaimCount": 33,
+      "projectedKeys": [
+        "schemaVersion",
+        "rulesVersion",
+        "contextType",
+        "rideId",
+        "userScope",
+        "allowedClaims",
+        "forbiddenClaims",
+        "limitations",
+        "safetyFlags",
+        "privacyFlags"
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-013",
+      "originalBytes": 29100,
+      "projectedBytes": 12014,
+      "reductionBytes": 17086,
+      "originalSha256": "932c16f6795109d28dc1b12d875c6f0a70db1b5412b29cb7807c818333fd9c66",
+      "projectedSha256": "e8870dd57fdb3e006d929cdc9c461d162158c539a347c586153a265a25e58ebe",
+      "allowedClaimCount": 33,
+      "projectedKeys": [
+        "schemaVersion",
+        "rulesVersion",
+        "contextType",
+        "rideId",
+        "userScope",
+        "allowedClaims",
+        "forbiddenClaims",
+        "limitations",
+        "safetyFlags",
+        "privacyFlags"
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-014",
+      "originalBytes": 14049,
+      "projectedBytes": 5473,
+      "reductionBytes": 8576,
+      "originalSha256": "d83ac56b61387673ac839e0defadbef52326aee143dc06c031e3d3366fd1771d",
+      "projectedSha256": "2f86ea9372a258738f227190a6ae60455ac9d34627295f93b1805c896abbeb7b",
+      "allowedClaimCount": 11,
+      "projectedKeys": [
+        "schemaVersion",
+        "rulesVersion",
+        "contextType",
+        "rideId",
+        "userScope",
+        "allowedClaims",
+        "forbiddenClaims",
+        "limitations",
+        "safetyFlags",
+        "privacyFlags"
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-015",
+      "originalBytes": 12341,
+      "projectedBytes": 4541,
+      "reductionBytes": 7800,
+      "originalSha256": "636f2a9573ca69e848e51d81be14587368b9cb8766ca4ddcd9f054fa350feab3",
+      "projectedSha256": "feda5a289f0195ee10c0cc89b71422d30db54f09f3da8118133207dee04857ee",
+      "allowedClaimCount": 8,
+      "projectedKeys": [
+        "schemaVersion",
+        "rulesVersion",
+        "contextType",
+        "rideId",
+        "userScope",
+        "allowedClaims",
+        "forbiddenClaims",
+        "limitations",
+        "safetyFlags",
+        "privacyFlags"
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-016",
+      "originalBytes": 11616,
+      "projectedBytes": 4106,
+      "reductionBytes": 7510,
+      "originalSha256": "bb01d645b748cffae608d065d4a1a88629f96fbb26aaad65f5a6f882bcfe2a96",
+      "projectedSha256": "c9a6ead7b2ae4ebdd372c2377752abf6dccec25ab972155af960bdbe00f14b14",
+      "allowedClaimCount": 7,
+      "projectedKeys": [
+        "schemaVersion",
+        "rulesVersion",
+        "contextType",
+        "rideId",
+        "userScope",
+        "allowedClaims",
+        "forbiddenClaims",
+        "limitations",
+        "safetyFlags",
+        "privacyFlags"
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-017",
+      "originalBytes": 11616,
+      "projectedBytes": 4106,
+      "reductionBytes": 7510,
+      "originalSha256": "1b8de06bd72b3e5bd8d2cae15fa9c33d995808288bdee18728124bab007898ed",
+      "projectedSha256": "0c3e8c6719d1602c810c39dd6419e0ec369c74e035cfdc5c38c7143a21d6040b",
+      "allowedClaimCount": 7,
+      "projectedKeys": [
+        "schemaVersion",
+        "rulesVersion",
+        "contextType",
+        "rideId",
+        "userScope",
+        "allowedClaims",
+        "forbiddenClaims",
+        "limitations",
+        "safetyFlags",
+        "privacyFlags"
+      ]
+    },
+    {
+      "caseId": "RA-AUTO-018",
+      "originalBytes": 8824,
+      "projectedBytes": 2719,
+      "reductionBytes": 6105,
+      "originalSha256": "ce1ba8bdeb0a5dfb7eb66fc498e39c9d700a0056dc30c06ac15aef29e227b008",
+      "projectedSha256": "393609afca35abf9e49a5a6f62b2672a74fde8dde0b5b7e92833d54d58b9f691",
+      "allowedClaimCount": 3,
+      "projectedKeys": [
+        "schemaVersion",
+        "rulesVersion",
+        "contextType",
+        "rideId",
+        "userScope",
+        "allowedClaims",
+        "forbiddenClaims",
+        "limitations",
+        "safetyFlags",
+        "privacyFlags"
+      ]
+    }
+  ]
+}

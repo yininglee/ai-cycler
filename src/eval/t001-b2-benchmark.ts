@@ -109,7 +109,7 @@ export interface T001B2RawRecord {
 export interface T001B2ExecutionScope {
   kind: "full" | "restricted";
   caseIds: T001AutomaticRideAnalysisCaseId[];
-  repetitionsPerCase: typeof T001_B2_REPETITIONS;
+  repetitionsPerCase: 1 | typeof T001_B2_REPETITIONS;
   expectedSlotCount: number;
 }
 
@@ -140,7 +140,7 @@ export interface T001B2EvaluatedBatch {
   experiment?: T001PromptAbExperiment;
   dataset: {
     caseCount: number;
-    repetitionsPerCase: typeof T001_B2_REPETITIONS;
+  repetitionsPerCase: 1 | typeof T001_B2_REPETITIONS;
     expectedSlotCount: number;
     b0RunId: typeof T001_B2_B0_RUN_ID;
   };
@@ -341,8 +341,9 @@ class RecordedAttemptProvider implements RideAnalysisProvider {
 
 export function expectedT001B2SlotIds(
   caseIds: readonly T001AutomaticRideAnalysisCaseId[] = t001AutomaticRideAnalysisCaseIds,
+  repetitionsPerCase: 1 | typeof T001_B2_REPETITIONS = T001_B2_REPETITIONS,
 ): string[] {
-  return caseIds.flatMap((caseId) => [1, 2, 3].map((repetition) => `${caseId}#${repetition}`));
+  return caseIds.flatMap((caseId) => Array.from({ length: repetitionsPerCase }, (_, index) => `${caseId}#${index + 1}`));
 }
 
 function executionScopeFor(batch: T001B2RawBatch): T001B2ExecutionScope {
@@ -367,13 +368,14 @@ function validateExecutionScope(batch: T001B2RawBatch, issues: string[]): T001B2
   if (uniqueCaseIds.some((caseId) => !CASE_IDS.has(caseId))) issues.push("UNKNOWN_EXECUTION_SCOPE_CASE");
   if (scope.kind === "full" && uniqueCaseIds.length !== t001AutomaticRideAnalysisCaseIds.length) issues.push("FULL_SCOPE_CASE_COUNT_MISMATCH");
   if (scope.kind === "restricted" && uniqueCaseIds.length >= t001AutomaticRideAnalysisCaseIds.length) issues.push("RESTRICTED_SCOPE_NOT_RESTRICTED");
-  if (scope.repetitionsPerCase !== T001_B2_REPETITIONS) issues.push("INVALID_EXECUTION_SCOPE_REPETITIONS");
-  const expectedSlotCount = uniqueCaseIds.length * T001_B2_REPETITIONS;
+  const expectedRepetitions = scope.kind === "full" ? T001_B2_REPETITIONS : scope.repetitionsPerCase;
+  if (expectedRepetitions !== 1 && expectedRepetitions !== T001_B2_REPETITIONS) issues.push("INVALID_EXECUTION_SCOPE_REPETITIONS");
+  const expectedSlotCount = uniqueCaseIds.length * expectedRepetitions;
   if (scope.expectedSlotCount !== expectedSlotCount) issues.push("INVALID_EXECUTION_SCOPE_SLOT_COUNT");
   return {
     ...scope,
     caseIds: uniqueCaseIds as T001AutomaticRideAnalysisCaseId[],
-    repetitionsPerCase: T001_B2_REPETITIONS,
+    repetitionsPerCase: expectedRepetitions,
     expectedSlotCount,
   };
 }
@@ -406,7 +408,7 @@ export function validateT001B2BatchMetadata(batch: T001B2RawBatch): string[] {
       seenRequests.add(record.requestId);
     }
   }
-  for (const expected of expectedT001B2SlotIds(executionScope.caseIds)) if (!seenSlots.has(expected)) issues.push(`${expected}:MISSING_SLOT`);
+  for (const expected of expectedT001B2SlotIds(executionScope.caseIds, executionScope.repetitionsPerCase)) if (!seenSlots.has(expected)) issues.push(`${expected}:MISSING_SLOT`);
   if (batch.records.length !== executionScope.expectedSlotCount) issues.push(`INVALID_SLOT_COUNT:${batch.records.length}`);
   return [...new Set(issues)];
 }
@@ -462,7 +464,7 @@ export async function evaluateT001B2Batch(batch: T001B2RawBatch): Promise<T001B2
     ...(batch.experiment ? { experiment: batch.experiment } : {}),
     dataset: {
       caseCount: executionScope.caseIds.length,
-      repetitionsPerCase: T001_B2_REPETITIONS,
+      repetitionsPerCase: executionScope.repetitionsPerCase,
       expectedSlotCount: executionScope.expectedSlotCount,
       b0RunId: T001_B2_B0_RUN_ID,
     },

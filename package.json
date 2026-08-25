@@ -16,6 +16,7 @@
     "benchmark:t001:b2:coze": "node scripts/run-t001-b2-coze-api.ts",
     "benchmark:t001:b2:validate": "node scripts/validate-t001-b2-results.ts",
     "benchmark:t001:prompt-ab:compare": "node scripts/compare-t001-prompt-ab.ts",
+    "inspect:t001:context-projection": "node scripts/inspect-t001-context-projection.ts",
     "inspect:capabilities": "node scripts/inspect-atomic-capabilities.ts",
     "inspect:features": "node scripts/inspect-ride-features.ts",
     "inspect:history": "node scripts/inspect-history.ts",

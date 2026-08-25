@@ -1,6 +1,7 @@
 import type { AnalysisEligibility } from "../domain/analysis-eligibility.ts";
 import type { RideAnalysisContext } from "../domain/ride-analysis-context.ts";
 import type { FewShotSelection } from "./ride-analysis-few-shot.ts";
+import { projectRideAnalysisContextForModel } from "./ride-analysis-context-projection.ts";
 
 export const COZE_WORKFLOW_ADAPTER_VERSION = "coze-workflow-adapter-v0.3" as const;
 export const COZE_INPUT_CONTRACT_VERSION = "ride-analysis-input-v0.2" as const;
@@ -190,6 +191,7 @@ export class CozeWorkflowClient implements RideAnalysisProvider {
   async run(input: RideAnalysisInvocation): Promise<RideAnalysisProviderResult> {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), this.config.timeoutMs);
+    const modelContext = projectRideAnalysisContextForModel(input.analysisContext);
     try {
       const response = await this.fetchImpl(this.config.apiUrl, {
         method: "POST",
@@ -203,7 +205,7 @@ export class CozeWorkflowClient implements RideAnalysisProvider {
           workflow_version: this.config.workflowVersion,
           is_async: false,
           parameters: {
-            analysis_context: JSON.stringify(input.analysisContext),
+            analysis_context: JSON.stringify(modelContext),
             analysis_elig: JSON.stringify(input.eligibility),
             few_shot_json: JSON.stringify(input.fewShotSelection),
             repair_instruction: input.repairInstruction ?? "",

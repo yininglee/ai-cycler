@@ -87,6 +87,10 @@ function caseIdsForScope(scope: ExecutionScope): readonly T001AutomaticRideAnaly
   return scope === "restricted" ? T001_B2_RESTRICTED_CASE_IDS : t001AutomaticRideAnalysisCaseIds;
 }
 
+function repetitionsForScope(scope: ExecutionScope): 1 | 3 {
+  return scope === "restricted" ? 1 : 3;
+}
+
 function promptAbSelection(config: CozeWorkflowConfig, arm: T001PromptAbArm): PromptAbSelection {
   if (arm === "A") {
     if (config.workflowName !== WORKFLOW_NAME || config.workflowId !== WORKFLOW_ID || config.workflowVersion !== A_PLATFORM_WORKFLOW_VERSION) {
@@ -264,7 +268,7 @@ async function runBatch(): Promise<void> {
   for (const caseId of caseIdsForScope(scope)) {
     const item = getT001AutomaticRideAnalysisCase(caseId);
     const prepared = prepareRideAnalysis(item.record, `eval-t001:${caseId}`, item.contextOptions);
-    for (const repetition of [1, 2, 3] as const) {
+    for (const repetition of Array.from({ length: repetitionsForScope(scope) }, (_, index) => index + 1) as (1 | 2 | 3)[]) {
       const requestId = `${batchId}:${caseId}:${repetition}:${randomUUID()}`;
       const startedAt = new Date().toISOString();
       const started = performance.now();
@@ -331,8 +335,8 @@ async function runBatch(): Promise<void> {
     executionScope: {
       kind: scope,
       caseIds: [...caseIdsForScope(scope)],
-      repetitionsPerCase: 3,
-      expectedSlotCount: caseIdsForScope(scope).length * 3,
+      repetitionsPerCase: repetitionsForScope(scope),
+      expectedSlotCount: caseIdsForScope(scope).length * repetitionsForScope(scope),
     },
     records,
   };
