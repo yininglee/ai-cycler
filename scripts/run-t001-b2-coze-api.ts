@@ -250,7 +250,12 @@ async function preflight(): Promise<void> {
     sourceCommit: commit,
     apiToken: "PRESENT_REDACTED",
     timeoutMs: config.timeoutMs,
-    executionScope: { kind: scope, caseCount: caseIdsForScope(scope).length, expectedSlotCount: caseIdsForScope(scope).length * 3 },
+    executionScope: {
+      kind: scope,
+      caseCount: caseIdsForScope(scope).length,
+      repetitionsPerCase: repetitionsForScope(scope),
+      expectedSlotCount: caseIdsForScope(scope).length * repetitionsForScope(scope),
+    },
     modelId: NOT_OBSERVABLE,
     externalCalls: 0,
   }, null, 2));
