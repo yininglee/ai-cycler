@@ -139,12 +139,22 @@ export function validateRideActivity(activity: RideActivity): RideValidationResu
 
   const distance = activity.metrics.distanceM?.value;
   const movingTime = activity.metrics.movingTimeS?.value;
+  const elapsedTime = activity.metrics.elapsedTimeS?.value;
   const avgSpeed = activity.metrics.avgSpeedMps?.value;
-  if (distance && movingTime && avgSpeed) {
-    const calculatedSpeed = distance / movingTime;
-    const relativeError = Math.abs(calculatedSpeed - avgSpeed) / calculatedSpeed;
-    if (relativeError > SPEED_CONSISTENCY_TOLERANCE) {
-      issues.push(issue("INCONSISTENT_AVG_SPEED", "error", "均速与距离/移动时间不一致", "metrics.avgSpeedMps"));
+  if (distance && avgSpeed) {
+    // FIT devices may calculate the recorded average speed against either
+    // timer time or elapsed time. Accept either traceable time basis; reject
+    // only when both available bases materially disagree with the summary.
+    const candidateTimes = [movingTime, elapsedTime].filter(
+      (value): value is number => value !== undefined && value > 0,
+    );
+    const matchesAnyTimeBasis = candidateTimes.some((duration) => {
+      const calculatedSpeed = distance / duration;
+      const relativeError = Math.abs(calculatedSpeed - avgSpeed) / calculatedSpeed;
+      return relativeError <= SPEED_CONSISTENCY_TOLERANCE;
+    });
+    if (candidateTimes.length > 0 && !matchesAnyTimeBasis) {
+      issues.push(issue("INCONSISTENT_AVG_SPEED", "error", "均速与距离及可用时间口径不一致", "metrics.avgSpeedMps"));
     }
   }
 

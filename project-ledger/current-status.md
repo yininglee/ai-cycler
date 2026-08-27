@@ -1,14 +1,14 @@
 # AI 骑行伙伴当前状态
 
-> 最后更新：2026-08-25
+> 最后更新：2026-08-27
 > 当前阶段：v0.1 证据型Demo开发  
 > 当前 Gate：G1「Demo核心价值」（G0已`GO`）  
-> 总体状态：`READY_FOR_PREVIEW`（保持Demo边界，25秒复测已归档）
+> 总体状态：`READY`（ITEM-V018 已验收；ITEM-V017 用户测试待执行）
 > 人工导航：[台账索引](index.md)
 
 ## 1. 当前目标
 
-`ITEM-T001 测试环境发布与计量预检`已完成并获用户接受；分层计量合同适配、54槽范围预览和v0.0.2受限复测均已完成。A/B后保留原版 Prompt v3.1.2；输入投影4槽复测未恢复两个15秒超时案例；25秒同四槽复测已将B2从1/4提升至3/4，但P95为`34591.961ms`。精确模型ID、计算区域、首Token延迟和成本来源记录为`NOT_OBSERVABLE`，性能与成本保持`NOT_SCORED`；25秒不是G1的8秒P95目标。
+执行 `ITEM-V017｜Demo 用户测试与 G1 证据准备`：用 5 名业余骑行者验证“导入/选择记录 → 看懂 B0 与 AI 解读 → 找到依据 → 反馈”的核心路径。当前只准备启动 `P01`，不在用户测试中修改 Prompt、Workflow、Schema、模型或超时，也不把单场或 5 人结果直接写成 G1 通过。
 
 ## 2. 当前基线与证据
 
@@ -16,60 +16,55 @@
 - GPS质量门已验收：[ITEM-G0-FIX-001](../reviews/ITEM-G0-FIX-001-gps-quality-review.md)、[DEC-020](decision-log.md#dec-020确认gpx-gps跳点确定性质量规则)；
 - 研发与发布基线：[Demo与Agent研发指南](../AI骑行伙伴-Demo搭建与Agent研发指南.md)、[版本路线图与放行机制](../AI骑行伙伴-版本路线图与上线放行机制.md)。
 - 骑后体验文档基线已验收：[ITEM-DOC-002](../reviews/ITEM-DOC-002-single-ride-prd-reconciliation-review.md#12-用户验收)。
-- 无AI详情事实合同已验收：[ITEM-V006](../reviews/ITEM-V006-ride-data-contract-v02-review.md#6-用户验收)。
-- 无AI详情三Tab已验收：[ITEM-V007](../reviews/ITEM-V007-ride-detail-visuals-review.md#17-用户验收)，最终基线`ride-detail-ui-v0.2`。
-- ITEM-V008依据审计：[评审记录](../reviews/ITEM-V008-profile-review.md#2-依据审计与冲突)。
-- ITEM-V010用户验收：[评审记录](../reviews/ITEM-V010-ride-feature-snapshot-review.md)、T0.21。
+- 产品与事实合同：无AI详情事实合同 [ITEM-V006](../reviews/ITEM-V006-ride-data-contract-v02-review.md#6-用户验收)、三 Tab 详情基线 [ITEM-V007](../reviews/ITEM-V007-ride-detail-visuals-review.md#17-用户验收)、个人资料合同 [ITEM-V008](../reviews/ITEM-V008-profile-review.md#7-用户预览验收)、特征快照 [ITEM-V010](../reviews/ITEM-V010-ride-feature-snapshot-review.md) 均已验收。
+- 页面与导入：V016 已冻结 B0 首屏、点击触发 AI、失败保留 B0 和数据 Tab 隔离；V018 已验收本机 50 MB 以内 FIT/GPX 临时导入、可靠字段展示、移动时间均速口径和 GPS 占位点过滤。
+- AI 运行基线：原版 Prompt `v3.1.2`、扣子 `v0.0.2`、模型传输投影 `v0.1`、Few-shot disabled、同步等待上限 `25000ms`；25 秒 4 槽复测为 B2/B0=`3/1`，P95=`34591.961ms`。平台精确模型 ID、区域、首 Token 延迟和成本来源仍为 `NOT_OBSERVABLE`，性能与成本为 `NOT_SCORED`。
+- 详细历史运行、修复和 Git 冻结证据保留在 [进度台账](progress-ledger.md)、[评测报告](../eval/benchmark-report.md)及对应 ITEM 评审中，不在本快照重复展开。
 
-## 3. 当前未完成与阻塞
+## 3. 当前未完成、阻塞与技术债
 
-- Prompt v1.2单条L1已完成一次受限修复并通过硬合同，但用户明确判定其骑后洞察价值不足；该结果只保留为失败学习证据，不继续作为产品方向。
-- `ride-detail-ui-v0.2`已完成用户验收；历史事实合同和新AI合同已经实现并验收，但尚未接入模型运行链路与UI，因此用户界面继续静默隐藏相应内容。
-- ITEM-V008已验收，边界保持冻结：Demo使用localStorage适配`UserProfile v0.1`，Alpha再切换PostgreSQL；用户保存的FTP为`user_provided + user_confirmed`，不称为实测、不自动估算、不在本项启用IF/TSS/功率区间/训练负荷。
-- 旧`RideContextSnapshot v1.0`及旧B2链路仍作为历史兼容代码存在并含`dataLevel`；新链路已迁移到不含等级字段的`RideAnalysisContext v0.2`与V013合同，后续不得重新使用旧等级作为业务门。
-- B1/B3、真实上传、真实GPX/多设备、5人测试和线上部署均未验证；B2真实批次已运行但质量/性能 Gate 保持未评分，不得对外开放或宣称G1通过。
-- T001的18条自动骑后上下文fixture已补齐；Service v1.5/特征规则v0.2的18个五变量输入、SHA-256、54槽v0.3 manifest/接收合同与新B0 `RUN-20260824-028`已完成；真实B2为`RUN-20260824-367`，B1/B3仍未运行。`RUN-20260823-022`保留为Service v1.4/特征规则v0.1历史B0。
-- 本机已存在`.env.local`并配置扣子PAT；v3.1.1历史冒烟/修复/B0见`RUN-20260823-018/019/020`；最终v3.1.2的L3、L1、L2分别归档为`RUN-20260824-023/024/025`。L1/L2截图只记录模型显示名、整数秒和总Token，精确模型ID、请求ID、毫秒延迟、Token拆分和成本仍未记录；本地合同回放不调用模型，不能补足这些字段。
-- v0.0.2 受限复测已形成 `RUN-20260825-756`：21/21 槽合同回放通过，B2 `7`、B0 `14`、安全停止 `0`，P50/P95=`15002.545/20334.534ms`，总 Token `101712`，成本仍不可观测；这不是完整54槽基准。
-- T001 Service v1.5重冻结实施、新Git冻结基线及真实B2运行配置审查均已用户验收。扣子测试版本`v0.0.1`已发布，唯一预检可取得输入/输出/总Token拆分和LogId；精确模型ID、区域、成本来源和首Token仍不可观测。`RA-AUTO-001#1`已在`v0.0.1`预览中运行：`2026-08-24 17:55:45`，LogId `20260824175533C12F3708B030050D0659`，页面显示约`12s / 8408 Tokens`，输入/输出为`7667/741`；原始输出仍未完整导出，尚不能作为正式 raw batch 槽位。
-- 项目在2026-08-24由用户确认建立首个本地Git基线；基线建立前`main`分支无commit、项目文件均未跟踪。后续真实RUN必须绑定该基线或其后续commit，保持源码、配置与评测证据可追溯。
-- 首个Git基线为`8c1677834c8ab2d8e03035104b9c720ccdd44243`，但它早于后续已验收V014修复；真实B2前必须再建一个包含实际冻结实现的commit，不得把较旧基线冒充为实际源码版本。
+### G1 未完成项
+
+- `ITEM-V017` 尚未运行：5 名参与者证据为 `0/5`；至少 3 名使用自有非敏感 FIT/GPX、其中 FIT 不少于 2 名的目标尚未满足。
+- 真实 FIT/GPX 尚未形成正式的多设备兼容矩阵和成功率；V018 只证明当前本机样本与已修复边界，不能外推设备兼容性。
+- B1/B3 尚未运行；B2 虽已有完整 54 槽和受限复测证据，但质量、性能和成本 Gate 仍为 `NOT_SCORED`。当前 25 秒同步方案不满足 G1 端到端 P95 `8s` 目标。
+- 因此 G1、生产发布和对外开放均未放行。
+
+### 当前阻塞
+
+- 没有已知工程问题阻止 `P01` 按当前 Demo 边界启动。
+- G1 评审仍受上述用户证据、兼容矩阵和评测 Gate 缺口阻塞；平台不可观测计量字段不得用估算值补齐。
+
+### 延期技术债与阶段边界
+
+- 旧 `RideContextSnapshot v1.0` / 旧 B2 兼容链路仍含 `dataLevel`；新业务链路已使用不含等级业务门的 `RideAnalysisContext v0.2`。旧链路清理不阻塞 V017，但后续不得重新把 L1/L2/L3 用作用户等级或业务硬门。
+- Demo 导入记录仅保存在当前 Node 进程内存，尚无持久化、多用户归属和生产删除/保留机制；这些是 Alpha/生产阶段边界，不是当前 V017 的工程阻塞。
 
 ## 4. 当前决定状态
 
-- `DEC-027`至`DEC-039`已确认无AI详情、骑后AI、原子能力、历史/数据边界和Few-shot工程化候选；`DEC-059`将当前联调基线改为无Few-shot并把现有样例降为草稿；`DEC-050`恢复已接受的模块×版本矩阵及v0.1个人资料/Fixture历史/Few-shot评测范围；`DEC-058`确认工作项采用最小充分来源审查和变更触发全文复查；`DEC-063`确认T001保留旧30条混合集合并分离自动骑后与对话评测；
-- `DEC-040`至`DEC-049`已确认对话产品边界、首屏、快捷问题、历史不足、能力引导、安全、记忆、工具、输出降级和版本子Gate；`DEC-060`已确认自动骑后允许事实驱动的合理定性，并允许在limitations展示历史限制但不生成history维度；
-- `DEC-051`已确认单次骑行详情三个用户可见Tab命名为`摘要 / 分析 / 数据`；具体内容归属与字段边界继续逐项确认；
-- `DEC-052`已确认整体AI/历史结论归入摘要、分维度AI/趋势归入分析，数据Tab仅保留本次骑行详细事实；
-- `DEC-053`已确认骑行轨迹只在摘要展示，当前保持相对SVG，真实地图底图维持`v1.x`候选；
-- `DEC-054`已确认数据Tab采用参考图的13组长期结构，并按实际可靠字段动态隐藏空分组；
-- `DEC-055`已确认ITEM-V007沿用现有Schema重组字段，并在摘要有可靠值时增加运动消耗；其余参考字段进入后续规划；
-- `DEC-056`已确认V008 Demo使用localStorage、Alpha切换PostgreSQL；`DEC-057`已确认用户保存FTP的可信语义；
-- `DEC-065`已确认T001 Service v1.5版本矩阵重冻结方案，实施切片也已用户验收；
-- `DEC-066`已确认真实B2采用测试环境冻结发布、API批次运行和先计量预检后54槽的方案；发布和模型调用仍需分别授权；
-- `DEC-067`已接受：Demo阶段继续使用扣子验证质量/结构/可靠性，对平台不可观测字段记录`NOT_OBSERVABLE`，性能/成本保持`NOT_SCORED`；不代表G1或生产放行；
-- `DEC-069`已接受：Demo服务端同步等待上限改为`25000ms`；历史`15000ms`证据不改写；25秒不是G1的8秒P95目标；本轮4槽结果见`RUN-20260825-510`，不外推完整批次；
-- `DEC-070`已接受：保持Demo边界，不扩大25秒复测到21/54槽，不启动异步或性能专项；等待真实用户反馈或G1条件变化后再评估；
-- 完整决定及权衡以[决策日志](decision-log.md#dec-027确认运动消耗替代得分)为准；当前没有未确认的6.2/6.3/6.5方向性决定；
-- `DEC-023 PROPOSED`保留为旧链路实现假设；V013只冻结合同，不自动接受该编排方案，留待下一工作项启动后基于新合同重新评估。
+- 用户体验：详情页保持 `摘要 / 分析 / 数据`；轨迹只在摘要，整体 AI 结论归摘要、分维度分析归分析页，数据页只展示可靠事实；空字段和不具备的能力动态隐藏（`DEC-051`–`DEC-055`）。
+- 事实与解读：允许模型基于可引用事实作常识性合理定性；历史不足可写入 limitations，但首次或不可比记录不生成历史维度；Claim、能力、安全和隐私边界继续有效（`DEC-027`–`DEC-039`、`DEC-060`）。
+- 用户资料：Demo 使用 localStorage；手动保存 FTP 为 `user_provided + user_confirmed`，不称为实测、不自动估算训练负荷；Alpha 再迁移 PostgreSQL（`DEC-056`、`DEC-057`）。
+- AI 运行：保留 Prompt `v3.1.2`、扣子 `v0.0.2`、输入投影 `v0.1`、Few-shot disabled 和 `25000ms` 同步等待；不扩大复测、不启动异步性能专项，不把不可观测字段估算成 Gate 证据（`DEC-067`、`DEC-069`、`DEC-070`）。
+- 项目治理：每个 ITEM 使用最小充分来源审查，只有阶段、架构、安全、数据边界、方向、巡检或 Gate/发布变化时全文复查三份主文档（`DEC-058`）。
+- 当前没有阻止 V017 启动的方向性待决；完整历史决定、权衡和重新评估条件以[决策日志](decision-log.md)为准。
 
 ## 5. 当前工作项
 
-### ITEM-T001｜25秒同步等待受限可靠性复测
+### ITEM-V017｜Demo 用户测试与 G1 证据准备
 
-- 状态：`ACCEPTED_FOR_DEMO_BOUNDARY`
-- 目标：在保留原版 Prompt `v3.1.2`、模型和Workflow不变的前提下，验证25秒同步等待能否降低已知15秒超时样本的B0降级。
-- 已完成：冻结提交、零调用预检、4槽真实复测和合同回放；4/4回放PASS，B2/B0=`3/1`，`006/011`各经一次修复成功，`018`保持0调用。
-- 结论：相同四槽中B2由15秒的`1/4`提升到25秒的`3/4`，但修复后的P95为`34591.961ms`，仅作可靠性诊断，不作性能或G1结论。
-- 冻结边界：Prompt、Schema、模型、扣子Workflow、Few-shot、Claim/能力/历史/安全规则均未改变；历史`15000ms`证据不改写；人工可读性未运行。
-- 证据：[RUN-20260825-510](../eval/runs/RUN-20260825-510.json)、[原始批次](../eval/runs/RUN-20260825-510-raw.json)、[复测评审](../reviews/ITEM-T001-B2-25s-reliability-preview.md)、[DEC-070](decision-log.md#dec-070t001保持demo边界不扩大25秒复测)、[LOG-20260825-159](progress-ledger.md#log-20260825-159t001保持demo边界)。
+- 状态：`READY_FOR_RUN`
+- 目标：用 5 名业余骑行者验证“导入/选择记录 → 看懂 B0 与 AI 解读 → 找到依据 → 反馈”的任务路径。
+- 已具备：V018 已验收本机 FIT/GPX 临时导入；测试要求至少 3 名参与者使用自己的非敏感 FIT/GPX，且 FIT 不少于 2 名，其余可使用内置样例。
+- 边界：尚未招募或运行，不把计划材料视为用户证据；小样本不能单独证明 G1、生产稳定性或多设备兼容率。
+- 证据：[ITEM-V017 用户测试准备](../reviews/ITEM-V017-demo-user-test-preparation.md)、[ITEM-V018 验收](../reviews/ITEM-V018-fit-gpx-import-ai-preview.md#8-用户验收2026-08-27)。
 
 ## 6. 下一工作项
 
-- `Demo边界内稳定性观察`：继续使用当前冻结配置收集真实用户预览反馈；不新增扣子批次，不改变Prompt/Workflow/Schema，不宣称G1或生产就绪。
+- 安排并执行 `P01` 第一场受控用户测试；开始前确认参与者同意本机临时数据处理边界，并记录使用自有 FIT/GPX 还是内置样例。未开始前不改 Prompt、Workflow、Schema、模型或超时。
 
 ## 7. 当前版本矩阵
 
 | app / schema / rules | parser / GPS quality | B0 / eval | AI runtime |
 |---|---|---|---|
-| visual-shell-v0.1 + `ride-detail-ui-v0.2`已验收；`RideActivity v0.2 / RideSeries v0.1 / UserProfile v0.1 / AtomicCapability v0.1 / RideFeatureSnapshot v0.1 / HistoricalComparisonSnapshot v0.1 / RideAnalysisContext v0.2 / AnalysisEligibility v0.1 / ride-analysis-output-v0.3`均已验收；当前特征规则`ride-feature-rules-v0.2` | FIT parser v0.2；GPX parser v0.3 / GPS质量v0.1；自动回归201/201通过 | 旧B0 `b0-template-v0.1` 14/14；A `RUN-20260825-756` 21/21 PASS，B `RUN-20260825-960` 21/21 PASS；投影复测`RUN-20260825-918` 4/4 PASS、B2=1/B0=3；benchmarkStatus=`NOT_SCORED` | A active：Prompt v3.1.2 + 扣子`v0.0.2`；模型传输投影v0.1；B archived：Compact Candidate；Service v1.5 + Workflow内部标签dev.15 + Few-shot disabled；四项计量字段不可观测；RAG/Function Calling关闭 |
+| visual-shell-v0.1 + `ride-detail-ui-v0.2`已验收；`RideActivity v0.2 / RideSeries v0.1 / UserProfile v0.1 / AtomicCapability v0.1 / RideFeatureSnapshot v0.1 / HistoricalComparisonSnapshot v0.1 / RideAnalysisContext v0.2 / AnalysisEligibility v0.1 / ride-analysis-output-v0.3`均已验收；当前特征规则`ride-feature-rules-v0.2` | FIT parser v0.2；GPX parser v0.3 / GPS质量v0.1；本机临时 FIT/GPX 上传 50 MB；自动回归209/209通过；全零心率占位安全忽略；展示均速按距离/移动时间计算；`(0,0)` GPS占位点过滤 | 旧B0 `b0-template-v0.1` 14/14；A `RUN-20260825-756` 21/21 PASS，B `RUN-20260825-960` 21/21 PASS；投影复测`RUN-20260825-918` 4/4 PASS、B2=1/B0=3；benchmarkStatus=`NOT_SCORED` | A active：Prompt v3.1.2 + 扣子`v0.0.2`；模型传输投影v0.1；B archived：Compact Candidate；Service v1.5 + Workflow内部标签dev.15 + Few-shot disabled；四项计量字段不可观测；RAG/Function Calling关闭 |

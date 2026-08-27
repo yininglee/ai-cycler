@@ -1,6 +1,5 @@
 import { analyzeRideRecord } from "../../../src/ai/ride-analysis-service.ts";
-import { getRideFixture } from "../../../src/fixtures/rides.ts";
-import { isDemoRideId } from "../../../src/ui/ride-view-model.ts";
+import { getRideRecord } from "../../../src/imports/demo-ride-store.ts";
 
 export const runtime = "nodejs";
 
@@ -33,11 +32,12 @@ export async function POST(request: Request): Promise<Response> {
   const rideId = typeof body === "object" && body !== null && !Array.isArray(body)
     ? (body as Record<string, unknown>).rideId
     : undefined;
-  if (typeof rideId !== "string" || !isDemoRideId(rideId)) {
-    return noStoreJson({ error: "UNKNOWN_DEMO_RIDE" }, 400);
+  if (typeof rideId !== "string") {
+    return noStoreJson({ error: "UNKNOWN_RIDE" }, 400);
   }
 
-  const fixture = getRideFixture(rideId);
-  const result = await analyzeRideRecord({ activity: fixture.activity, series: fixture.series });
+  const record = getRideRecord(rideId);
+  if (!record) return noStoreJson({ error: "UNKNOWN_RIDE" }, 400);
+  const result = await analyzeRideRecord(record);
   return noStoreJson({ rideId, ...result });
 }

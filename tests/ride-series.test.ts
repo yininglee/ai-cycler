@@ -94,6 +94,18 @@ test("FIT produces optional recorded sensor series and traceable energy/max metr
   assert.equal(record.activity.metrics.maxCadenceRpm?.value, 120);
 });
 
+test("FIT zero GPS placeholders are excluded from the relative route", async () => {
+  const record = await parseFitRide({
+    rideId: "fit-gps-placeholder-series",
+    fileName: "gps-placeholder.fit",
+    bytes: buildCyclingFitSample({ includeGpsPlaceholder: true }),
+  });
+  assert.equal(validateRideRecord(record).valid, true);
+  assert.ok(record.series.availableSeries.includes("route"));
+  assert.equal(record.series.points.filter((point) => point.route !== undefined).length, 4);
+  assert.equal(record.series.seriesMetadata.route?.sampleCount, 4);
+});
+
 test("all-zero FIT power never creates aggregate or series power capability", async () => {
   const record = await parseFitRide({
     rideId: "fit-zero-series",

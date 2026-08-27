@@ -1,7 +1,8 @@
 import Link from "next/link";
 
 import { AppShell, Brand } from "../components/app-shell";
-import { ArrowIcon, CheckIcon, UploadIcon } from "../components/icons";
+import { ArrowIcon, CheckIcon } from "../components/icons";
+import { RideFileUpload } from "../components/ride-file-upload";
 
 const samples = [
   { id: "l1-built-in-sample", capability: "轨迹", title: "只有轨迹", note: "距离、时间、速度、爬升" },
@@ -18,18 +19,14 @@ export default async function ImportPage({ searchParams }: { searchParams: Promi
       <section className="page-intro">
         <p className="kicker">选择记录</p>
         <h1>从一条真实骑行开始。</h1>
-        <p className="lead">先用样例理解不同数据能力，再接入你的 FIT 或 GPX。</p>
+        <p className="lead">导入一条 FIT 或 GPX，先查看可靠的骑行事实，再按需获取 AI 解读。</p>
       </section>
 
       {state === "loading" && <div className="state-card" aria-live="polite"><span className="spinner" /><h2>正在读取记录</h2><p>基础事实会优先出现，不需要等待 AI。</p></div>}
       {state === "error" && <div className="state-card error-state" role="alert"><span>!</span><h2>文件暂时无法读取</h2><p>请确认文件完整，且格式为 FIT 或 GPX。你的文件没有上传给模型。</p><Link className="secondary-button" href="/import">重新选择</Link></div>}
       {state !== "loading" && state !== "error" && (
         <>
-          <section className="upload-card">
-            <div className="upload-icon"><UploadIcon /></div>
-            <div><h2>导入 FIT / GPX</h2><p>真实文件上传与解析 API 将在独立工作项接入；本页先验证交互和信息层级。</p></div>
-            <span className="coming-pill">下一步接入</span>
-          </section>
+          <RideFileUpload />
 
           <section className="section-block">
             <div className="section-heading"><div><p className="kicker">立即体验</p><h2>选择示例记录</h2></div></div>

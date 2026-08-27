@@ -78,6 +78,36 @@ test("GPX without timestamps never fabricates duration or speed", () => {
   assert.ok(capability.limitations.some((item) => item.includes("不能计算速度或时长")));
 });
 
+test("FIT average speed may use elapsed time when moving time has a different timer basis", () => {
+  const source = getRideFixture("short-fit-ride").activity;
+  const activity: RideActivity = structuredClone(source);
+  activity.metrics.distanceM = {
+    ...activity.metrics.distanceM!,
+    value: 31_056.1,
+    evidenceId: "EV-TIMER-BASIS-001",
+  };
+  activity.metrics.movingTimeS = {
+    ...activity.metrics.movingTimeS!,
+    value: 3_719,
+    evidenceId: "EV-TIMER-BASIS-002",
+  };
+  activity.metrics.elapsedTimeS = {
+    ...activity.metrics.movingTimeS,
+    value: 3_959,
+    evidenceId: "EV-TIMER-BASIS-003",
+    sourceField: "session.total_elapsed_time",
+  };
+  activity.metrics.avgSpeedMps = {
+    ...activity.metrics.avgSpeedMps!,
+    value: 7.9,
+    evidenceId: "EV-TIMER-BASIS-004",
+  };
+
+  const validation = validateRideActivity(activity);
+  assert.equal(validation.valid, true);
+  assert.ok(!validation.issues.some((item) => item.code === "INCONSISTENT_AVG_SPEED"));
+});
+
 test("GPX without timestamps rejects upstream fabricated speed", () => {
   const source = getRideFixture("gpx-no-timestamps").activity;
   const broken: RideActivity = structuredClone(source);

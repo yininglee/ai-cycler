@@ -186,6 +186,7 @@ function normalizeLimitation(code: string, fallback: string): string {
     POWER_NOT_USABLE: "功率覆盖不足或存在无效样本，已按无可靠功率处理",
     FIT_DEVELOPER_FIELD_IGNORED: "检测到未支持的FIT开发字段，已安全忽略",
     FIT_ALL_ZERO_POWER_IGNORED: "功率字段仅包含占位值，已按无有效功率处理",
+    FIT_ALL_ZERO_HEART_RATE_IGNORED: "心率字段仅包含占位值，已按无有效心率处理",
     GPX_GPS_SPIKE_FILTERED: "检测到GPS孤立跳点，已在计算距离和速度前过滤",
   };
   return known[code] ?? fallback;
@@ -198,6 +199,7 @@ function normalizeCapabilityLimitation(message: string): string {
   }
   if (message.includes("心率覆盖不足")) return "心率覆盖不足或存在无效样本，已按无可靠心率处理";
   if (message.includes("功率覆盖不足")) return "功率覆盖不足或存在无效样本，已按无可靠功率处理";
+  if (message.includes("心率字段仅包含占位值")) return "心率字段仅包含占位值，已按无有效心率处理";
   if (message.includes("FIT开发字段") || message.includes("FIT 开发字段")) {
     return "检测到未支持的FIT开发字段，已安全忽略";
   }

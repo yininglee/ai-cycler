@@ -1,6 +1,6 @@
 import { generateB0RideAnalysis, type B0RideAnalysis } from "../domain/ride-summary.ts";
 import { getRideFixture } from "../fixtures/rides.ts";
-import type { DataSourceKind, Metric, MetricKey, SensorKind } from "../domain/ride-schema.ts";
+import type { DataSourceKind, Metric, MetricKey, RideRecord, SensorKind } from "../domain/ride-schema.ts";
 import { validateRideRecord } from "../domain/ride-series.ts";
 import { buildRideVisualDisplay, type RideVisualDisplay } from "./ride-series-view-model.ts";
 
@@ -127,7 +127,7 @@ export interface RideDetailSection {
 
 export interface RidePageViewModel {
   uiVersion: typeof RIDE_DETAIL_UI_VERSION;
-  id: DemoRideId;
+  id: string;
   fixtureDescription: string;
   analysis: B0RideAnalysis;
   factCards: RideMetricDisplay[];
@@ -226,21 +226,24 @@ function formatRideTitle(startTime: string | undefined): string {
   return month && day ? `${month}月${day}日骑行` : "骑行记录";
 }
 
-export function buildRidePageViewModel(id: DemoRideId): RidePageViewModel {
-  const fixture = getRideFixture(id);
-  const analysis = generateB0RideAnalysis(fixture.activity);
-  const { source } = fixture.activity;
+export function buildRidePageViewModelFromRecord(
+  record: RideRecord,
+  fixtureDescription = "已导入的 FIT/GPX 骑行记录",
+): RidePageViewModel {
+  const { activity, series } = record;
+  const analysis = generateB0RideAnalysis(activity);
+  const { source } = activity;
   const sourceLabel = sourceKindLabel(source.kind);
-  const dateLabel = formatRideDate(fixture.activity.startTime);
-  const recordIsValid = validateRideRecord({ activity: fixture.activity, series: fixture.series }).valid;
+  const dateLabel = formatRideDate(activity.startTime);
+  const recordIsValid = validateRideRecord(record).valid;
   const factCards = SUMMARY_METRICS.flatMap((metricKey) => {
-    const metric = recordIsValid ? fixture.activity.metrics[metricKey] : undefined;
-    return metric ? [toMetricDisplay(metricKey, metric, fixture.activity.rideId, source.kind)] : [];
+    const metric = recordIsValid ? activity.metrics[metricKey] : undefined;
+    return metric ? [toMetricDisplay(metricKey, metric, activity.rideId, source.kind)] : [];
   });
   const detailSections = DETAIL_GROUPS.flatMap((group) => {
     const metrics = group.metricKeys.flatMap((metricKey) => {
-      const metric = recordIsValid ? fixture.activity.metrics[metricKey] : undefined;
-      return metric ? [toMetricDisplay(metricKey, metric, fixture.activity.rideId, source.kind)] : [];
+      const metric = recordIsValid ? activity.metrics[metricKey] : undefined;
+      return metric ? [toMetricDisplay(metricKey, metric, activity.rideId, source.kind)] : [];
     });
     return metrics.length > 0 ? [{ ...group, metrics }] : [];
   });
@@ -255,18 +258,18 @@ export function buildRidePageViewModel(id: DemoRideId): RidePageViewModel {
   }));
   return {
     uiVersion: RIDE_DETAIL_UI_VERSION,
-    id,
-    fixtureDescription: fixture.description,
+    id: activity.rideId,
+    fixtureDescription,
     analysis,
     factCards,
     detailSections,
     rideMeta: {
       ...(dateLabel ? { dateLabel } : {}),
-      titleLabel: formatRideTitle(fixture.activity.startTime),
+      titleLabel: formatRideTitle(activity.startTime),
       sourceLabel,
       summaryLabel: [dateLabel, sourceLabel].filter(Boolean).join(" · "),
     },
-    visuals: recordIsValid ? buildRideVisualDisplay({ activity: fixture.activity, series: fixture.series }, sourceLabel) : { charts: [] },
+    visuals: recordIsValid ? buildRideVisualDisplay({ activity, series }, sourceLabel) : { charts: [] },
     dataQuality: {
       sourceLabel,
       note: source.kind === "sample"
@@ -275,5 +278,16 @@ export function buildRidePageViewModel(id: DemoRideId): RidePageViewModel {
       sensors,
       issueCodes: analysis.snapshot.quality.issueCodes,
     },
+  };
+}
+
+export function buildRidePageViewModel(id: DemoRideId): RidePageViewModel {
+  const fixture = getRideFixture(id);
+  return {
+    ...buildRidePageViewModelFromRecord(
+    { activity: fixture.activity, series: fixture.series },
+    fixture.description,
+    ),
+    id,
   };
 }

@@ -4,7 +4,9 @@ import { notFound } from "next/navigation";
 import { AppShell } from "../../components/app-shell";
 import { BackIcon, BikeIcon } from "../../components/icons";
 import { RideRouteHero, RideSeriesCharts } from "../../components/ride-visuals";
-import { buildRidePageViewModel, isDemoRideId } from "../../../src/ui/ride-view-model";
+import { RideAiAnalysis } from "../../components/ride-ai-analysis";
+import { getRideRecord } from "../../../src/imports/demo-ride-store";
+import { buildRidePageViewModelFromRecord } from "../../../src/ui/ride-view-model";
 
 export default async function RideDetailPage({
   params,
@@ -15,8 +17,9 @@ export default async function RideDetailPage({
 }) {
   const { id } = await params;
   const query = await searchParams;
-  if (!isDemoRideId(id)) notFound();
-  const view = buildRidePageViewModel(id);
+  const record = getRideRecord(id);
+  if (!record) notFound();
+  const view = buildRidePageViewModelFromRecord(record);
   const { snapshot } = view.analysis;
   const rejected = snapshot.analysisMode === "rejected";
   const activeTab = query.tab === "analysis" || query.tab === "data" ? query.tab : "summary";
@@ -47,6 +50,7 @@ export default async function RideDetailPage({
             <section className="summary-metrics" aria-label="核心骑行事实">
               {view.factCards.map((fact) => <article className="summary-metric" key={fact.claimId}><p>{fact.label}</p><strong>{fact.value}</strong></article>)}
             </section>
+            <RideAiAnalysis rideId={id} />
           </div>
         </>}
 
@@ -54,7 +58,7 @@ export default async function RideDetailPage({
         </section>}
 
         {activeTab === "analysis" && <section className="analysis-tab" aria-label="骑行分析">
-        {rejected ? <section className="rejected-card"><span className="error-mark">!</span><h2>记录未通过校验</h2><p>损坏或矛盾记录不展示图表，请检查原始文件后重新导入。</p></section> : <RideSeriesCharts charts={view.visuals.charts} />}
+        {rejected ? <section className="rejected-card"><span className="error-mark">!</span><h2>记录未通过校验</h2><p>损坏或矛盾记录不展示图表，请检查原始文件后重新导入。</p></section> : <><RideSeriesCharts charts={view.visuals.charts} /><RideAiAnalysis rideId={id} /></>}
         </section>}
 
         {activeTab === "data" && <section className="data-tab" aria-label="骑行详细数据">

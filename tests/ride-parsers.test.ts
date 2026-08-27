@@ -65,6 +65,9 @@ test("a standards-compliant generated FIT binary is decoded into the accepted Ri
   assert.equal(activity.source.kind, "fit");
   assert.equal(activity.metrics.distanceM?.value, 3_500);
   assert.equal(activity.metrics.movingTimeS?.value, 1_200);
+  assert.equal(activity.metrics.avgSpeedMps?.value, 3_500 / 1_200);
+  assert.equal(activity.metrics.avgSpeedMps?.provenance, "calculated");
+  assert.equal(activity.metrics.avgSpeedMps?.formulaVersion, "distance-over-moving-time-v0.1");
   assert.equal(activity.metrics.avgPowerW?.value, 210);
   assert.equal(capability.dataLevel, "L3");
   assert.equal(capability.analysisMode, "full");
@@ -119,6 +122,24 @@ test("all-zero FIT power placeholders do not create false L3 capability", async 
   assert.equal(activity.sensorQuality.power, undefined);
   assert.equal(capability.dataLevel, "L2");
   assert.ok(activity.sourceIssues.some((issue) => issue.code === "FIT_ALL_ZERO_POWER_IGNORED"));
+});
+
+test("all-zero FIT heart-rate placeholders do not reject otherwise valid rides", async () => {
+  const activity = await parseFitActivity({
+    rideId: "fit-zero-heart-rate-real-001",
+    fileName: "zero-heart-rate.fit",
+    bytes: buildCyclingFitSample({ allZeroHeartRate: true }),
+  });
+  const validation = validateRideActivity(activity);
+  const capability = buildRideCapability(activity);
+
+  assert.equal(validation.valid, true);
+  assert.equal(activity.metrics.avgHeartRateBpm, undefined);
+  assert.equal(activity.metrics.maxHeartRateBpm, undefined);
+  assert.equal(activity.sensorQuality.heart_rate, undefined);
+  assert.equal(capability.dataLevel, "L3");
+  assert.equal(capability.analysisMode, "full");
+  assert.ok(activity.sourceIssues.some((issue) => issue.code === "FIT_ALL_ZERO_HEART_RATE_IGNORED"));
 });
 
 test("timed GPX computes only traceable L1 metrics", () => {

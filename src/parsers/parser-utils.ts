@@ -7,7 +7,7 @@ import type {
 } from "../domain/ride-schema.ts";
 import { RideParseError } from "./parse-errors.ts";
 
-export const MAX_UPLOAD_BYTES = 25 * 1024 * 1024;
+export const MAX_UPLOAD_BYTES = 50 * 1024 * 1024;
 
 export interface MetricSourceMetadata {
   sourceField: string;
@@ -21,7 +21,7 @@ export function assertUploadSize(byteLength: number): void {
     throw new RideParseError("FILE_EMPTY", "上传文件为空");
   }
   if (byteLength > MAX_UPLOAD_BYTES) {
-    throw new RideParseError("FILE_TOO_LARGE", "上传文件超过 25 MB 限制");
+    throw new RideParseError("FILE_TOO_LARGE", "上传文件超过 50 MB 限制");
   }
 }
 

@@ -52,10 +52,18 @@ function hasUsefulPower(records: ParsedRecord[], session: ParsedSession): boolea
   return records.some((record) => Number.isFinite(record.power) && record.power! > 0);
 }
 
+function hasUsefulHeartRate(records: ParsedRecord[], session: ParsedSession): boolean {
+  const sessionHeartRate = [session.avg_heart_rate, session.max_heart_rate]
+    .some((value) => Number.isFinite(value) && value! >= 30 && value! <= 260);
+  if (sessionHeartRate) return true;
+  return records.some((record) => Number.isFinite(record.heart_rate) && record.heart_rate! >= 30 && record.heart_rate! <= 260);
+}
+
 function buildMetrics(
   rideId: string,
   session: ParsedSession,
   usefulPower: boolean,
+  usefulHeartRate: boolean,
   recordedAt: string | undefined,
 ): RideMetrics {
   const recorded = (
@@ -68,6 +76,11 @@ function buildMetrics(
     sourceUnit: unit,
     ...(recordedAt ? { recordedAt } : {}),
   });
+  const movingTimeForAverage = session.total_moving_time ?? session.total_timer_time;
+  const distanceForAverage = session.total_distance;
+  const calculatedAverageSpeed = Number.isFinite(distanceForAverage) && Number.isFinite(movingTimeForAverage) && movingTimeForAverage! > 0
+    ? distanceForAverage! / movingTimeForAverage!
+    : undefined;
   return compactObject({
     distanceM: recorded(session.total_distance, "m", "distance", "total_distance"),
     elapsedTimeS: recorded(session.total_elapsed_time, "s", "elapsed-time", "total_elapsed_time"),
@@ -78,20 +91,36 @@ function buildMetrics(
       session.total_moving_time !== undefined ? "total_moving_time" : "total_timer_time",
     ),
     elevationGainM: recorded(session.total_ascent, "m", "ascent", "total_ascent"),
-    avgSpeedMps: recorded(
-      session.enhanced_avg_speed ?? session.avg_speed,
-      "m/s",
-      "avg-speed",
-      session.enhanced_avg_speed !== undefined ? "enhanced_avg_speed" : "avg_speed",
-    ),
+    // Product average speed is distance divided by riding time, excluding
+    // stopped time. FIT's recorded avg_speed may use elapsed time instead.
+    avgSpeedMps: calculatedAverageSpeed !== undefined
+      ? metric(
+        calculatedAverageSpeed,
+        "m/s",
+        `${rideId}:fit:session:avg-speed-moving-time`,
+        "calculated",
+        "high",
+        "distance-over-moving-time-v0.1",
+        {
+          sourceField: "session.total_distance/session.total_moving_time",
+          sourceUnit: "m/s",
+          ...(recordedAt ? { recordedAt } : {}),
+        },
+      )
+      : recorded(
+        session.enhanced_avg_speed ?? session.avg_speed,
+        "m/s",
+        "avg-speed",
+        session.enhanced_avg_speed !== undefined ? "enhanced_avg_speed" : "avg_speed",
+      ),
     maxSpeedMps: recorded(
       session.enhanced_max_speed ?? session.max_speed,
       "m/s",
       "max-speed",
       session.enhanced_max_speed !== undefined ? "enhanced_max_speed" : "max_speed",
     ),
-    avgHeartRateBpm: recorded(session.avg_heart_rate, "bpm", "avg-heart-rate", "avg_heart_rate"),
-    maxHeartRateBpm: recorded(session.max_heart_rate, "bpm", "max-heart-rate", "max_heart_rate"),
+    avgHeartRateBpm: recorded(usefulHeartRate ? session.avg_heart_rate : undefined, "bpm", "avg-heart-rate", "avg_heart_rate"),
+    maxHeartRateBpm: recorded(usefulHeartRate ? session.max_heart_rate : undefined, "bpm", "max-heart-rate", "max_heart_rate"),
     avgPowerW: recorded(usefulPower ? session.avg_power : undefined, "W", "avg-power", "avg_power"),
     maxPowerW: recorded(usefulPower ? session.max_power : undefined, "W", "max-power", "max_power"),
     normalizedPowerW: recorded(
@@ -110,6 +139,14 @@ function finite(value: number | undefined, min = Number.NEGATIVE_INFINITY, max =
   return value !== undefined && Number.isFinite(value) && value >= min && value <= max ? value : undefined;
 }
 
+function validFitCoordinate(record: ParsedRecord): { latitude: number; longitude: number } | undefined {
+  const latitude = finite(record.position_lat, -90, 90);
+  const longitude = finite(record.position_long, -180, 180);
+  // FIT devices commonly emit (0,0) as a GPS-unavailable placeholder.
+  if (latitude === undefined || longitude === undefined || (latitude === 0 && longitude === 0)) return undefined;
+  return { latitude, longitude };
+}
+
 function seriesQuality(quality: RideActivity["sensorQuality"][keyof RideActivity["sensorQuality"]]): "valid" | "degraded" {
   if (!quality || quality.sampleCount === 0) return "degraded";
   return quality.coverage >= 0.8 && quality.invalidSampleCount / quality.sampleCount <= 0.02 ? "valid" : "degraded";
@@ -126,13 +163,13 @@ function buildFitSeries(
   const firstTime = timestamps.find((value) => Number.isFinite(value));
   const points: RideSeriesInputPoint[] = records.map((record, index) => {
     const timestamp = timestamps[index];
+    const coordinate = validFitCoordinate(record);
     return {
       ...(firstTime !== undefined && timestamp !== undefined && Number.isFinite(timestamp)
         ? { elapsedTimeS: Math.max(0, (timestamp - firstTime) / 1_000) }
         : {}),
       ...(finite(record.distance, 0) !== undefined ? { distanceM: finite(record.distance, 0) } : {}),
-      ...(finite(record.position_lat, -90, 90) !== undefined ? { latitude: finite(record.position_lat, -90, 90) } : {}),
-      ...(finite(record.position_long, -180, 180) !== undefined ? { longitude: finite(record.position_long, -180, 180) } : {}),
+      ...(coordinate ? { latitude: coordinate.latitude, longitude: coordinate.longitude } : {}),
       ...(finite(record.enhanced_altitude ?? record.altitude, -500, 10_000) !== undefined
         ? { elevationM: finite(record.enhanced_altitude ?? record.altitude, -500, 10_000) }
         : {}),
@@ -165,14 +202,17 @@ function buildFitSeries(
 function buildSensorQuality(
   records: ParsedRecord[],
   usefulPower: boolean,
+  usefulHeartRate: boolean,
 ): RideActivity["sensorQuality"] {
   return compactObject({
     gps: sensorQuality(
       records,
-      (record) => record.position_lat !== undefined && record.position_long !== undefined ? 1 : undefined,
+      (record) => validFitCoordinate(record) ? 1 : undefined,
       (value) => value === 1,
     ),
-    heart_rate: sensorQuality(records, (record) => record.heart_rate, (value) => value >= 30 && value <= 260),
+    heart_rate: usefulHeartRate
+      ? sensorQuality(records, (record) => record.heart_rate, (value) => value >= 30 && value <= 260)
+      : undefined,
     power: usefulPower
       ? sensorQuality(records, (record) => record.power, (value) => value >= 0 && value <= 3_000)
       : undefined,
@@ -212,6 +252,7 @@ export async function parseFitRide(input: ParseFitInput): Promise<RideRecord> {
   const session = cyclingSessions[0]!;
   const records = parsed.records ?? [];
   const usefulPower = hasUsefulPower(records, session);
+  const usefulHeartRate = hasUsefulHeartRate(records, session);
   const device = readDevice(parsed);
   const sourceIssues: RideIssue[] = [];
   if ((parsed.developer_data_ids?.length ?? 0) > 0 || (parsed.field_descriptions?.length ?? 0) > 0) {
@@ -229,10 +270,18 @@ export async function parseFitRide(input: ParseFitInput): Promise<RideRecord> {
       message: "FIT功率字段全程为0，按无有效功率数据处理",
     });
   }
+  const hasHeartRateFields = records.some((record) => record.heart_rate !== undefined) || session.avg_heart_rate !== undefined || session.max_heart_rate !== undefined;
+  if (hasHeartRateFields && !usefulHeartRate) {
+    sourceIssues.push({
+      code: "FIT_ALL_ZERO_HEART_RATE_IGNORED",
+      severity: "warning",
+      message: "FIT心率字段仅包含占位值，已按无有效心率处理",
+    });
+  }
 
   const indoor = session.sub_sport === "indoor_cycling" || session.sub_sport === "spin";
   const startTime = normalizeIso(session.start_time);
-  const sensorQuality = buildSensorQuality(records, usefulPower);
+  const sensorQuality = buildSensorQuality(records, usefulPower, usefulHeartRate);
   const activity: RideActivity = {
     schemaVersion: RIDE_SCHEMA_VERSION,
     rideId: input.rideId,
@@ -246,7 +295,7 @@ export async function parseFitRide(input: ParseFitInput): Promise<RideRecord> {
       deviceProduct: device.product,
     },
     startTime,
-    metrics: buildMetrics(input.rideId, session, usefulPower, startTime),
+    metrics: buildMetrics(input.rideId, session, usefulPower, usefulHeartRate, startTime),
     sensorQuality,
     sourceIssues,
   };
