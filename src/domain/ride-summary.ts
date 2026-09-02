@@ -110,6 +110,7 @@ const LABELS: Record<MetricKey, string> = {
   elapsedTimeS: "总时间",
   movingTimeS: "骑行时间",
   elevationGainM: "累计爬升",
+  elevationLossM: "累计下降",
   avgSpeedMps: "平均速度",
   maxSpeedMps: "最高速度",
   avgHeartRateBpm: "平均心率",
@@ -146,6 +147,7 @@ function formatMetric(key: MetricKey, metric: Metric): string {
     case "maxSpeedMps":
       return `${compactNumber(metric.value * 3.6)} km/h`;
     case "elevationGainM":
+    case "elevationLossM":
       return `${Math.round(metric.value)} m`;
     case "avgHeartRateBpm":
     case "maxHeartRateBpm":
@@ -187,6 +189,7 @@ function normalizeLimitation(code: string, fallback: string): string {
     FIT_DEVELOPER_FIELD_IGNORED: "检测到未支持的FIT开发字段，已安全忽略",
     FIT_ALL_ZERO_POWER_IGNORED: "功率字段仅包含占位值，已按无有效功率处理",
     FIT_ALL_ZERO_HEART_RATE_IGNORED: "心率字段仅包含占位值，已按无有效心率处理",
+    FIT_ALL_ZERO_CADENCE_IGNORED: "踏频字段仅包含占位值，已按无有效踏频处理",
     GPX_GPS_SPIKE_FILTERED: "检测到GPS孤立跳点，已在计算距离和速度前过滤",
   };
   return known[code] ?? fallback;
@@ -200,6 +203,7 @@ function normalizeCapabilityLimitation(message: string): string {
   if (message.includes("心率覆盖不足")) return "心率覆盖不足或存在无效样本，已按无可靠心率处理";
   if (message.includes("功率覆盖不足")) return "功率覆盖不足或存在无效样本，已按无可靠功率处理";
   if (message.includes("心率字段仅包含占位值")) return "心率字段仅包含占位值，已按无有效心率处理";
+  if (message.includes("踏频字段仅包含占位值")) return "踏频字段仅包含占位值，已按无有效踏频处理";
   if (message.includes("FIT开发字段") || message.includes("FIT 开发字段")) {
     return "检测到未支持的FIT开发字段，已安全忽略";
   }
@@ -241,6 +245,7 @@ export function buildRideContextSnapshot(
   const estimatedMetrics: RideContextSnapshot["estimatedMetrics"] = {};
 
   for (const [metricKey, metric] of Object.entries(activity.metrics) as [MetricKey, Metric][]) {
+    if (metricKey === "elevationLossM") continue;
     const target = metric.provenance === "recorded"
       ? recordedMetrics
       : metric.provenance === "calculated"

@@ -23,7 +23,7 @@ const UNTIMED_GPX = `<?xml version="1.0" encoding="UTF-8"?>
 </trkseg></trk></gpx>`;
 
 test("all current fixtures migrate to RideActivity v0.2 and valid RideSeries v0.1 contracts", () => {
-  assert.equal(rideFixtures.length, 14);
+  assert.equal(rideFixtures.length, 15);
   for (const fixture of rideFixtures) {
     assert.equal(fixture.activity.schemaVersion, "0.2", fixture.fixtureId);
     assert.equal(fixture.series.schemaVersion, "0.1", fixture.fixtureId);
@@ -116,6 +116,31 @@ test("all-zero FIT power never creates aggregate or series power capability", as
   assert.equal(record.activity.metrics.maxPowerW, undefined);
   assert.ok(!record.series.availableSeries.includes("power"));
   assert.ok(record.series.points.every((point) => point.powerW === undefined));
+});
+
+test("all-zero FIT cadence never creates aggregate or series cadence capability", async () => {
+  const record = await parseFitRide({
+    rideId: "fit-zero-cadence-series",
+    fileName: "zero-cadence.fit",
+    bytes: buildCyclingFitSample({ allZeroCadence: true }),
+  });
+  assert.equal(validateRideRecord(record).valid, true);
+  assert.equal(record.activity.metrics.avgCadenceRpm, undefined);
+  assert.equal(record.activity.metrics.maxCadenceRpm, undefined);
+  assert.equal(record.activity.sensorQuality.cadence, undefined);
+  assert.ok(!record.series.availableSeries.includes("cadence"));
+  assert.ok(record.series.points.every((point) => point.cadenceRpm === undefined));
+});
+
+test("a zero cadence sample remains valid when the FIT contains pedaling evidence", async () => {
+  const record = await parseFitRide({
+    rideId: "fit-cadence-coasting-series",
+    fileName: "cadence-coasting.fit",
+    bytes: buildCyclingFitSample({ includeCadenceZero: true }),
+  });
+  assert.ok(record.series.availableSeries.includes("cadence"));
+  assert.equal(record.series.points[0]?.cadenceRpm, 0);
+  assert.ok(record.series.points.some((point) => (point.cadenceRpm ?? 0) > 0));
 });
 
 test("series validation rejects activity/source mismatch and fabricated untimed GPX speed", () => {

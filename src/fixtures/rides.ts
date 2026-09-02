@@ -385,6 +385,19 @@ const activityFixtures: Omit<RideFixture, "series">[] = [
   },
 ];
 
+const l3Activity = activityFixtures.find((fixture) => fixture.fixtureId === "l3-built-in-sample")?.activity;
+if (!l3Activity) throw new Error("Missing L3 fixture for power preview");
+
+const powerPreviewFixture: Omit<RideFixture, "series"> = {
+  fixtureId: "l3-power-preview",
+  description: "Demo 完整功率数据样例",
+  activity: {
+    ...structuredClone(l3Activity),
+    rideId: "ride-l3-power-preview",
+  },
+  expected: { valid: true, dataLevel: "L3", analysisMode: "full", requiredIssueCodes: [] },
+};
+
 function buildFixtureSeries(activity: RideActivity) {
   const distance = activity.metrics.distanceM?.value;
   if (distance === undefined || distance <= 0) {
@@ -398,27 +411,37 @@ function buildFixtureSeries(activity: RideActivity) {
 
   const duration = activity.metrics.movingTimeS?.value ?? activity.metrics.elapsedTimeS?.value;
   const hasTiming = !(activity.source.kind === "gpx" && !activity.startTime) && duration !== undefined;
-  const points: RideSeriesInputPoint[] = Array.from({ length: 13 }, (_, index) => index / 12).map((ratio) => ({
-    latitude: 31.2 + ratio * 0.02 + Math.sin(ratio * Math.PI * 2) * 0.004,
-    longitude: 121.4 + ratio * 0.02 + Math.sin(ratio * Math.PI * 3) * 0.007,
-    distanceM: distance * ratio,
+  // Built-in samples advertise second-level sensor coverage, so retain a matching
+  // time axis instead of turning the display fixture into artificial long gaps.
+  const isPowerPreview = hasTiming && activity.rideId === "ride-l3-power-preview";
+  const pointCount = isPowerPreview ? Math.floor(duration) + 1 : 13;
+  const visualPointStride = isPowerPreview ? Math.max(1, Math.floor(duration / 12)) : 1;
+  const points: RideSeriesInputPoint[] = Array.from({ length: pointCount }, (_, index) => index / Math.max(1, pointCount - 1)).map((ratio, index) => {
+    const isVisualPoint = !isPowerPreview || index % visualPointStride === 0 || index === pointCount - 1;
+    return {
+    ...(isVisualPoint ? {
+      latitude: 31.2 + ratio * 0.02 + Math.sin(ratio * Math.PI * 2) * 0.004,
+      longitude: 121.4 + ratio * 0.02 + Math.sin(ratio * Math.PI * 3) * 0.007,
+    } : {}),
+    ...(isVisualPoint || isPowerPreview ? { distanceM: distance * ratio } : {}),
     ...(hasTiming ? { elapsedTimeS: duration * ratio } : {}),
-    ...(hasTiming && activity.metrics.avgSpeedMps ? {
+    ...(isVisualPoint && hasTiming && activity.metrics.avgSpeedMps ? {
       speedMps: activity.metrics.avgSpeedMps.value * (1 + 0.16 * Math.sin(ratio * Math.PI * 4) + 0.06 * Math.cos(ratio * Math.PI * 7)),
     } : {}),
-    ...(activity.metrics.elevationGainM ? {
+    ...((isVisualPoint || isPowerPreview) && activity.metrics.elevationGainM ? {
       elevationM: 30 + activity.metrics.elevationGainM.value * (0.16 * ratio + 0.07 * Math.sin(ratio * Math.PI * 2) + 0.04 * Math.sin(ratio * Math.PI * 5)),
     } : {}),
-    ...(activity.metrics.avgHeartRateBpm ? {
+    ...(isVisualPoint && activity.metrics.avgHeartRateBpm ? {
       heartRateBpm: activity.metrics.avgHeartRateBpm.value + 9 * Math.sin(ratio * Math.PI * 1.4) - 5 * Math.cos(ratio * Math.PI * 4),
     } : {}),
     ...(activity.metrics.avgPowerW ? {
       powerW: activity.metrics.avgPowerW.value * (0.84 + 0.23 * Math.sin(ratio * Math.PI * 5) + 0.08 * Math.cos(ratio * Math.PI * 2)),
     } : {}),
-    ...(activity.metrics.avgCadenceRpm ? {
+    ...(isVisualPoint && activity.metrics.avgCadenceRpm ? {
       cadenceRpm: activity.metrics.avgCadenceRpm.value + 7 * Math.sin(ratio * Math.PI * 4) - 3 * Math.cos(ratio * Math.PI * 7),
     } : {}),
-  }));
+  };
+  });
   return buildRideSeries({
     rideId: activity.rideId,
     sourceKind: activity.source.kind,
@@ -428,7 +451,7 @@ function buildFixtureSeries(activity: RideActivity) {
   });
 }
 
-export const rideFixtures: RideFixture[] = activityFixtures.map((fixture) => ({
+export const rideFixtures: RideFixture[] = [...activityFixtures, powerPreviewFixture].map((fixture) => ({
   ...fixture,
   series: buildFixtureSeries(fixture.activity),
 }));

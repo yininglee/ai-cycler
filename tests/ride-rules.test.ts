@@ -22,11 +22,11 @@ test("all fixtures match their expected validation and capability", () => {
 });
 
 test("built-in samples cover L1, L2, and L3", () => {
-  const sampleLevels = rideFixtures
+  const sampleLevels = new Set(rideFixtures
     .filter((fixture) => fixture.activity.source.kind === "sample")
     .map((fixture) => buildRideCapability(fixture.activity).dataLevel)
-    .sort();
-  assert.deepEqual(sampleLevels, ["L1", "L2", "L3"]);
+  );
+  assert.deepEqual([...sampleLevels].sort(), ["L1", "L2", "L3"]);
 });
 
 test("L1 never exposes heart-rate or power topics", () => {

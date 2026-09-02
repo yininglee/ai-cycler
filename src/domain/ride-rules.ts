@@ -20,6 +20,7 @@ const METRIC_BOUNDS: Partial<Record<MetricKey, { min: number; max: number }>> = 
   elapsedTimeS: { min: 0, max: 604_800 },
   movingTimeS: { min: 0, max: 604_800 },
   elevationGainM: { min: 0, max: 30_000 },
+  elevationLossM: { min: 0, max: 30_000 },
   avgSpeedMps: { min: 0, max: 40 },
   maxSpeedMps: { min: 0, max: 60 },
   avgHeartRateBpm: { min: 30, max: 240 },

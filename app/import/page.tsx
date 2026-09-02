@@ -7,7 +7,7 @@ import { RideFileUpload } from "../components/ride-file-upload";
 const samples = [
   { id: "l1-built-in-sample", capability: "轨迹", title: "只有轨迹", note: "距离、时间、速度、爬升" },
   { id: "l2-built-in-sample", capability: "心率", title: "包含心率", note: "在基础数据上增加心率" },
-  { id: "l3-built-in-sample", capability: "功率", title: "包含功率", note: "在心率上增加可靠功率" },
+  { id: "l3-power-preview", capability: "功率", title: "包含功率", note: "在心率上增加完整功率数据" },
 ] as const;
 
 export default async function ImportPage({ searchParams }: { searchParams: Promise<{ state?: string }> }) {

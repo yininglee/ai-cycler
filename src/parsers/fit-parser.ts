@@ -11,7 +11,7 @@ import { buildRideSeries, type RideSeriesInputPoint } from "../domain/ride-serie
 import { RideParseError } from "./parse-errors.ts";
 import { assertUploadSize, compactObject, metric, sensorQuality } from "./parser-utils.ts";
 
-export const FIT_ADAPTER_VERSION = "fit-parser-v0.2";
+export const FIT_ADAPTER_VERSION = "fit-parser-v0.3";
 
 type ParsedFit = Awaited<ReturnType<FitParser["parseAsync"]>>;
 type ParsedSession = NonNullable<ParsedFit["sessions"]>[number];
@@ -59,11 +59,19 @@ function hasUsefulHeartRate(records: ParsedRecord[], session: ParsedSession): bo
   return records.some((record) => Number.isFinite(record.heart_rate) && record.heart_rate! >= 30 && record.heart_rate! <= 260);
 }
 
+function hasUsefulCadence(records: ParsedRecord[], session: ParsedSession): boolean {
+  const sessionCadence = [session.avg_cadence, session.max_cadence]
+    .some((value) => Number.isFinite(value) && value! > 0 && value! <= 250);
+  if (sessionCadence) return true;
+  return records.some((record) => Number.isFinite(record.cadence) && record.cadence! > 0 && record.cadence! <= 250);
+}
+
 function buildMetrics(
   rideId: string,
   session: ParsedSession,
   usefulPower: boolean,
   usefulHeartRate: boolean,
+  usefulCadence: boolean,
   recordedAt: string | undefined,
 ): RideMetrics {
   const recorded = (
@@ -91,6 +99,7 @@ function buildMetrics(
       session.total_moving_time !== undefined ? "total_moving_time" : "total_timer_time",
     ),
     elevationGainM: recorded(session.total_ascent, "m", "ascent", "total_ascent"),
+    elevationLossM: recorded(session.total_descent, "m", "descent", "total_descent"),
     // Product average speed is distance divided by riding time, excluding
     // stopped time. FIT's recorded avg_speed may use elapsed time instead.
     avgSpeedMps: calculatedAverageSpeed !== undefined
@@ -129,8 +138,8 @@ function buildMetrics(
       "normalized-power",
       "normalized_power",
     ),
-    avgCadenceRpm: recorded(session.avg_cadence, "rpm", "avg-cadence", "avg_cadence"),
-    maxCadenceRpm: recorded(session.max_cadence, "rpm", "max-cadence", "max_cadence"),
+    avgCadenceRpm: recorded(usefulCadence ? session.avg_cadence : undefined, "rpm", "avg-cadence", "avg_cadence"),
+    maxCadenceRpm: recorded(usefulCadence ? session.max_cadence : undefined, "rpm", "max-cadence", "max_cadence"),
     activityEnergyKcal: recorded(session.total_calories, "kcal", "total-calories", "total_calories"),
   } satisfies RideMetrics);
 }
@@ -156,6 +165,7 @@ function buildFitSeries(
   records: ParsedRecord[],
   rideId: string,
   usefulPower: boolean,
+  usefulCadence: boolean,
   startTime: string | undefined,
   quality: RideActivity["sensorQuality"],
 ) {
@@ -178,7 +188,7 @@ function buildFitSeries(
         : {}),
       ...(finite(record.heart_rate, 30, 260) !== undefined ? { heartRateBpm: finite(record.heart_rate, 30, 260) } : {}),
       ...(usefulPower && finite(record.power, 0, 3_000) !== undefined ? { powerW: finite(record.power, 0, 3_000) } : {}),
-      ...(finite(record.cadence, 0, 250) !== undefined ? { cadenceRpm: finite(record.cadence, 0, 250) } : {}),
+      ...(usefulCadence && finite(record.cadence, 0, 250) !== undefined ? { cadenceRpm: finite(record.cadence, 0, 250) } : {}),
     };
   });
   return buildRideSeries({
@@ -203,6 +213,7 @@ function buildSensorQuality(
   records: ParsedRecord[],
   usefulPower: boolean,
   usefulHeartRate: boolean,
+  usefulCadence: boolean,
 ): RideActivity["sensorQuality"] {
   return compactObject({
     gps: sensorQuality(
@@ -216,7 +227,9 @@ function buildSensorQuality(
     power: usefulPower
       ? sensorQuality(records, (record) => record.power, (value) => value >= 0 && value <= 3_000)
       : undefined,
-    cadence: sensorQuality(records, (record) => record.cadence, (value) => value >= 0 && value <= 250),
+    cadence: usefulCadence
+      ? sensorQuality(records, (record) => record.cadence, (value) => value >= 0 && value <= 250)
+      : undefined,
   });
 }
 
@@ -253,6 +266,7 @@ export async function parseFitRide(input: ParseFitInput): Promise<RideRecord> {
   const records = parsed.records ?? [];
   const usefulPower = hasUsefulPower(records, session);
   const usefulHeartRate = hasUsefulHeartRate(records, session);
+  const usefulCadence = hasUsefulCadence(records, session);
   const device = readDevice(parsed);
   const sourceIssues: RideIssue[] = [];
   if ((parsed.developer_data_ids?.length ?? 0) > 0 || (parsed.field_descriptions?.length ?? 0) > 0) {
@@ -278,10 +292,18 @@ export async function parseFitRide(input: ParseFitInput): Promise<RideRecord> {
       message: "FIT心率字段仅包含占位值，已按无有效心率处理",
     });
   }
+  const hasCadenceFields = records.some((record) => record.cadence !== undefined) || session.avg_cadence !== undefined || session.max_cadence !== undefined;
+  if (hasCadenceFields && !usefulCadence) {
+    sourceIssues.push({
+      code: "FIT_ALL_ZERO_CADENCE_IGNORED",
+      severity: "warning",
+      message: "FIT踏频字段全程为0，按无有效踏频数据处理",
+    });
+  }
 
   const indoor = session.sub_sport === "indoor_cycling" || session.sub_sport === "spin";
   const startTime = normalizeIso(session.start_time);
-  const sensorQuality = buildSensorQuality(records, usefulPower, usefulHeartRate);
+  const sensorQuality = buildSensorQuality(records, usefulPower, usefulHeartRate, usefulCadence);
   const activity: RideActivity = {
     schemaVersion: RIDE_SCHEMA_VERSION,
     rideId: input.rideId,
@@ -295,11 +317,11 @@ export async function parseFitRide(input: ParseFitInput): Promise<RideRecord> {
       deviceProduct: device.product,
     },
     startTime,
-    metrics: buildMetrics(input.rideId, session, usefulPower, usefulHeartRate, startTime),
+    metrics: buildMetrics(input.rideId, session, usefulPower, usefulHeartRate, usefulCadence, startTime),
     sensorQuality,
     sourceIssues,
   };
-  return { activity, series: buildFitSeries(records, input.rideId, usefulPower, startTime, sensorQuality) };
+  return { activity, series: buildFitSeries(records, input.rideId, usefulPower, usefulCadence, startTime, sensorQuality) };
 }
 
 export async function parseFitActivity(input: ParseFitInput): Promise<RideActivity> {

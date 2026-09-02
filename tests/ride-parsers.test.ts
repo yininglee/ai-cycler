@@ -142,6 +142,21 @@ test("all-zero FIT heart-rate placeholders do not reject otherwise valid rides",
   assert.ok(activity.sourceIssues.some((issue) => issue.code === "FIT_ALL_ZERO_HEART_RATE_IGNORED"));
 });
 
+test("all-zero FIT cadence placeholders do not create cadence capability", async () => {
+  const activity = await parseFitActivity({
+    rideId: "fit-zero-cadence-001",
+    fileName: "zero-cadence.fit",
+    bytes: buildCyclingFitSample({ allZeroCadence: true }),
+  });
+  const validation = validateRideActivity(activity);
+
+  assert.equal(validation.valid, true);
+  assert.equal(activity.metrics.avgCadenceRpm, undefined);
+  assert.equal(activity.metrics.maxCadenceRpm, undefined);
+  assert.equal(activity.sensorQuality.cadence, undefined);
+  assert.ok(activity.sourceIssues.some((issue) => issue.code === "FIT_ALL_ZERO_CADENCE_IGNORED"));
+});
+
 test("timed GPX computes only traceable L1 metrics", () => {
   const activity = parseGpxActivity({ rideId: "gpx-timed-001", fileName: "timed.gpx", xml: TIMED_GPX });
   const validation = validateRideActivity(activity);

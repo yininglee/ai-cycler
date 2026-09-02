@@ -23,6 +23,7 @@ export type MetricKey =
   | "elapsedTimeS"
   | "movingTimeS"
   | "elevationGainM"
+  | "elevationLossM"
   | "avgSpeedMps"
   | "maxSpeedMps"
   | "avgHeartRateBpm"

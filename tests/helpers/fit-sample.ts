@@ -7,6 +7,8 @@ export interface FitSampleOptions {
   sessionCount?: number;
   allZeroPower?: boolean;
   allZeroHeartRate?: boolean;
+  allZeroCadence?: boolean;
+  includeCadenceZero?: boolean;
   includeGpsPlaceholder?: boolean;
 }
 
@@ -17,6 +19,8 @@ export function buildCyclingFitSample(options: FitSampleOptions = {}): Uint8Arra
   const sessionCount = options.sessionCount ?? 1;
   const allZeroPower = options.allZeroPower ?? false;
   const allZeroHeartRate = options.allZeroHeartRate ?? false;
+  const allZeroCadence = options.allZeroCadence ?? false;
+  const includeCadenceZero = options.includeCadenceZero ?? false;
   const includeGpsPlaceholder = options.includeGpsPlaceholder ?? false;
 
   encoder.writeMessage(0, [
@@ -35,7 +39,7 @@ export function buildCyclingFitSample(options: FitSampleOptions = {}): Uint8Arra
         { number: 1, size: 4, baseType: FitBaseType.Sint32, value: index === 0 ? 0 : Math.round(113.33 * 2 ** 31 / 180) },
       ] : []),
       { number: 3, size: 1, baseType: FitBaseType.Uint8, value: allZeroHeartRate ? 0 : 140 + index * 2 },
-      { number: 4, size: 1, baseType: FitBaseType.Uint8, value: 80 + index },
+      { number: 4, size: 1, baseType: FitBaseType.Uint8, value: allZeroCadence || (includeCadenceZero && index === 0) ? 0 : 80 + index },
       { number: 5, size: 4, baseType: FitBaseType.Uint32, value: distances[index]! * 100 },
       { number: 6, size: 2, baseType: FitBaseType.Uint16, value: index === 0 ? 0 : 2_917 },
       { number: 7, size: 2, baseType: FitBaseType.Uint16, value: allZeroPower ? 0 : 200 + index * 5 },
@@ -56,8 +60,8 @@ export function buildCyclingFitSample(options: FitSampleOptions = {}): Uint8Arra
       { number: 15, size: 2, baseType: FitBaseType.Uint16, value: 5_000 },
       { number: 16, size: 1, baseType: FitBaseType.Uint8, value: allZeroHeartRate ? 0 : 145 },
       { number: 17, size: 1, baseType: FitBaseType.Uint8, value: allZeroHeartRate ? 0 : 175 },
-      { number: 18, size: 1, baseType: FitBaseType.Uint8, value: 82 },
-      { number: 19, size: 1, baseType: FitBaseType.Uint8, value: 120 },
+      { number: 18, size: 1, baseType: FitBaseType.Uint8, value: allZeroCadence ? 0 : 82 },
+      { number: 19, size: 1, baseType: FitBaseType.Uint8, value: allZeroCadence ? 0 : 120 },
       { number: 20, size: 2, baseType: FitBaseType.Uint16, value: allZeroPower ? 0 : 210 },
       { number: 21, size: 2, baseType: FitBaseType.Uint16, value: allZeroPower ? 0 : 225 },
       { number: 22, size: 2, baseType: FitBaseType.Uint16, value: 120 },

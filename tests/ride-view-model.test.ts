@@ -49,9 +49,9 @@ test("detail sections expand only within the available data capability", () => {
 
   assert.deepEqual(l1.detailSections.map((section) => section.key), ["speed", "distance", "timing", "elevation"]);
   assert.deepEqual(l2.detailSections.map((section) => section.key), ["speed", "distance", "timing", "heart-rate", "cadence", "elevation"]);
-  assert.deepEqual(l3.detailSections.map((section) => section.key), ["speed", "distance", "timing", "heart-rate", "power", "training-load", "cadence", "elevation", "other"]);
+  assert.deepEqual(l3.detailSections.map((section) => section.key), ["speed", "distance", "timing", "heart-rate", "power", "cadence", "elevation", "other"]);
   assert.ok(l2.detailSections.flatMap((section) => section.metrics).every((metric) => !metric.label.includes("功率")));
-  assert.ok(l3.detailSections.flatMap((section) => section.metrics).some((metric) => metric.label === "标准化功率"));
+  assert.ok(!l3.detailSections.flatMap((section) => section.metrics).some((metric) => metric.label === "标准化功率"));
   assert.ok(l2.detailSections.flatMap((section) => section.metrics).some((metric) => metric.value === "84 rpm"));
   assert.ok(l3.detailSections.flatMap((section) => section.metrics).some((metric) => metric.value === "87 rpm"));
   assert.deepEqual(l3.detailSections.flatMap((section) => section.metrics)
@@ -59,16 +59,17 @@ test("detail sections expand only within the available data capability", () => {
     .map((metric) => metric.label), ["最高速度", "最高心率", "最大功率", "最大踏频", "运动消耗"]);
   assert.equal(l3.factCards.length, 5);
   assert.ok(!l3.analysis.snapshot.allowedClaims.some((claim) => claim.metricKey === "activityEnergyKcal"));
+  assert.deepEqual(l1.detailSections.find((section) => section.key === "elevation")?.metrics.map((metric) => metric.label), ["累计爬升", "累计下降", "最高海拔", "最低海拔", "海拔范围"]);
 });
 
 test("data details preserve evidence and do not invent missing metrics", () => {
   const basic = buildRidePageViewModel("gpx-no-timestamps");
   const allMetrics = basic.detailSections.flatMap((section) => section.metrics);
 
-  assert.deepEqual(basic.detailSections.map((section) => section.key), ["distance", "elevation"]);
-  assert.deepEqual(allMetrics.map((metric) => metric.label), ["距离", "累计爬升"]);
+  assert.deepEqual(basic.detailSections.map((section) => section.key), ["distance"]);
+  assert.deepEqual(allMetrics.map((metric) => metric.label), ["距离"]);
   assert.ok(allMetrics.every((metric) => metric.evidenceId));
-  assert.ok(!allMetrics.some((metric) => metric.label === "骑行时间" || metric.label === "平均速度"));
+  assert.ok(!allMetrics.some((metric) => ["骑行时间", "平均速度", "累计爬升"].includes(metric.label)));
   assert.match(basic.dataQuality.note, /不会用 0 代替/);
 });
 
@@ -84,21 +85,26 @@ test("data tab visuals follow the actual RideSeries capabilities", () => {
   const l1 = buildRidePageViewModel("l1-built-in-sample");
   const l2 = buildRidePageViewModel("l2-built-in-sample");
   const l3 = buildRidePageViewModel("l3-built-in-sample");
+  const powerPreview = buildRidePageViewModel("l3-power-preview");
 
   assert.ok(l1.visuals.route);
   assert.deepEqual(l1.visuals.charts.map((chart) => chart.key), ["speed", "elevation"]);
   assert.deepEqual(l2.visuals.charts.map((chart) => chart.key), ["speed", "elevation", "heart_rate", "cadence"]);
   assert.deepEqual(l3.visuals.charts.map((chart) => chart.key), ["speed", "elevation", "heart_rate", "power", "cadence"]);
-  assert.ok(l3.visuals.charts.every((chart) => chart.path.startsWith("M ") && chart.sampleCount === 13));
+  assert.ok(l3.visuals.charts.every((chart) => chart.path.startsWith("M ")));
+  assert.ok(l3.visuals.charts.every((chart) => chart.sampleCount === 13));
+  assert.equal(powerPreview.visuals.charts.find((chart) => chart.key === "power")?.sampleCount, 6_301);
+  assert.equal(powerPreview.visuals.charts.find((chart) => chart.key === "elevation")?.sampleCount, 6_301);
+  assert.ok(powerPreview.visuals.charts.filter((chart) => !["power", "elevation"].includes(chart.key)).every((chart) => chart.sampleCount === 13));
 });
 
-test("untimed GPX keeps route and elevation but never creates a speed chart", () => {
+test("untimed sparse GPX keeps its route but never invents speed or elevation charts", () => {
   const untimed = buildRidePageViewModel("gpx-no-timestamps");
 
   assert.ok(untimed.visuals.route);
-  assert.deepEqual(untimed.visuals.charts.map((chart) => chart.key), ["elevation"]);
-  assert.equal(untimed.visuals.charts[0]?.axisLabel, "骑行距离");
+  assert.deepEqual(untimed.visuals.charts.map((chart) => chart.key), []);
   assert.ok(!untimed.visuals.charts.some((chart) => chart.key === "speed"));
+  assert.ok(!untimed.visuals.charts.some((chart) => chart.key === "elevation"));
   assert.ok(!untimed.factCards.some((metric) => metric.label.includes("速度")));
 });
 
