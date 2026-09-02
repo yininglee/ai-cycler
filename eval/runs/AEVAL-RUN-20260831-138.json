@@ -1,0 +1,493 @@
+{
+  "schemaVersion": "advanced-interpretation-run-v0.1",
+  "benchmark": "AEVAL-M1-ADVANCED-INTERPRETATION",
+  "runId": "AEVAL-RUN-20260831-138",
+  "startedAt": "2026-08-31T18:24:06.339Z",
+  "completedAt": "2026-08-31T18:24:06.407Z",
+  "workflow": {
+    "name": "ride_analysis_v2",
+    "id": "7676429753852018707",
+    "version": "v0.0.9"
+  },
+  "versionMatrix": {
+    "contextSchemaVersion": "0.3",
+    "contextRulesVersion": "ride-analysis-context-rules-v0.3",
+    "claimRulesVersion": "ride-advanced-claim-rules-v0.1",
+    "projectionVersion": "ride-analysis-model-context-projection-v0.2",
+    "promptVersion": "3.1.6",
+    "outputContractVersion": "ride-analysis-output-v0.3.2",
+    "outputSchemaVersion": "ride-analysis-output-v0.3",
+    "workflowVersion": "ride_analysis_v2-v0.0.5"
+  },
+  "rawOutputsStored": false,
+  "answerKeyStored": false,
+  "manifestSha256": "65f75efd44c86e9a114cc60a2a4f2153eaf2a496a00978a2374df0e5e50a977a",
+  "answerKeySha256": "b43496039f391e5021b37c1236fee219582b11435402c18ec346d862f5907aee",
+  "authorization": {
+    "expectedSlots": 81,
+    "offset": 0,
+    "executedSlots": 22,
+    "candidateAttempts": 10,
+    "scope": "A/B x3 for 12 non-red-team; B x3 for 3 red-team"
+  },
+  "stopConditions": {
+    "earlyCheckAfterCandidateAttempts": 10,
+    "completionRateMin": 0.8,
+    "b0FallbackMaxExclusive": 0.2,
+    "p95MaxMs": 25000,
+    "triggered": {
+      "reason": "EARLY_STOP_COMPLETION_RATE_LT_80",
+      "afterCandidateAttempts": 10
+    }
+  },
+  "summary": {
+    "successCount": 0,
+    "failureCount": 22,
+    "validOutputCount": 0,
+    "p50Ms": 1.076,
+    "p95Ms": 4.107,
+    "candidateP95Ms": 2.1
+  },
+  "results": [
+    {
+      "caseId": "ADV-TIME-01",
+      "split": "dev",
+      "arm": "A",
+      "repetition": 1,
+      "requestId": "AEVAL-RUN-20260831-138:ADV-TIME-01:A:1",
+      "providerRequestId": "NOT_OBSERVABLE",
+      "outcome": "failure",
+      "errorCode": "PROVIDER_HTTP_ERROR",
+      "latencyMs": 37,
+      "tokenUsage": "NOT_OBSERVABLE",
+      "validation": {
+        "valid": false,
+        "issues": [
+          "PROVIDER_HTTP_ERROR"
+        ]
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-TIME-01",
+      "split": "dev",
+      "arm": "A",
+      "repetition": 2,
+      "requestId": "AEVAL-RUN-20260831-138:ADV-TIME-01:A:2",
+      "providerRequestId": "NOT_OBSERVABLE",
+      "outcome": "failure",
+      "errorCode": "PROVIDER_HTTP_ERROR",
+      "latencyMs": 1.965,
+      "tokenUsage": "NOT_OBSERVABLE",
+      "validation": {
+        "valid": false,
+        "issues": [
+          "PROVIDER_HTTP_ERROR"
+        ]
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-TIME-01",
+      "split": "dev",
+      "arm": "A",
+      "repetition": 3,
+      "requestId": "AEVAL-RUN-20260831-138:ADV-TIME-01:A:3",
+      "providerRequestId": "NOT_OBSERVABLE",
+      "outcome": "failure",
+      "errorCode": "PROVIDER_HTTP_ERROR",
+      "latencyMs": 1.726,
+      "tokenUsage": "NOT_OBSERVABLE",
+      "validation": {
+        "valid": false,
+        "issues": [
+          "PROVIDER_HTTP_ERROR"
+        ]
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-TIME-01",
+      "split": "dev",
+      "arm": "B",
+      "repetition": 1,
+      "requestId": "AEVAL-RUN-20260831-138:ADV-TIME-01:B:1",
+      "providerRequestId": "NOT_OBSERVABLE",
+      "outcome": "failure",
+      "errorCode": "PROVIDER_HTTP_ERROR",
+      "latencyMs": 1.776,
+      "tokenUsage": "NOT_OBSERVABLE",
+      "validation": {
+        "valid": false,
+        "issues": [
+          "PROVIDER_HTTP_ERROR"
+        ]
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-TIME-01",
+      "split": "dev",
+      "arm": "B",
+      "repetition": 2,
+      "requestId": "AEVAL-RUN-20260831-138:ADV-TIME-01:B:2",
+      "providerRequestId": "NOT_OBSERVABLE",
+      "outcome": "failure",
+      "errorCode": "PROVIDER_HTTP_ERROR",
+      "latencyMs": 2.1,
+      "tokenUsage": "NOT_OBSERVABLE",
+      "validation": {
+        "valid": false,
+        "issues": [
+          "PROVIDER_HTTP_ERROR"
+        ]
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-TIME-01",
+      "split": "dev",
+      "arm": "B",
+      "repetition": 3,
+      "requestId": "AEVAL-RUN-20260831-138:ADV-TIME-01:B:3",
+      "providerRequestId": "NOT_OBSERVABLE",
+      "outcome": "failure",
+      "errorCode": "PROVIDER_HTTP_ERROR",
+      "latencyMs": 1.494,
+      "tokenUsage": "NOT_OBSERVABLE",
+      "validation": {
+        "valid": false,
+        "issues": [
+          "PROVIDER_HTTP_ERROR"
+        ]
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-ROUTE-01",
+      "split": "regression",
+      "arm": "A",
+      "repetition": 1,
+      "requestId": "AEVAL-RUN-20260831-138:ADV-ROUTE-01:A:1",
+      "providerRequestId": "NOT_OBSERVABLE",
+      "outcome": "failure",
+      "errorCode": "PROVIDER_HTTP_ERROR",
+      "latencyMs": 4.107,
+      "tokenUsage": "NOT_OBSERVABLE",
+      "validation": {
+        "valid": false,
+        "issues": [
+          "PROVIDER_HTTP_ERROR"
+        ]
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-ROUTE-01",
+      "split": "regression",
+      "arm": "A",
+      "repetition": 2,
+      "requestId": "AEVAL-RUN-20260831-138:ADV-ROUTE-01:A:2",
+      "providerRequestId": "NOT_OBSERVABLE",
+      "outcome": "failure",
+      "errorCode": "PROVIDER_HTTP_ERROR",
+      "latencyMs": 1.652,
+      "tokenUsage": "NOT_OBSERVABLE",
+      "validation": {
+        "valid": false,
+        "issues": [
+          "PROVIDER_HTTP_ERROR"
+        ]
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-ROUTE-01",
+      "split": "regression",
+      "arm": "A",
+      "repetition": 3,
+      "requestId": "AEVAL-RUN-20260831-138:ADV-ROUTE-01:A:3",
+      "providerRequestId": "NOT_OBSERVABLE",
+      "outcome": "failure",
+      "errorCode": "PROVIDER_HTTP_ERROR",
+      "latencyMs": 1.273,
+      "tokenUsage": "NOT_OBSERVABLE",
+      "validation": {
+        "valid": false,
+        "issues": [
+          "PROVIDER_HTTP_ERROR"
+        ]
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-ROUTE-01",
+      "split": "regression",
+      "arm": "B",
+      "repetition": 1,
+      "requestId": "AEVAL-RUN-20260831-138:ADV-ROUTE-01:B:1",
+      "providerRequestId": "NOT_OBSERVABLE",
+      "outcome": "failure",
+      "errorCode": "PROVIDER_HTTP_ERROR",
+      "latencyMs": 1.361,
+      "tokenUsage": "NOT_OBSERVABLE",
+      "validation": {
+        "valid": false,
+        "issues": [
+          "PROVIDER_HTTP_ERROR"
+        ]
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-ROUTE-01",
+      "split": "regression",
+      "arm": "B",
+      "repetition": 2,
+      "requestId": "AEVAL-RUN-20260831-138:ADV-ROUTE-01:B:2",
+      "providerRequestId": "NOT_OBSERVABLE",
+      "outcome": "failure",
+      "errorCode": "PROVIDER_HTTP_ERROR",
+      "latencyMs": 1.076,
+      "tokenUsage": "NOT_OBSERVABLE",
+      "validation": {
+        "valid": false,
+        "issues": [
+          "PROVIDER_HTTP_ERROR"
+        ]
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-ROUTE-01",
+      "split": "regression",
+      "arm": "B",
+      "repetition": 3,
+      "requestId": "AEVAL-RUN-20260831-138:ADV-ROUTE-01:B:3",
+      "providerRequestId": "NOT_OBSERVABLE",
+      "outcome": "failure",
+      "errorCode": "PROVIDER_HTTP_ERROR",
+      "latencyMs": 1,
+      "tokenUsage": "NOT_OBSERVABLE",
+      "validation": {
+        "valid": false,
+        "issues": [
+          "PROVIDER_HTTP_ERROR"
+        ]
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-CLIMB-01",
+      "split": "blind",
+      "arm": "A",
+      "repetition": 1,
+      "requestId": "AEVAL-RUN-20260831-138:ADV-CLIMB-01:A:1",
+      "providerRequestId": "NOT_OBSERVABLE",
+      "outcome": "failure",
+      "errorCode": "PROVIDER_HTTP_ERROR",
+      "latencyMs": 1,
+      "tokenUsage": "NOT_OBSERVABLE",
+      "validation": {
+        "valid": false,
+        "issues": [
+          "PROVIDER_HTTP_ERROR"
+        ]
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-CLIMB-01",
+      "split": "blind",
+      "arm": "A",
+      "repetition": 2,
+      "requestId": "AEVAL-RUN-20260831-138:ADV-CLIMB-01:A:2",
+      "providerRequestId": "NOT_OBSERVABLE",
+      "outcome": "failure",
+      "errorCode": "PROVIDER_HTTP_ERROR",
+      "latencyMs": 1,
+      "tokenUsage": "NOT_OBSERVABLE",
+      "validation": {
+        "valid": false,
+        "issues": [
+          "PROVIDER_HTTP_ERROR"
+        ]
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-CLIMB-01",
+      "split": "blind",
+      "arm": "A",
+      "repetition": 3,
+      "requestId": "AEVAL-RUN-20260831-138:ADV-CLIMB-01:A:3",
+      "providerRequestId": "NOT_OBSERVABLE",
+      "outcome": "failure",
+      "errorCode": "PROVIDER_HTTP_ERROR",
+      "latencyMs": 1,
+      "tokenUsage": "NOT_OBSERVABLE",
+      "validation": {
+        "valid": false,
+        "issues": [
+          "PROVIDER_HTTP_ERROR"
+        ]
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-CLIMB-01",
+      "split": "blind",
+      "arm": "B",
+      "repetition": 1,
+      "requestId": "AEVAL-RUN-20260831-138:ADV-CLIMB-01:B:1",
+      "providerRequestId": "NOT_OBSERVABLE",
+      "outcome": "failure",
+      "errorCode": "PROVIDER_HTTP_ERROR",
+      "latencyMs": 1,
+      "tokenUsage": "NOT_OBSERVABLE",
+      "validation": {
+        "valid": false,
+        "issues": [
+          "PROVIDER_HTTP_ERROR"
+        ]
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-CLIMB-01",
+      "split": "blind",
+      "arm": "B",
+      "repetition": 2,
+      "requestId": "AEVAL-RUN-20260831-138:ADV-CLIMB-01:B:2",
+      "providerRequestId": "NOT_OBSERVABLE",
+      "outcome": "failure",
+      "errorCode": "PROVIDER_HTTP_ERROR",
+      "latencyMs": 1,
+      "tokenUsage": "NOT_OBSERVABLE",
+      "validation": {
+        "valid": false,
+        "issues": [
+          "PROVIDER_HTTP_ERROR"
+        ]
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-CLIMB-01",
+      "split": "blind",
+      "arm": "B",
+      "repetition": 3,
+      "requestId": "AEVAL-RUN-20260831-138:ADV-CLIMB-01:B:3",
+      "providerRequestId": "NOT_OBSERVABLE",
+      "outcome": "failure",
+      "errorCode": "PROVIDER_HTTP_ERROR",
+      "latencyMs": 1,
+      "tokenUsage": "NOT_OBSERVABLE",
+      "validation": {
+        "valid": false,
+        "issues": [
+          "PROVIDER_HTTP_ERROR"
+        ]
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-HR-01",
+      "split": "blind",
+      "arm": "A",
+      "repetition": 1,
+      "requestId": "AEVAL-RUN-20260831-138:ADV-HR-01:A:1",
+      "providerRequestId": "NOT_OBSERVABLE",
+      "outcome": "failure",
+      "errorCode": "PROVIDER_HTTP_ERROR",
+      "latencyMs": 1,
+      "tokenUsage": "NOT_OBSERVABLE",
+      "validation": {
+        "valid": false,
+        "issues": [
+          "PROVIDER_HTTP_ERROR"
+        ]
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-HR-01",
+      "split": "blind",
+      "arm": "A",
+      "repetition": 2,
+      "requestId": "AEVAL-RUN-20260831-138:ADV-HR-01:A:2",
+      "providerRequestId": "NOT_OBSERVABLE",
+      "outcome": "failure",
+      "errorCode": "PROVIDER_HTTP_ERROR",
+      "latencyMs": 1,
+      "tokenUsage": "NOT_OBSERVABLE",
+      "validation": {
+        "valid": false,
+        "issues": [
+          "PROVIDER_HTTP_ERROR"
+        ]
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-HR-01",
+      "split": "blind",
+      "arm": "A",
+      "repetition": 3,
+      "requestId": "AEVAL-RUN-20260831-138:ADV-HR-01:A:3",
+      "providerRequestId": "NOT_OBSERVABLE",
+      "outcome": "failure",
+      "errorCode": "PROVIDER_HTTP_ERROR",
+      "latencyMs": 1,
+      "tokenUsage": "NOT_OBSERVABLE",
+      "validation": {
+        "valid": false,
+        "issues": [
+          "PROVIDER_HTTP_ERROR"
+        ]
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-HR-01",
+      "split": "blind",
+      "arm": "B",
+      "repetition": 1,
+      "requestId": "AEVAL-RUN-20260831-138:ADV-HR-01:B:1",
+      "providerRequestId": "NOT_OBSERVABLE",
+      "outcome": "failure",
+      "errorCode": "PROVIDER_HTTP_ERROR",
+      "latencyMs": 1.217,
+      "tokenUsage": "NOT_OBSERVABLE",
+      "validation": {
+        "valid": false,
+        "issues": [
+          "PROVIDER_HTTP_ERROR"
+        ]
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    }
+  ]
+}

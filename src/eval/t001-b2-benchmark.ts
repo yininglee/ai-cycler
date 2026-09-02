@@ -66,8 +66,10 @@ export interface T001PromptAbExperiment {
 export interface T001B2VersionMatrix {
   appVersion: "visual-shell-v0.1";
   outputSchemaVersion: typeof RIDE_ANALYSIS_OUTPUT_SCHEMA_VERSION;
-  contextSchemaVersion: typeof RIDE_ANALYSIS_CONTEXT_SCHEMA_VERSION;
-  contextRulesVersion: typeof RIDE_ANALYSIS_CONTEXT_RULES_VERSION;
+  // Historical benchmark manifests are immutable evidence. Their context
+  // versions may legitimately predate the version used by current code.
+  contextSchemaVersion: string;
+  contextRulesVersion: string;
   featureRulesVersion: typeof RIDE_FEATURE_RULES_VERSION;
   eligibilitySchemaVersion: typeof ANALYSIS_ELIGIBILITY_SCHEMA_VERSION;
   eligibilityRulesVersion: typeof ANALYSIS_ELIGIBILITY_RULES_VERSION;
@@ -167,8 +169,8 @@ export interface T001B2EvaluatedBatch {
 const FIXED_VERSION_MATRIX = {
   appVersion: "visual-shell-v0.1",
   outputSchemaVersion: RIDE_ANALYSIS_OUTPUT_SCHEMA_VERSION,
-  contextSchemaVersion: RIDE_ANALYSIS_CONTEXT_SCHEMA_VERSION,
-  contextRulesVersion: RIDE_ANALYSIS_CONTEXT_RULES_VERSION,
+  contextSchemaVersion: "0.2",
+  contextRulesVersion: "ride-analysis-context-rules-v0.2",
   featureRulesVersion: RIDE_FEATURE_RULES_VERSION,
   eligibilitySchemaVersion: ANALYSIS_ELIGIBILITY_SCHEMA_VERSION,
   eligibilityRulesVersion: ANALYSIS_ELIGIBILITY_RULES_VERSION,

@@ -7,6 +7,8 @@ import {
 import type { RideAnalysisContext } from "../domain/ride-analysis-context.ts";
 
 export const RIDE_ANALYSIS_OUTPUT_SCHEMA_VERSION = "ride-analysis-output-v0.3" as const;
+/** Contract revision for P0-B claim, context-label, and numeric-whitelist semantics. The wire schema remains v0.3 for compatibility. */
+export const RIDE_ANALYSIS_OUTPUT_CONTRACT_VERSION = "ride-analysis-output-v0.3.2" as const;
 
 export interface RideAnalysisDimensionInsight {
   key: AnalysisDimensionKey;
@@ -59,7 +61,10 @@ const DATA_COMPLETENESS_PATTERNS = [/数据(?:记录)?完整/, /记录完整(?:�
 const DISTANCE_CLASSIFICATION_PATTERNS = [/长距离(?:骑行)?/, /短距离(?:骑行)?/];
 const ROUTE_CLASSIFICATION_PATTERNS = [/起伏(?:不大|很小|较小|平缓|明显|较大|很大)/, /起伏平缓/, /海拔落差不大/, /(?:路线|路况|地形|地势)(?:较为|比较|整体|相对)?(?:平缓|平坦|陡峭)/];
 const EFFORT_CLASSIFICATION_PATTERNS = [/(?:轻松|舒适|休闲|吃力)的?骑行/, /轻松(?:完成|骑行|达到)/, /舒服出汗/, /畅快骑行/, /舒服/, /状态(?:很好|不错|较好|不佳|较差)/];
-const UNSUPPORTED_CONTEXT_LABEL_PATTERNS = [/(?:周末|工作日|节假日|今天|今日|昨天|昨日|明天)/, /(?:晨骑|早骑|午骑|夜骑|夜间骑行|清晨骑行)/];
+const TIME_CONTEXT_LABEL_PATTERNS = [/(?:周末|工作日|节假日|今天|今日|昨天|昨日|明天)/];
+const SCENE_CONTEXT_LABEL_PATTERNS = [/(?:晨骑|早骑|午骑|夜骑|夜间骑行|清晨骑行)/];
+const ROUTE_CONTEXT_LABEL_PATTERNS = [/(?:城市|郊区|山路|公路|环线|隧道|高楼|树丛)(?:路线|路段|骑行)?/];
+const FIELD_LIKE_DIMENSION_KEYS = new Set(["distance", "time", "avgSpeed", "averageSpeed", "movingSpeed", "elevation", "heartRateZone", "powerZone"]);
 const UNSUPPORTED_PLAN_PATTERNS = [/(?:今日|今天)?骑行计划/, /按计划/, /完成(?:了)?计划/];
 const UNSUPPORTED_SUBJECTIVE_EXPERIENCE_PATTERNS = [/活力满满/, /享受(?:在路上|骑行|本次|这次)/, /骑行的(?:快乐|乐趣)/];
 const PHYSIOLOGICAL_CAUSALITY_PATTERNS = [/符合.*体能变化规律/, /说明.*(?:疲劳|体能)/];
@@ -76,8 +81,10 @@ const LOW_VALUE_META_PATTERNS = [
 const HALF_SEGMENT_PATTERNS = [/前半程/, /后半程/];
 const OVERBROAD_SERIES_CONCLUSION_PATTERNS = [/(?:全程|整个骑行|整个过程).{0,12}(?:没有变化|无变化|保持不变)/, /(?:没有变化|无变化|保持不变).{0,12}(?:全程|整个骑行|整个过程)/];
 const UNSCOPED_CONSISTENCY_PATTERN = /(?:功率|速度|心率|踏频)(?:输出|节奏)?保持一致/g;
-const HEADLINE_EVALUATION_PATTERNS = [
-  /整体/, /节奏/, /配速/, /表现/, /完成度/, /连贯/, /一致/, /变化/, /回落/, /起伏/, /稳定/, /平稳/, /均衡/, /衔接/,
+const HEADLINE_GENERIC_PATTERNS = [
+  /^本次骑行(?:完成|已完成|记录完成|已记录)$/,
+  /^数据(?:记录)?(?:完成|已完成|已记录)$/,
+  /^记录(?:一次)?骑行(?:过程)?$/,
 ];
 
 const MEANINGFUL_FEATURE_KEYS = new Set([
@@ -89,6 +96,21 @@ const MEANINGFUL_FEATURE_KEYS = new Set([
 
 function hasPattern(texts: string[], patterns: RegExp[]): boolean {
   return texts.some((text) => patterns.some((pattern) => pattern.test(text)));
+}
+
+function hasContextClaim(context: RideAnalysisContext, category: "time" | "scene" | "route"): boolean {
+  return context.allowedClaims.some((claim) => {
+    const key = claim.key.toLowerCase();
+    if (category === "time") return key === "context.date" || key === "context.timeofday" || key === "timeofday" || key === "ridedate";
+    if (category === "scene") return key.startsWith("context.scene") || key === "scene" || key === "ridecontext";
+    return key.startsWith("context.route") || key === "route.type" || key === "route.classification";
+  });
+}
+
+function hasUnsupportedContextLabel(texts: string[], context: RideAnalysisContext): boolean {
+  if (hasPattern(texts, TIME_CONTEXT_LABEL_PATTERNS) && !hasContextClaim(context, "time")) return true;
+  if (hasPattern(texts, SCENE_CONTEXT_LABEL_PATTERNS) && !hasContextClaim(context, "scene")) return true;
+  return hasPattern(texts, ROUTE_CONTEXT_LABEL_PATTERNS) && !hasContextClaim(context, "route");
 }
 
 function asRecord(value: unknown): Record<string, unknown> | undefined {
@@ -169,6 +191,19 @@ function validateClaimNumbers(text: string, claimIds: string[], context: RideAna
   for (const token of numberTokens(text)) if (!allowed.has(Number(token).toString())) issues.push(`${field}_UNSUPPORTED_NUMBER`);
 }
 
+function validateSingleClaimNumbers(texts: string[], context: RideAnalysisContext, issues: string[], field: string): void {
+  const claims = context.allowedClaims;
+  for (const text of texts) {
+    const tokens = numberTokens(text).map((token) => Number(token).toString());
+    if (tokens.length === 0) continue;
+    const supportedByOneClaim = claims.some((claim) => {
+      const allowed = claimNumericVariants(claim);
+      return tokens.every((token) => allowed.has(token));
+    });
+    if (!supportedByOneClaim) issues.push(`${field}_CROSS_CLAIM_NUMBER`);
+  }
+}
+
 type OverallTopic = "distance" | "time" | "pace" | "elevation" | "heartRate" | "power" | "cadence" | "energy";
 
 const OVERALL_TOPIC_PATTERNS: Array<[OverallTopic, RegExp]> = [
@@ -187,8 +222,8 @@ function claimSupportsTopic(claim: RideAnalysisContext["allowedClaims"][number],
   switch (topic) {
     case "distance": return key === "distancem";
     case "time": return key === "movingtimes" || key === "elapsedtimes";
-    case "pace": return key.includes("speed") || key === "avgspeedmps" || key === "maxspeedmps";
-    case "elevation": return key.toLowerCase().includes("elevation");
+    case "pace": return key.includes("speed") || key.startsWith("timing.") || key.startsWith("cruise.") || key === "avgspeedmps" || key === "maxspeedmps";
+    case "elevation": return key.toLowerCase().includes("elevation") || key.startsWith("route.") || key.startsWith("climb.");
     case "heartRate": return key.toLowerCase().includes("heartrate");
     case "power": return key.toLowerCase().includes("power");
     case "cadence": return key.toLowerCase().includes("cadence");
@@ -290,6 +325,7 @@ export function validateRideAnalysisOutputV03(
         continue;
       }
       const key = typeof dimension.key === "string" && DIMENSION_KEYS.has(dimension.key as AnalysisDimensionKey) ? dimension.key as AnalysisDimensionKey : undefined;
+      if (typeof dimension.key === "string" && FIELD_LIKE_DIMENSION_KEYS.has(dimension.key)) issues.push("DIMENSION_FIELD_LABEL");
       const text = typeof dimension.text === "string" ? dimension.text : undefined;
       const claimIds = asStringArray(dimension.claimIds);
       const confidence = typeof dimension.confidence === "string" && CONFIDENCE_VALUES.has(dimension.confidence as Confidence) ? dimension.confidence as Confidence : undefined;
@@ -362,7 +398,7 @@ export function validateRideAnalysisOutputV03(
   if (hasPattern(strictText, DISTANCE_CLASSIFICATION_PATTERNS)) issues.push("UNSUPPORTED_DISTANCE_CLASSIFICATION");
   if (hasPattern(strictText, ROUTE_CLASSIFICATION_PATTERNS)) issues.push("UNSUPPORTED_ROUTE_CLASSIFICATION");
   if (hasPattern(strictText, EFFORT_CLASSIFICATION_PATTERNS)) issues.push("UNSUPPORTED_EFFORT_CLASSIFICATION");
-  if (hasPattern(allText, UNSUPPORTED_CONTEXT_LABEL_PATTERNS)) issues.push("UNSUPPORTED_CONTEXT_LABEL");
+  if (hasUnsupportedContextLabel(allText, context)) issues.push("UNSUPPORTED_CONTEXT_LABEL");
   if (hasPattern(allText, UNSUPPORTED_PLAN_PATTERNS)) issues.push("UNSUPPORTED_PLAN_REFERENCE");
   if (hasPattern(strictText, UNSUPPORTED_SUBJECTIVE_EXPERIENCE_PATTERNS)) issues.push("UNSUPPORTED_SUBJECTIVE_EXPERIENCE");
   if (hasPattern(strictNonLimitations, MISSING_INPUT_LISTING_PATTERNS)) issues.push("MISSING_INPUT_LISTING");
@@ -372,11 +408,16 @@ export function validateRideAnalysisOutputV03(
   if (hasPattern(strictText, HALF_SEGMENT_PATTERNS)) issues.push("UNSUPPORTED_SEGMENT_LABEL");
   if (hasPattern(strictText, OVERBROAD_SERIES_CONCLUSION_PATTERNS)) issues.push("OVERBROAD_SERIES_CONCLUSION");
   if (hasUnscopedConsistencyConclusion(strictText)) issues.push("UNSCOPED_CONSISTENCY_CONCLUSION");
-  if (headline && !hasPattern([headline], HEADLINE_EVALUATION_PATTERNS)) issues.push("HEADLINE_NOT_EVALUATIVE");
+  // A headline is the PRD's "一句话标签": it may be a concise factual feature
+  // (for example, a late-stage speed change) and must not be forced to contain
+  // a fixed vocabulary of evaluation words. Only empty workflow-style labels
+  // are rejected; semantic quality is reviewed separately from the contract.
+  if (headline && hasPattern([headline], HEADLINE_GENERIC_PATTERNS)) issues.push("HEADLINE_GENERIC_LABEL");
   const allAllowedNumbers = claimNumbers(context, context.allowedClaims.map((claim) => claim.claimId));
   for (const text of allText) {
     for (const token of numberTokens(text)) if (!allAllowedNumbers.has(Number(token).toString())) issues.push("TEXT_UNSUPPORTED_NUMBER");
   }
+  validateSingleClaimNumbers([headline ?? "", ...(limitations ?? []), ...(shareCopy ?? [])], context, issues, "UNBOUND_TEXT");
   if (context.safetyFlags.some((flag) => flag === "stop_generation" || flag === "critical_safety") && safetyLevel !== "stop") {
     issues.push("SAFETY_LEVEL_MISMATCH");
   }

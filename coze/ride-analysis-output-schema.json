@@ -1,6 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "ride-analysis-output-v0.3",
+  "$id": "ride-analysis-output-v0.3.2",
+  "x-wireSchemaVersion": "ride-analysis-output-v0.3",
+  "x-contractRevision": "P0-B claim/context/numeric boundary revision; headline is the PRD-defined 一句话标签; the wire schemaVersion stays v0.3 during rollout",
   "type": "object",
   "additionalProperties": false,
   "required": ["schemaVersion", "headline", "overallAssessment", "dimensions", "notableEvents", "nextAction", "limitations", "safetyLevel", "shareCopy"],

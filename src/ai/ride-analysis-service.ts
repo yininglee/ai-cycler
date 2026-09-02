@@ -7,6 +7,7 @@ import {
 } from "./coze-workflow-client.ts";
 import {
   RIDE_ANALYSIS_OUTPUT_SCHEMA_VERSION,
+  RIDE_ANALYSIS_OUTPUT_CONTRACT_VERSION,
   validateRideAnalysisOutputV03,
   type RideAnalysisOutputV03,
 } from "./ride-analysis-output-v03.ts";
@@ -35,7 +36,10 @@ import type { RideRecord } from "../domain/ride-schema.ts";
 
 export const RIDE_ANALYSIS_SERVICE_VERSION = "ride-analysis-service-v1.5" as const;
 export const RIDE_ANALYSIS_WORKFLOW_VERSION = "ride_analysis_v2-dev.15" as const;
+/** Frozen historical prompt version used by immutable T001/V014 evidence. */
 export const RIDE_ANALYSIS_PROMPT_VERSION = "3.1.2" as const;
+/** Current candidate prompt revision for P0-B interpretation, context, and limitation repair. */
+export const RIDE_ANALYSIS_ACTIVE_PROMPT_VERSION = "3.1.6" as const;
 
 export type RideAnalysisFallbackCode =
   | "AI_DISABLED"
@@ -61,7 +65,8 @@ export interface SafetyStopOutput {
 interface RuntimeVersions {
   service: typeof RIDE_ANALYSIS_SERVICE_VERSION;
   outputSchema: typeof RIDE_ANALYSIS_OUTPUT_SCHEMA_VERSION;
-  prompt: typeof RIDE_ANALYSIS_PROMPT_VERSION;
+  outputContract: typeof RIDE_ANALYSIS_OUTPUT_CONTRACT_VERSION;
+  prompt: typeof RIDE_ANALYSIS_ACTIVE_PROMPT_VERSION;
   workflow: typeof RIDE_ANALYSIS_WORKFLOW_VERSION;
   modelId: string;
   context: string;
@@ -100,7 +105,8 @@ function versions(prepared: PreparedRideAnalysis, modelId: string, selection: Fe
   return {
     service: RIDE_ANALYSIS_SERVICE_VERSION,
     outputSchema: RIDE_ANALYSIS_OUTPUT_SCHEMA_VERSION,
-    prompt: RIDE_ANALYSIS_PROMPT_VERSION,
+    outputContract: RIDE_ANALYSIS_OUTPUT_CONTRACT_VERSION,
+    prompt: RIDE_ANALYSIS_ACTIVE_PROMPT_VERSION,
     workflow: RIDE_ANALYSIS_WORKFLOW_VERSION,
     modelId,
     context: prepared.context.schemaVersion,
@@ -166,7 +172,7 @@ function repairInstruction(issues: string[]): string {
   return [
     "上一输出未通过服务端校验。只修正JSON结构、claim引用、数字或越权维度；不得新增事实、数字、claim、维度或建议。",
     `错误码：${[...new Set(issues)].join(",")}`,
-    "仍只能使用analysis_context.allowedClaims和analysis_elig允许的维度，并只输出ride-analysis-output-v0.3 JSON。",
+    "仍只能使用analysis_context.allowedClaims和analysis_elig允许的维度，并只输出ride-analysis-output-v0.3 JSON；本轮Prompt为3.1.6，合同修订版本为ride-analysis-output-v0.3.2。",
   ].join("\n");
 }
 

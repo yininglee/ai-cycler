@@ -1,0 +1,116 @@
+{
+  "schemaVersion": "advanced-interpretation-manifest-v0.1",
+  "benchmark": "AEVAL-M1-ADVANCED-INTERPRETATION",
+  "versionMatrix": {
+    "contextSchemaVersion": "0.3",
+    "contextRulesVersion": "ride-analysis-context-rules-v0.3",
+    "claimRulesVersion": "ride-advanced-claim-rules-v0.1",
+    "projectionVersion": "ride-analysis-model-context-projection-v0.2",
+    "promptVersion": "3.1.6",
+    "outputContractVersion": "ride-analysis-output-v0.3.2",
+    "outputSchemaVersion": "ride-analysis-output-v0.3",
+    "workflowVersion": "ride_analysis_v2-v0.0.5"
+  },
+  "cases": [
+    {
+      "caseId": "ADV-TIME-01",
+      "split": "dev",
+      "file": "cases/ADV-TIME-01.json",
+      "sha256": "c27c3d9cece0569527d7cba82110b2db676a4ad6347e671fcb97f4700a646469"
+    },
+    {
+      "caseId": "ADV-ROUTE-01",
+      "split": "regression",
+      "file": "cases/ADV-ROUTE-01.json",
+      "sha256": "bf4b14874609749c89b29d89e75c2ffed6043546ae943fc80b4ebd883c46aa6c"
+    },
+    {
+      "caseId": "ADV-CLIMB-01",
+      "split": "blind",
+      "file": "cases/ADV-CLIMB-01.json",
+      "sha256": "b01f6e14b358d7e85e7e71116ef62965ade1c9bd8d9630135fb09d9a4ad6cdb5"
+    },
+    {
+      "caseId": "ADV-HR-01",
+      "split": "blind",
+      "file": "cases/ADV-HR-01.json",
+      "sha256": "0af947440d551139a21ce4132064215da0f95269e76a4164e833c759cba8d42a"
+    },
+    {
+      "caseId": "ADV-HR-02",
+      "split": "regression",
+      "file": "cases/ADV-HR-02.json",
+      "sha256": "cb609aa92beed78883c81baa4538e7d3b5c0b0f3fa40b79704ff2511f4214935"
+    },
+    {
+      "caseId": "ADV-CAD-01",
+      "split": "blind",
+      "file": "cases/ADV-CAD-01.json",
+      "sha256": "fdf2537a53f131ecb1110d3e7daca7d4e20072690ef570132c8506e67fc5b08e"
+    },
+    {
+      "caseId": "ADV-CAD-02",
+      "split": "regression",
+      "file": "cases/ADV-CAD-02.json",
+      "sha256": "b2b8656cb2df30c79799f5547076029165e8b499a8b138c0922482e2a3674ee0"
+    },
+    {
+      "caseId": "ADV-POWER-01",
+      "split": "blind",
+      "file": "cases/ADV-POWER-01.json",
+      "sha256": "431e1a15c81ee344cac58adb2f9566fe1285c3a7e51c46ebefe1d8dedb771d49"
+    },
+    {
+      "caseId": "ADV-POWER-02",
+      "split": "regression",
+      "file": "cases/ADV-POWER-02.json",
+      "sha256": "6b21d5c64e526e5634705b93de18a2e1e0caa4b110f99ebf7707396bd71da900"
+    },
+    {
+      "caseId": "ADV-POWER-03",
+      "split": "regression",
+      "file": "cases/ADV-POWER-03.json",
+      "sha256": "cf9123d02683ff26ae3a81c2b45d9011fbe6709d8cfc2bce382a2c84765c674c"
+    },
+    {
+      "caseId": "ADV-BASELINE-01",
+      "split": "blind",
+      "file": "cases/ADV-BASELINE-01.json",
+      "sha256": "05fc219233ca87fb90aeae0d931d830583dc0665a6b7daf35d26aadb00d18d54"
+    },
+    {
+      "caseId": "ADV-MIXED-01",
+      "split": "blind",
+      "file": "cases/ADV-MIXED-01.json",
+      "sha256": "3b48668ecdc049f084a11e5f780e0aa6d665a42ff37f12f475502bd227f7c25c"
+    },
+    {
+      "caseId": "ADV-RED-PRIVACY-01",
+      "split": "red-team",
+      "file": "cases/ADV-RED-PRIVACY-01.json",
+      "sha256": "b4253fef2968f31c90f84453459a5622685569f4bc21c125e5466589a5573748"
+    },
+    {
+      "caseId": "ADV-RED-SAFETY-01",
+      "split": "red-team",
+      "file": "cases/ADV-RED-SAFETY-01.json",
+      "sha256": "b0c03023e6a4994b27c1a5fe8138d0fb8a92ec110e2a496320feeb626c161eba"
+    },
+    {
+      "caseId": "ADV-RED-BOUNDARY-01",
+      "split": "red-team",
+      "file": "cases/ADV-RED-BOUNDARY-01.json",
+      "sha256": "00c972f7c9ac7491d193f5c1fb02b9e95d55827a281c78c021f2ba5de89abd99"
+    }
+  ],
+  "counts": {
+    "dev": 1,
+    "regression": 5,
+    "blind": 6,
+    "red-team": 3
+  },
+  "blindAnswerKey": {
+    "file": "blind/answer-key.json",
+    "sha256": "b43496039f391e5021b37c1236fee219582b11435402c18ec346d862f5907aee"
+  }
+}

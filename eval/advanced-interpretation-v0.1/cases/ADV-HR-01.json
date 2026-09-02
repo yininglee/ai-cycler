@@ -1,0 +1,123 @@
+{
+  "schemaVersion": "advanced-interpretation-case-v0.1",
+  "caseId": "ADV-HR-01",
+  "split": "blind",
+  "source": {
+    "kind": "synthetic_deidentified",
+    "privacy": "No raw FIT/GPX, filename, coordinates, route points, identity, or health free text."
+  },
+  "modelInput": {
+    "schemaVersion": "0.3",
+    "rulesVersion": "ride-analysis-context-rules-v0.3",
+    "contextType": "ride_analysis",
+    "rideId": "eval-adv-hr-01",
+    "userScope": "advanced-eval",
+    "allowedClaims": [
+      {
+        "claimId": "claim:eval-adv-hr-01:base:distanceM",
+        "kind": "metric",
+        "key": "distanceM",
+        "confidence": "high",
+        "provenance": "recorded",
+        "evidenceIds": [
+          "evidence:eval-adv-hr-01:base:distanceM"
+        ],
+        "formulaVersion": "ride-base-claim-rules-v0.1",
+        "value": 30000,
+        "unit": "m",
+        "text": "骑行距离 30.0 km"
+      },
+      {
+        "claimId": "claim:eval-adv-hr-01:base:elapsedTimeS",
+        "kind": "metric",
+        "key": "elapsedTimeS",
+        "confidence": "high",
+        "provenance": "recorded",
+        "evidenceIds": [
+          "evidence:eval-adv-hr-01:base:elapsedTimeS"
+        ],
+        "formulaVersion": "ride-base-claim-rules-v0.1",
+        "value": 3600,
+        "unit": "s",
+        "text": "骑行用时 60 分钟"
+      },
+      {
+        "claimId": "claim:eval-adv-hr-01:base:speedSeriesMeanMps",
+        "kind": "feature",
+        "key": "speedSeriesMeanMps",
+        "confidence": "high",
+        "provenance": "recorded",
+        "evidenceIds": [
+          "evidence:eval-adv-hr-01:base:speedSeriesMeanMps"
+        ],
+        "formulaVersion": "ride-base-claim-rules-v0.1",
+        "value": 6.5,
+        "unit": "m/s",
+        "text": "平均速度特征 23.4 km/h"
+      },
+      {
+        "claimId": "claim:eval-adv-hr-01:advanced:heartRate.baseline",
+        "kind": "advanced",
+        "key": "heartRate.baseline",
+        "confidence": "high",
+        "provenance": "calculated",
+        "evidenceIds": [
+          "evidence:eval-adv-hr-01:advanced:heartRate.baseline"
+        ],
+        "formulaVersion": "ride-advanced-claim-rules-v0.1",
+        "value": 188,
+        "unit": "bpm",
+        "text": "心率分区基线 188 bpm（用户填写）"
+      },
+      {
+        "claimId": "claim:eval-adv-hr-01:advanced:heartRate.zone.z2",
+        "kind": "advanced",
+        "key": "heartRate.zone.z2",
+        "confidence": "high",
+        "provenance": "calculated",
+        "evidenceIds": [
+          "evidence:eval-adv-hr-01:advanced:heartRate.zone.z2"
+        ],
+        "formulaVersion": "ride-advanced-claim-rules-v0.1",
+        "value": 1320,
+        "unit": "s",
+        "text": "Z2 · 113–131 bpm：22 分钟，占有效骑行时间 39%"
+      },
+      {
+        "claimId": "claim:eval-adv-hr-01:advanced:heartRate.zone.z4",
+        "kind": "advanced",
+        "key": "heartRate.zone.z4",
+        "confidence": "high",
+        "provenance": "calculated",
+        "evidenceIds": [
+          "evidence:eval-adv-hr-01:advanced:heartRate.zone.z4"
+        ],
+        "formulaVersion": "ride-advanced-claim-rules-v0.1",
+        "value": 540,
+        "unit": "s",
+        "text": "Z4 · 151–169 bpm：9 分钟，占有效骑行时间 16%"
+      }
+    ],
+    "forbiddenClaims": [
+      "historyComparison",
+      "trend"
+    ],
+    "limitations": [],
+    "safetyFlags": [],
+    "privacyFlags": [
+      "raw_track_excluded",
+      "precise_coordinates_excluded",
+      "source_filename_excluded",
+      "untrusted_free_text_excluded"
+    ]
+  },
+  "analysisEligibility": {
+    "eligible": true,
+    "status": "eligible",
+    "fallback": "b0"
+  },
+  "evaluationFocus": [
+    "描述心率区间停留时间",
+    "避免医疗化"
+  ]
+}

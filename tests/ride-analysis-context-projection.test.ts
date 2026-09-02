@@ -55,5 +55,5 @@ test("model context projection reduces every frozen T001 input", () => {
 });
 
 test("projection version is explicit and independent from the domain context version", () => {
-  assert.equal(RIDE_ANALYSIS_MODEL_CONTEXT_PROJECTION_VERSION, "ride-analysis-model-context-projection-v0.1");
+  assert.equal(RIDE_ANALYSIS_MODEL_CONTEXT_PROJECTION_VERSION, "ride-analysis-model-context-projection-v0.2");
 });

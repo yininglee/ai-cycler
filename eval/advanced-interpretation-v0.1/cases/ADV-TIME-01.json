@@ -1,0 +1,159 @@
+{
+  "schemaVersion": "advanced-interpretation-case-v0.1",
+  "caseId": "ADV-TIME-01",
+  "split": "dev",
+  "source": {
+    "kind": "synthetic_deidentified",
+    "privacy": "No raw FIT/GPX, filename, coordinates, route points, identity, or health free text."
+  },
+  "modelInput": {
+    "schemaVersion": "0.3",
+    "rulesVersion": "ride-analysis-context-rules-v0.3",
+    "contextType": "ride_analysis",
+    "rideId": "eval-adv-time-01",
+    "userScope": "advanced-eval",
+    "allowedClaims": [
+      {
+        "claimId": "claim:eval-adv-time-01:base:distanceM",
+        "kind": "metric",
+        "key": "distanceM",
+        "confidence": "high",
+        "provenance": "recorded",
+        "evidenceIds": [
+          "evidence:eval-adv-time-01:base:distanceM"
+        ],
+        "formulaVersion": "ride-base-claim-rules-v0.1",
+        "value": 30000,
+        "unit": "m",
+        "text": "骑行距离 30.0 km"
+      },
+      {
+        "claimId": "claim:eval-adv-time-01:base:elapsedTimeS",
+        "kind": "metric",
+        "key": "elapsedTimeS",
+        "confidence": "high",
+        "provenance": "recorded",
+        "evidenceIds": [
+          "evidence:eval-adv-time-01:base:elapsedTimeS"
+        ],
+        "formulaVersion": "ride-base-claim-rules-v0.1",
+        "value": 3600,
+        "unit": "s",
+        "text": "骑行用时 60 分钟"
+      },
+      {
+        "claimId": "claim:eval-adv-time-01:base:speedSeriesMeanMps",
+        "kind": "feature",
+        "key": "speedSeriesMeanMps",
+        "confidence": "high",
+        "provenance": "recorded",
+        "evidenceIds": [
+          "evidence:eval-adv-time-01:base:speedSeriesMeanMps"
+        ],
+        "formulaVersion": "ride-base-claim-rules-v0.1",
+        "value": 6.5,
+        "unit": "m/s",
+        "text": "平均速度特征 23.4 km/h"
+      },
+      {
+        "claimId": "claim:eval-adv-time-01:advanced:timing.elapsedAverageSpeedMps",
+        "kind": "advanced",
+        "key": "timing.elapsedAverageSpeedMps",
+        "confidence": "high",
+        "provenance": "calculated",
+        "evidenceIds": [
+          "evidence:eval-adv-time-01:advanced:timing.elapsedAverageSpeedMps"
+        ],
+        "formulaVersion": "ride-advanced-claim-rules-v0.1",
+        "value": 6.1,
+        "unit": "m/s",
+        "text": "总均速 22.0 km/h"
+      },
+      {
+        "claimId": "claim:eval-adv-time-01:advanced:timing.movingAverageSpeedMps",
+        "kind": "advanced",
+        "key": "timing.movingAverageSpeedMps",
+        "confidence": "high",
+        "provenance": "calculated",
+        "evidenceIds": [
+          "evidence:eval-adv-time-01:advanced:timing.movingAverageSpeedMps"
+        ],
+        "formulaVersion": "ride-advanced-claim-rules-v0.1",
+        "value": 6.7,
+        "unit": "m/s",
+        "text": "移动均速 24.1 km/h"
+      },
+      {
+        "claimId": "claim:eval-adv-time-01:advanced:timing.stoppedTimeS",
+        "kind": "advanced",
+        "key": "timing.stoppedTimeS",
+        "confidence": "high",
+        "provenance": "calculated",
+        "evidenceIds": [
+          "evidence:eval-adv-time-01:advanced:timing.stoppedTimeS"
+        ],
+        "formulaVersion": "ride-advanced-claim-rules-v0.1",
+        "value": 540,
+        "unit": "s",
+        "text": "停歇 9 分钟"
+      },
+      {
+        "claimId": "claim:eval-adv-time-01:advanced:cruise.totalDurationS",
+        "kind": "advanced",
+        "key": "cruise.totalDurationS",
+        "confidence": "high",
+        "provenance": "calculated",
+        "evidenceIds": [
+          "evidence:eval-adv-time-01:advanced:cruise.totalDurationS"
+        ],
+        "formulaVersion": "ride-advanced-claim-rules-v0.1",
+        "value": 960,
+        "unit": "s",
+        "text": "识别到 3 段巡航，合计 16 分钟"
+      },
+      {
+        "claimId": "claim:eval-adv-time-01:advanced:cruise.representative.1",
+        "kind": "advanced",
+        "key": "cruise.representative.1",
+        "confidence": "high",
+        "provenance": "calculated",
+        "evidenceIds": [
+          "evidence:eval-adv-time-01:advanced:cruise.representative.1"
+        ],
+        "formulaVersion": "ride-advanced-claim-rules-v0.1",
+        "value": 420,
+        "unit": "s",
+        "text": "长巡航 7 分钟，均速 25.2 km/h"
+      }
+    ],
+    "forbiddenClaims": [
+      "historyComparison",
+      "trend"
+    ],
+    "limitations": [],
+    "safetyFlags": [],
+    "privacyFlags": [
+      "raw_track_excluded",
+      "precise_coordinates_excluded",
+      "source_filename_excluded",
+      "untrusted_free_text_excluded"
+    ]
+  },
+  "analysisEligibility": {
+    "eligible": true,
+    "status": "eligible",
+    "fallback": "b0"
+  },
+  "expected": {
+    "focus": [
+      "区分总均速、移动均速和停歇",
+      "以巡航作为稳定输出的证据"
+    ],
+    "forbidden": [
+      "将停歇表述为体能下降"
+    ],
+    "hardChecks": [
+      "timing_and_cruise_claims_only"
+    ]
+  }
+}

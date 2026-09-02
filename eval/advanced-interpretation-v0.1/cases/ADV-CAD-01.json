@@ -1,0 +1,108 @@
+{
+  "schemaVersion": "advanced-interpretation-case-v0.1",
+  "caseId": "ADV-CAD-01",
+  "split": "blind",
+  "source": {
+    "kind": "synthetic_deidentified",
+    "privacy": "No raw FIT/GPX, filename, coordinates, route points, identity, or health free text."
+  },
+  "modelInput": {
+    "schemaVersion": "0.3",
+    "rulesVersion": "ride-analysis-context-rules-v0.3",
+    "contextType": "ride_analysis",
+    "rideId": "eval-adv-cad-01",
+    "userScope": "advanced-eval",
+    "allowedClaims": [
+      {
+        "claimId": "claim:eval-adv-cad-01:base:distanceM",
+        "kind": "metric",
+        "key": "distanceM",
+        "confidence": "high",
+        "provenance": "recorded",
+        "evidenceIds": [
+          "evidence:eval-adv-cad-01:base:distanceM"
+        ],
+        "formulaVersion": "ride-base-claim-rules-v0.1",
+        "value": 30000,
+        "unit": "m",
+        "text": "骑行距离 30.0 km"
+      },
+      {
+        "claimId": "claim:eval-adv-cad-01:base:elapsedTimeS",
+        "kind": "metric",
+        "key": "elapsedTimeS",
+        "confidence": "high",
+        "provenance": "recorded",
+        "evidenceIds": [
+          "evidence:eval-adv-cad-01:base:elapsedTimeS"
+        ],
+        "formulaVersion": "ride-base-claim-rules-v0.1",
+        "value": 3600,
+        "unit": "s",
+        "text": "骑行用时 60 分钟"
+      },
+      {
+        "claimId": "claim:eval-adv-cad-01:base:speedSeriesMeanMps",
+        "kind": "feature",
+        "key": "speedSeriesMeanMps",
+        "confidence": "high",
+        "provenance": "recorded",
+        "evidenceIds": [
+          "evidence:eval-adv-cad-01:base:speedSeriesMeanMps"
+        ],
+        "formulaVersion": "ride-base-claim-rules-v0.1",
+        "value": 6.5,
+        "unit": "m/s",
+        "text": "平均速度特征 23.4 km/h"
+      },
+      {
+        "claimId": "claim:eval-adv-cad-01:advanced:cadence.zone.zero",
+        "kind": "advanced",
+        "key": "cadence.zone.zero",
+        "confidence": "high",
+        "provenance": "calculated",
+        "evidenceIds": [
+          "evidence:eval-adv-cad-01:advanced:cadence.zone.zero"
+        ],
+        "formulaVersion": "ride-advanced-claim-rules-v0.1",
+        "value": 360,
+        "unit": "s",
+        "text": "0 rpm：6 分钟，占有效骑行时间 10%"
+      },
+      {
+        "claimId": "claim:eval-adv-cad-01:advanced:cadence.zone.endurance",
+        "kind": "advanced",
+        "key": "cadence.zone.endurance",
+        "confidence": "high",
+        "provenance": "calculated",
+        "evidenceIds": [
+          "evidence:eval-adv-cad-01:advanced:cadence.zone.endurance"
+        ],
+        "formulaVersion": "ride-advanced-claim-rules-v0.1",
+        "value": 2460,
+        "unit": "s",
+        "text": "75–89 rpm：41 分钟，占有效骑行时间 68%"
+      }
+    ],
+    "forbiddenClaims": [
+      "historyComparison",
+      "trend"
+    ],
+    "limitations": [],
+    "safetyFlags": [],
+    "privacyFlags": [
+      "raw_track_excluded",
+      "precise_coordinates_excluded",
+      "source_filename_excluded",
+      "untrusted_free_text_excluded"
+    ]
+  },
+  "analysisEligibility": {
+    "eligible": true,
+    "status": "eligible",
+    "fallback": "b0"
+  },
+  "evaluationFocus": [
+    "将 0 rpm 解释为滑行或未踩踏的描述性分布"
+  ]
+}

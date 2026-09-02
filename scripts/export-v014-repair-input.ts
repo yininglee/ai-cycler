@@ -63,6 +63,10 @@ const output = {
 };
 const outputDirectory = "output/coze-inputs";
 const outputFile = `${outputDirectory}/l3-built-in-sample-repair-v3.1.2.json`;
+const currentOutputFile = `${outputDirectory}/l3-built-in-sample-repair-v3.1.6.json`;
 await mkdir(outputDirectory, { recursive: true });
-await writeFile(outputFile, `${JSON.stringify(output, null, 2)}\n`, "utf8");
+const serialized = `${JSON.stringify(output, null, 2)}\n`;
+await writeFile(outputFile, serialized, "utf8");
+await writeFile(currentOutputFile, serialized, "utf8");
 console.log(`已生成 ${outputFile}`);
+console.log(`已生成 ${currentOutputFile}`);

@@ -1,0 +1,151 @@
+{
+  "schemaVersion": "advanced-interpretation-case-v0.1",
+  "caseId": "ADV-MIXED-01",
+  "split": "blind",
+  "source": {
+    "kind": "synthetic_deidentified",
+    "privacy": "No raw FIT/GPX, filename, coordinates, route points, identity, or health free text."
+  },
+  "modelInput": {
+    "schemaVersion": "0.3",
+    "rulesVersion": "ride-analysis-context-rules-v0.3",
+    "contextType": "ride_analysis",
+    "rideId": "eval-adv-mixed-01",
+    "userScope": "advanced-eval",
+    "allowedClaims": [
+      {
+        "claimId": "claim:eval-adv-mixed-01:base:distanceM",
+        "kind": "metric",
+        "key": "distanceM",
+        "confidence": "high",
+        "provenance": "recorded",
+        "evidenceIds": [
+          "evidence:eval-adv-mixed-01:base:distanceM"
+        ],
+        "formulaVersion": "ride-base-claim-rules-v0.1",
+        "value": 30000,
+        "unit": "m",
+        "text": "骑行距离 30.0 km"
+      },
+      {
+        "claimId": "claim:eval-adv-mixed-01:base:elapsedTimeS",
+        "kind": "metric",
+        "key": "elapsedTimeS",
+        "confidence": "high",
+        "provenance": "recorded",
+        "evidenceIds": [
+          "evidence:eval-adv-mixed-01:base:elapsedTimeS"
+        ],
+        "formulaVersion": "ride-base-claim-rules-v0.1",
+        "value": 3600,
+        "unit": "s",
+        "text": "骑行用时 60 分钟"
+      },
+      {
+        "claimId": "claim:eval-adv-mixed-01:base:speedSeriesMeanMps",
+        "kind": "feature",
+        "key": "speedSeriesMeanMps",
+        "confidence": "high",
+        "provenance": "recorded",
+        "evidenceIds": [
+          "evidence:eval-adv-mixed-01:base:speedSeriesMeanMps"
+        ],
+        "formulaVersion": "ride-base-claim-rules-v0.1",
+        "value": 6.5,
+        "unit": "m/s",
+        "text": "平均速度特征 23.4 km/h"
+      },
+      {
+        "claimId": "claim:eval-adv-mixed-01:advanced:timing.movingAverageSpeedMps",
+        "kind": "advanced",
+        "key": "timing.movingAverageSpeedMps",
+        "confidence": "high",
+        "provenance": "calculated",
+        "evidenceIds": [
+          "evidence:eval-adv-mixed-01:advanced:timing.movingAverageSpeedMps"
+        ],
+        "formulaVersion": "ride-advanced-claim-rules-v0.1",
+        "value": 7.2,
+        "unit": "m/s",
+        "text": "移动均速 25.9 km/h"
+      },
+      {
+        "claimId": "claim:eval-adv-mixed-01:advanced:climb.representative.1",
+        "kind": "advanced",
+        "key": "climb.representative.1",
+        "confidence": "high",
+        "provenance": "calculated",
+        "evidenceIds": [
+          "evidence:eval-adv-mixed-01:advanced:climb.representative.1"
+        ],
+        "formulaVersion": "ride-advanced-claim-rules-v0.1",
+        "value": 2800,
+        "unit": "m",
+        "text": "3级爬坡 2.8 km，净爬升 185 m，平均坡度 6.6%"
+      },
+      {
+        "claimId": "claim:eval-adv-mixed-01:advanced:heartRate.baseline",
+        "kind": "advanced",
+        "key": "heartRate.baseline",
+        "confidence": "high",
+        "provenance": "calculated",
+        "evidenceIds": [
+          "evidence:eval-adv-mixed-01:advanced:heartRate.baseline"
+        ],
+        "formulaVersion": "ride-advanced-claim-rules-v0.1",
+        "value": 190,
+        "unit": "bpm",
+        "text": "心率分区基线 190 bpm（用户填写）"
+      },
+      {
+        "claimId": "claim:eval-adv-mixed-01:advanced:cadence.zone.endurance",
+        "kind": "advanced",
+        "key": "cadence.zone.endurance",
+        "confidence": "high",
+        "provenance": "calculated",
+        "evidenceIds": [
+          "evidence:eval-adv-mixed-01:advanced:cadence.zone.endurance"
+        ],
+        "formulaVersion": "ride-advanced-claim-rules-v0.1",
+        "value": 2160,
+        "unit": "s",
+        "text": "75–89 rpm：36 分钟，占有效骑行时间 62%"
+      },
+      {
+        "claimId": "claim:eval-adv-mixed-01:advanced:power.trainingStressScore",
+        "kind": "advanced",
+        "key": "power.trainingStressScore",
+        "confidence": "high",
+        "provenance": "calculated",
+        "evidenceIds": [
+          "evidence:eval-adv-mixed-01:advanced:power.trainingStressScore"
+        ],
+        "formulaVersion": "ride-advanced-claim-rules-v0.1",
+        "value": 98,
+        "unit": "score",
+        "text": "训练压力 TSS 98"
+      }
+    ],
+    "forbiddenClaims": [
+      "historyComparison",
+      "trend"
+    ],
+    "limitations": [],
+    "safetyFlags": [],
+    "privacyFlags": [
+      "raw_track_excluded",
+      "precise_coordinates_excluded",
+      "source_filename_excluded",
+      "untrusted_free_text_excluded"
+    ]
+  },
+  "analysisEligibility": {
+    "eligible": true,
+    "status": "eligible",
+    "fallback": "b0"
+  },
+  "evaluationFocus": [
+    "只选 1–3 个高价值发现",
+    "多维事实并列时逐项引用证据"
+  ]
+}

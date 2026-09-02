@@ -65,8 +65,8 @@ test("V014 repair export contains a reproducible invalid previous output and mat
     { activity: structuredClone(fixture.activity), series: structuredClone(fixture.series) },
     "local-demo",
   );
-  assert.deepEqual(JSON.parse(input.analysis_context), prepared.context);
-  assert.deepEqual(JSON.parse(input.analysis_elig), prepared.eligibility);
+  assert.deepEqual(JSON.parse(input.analysis_context), JSON.parse(JSON.stringify(prepared.context)));
+  assert.deepEqual(JSON.parse(input.analysis_elig), JSON.parse(JSON.stringify(prepared.eligibility)));
 
   const validation = validateRideAnalysisOutputV03(
     JSON.parse(input.previous_output),

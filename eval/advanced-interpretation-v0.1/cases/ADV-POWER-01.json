@@ -1,0 +1,163 @@
+{
+  "schemaVersion": "advanced-interpretation-case-v0.1",
+  "caseId": "ADV-POWER-01",
+  "split": "blind",
+  "source": {
+    "kind": "synthetic_deidentified",
+    "privacy": "No raw FIT/GPX, filename, coordinates, route points, identity, or health free text."
+  },
+  "modelInput": {
+    "schemaVersion": "0.3",
+    "rulesVersion": "ride-analysis-context-rules-v0.3",
+    "contextType": "ride_analysis",
+    "rideId": "eval-adv-power-01",
+    "userScope": "advanced-eval",
+    "allowedClaims": [
+      {
+        "claimId": "claim:eval-adv-power-01:base:distanceM",
+        "kind": "metric",
+        "key": "distanceM",
+        "confidence": "high",
+        "provenance": "recorded",
+        "evidenceIds": [
+          "evidence:eval-adv-power-01:base:distanceM"
+        ],
+        "formulaVersion": "ride-base-claim-rules-v0.1",
+        "value": 30000,
+        "unit": "m",
+        "text": "骑行距离 30.0 km"
+      },
+      {
+        "claimId": "claim:eval-adv-power-01:base:elapsedTimeS",
+        "kind": "metric",
+        "key": "elapsedTimeS",
+        "confidence": "high",
+        "provenance": "recorded",
+        "evidenceIds": [
+          "evidence:eval-adv-power-01:base:elapsedTimeS"
+        ],
+        "formulaVersion": "ride-base-claim-rules-v0.1",
+        "value": 3600,
+        "unit": "s",
+        "text": "骑行用时 60 分钟"
+      },
+      {
+        "claimId": "claim:eval-adv-power-01:base:speedSeriesMeanMps",
+        "kind": "feature",
+        "key": "speedSeriesMeanMps",
+        "confidence": "high",
+        "provenance": "recorded",
+        "evidenceIds": [
+          "evidence:eval-adv-power-01:base:speedSeriesMeanMps"
+        ],
+        "formulaVersion": "ride-base-claim-rules-v0.1",
+        "value": 6.5,
+        "unit": "m/s",
+        "text": "平均速度特征 23.4 km/h"
+      },
+      {
+        "claimId": "claim:eval-adv-power-01:advanced:power.quality",
+        "kind": "advanced",
+        "key": "power.quality",
+        "confidence": "high",
+        "provenance": "calculated",
+        "evidenceIds": [
+          "evidence:eval-adv-power-01:advanced:power.quality"
+        ],
+        "formulaVersion": "ride-advanced-claim-rules-v0.1",
+        "text": "功率数据质量：完整；覆盖 98%，最长缺口 4 秒"
+      },
+      {
+        "claimId": "claim:eval-adv-power-01:advanced:power.normalizedW",
+        "kind": "advanced",
+        "key": "power.normalizedW",
+        "confidence": "high",
+        "provenance": "calculated",
+        "evidenceIds": [
+          "evidence:eval-adv-power-01:advanced:power.normalizedW"
+        ],
+        "formulaVersion": "ride-advanced-claim-rules-v0.1",
+        "value": 214,
+        "unit": "W",
+        "text": "标准化功率 214 W"
+      },
+      {
+        "claimId": "claim:eval-adv-power-01:advanced:power.intensityFactor",
+        "kind": "advanced",
+        "key": "power.intensityFactor",
+        "confidence": "high",
+        "provenance": "calculated",
+        "evidenceIds": [
+          "evidence:eval-adv-power-01:advanced:power.intensityFactor"
+        ],
+        "formulaVersion": "ride-advanced-claim-rules-v0.1",
+        "value": 0.89,
+        "unit": "ratio",
+        "text": "强度因子 IF 0.89"
+      },
+      {
+        "claimId": "claim:eval-adv-power-01:advanced:power.trainingStressScore",
+        "kind": "advanced",
+        "key": "power.trainingStressScore",
+        "confidence": "high",
+        "provenance": "calculated",
+        "evidenceIds": [
+          "evidence:eval-adv-power-01:advanced:power.trainingStressScore"
+        ],
+        "formulaVersion": "ride-advanced-claim-rules-v0.1",
+        "value": 126,
+        "unit": "score",
+        "text": "训练压力 TSS 126"
+      },
+      {
+        "claimId": "claim:eval-adv-power-01:advanced:power.normalizedWkg",
+        "kind": "advanced",
+        "key": "power.normalizedWkg",
+        "confidence": "high",
+        "provenance": "calculated",
+        "evidenceIds": [
+          "evidence:eval-adv-power-01:advanced:power.normalizedWkg"
+        ],
+        "formulaVersion": "ride-advanced-claim-rules-v0.1",
+        "value": 3.1,
+        "unit": "W/kg",
+        "text": "标准化功体比 3.1 W/kg"
+      },
+      {
+        "claimId": "claim:eval-adv-power-01:advanced:power.peakAverage.10s",
+        "kind": "advanced",
+        "key": "power.peakAverage.10s",
+        "confidence": "high",
+        "provenance": "calculated",
+        "evidenceIds": [
+          "evidence:eval-adv-power-01:advanced:power.peakAverage.10s"
+        ],
+        "formulaVersion": "ride-advanced-claim-rules-v0.1",
+        "value": 690,
+        "unit": "W",
+        "text": "本次 10 秒峰值平均功率 690 W，10.0 W/kg"
+      }
+    ],
+    "forbiddenClaims": [
+      "historyComparison",
+      "trend"
+    ],
+    "limitations": [],
+    "safetyFlags": [],
+    "privacyFlags": [
+      "raw_track_excluded",
+      "precise_coordinates_excluded",
+      "source_filename_excluded",
+      "untrusted_free_text_excluded"
+    ]
+  },
+  "analysisEligibility": {
+    "eligible": true,
+    "status": "eligible",
+    "fallback": "b0"
+  },
+  "evaluationFocus": [
+    "使用功率与负荷事实",
+    "明确峰值只属于本次记录"
+  ]
+}

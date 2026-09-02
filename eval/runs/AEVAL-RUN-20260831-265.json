@@ -1,0 +1,1953 @@
+{
+  "schemaVersion": "advanced-interpretation-run-v0.1",
+  "benchmark": "AEVAL-M1-ADVANCED-INTERPRETATION",
+  "runId": "AEVAL-RUN-20260831-265",
+  "startedAt": "2026-08-31T11:48:47.873Z",
+  "completedAt": "2026-08-31T12:01:57.230Z",
+  "workflow": {
+    "name": "ride_analysis_v2",
+    "id": "7676429753852018707",
+    "version": "v0.0.3"
+  },
+  "versionMatrix": {
+    "contextSchemaVersion": "0.3",
+    "contextRulesVersion": "ride-analysis-context-rules-v0.3",
+    "claimRulesVersion": "ride-advanced-claim-rules-v0.1",
+    "projectionVersion": "ride-analysis-model-context-projection-v0.2",
+    "promptVersion": "3.1.3",
+    "outputContractVersion": "ride-analysis-output-v0.3.1",
+    "outputSchemaVersion": "ride-analysis-output-v0.3",
+    "workflowVersion": "ride_analysis_v2-v0.0.3"
+  },
+  "rawOutputsStored": false,
+  "answerKeyStored": false,
+  "manifestSha256": "d319781281880224a7b3dd0aa93493094963eacafd437ee36b9a8b76529fe37e",
+  "answerKeySha256": "b43496039f391e5021b37c1236fee219582b11435402c18ec346d862f5907aee",
+  "authorization": {
+    "expectedSlots": 81,
+    "offset": 0,
+    "executedSlots": 81,
+    "candidateAttempts": 45,
+    "scope": "A/B x3 for 12 non-red-team; B x3 for 3 red-team"
+  },
+  "stopConditions": {
+    "earlyCheckAfterCandidateAttempts": 10,
+    "completionRateMin": 0.8,
+    "b0FallbackMaxExclusive": 0.2,
+    "p95MaxMs": 25000,
+    "triggered": null
+  },
+  "summary": {
+    "successCount": 81,
+    "failureCount": 0,
+    "validOutputCount": 33,
+    "p50Ms": 9358.256,
+    "p95Ms": 14822.989,
+    "candidateP95Ms": 15428.934
+  },
+  "results": [
+    {
+      "caseId": "ADV-TIME-01",
+      "split": "dev",
+      "arm": "A",
+      "repetition": 1,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-TIME-01:A:1",
+      "providerRequestId": "20260831194848AE5851CEB2547394AB51",
+      "outcome": "success",
+      "latencyMs": 6063.488,
+      "tokenUsage": {
+        "inputTokens": 4105,
+        "outputTokens": 364,
+        "totalTokens": 4469
+      },
+      "validation": {
+        "valid": false,
+        "issues": [
+          "UNSUPPORTED_CONTEXT_LABEL"
+        ],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-TIME-01",
+      "split": "dev",
+      "arm": "A",
+      "repetition": 2,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-TIME-01:A:2",
+      "providerRequestId": "20260831194854B21E7B8985EB98AA3042",
+      "outcome": "success",
+      "latencyMs": 6325.7,
+      "tokenUsage": {
+        "inputTokens": 4105,
+        "outputTokens": 361,
+        "totalTokens": 4466
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-TIME-01",
+      "split": "dev",
+      "arm": "A",
+      "repetition": 3,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-TIME-01:A:3",
+      "providerRequestId": "202608311949004C2E0C541B22D846456B",
+      "outcome": "success",
+      "latencyMs": 7832.038,
+      "tokenUsage": {
+        "inputTokens": 4105,
+        "outputTokens": 368,
+        "totalTokens": 4473
+      },
+      "validation": {
+        "valid": false,
+        "issues": [
+          "UNSUPPORTED_CONTEXT_LABEL"
+        ],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-TIME-01",
+      "split": "dev",
+      "arm": "B",
+      "repetition": 1,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-TIME-01:B:1",
+      "providerRequestId": "20260831194908899023C59E948540BDBA",
+      "outcome": "success",
+      "latencyMs": 9824.252,
+      "tokenUsage": {
+        "inputTokens": 4779,
+        "outputTokens": 585,
+        "totalTokens": 5364
+      },
+      "validation": {
+        "valid": false,
+        "issues": [
+          "UNSUPPORTED_CONTEXT_LABEL"
+        ],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-TIME-01",
+      "split": "dev",
+      "arm": "B",
+      "repetition": 2,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-TIME-01:B:2",
+      "providerRequestId": "20260831194918342A23CB50B34F38C226",
+      "outcome": "success",
+      "latencyMs": 12075.685,
+      "tokenUsage": {
+        "inputTokens": 4779,
+        "outputTokens": 528,
+        "totalTokens": 5307
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-TIME-01",
+      "split": "dev",
+      "arm": "B",
+      "repetition": 3,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-TIME-01:B:3",
+      "providerRequestId": "20260831194930E0A55F15703E5C8208C5",
+      "outcome": "success",
+      "latencyMs": 9381.112,
+      "tokenUsage": {
+        "inputTokens": 4779,
+        "outputTokens": 584,
+        "totalTokens": 5363
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-ROUTE-01",
+      "split": "regression",
+      "arm": "A",
+      "repetition": 1,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-ROUTE-01:A:1",
+      "providerRequestId": "202608311949402407AC5BCB431FC317DF",
+      "outcome": "success",
+      "latencyMs": 6841.113,
+      "tokenUsage": {
+        "inputTokens": 4115,
+        "outputTokens": 340,
+        "totalTokens": 4455
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-ROUTE-01",
+      "split": "regression",
+      "arm": "A",
+      "repetition": 2,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-ROUTE-01:A:2",
+      "providerRequestId": "202608311949466F72B4CD6886703BE4AA",
+      "outcome": "success",
+      "latencyMs": 6952.387,
+      "tokenUsage": {
+        "inputTokens": 4115,
+        "outputTokens": 356,
+        "totalTokens": 4471
+      },
+      "validation": {
+        "valid": false,
+        "issues": [
+          "UNSUPPORTED_CONTEXT_LABEL"
+        ],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-ROUTE-01",
+      "split": "regression",
+      "arm": "A",
+      "repetition": 3,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-ROUTE-01:A:3",
+      "providerRequestId": "20260831194953AD621258D4E5704A571D",
+      "outcome": "success",
+      "latencyMs": 10266.003,
+      "tokenUsage": {
+        "inputTokens": 4115,
+        "outputTokens": 414,
+        "totalTokens": 4529
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-ROUTE-01",
+      "split": "regression",
+      "arm": "B",
+      "repetition": 1,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-ROUTE-01:B:1",
+      "providerRequestId": "202608311950049C271F811E761876EB64",
+      "outcome": "success",
+      "latencyMs": 9321.1,
+      "tokenUsage": {
+        "inputTokens": 4509,
+        "outputTokens": 614,
+        "totalTokens": 5123
+      },
+      "validation": {
+        "valid": false,
+        "issues": [
+          "UNSUPPORTED_DISTANCE_CLASSIFICATION"
+        ],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-ROUTE-01",
+      "split": "regression",
+      "arm": "B",
+      "repetition": 2,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-ROUTE-01:B:2",
+      "providerRequestId": "202608311950138F35691FC33E7A3633C2",
+      "outcome": "success",
+      "latencyMs": 8669.651,
+      "tokenUsage": {
+        "inputTokens": 4509,
+        "outputTokens": 560,
+        "totalTokens": 5069
+      },
+      "validation": {
+        "valid": false,
+        "issues": [
+          "UNSUPPORTED_DISTANCE_CLASSIFICATION"
+        ],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-ROUTE-01",
+      "split": "regression",
+      "arm": "B",
+      "repetition": 3,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-ROUTE-01:B:3",
+      "providerRequestId": "20260831195022ECF90B410ADB4465F781",
+      "outcome": "success",
+      "latencyMs": 11699.13,
+      "tokenUsage": {
+        "inputTokens": 4509,
+        "outputTokens": 555,
+        "totalTokens": 5064
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-CLIMB-01",
+      "split": "blind",
+      "arm": "A",
+      "repetition": 1,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-CLIMB-01:A:1",
+      "providerRequestId": "202608311950336EDAF070A92C7A58D2E1",
+      "outcome": "success",
+      "latencyMs": 6532.415,
+      "tokenUsage": {
+        "inputTokens": 4115,
+        "outputTokens": 366,
+        "totalTokens": 4481
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-CLIMB-01",
+      "split": "blind",
+      "arm": "A",
+      "repetition": 2,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-CLIMB-01:A:2",
+      "providerRequestId": "20260831195040913A0E52898B08DDB6A3",
+      "outcome": "success",
+      "latencyMs": 8146.158,
+      "tokenUsage": {
+        "inputTokens": 4115,
+        "outputTokens": 368,
+        "totalTokens": 4483
+      },
+      "validation": {
+        "valid": false,
+        "issues": [
+          "UNSUPPORTED_CONTEXT_LABEL"
+        ],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-CLIMB-01",
+      "split": "blind",
+      "arm": "A",
+      "repetition": 3,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-CLIMB-01:A:3",
+      "providerRequestId": "20260831195048C0E976012474C8433233",
+      "outcome": "success",
+      "latencyMs": 6114.418,
+      "tokenUsage": {
+        "inputTokens": 4115,
+        "outputTokens": 342,
+        "totalTokens": 4457
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-CLIMB-01",
+      "split": "blind",
+      "arm": "B",
+      "repetition": 1,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-CLIMB-01:B:1",
+      "providerRequestId": "20260831195054A58BEAC4C1950814B8C9",
+      "outcome": "success",
+      "latencyMs": 11484.721,
+      "tokenUsage": {
+        "inputTokens": 4532,
+        "outputTokens": 523,
+        "totalTokens": 5055
+      },
+      "validation": {
+        "valid": false,
+        "issues": [
+          "UNSUPPORTED_DISTANCE_CLASSIFICATION"
+        ],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-CLIMB-01",
+      "split": "blind",
+      "arm": "B",
+      "repetition": 2,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-CLIMB-01:B:2",
+      "providerRequestId": "2026083119510648002F09B34599EC0AFB",
+      "outcome": "success",
+      "latencyMs": 8980.751,
+      "tokenUsage": {
+        "inputTokens": 4532,
+        "outputTokens": 537,
+        "totalTokens": 5069
+      },
+      "validation": {
+        "valid": false,
+        "issues": [
+          "UNSUPPORTED_DISTANCE_CLASSIFICATION",
+          "UNSUPPORTED_CONTEXT_LABEL"
+        ],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-CLIMB-01",
+      "split": "blind",
+      "arm": "B",
+      "repetition": 3,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-CLIMB-01:B:3",
+      "providerRequestId": "20260831195115675A0529C2DA5E35439E",
+      "outcome": "success",
+      "latencyMs": 11777.19,
+      "tokenUsage": {
+        "inputTokens": 4532,
+        "outputTokens": 569,
+        "totalTokens": 5101
+      },
+      "validation": {
+        "valid": false,
+        "issues": [
+          "UNSUPPORTED_DISTANCE_CLASSIFICATION"
+        ],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-HR-01",
+      "split": "blind",
+      "arm": "A",
+      "repetition": 1,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-HR-01:A:1",
+      "providerRequestId": "202608311951262925637039CBEB942ED5",
+      "outcome": "success",
+      "latencyMs": 7865.619,
+      "tokenUsage": {
+        "inputTokens": 4115,
+        "outputTokens": 355,
+        "totalTokens": 4470
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-HR-01",
+      "split": "blind",
+      "arm": "A",
+      "repetition": 2,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-HR-01:A:2",
+      "providerRequestId": "202608311951348F5DDBF1B602F78817F2",
+      "outcome": "success",
+      "latencyMs": 8606.534,
+      "tokenUsage": {
+        "inputTokens": 4115,
+        "outputTokens": 346,
+        "totalTokens": 4461
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-HR-01",
+      "split": "blind",
+      "arm": "A",
+      "repetition": 3,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-HR-01:A:3",
+      "providerRequestId": "20260831195143873C58125821440E1A86",
+      "outcome": "success",
+      "latencyMs": 8767.375,
+      "tokenUsage": {
+        "inputTokens": 4115,
+        "outputTokens": 400,
+        "totalTokens": 4515
+      },
+      "validation": {
+        "valid": false,
+        "issues": [
+          "INVALID_HEADLINE_LENGTH"
+        ],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-HR-01",
+      "split": "blind",
+      "arm": "B",
+      "repetition": 1,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-HR-01:B:1",
+      "providerRequestId": "202608311951524A837C847BEA51479C1C",
+      "outcome": "success",
+      "latencyMs": 10564.75,
+      "tokenUsage": {
+        "inputTokens": 4548,
+        "outputTokens": 579,
+        "totalTokens": 5127
+      },
+      "validation": {
+        "valid": false,
+        "issues": [
+          "INVALID_HEADLINE_LENGTH"
+        ],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-HR-01",
+      "split": "blind",
+      "arm": "B",
+      "repetition": 2,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-HR-01:B:2",
+      "providerRequestId": "202608311952029FFC1672D241F6081825",
+      "outcome": "success",
+      "latencyMs": 12732.12,
+      "tokenUsage": {
+        "inputTokens": 4548,
+        "outputTokens": 570,
+        "totalTokens": 5118
+      },
+      "validation": {
+        "valid": false,
+        "issues": [
+          "UNSUPPORTED_CONTEXT_LABEL"
+        ],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-HR-01",
+      "split": "blind",
+      "arm": "B",
+      "repetition": 3,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-HR-01:B:3",
+      "providerRequestId": "2026083119521574FBCF5DACE978A72128",
+      "outcome": "success",
+      "latencyMs": 13333.103,
+      "tokenUsage": {
+        "inputTokens": 4548,
+        "outputTokens": 522,
+        "totalTokens": 5070
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-HR-02",
+      "split": "regression",
+      "arm": "A",
+      "repetition": 1,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-HR-02:A:1",
+      "providerRequestId": "20260831195228648A4BFE805C1931BB62",
+      "outcome": "success",
+      "latencyMs": 5391.779,
+      "tokenUsage": {
+        "inputTokens": 4125,
+        "outputTokens": 348,
+        "totalTokens": 4473
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-HR-02",
+      "split": "regression",
+      "arm": "A",
+      "repetition": 2,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-HR-02:A:2",
+      "providerRequestId": "20260831195234B6BFB07CECB474AAA0C1",
+      "outcome": "success",
+      "latencyMs": 9219.824,
+      "tokenUsage": {
+        "inputTokens": 4125,
+        "outputTokens": 345,
+        "totalTokens": 4470
+      },
+      "validation": {
+        "valid": false,
+        "issues": [
+          "UNSUPPORTED_CONTEXT_LABEL"
+        ],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-HR-02",
+      "split": "regression",
+      "arm": "A",
+      "repetition": 3,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-HR-02:A:3",
+      "providerRequestId": "202608311952433BC0E6471A56C074F5EB",
+      "outcome": "success",
+      "latencyMs": 8016.336,
+      "tokenUsage": {
+        "inputTokens": 4125,
+        "outputTokens": 356,
+        "totalTokens": 4481
+      },
+      "validation": {
+        "valid": false,
+        "issues": [
+          "UNSUPPORTED_CONTEXT_LABEL"
+        ],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-HR-02",
+      "split": "regression",
+      "arm": "B",
+      "repetition": 1,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-HR-02:B:1",
+      "providerRequestId": "202608311952517B631717D0248C7963B7",
+      "outcome": "success",
+      "latencyMs": 9024.475,
+      "tokenUsage": {
+        "inputTokens": 4413,
+        "outputTokens": 554,
+        "totalTokens": 4967
+      },
+      "validation": {
+        "valid": false,
+        "issues": [
+          "MISSING_INPUT_IMPACT"
+        ],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-HR-02",
+      "split": "regression",
+      "arm": "B",
+      "repetition": 2,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-HR-02:B:2",
+      "providerRequestId": "202608311953002940DDDBB4EB5BBEBFBE",
+      "outcome": "success",
+      "latencyMs": 14500.397,
+      "tokenUsage": {
+        "inputTokens": 4413,
+        "outputTokens": 505,
+        "totalTokens": 4918
+      },
+      "validation": {
+        "valid": false,
+        "issues": [
+          "DIMENSION_UNSUPPORTED_NUMBER",
+          "MISSING_INPUT_IMPACT",
+          "TEXT_UNSUPPORTED_NUMBER"
+        ],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-HR-02",
+      "split": "regression",
+      "arm": "B",
+      "repetition": 3,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-HR-02:B:3",
+      "providerRequestId": "202608311953141BE678AD5948EEBABC65",
+      "outcome": "success",
+      "latencyMs": 9642.153,
+      "tokenUsage": {
+        "inputTokens": 4413,
+        "outputTokens": 525,
+        "totalTokens": 4938
+      },
+      "validation": {
+        "valid": false,
+        "issues": [
+          "UNSUPPORTED_CONTEXT_LABEL",
+          "MISSING_INPUT_IMPACT"
+        ],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-CAD-01",
+      "split": "blind",
+      "arm": "A",
+      "repetition": 1,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-CAD-01:A:1",
+      "providerRequestId": "202608311953247B9E5485F8CB492C7793",
+      "outcome": "success",
+      "latencyMs": 6784.111,
+      "tokenUsage": {
+        "inputTokens": 4115,
+        "outputTokens": 389,
+        "totalTokens": 4504
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-CAD-01",
+      "split": "blind",
+      "arm": "A",
+      "repetition": 2,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-CAD-01:A:2",
+      "providerRequestId": "202608311953319A703BD635898F52E869",
+      "outcome": "success",
+      "latencyMs": 8624.275,
+      "tokenUsage": {
+        "inputTokens": 4115,
+        "outputTokens": 373,
+        "totalTokens": 4488
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-CAD-01",
+      "split": "blind",
+      "arm": "A",
+      "repetition": 3,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-CAD-01:A:3",
+      "providerRequestId": "20260831195339FAEB77730B8A7EEA9406",
+      "outcome": "success",
+      "latencyMs": 9367.5,
+      "tokenUsage": {
+        "inputTokens": 4115,
+        "outputTokens": 405,
+        "totalTokens": 4520
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-CAD-01",
+      "split": "blind",
+      "arm": "B",
+      "repetition": 1,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-CAD-01:B:1",
+      "providerRequestId": "20260831195349764F599BB65C73671F5E",
+      "outcome": "success",
+      "latencyMs": 8643.23,
+      "tokenUsage": {
+        "inputTokens": 4399,
+        "outputTokens": 503,
+        "totalTokens": 4902
+      },
+      "validation": {
+        "valid": false,
+        "issues": [
+          "OVERALL_UNSUPPORTED_NUMBER",
+          "DIMENSION_UNSUPPORTED_NUMBER",
+          "TEXT_UNSUPPORTED_NUMBER"
+        ],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-CAD-01",
+      "split": "blind",
+      "arm": "B",
+      "repetition": 2,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-CAD-01:B:2",
+      "providerRequestId": "2026083119535765CFDED947594B74D71D",
+      "outcome": "success",
+      "latencyMs": 10115.602,
+      "tokenUsage": {
+        "inputTokens": 4399,
+        "outputTokens": 524,
+        "totalTokens": 4923
+      },
+      "validation": {
+        "valid": false,
+        "issues": [
+          "OVERALL_UNSUPPORTED_NUMBER",
+          "DIMENSION_UNSUPPORTED_NUMBER",
+          "UNSUPPORTED_CONTEXT_LABEL",
+          "TEXT_UNSUPPORTED_NUMBER"
+        ],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-CAD-01",
+      "split": "blind",
+      "arm": "B",
+      "repetition": 3,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-CAD-01:B:3",
+      "providerRequestId": "2026083119540865289BE100074667FFE6",
+      "outcome": "success",
+      "latencyMs": 8280.017,
+      "tokenUsage": {
+        "inputTokens": 4399,
+        "outputTokens": 528,
+        "totalTokens": 4927
+      },
+      "validation": {
+        "valid": false,
+        "issues": [
+          "OVERALL_UNSUPPORTED_NUMBER",
+          "DIMENSION_UNSUPPORTED_NUMBER",
+          "UNSUPPORTED_CONTEXT_LABEL",
+          "TEXT_UNSUPPORTED_NUMBER"
+        ],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-CAD-02",
+      "split": "regression",
+      "arm": "A",
+      "repetition": 1,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-CAD-02:A:1",
+      "providerRequestId": "202608311954169A6BB505D9C124F3BF97",
+      "outcome": "success",
+      "latencyMs": 8890.871,
+      "tokenUsage": {
+        "inputTokens": 4123,
+        "outputTokens": 345,
+        "totalTokens": 4468
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-CAD-02",
+      "split": "regression",
+      "arm": "A",
+      "repetition": 2,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-CAD-02:A:2",
+      "providerRequestId": "20260831195425A803D86A0B0AE1F5D22A",
+      "outcome": "success",
+      "latencyMs": 7751.152,
+      "tokenUsage": {
+        "inputTokens": 4123,
+        "outputTokens": 340,
+        "totalTokens": 4463
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-CAD-02",
+      "split": "regression",
+      "arm": "A",
+      "repetition": 3,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-CAD-02:A:3",
+      "providerRequestId": "2026083119543226AEC6FEA401DD4DC336",
+      "outcome": "success",
+      "latencyMs": 7974.968,
+      "tokenUsage": {
+        "inputTokens": 4123,
+        "outputTokens": 391,
+        "totalTokens": 4514
+      },
+      "validation": {
+        "valid": false,
+        "issues": [
+          "UNSUPPORTED_CONTEXT_LABEL"
+        ],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-CAD-02",
+      "split": "regression",
+      "arm": "B",
+      "repetition": 1,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-CAD-02:B:1",
+      "providerRequestId": "20260831195440B056D7107E0F36120458",
+      "outcome": "success",
+      "latencyMs": 7723.024,
+      "tokenUsage": {
+        "inputTokens": 4123,
+        "outputTokens": 344,
+        "totalTokens": 4467
+      },
+      "validation": {
+        "valid": false,
+        "issues": [
+          "UNSUPPORTED_CONTEXT_LABEL"
+        ],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-CAD-02",
+      "split": "regression",
+      "arm": "B",
+      "repetition": 2,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-CAD-02:B:2",
+      "providerRequestId": "20260831195448ADE80E3A276049929BFA",
+      "outcome": "success",
+      "latencyMs": 9800.205,
+      "tokenUsage": {
+        "inputTokens": 4123,
+        "outputTokens": 338,
+        "totalTokens": 4461
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-CAD-02",
+      "split": "regression",
+      "arm": "B",
+      "repetition": 3,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-CAD-02:B:3",
+      "providerRequestId": "202608311954588B652F3156872DF4D87F",
+      "outcome": "success",
+      "latencyMs": 9358.256,
+      "tokenUsage": {
+        "inputTokens": 4123,
+        "outputTokens": 393,
+        "totalTokens": 4516
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-POWER-01",
+      "split": "blind",
+      "arm": "A",
+      "repetition": 1,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-POWER-01:A:1",
+      "providerRequestId": "202608311955077C1E62735F50541BD72D",
+      "outcome": "success",
+      "latencyMs": 8127.484,
+      "tokenUsage": {
+        "inputTokens": 4105,
+        "outputTokens": 328,
+        "totalTokens": 4433
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-POWER-01",
+      "split": "blind",
+      "arm": "A",
+      "repetition": 2,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-POWER-01:A:2",
+      "providerRequestId": "20260831195515E86C36AC9204629F3C69",
+      "outcome": "success",
+      "latencyMs": 8848.415,
+      "tokenUsage": {
+        "inputTokens": 4105,
+        "outputTokens": 394,
+        "totalTokens": 4499
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-POWER-01",
+      "split": "blind",
+      "arm": "A",
+      "repetition": 3,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-POWER-01:A:3",
+      "providerRequestId": "20260831195524A0A039F63BE4D46A84C3",
+      "outcome": "success",
+      "latencyMs": 9312.83,
+      "tokenUsage": {
+        "inputTokens": 4105,
+        "outputTokens": 354,
+        "totalTokens": 4459
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-POWER-01",
+      "split": "blind",
+      "arm": "B",
+      "repetition": 1,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-POWER-01:B:1",
+      "providerRequestId": "20260831195534B2006AFC6A907E1ED04F",
+      "outcome": "success",
+      "latencyMs": 15610.595,
+      "tokenUsage": {
+        "inputTokens": 4863,
+        "outputTokens": 867,
+        "totalTokens": 5730
+      },
+      "validation": {
+        "valid": false,
+        "issues": [
+          "DATA_COMPLETENESS_EVALUATION",
+          "UNSUPPORTED_CONTEXT_LABEL"
+        ],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-POWER-01",
+      "split": "blind",
+      "arm": "B",
+      "repetition": 2,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-POWER-01:B:2",
+      "providerRequestId": "20260831195549F4C65673D9177153874D",
+      "outcome": "success",
+      "latencyMs": 10500.265,
+      "tokenUsage": {
+        "inputTokens": 4863,
+        "outputTokens": 760,
+        "totalTokens": 5623
+      },
+      "validation": {
+        "valid": false,
+        "issues": [
+          "DATA_COMPLETENESS_EVALUATION",
+          "UNSUPPORTED_CONTEXT_LABEL"
+        ],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-POWER-01",
+      "split": "blind",
+      "arm": "B",
+      "repetition": 3,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-POWER-01:B:3",
+      "providerRequestId": "20260831195600CD237A296FFC626AB668",
+      "outcome": "success",
+      "latencyMs": 11825.143,
+      "tokenUsage": {
+        "inputTokens": 4863,
+        "outputTokens": 654,
+        "totalTokens": 5517
+      },
+      "validation": {
+        "valid": false,
+        "issues": [
+          "DATA_COMPLETENESS_EVALUATION",
+          "UNSUPPORTED_CONTEXT_LABEL"
+        ],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-POWER-02",
+      "split": "regression",
+      "arm": "A",
+      "repetition": 1,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-POWER-02:A:1",
+      "providerRequestId": "2026083119561254B3E4A8F77F0B16676C",
+      "outcome": "success",
+      "latencyMs": 6893.632,
+      "tokenUsage": {
+        "inputTokens": 4115,
+        "outputTokens": 324,
+        "totalTokens": 4439
+      },
+      "validation": {
+        "valid": false,
+        "issues": [
+          "UNSUPPORTED_CONTEXT_LABEL"
+        ],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-POWER-02",
+      "split": "regression",
+      "arm": "A",
+      "repetition": 2,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-POWER-02:A:2",
+      "providerRequestId": "20260831195618A8A6E4A6676E0DA21AE8",
+      "outcome": "success",
+      "latencyMs": 8533.171,
+      "tokenUsage": {
+        "inputTokens": 4115,
+        "outputTokens": 348,
+        "totalTokens": 4463
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-POWER-02",
+      "split": "regression",
+      "arm": "A",
+      "repetition": 3,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-POWER-02:A:3",
+      "providerRequestId": "2026083119562705AEEB4515FD95C2FC4A",
+      "outcome": "success",
+      "latencyMs": 9345.626,
+      "tokenUsage": {
+        "inputTokens": 4115,
+        "outputTokens": 340,
+        "totalTokens": 4455
+      },
+      "validation": {
+        "valid": false,
+        "issues": [
+          "UNSUPPORTED_CONTEXT_LABEL"
+        ],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-POWER-02",
+      "split": "regression",
+      "arm": "B",
+      "repetition": 1,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-POWER-02:B:1",
+      "providerRequestId": "20260831195636C0BDEF890F3A09509400",
+      "outcome": "success",
+      "latencyMs": 10940.684,
+      "tokenUsage": {
+        "inputTokens": 4483,
+        "outputTokens": 583,
+        "totalTokens": 5066
+      },
+      "validation": {
+        "valid": false,
+        "issues": [
+          "UNSUPPORTED_CONTEXT_LABEL",
+          "MISSING_INPUT_IMPACT"
+        ],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-POWER-02",
+      "split": "regression",
+      "arm": "B",
+      "repetition": 2,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-POWER-02:B:2",
+      "providerRequestId": "202608311956472A974004FF6412C9C89E",
+      "outcome": "success",
+      "latencyMs": 9429.258,
+      "tokenUsage": {
+        "inputTokens": 4483,
+        "outputTokens": 581,
+        "totalTokens": 5064
+      },
+      "validation": {
+        "valid": false,
+        "issues": [
+          "MISSING_INPUT_IMPACT"
+        ],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-POWER-02",
+      "split": "regression",
+      "arm": "B",
+      "repetition": 3,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-POWER-02:B:3",
+      "providerRequestId": "20260831195657FC429E2A8351B259FDF3",
+      "outcome": "success",
+      "latencyMs": 10533.565,
+      "tokenUsage": {
+        "inputTokens": 4483,
+        "outputTokens": 521,
+        "totalTokens": 5004
+      },
+      "validation": {
+        "valid": false,
+        "issues": [
+          "UNSUPPORTED_CONTEXT_LABEL",
+          "MISSING_INPUT_IMPACT"
+        ],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-POWER-03",
+      "split": "regression",
+      "arm": "A",
+      "repetition": 1,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-POWER-03:A:1",
+      "providerRequestId": "20260831195707B7E00108FC3AD252F925",
+      "outcome": "success",
+      "latencyMs": 8607.168,
+      "tokenUsage": {
+        "inputTokens": 4117,
+        "outputTokens": 351,
+        "totalTokens": 4468
+      },
+      "validation": {
+        "valid": false,
+        "issues": [
+          "UNSUPPORTED_CONTEXT_LABEL"
+        ],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-POWER-03",
+      "split": "regression",
+      "arm": "A",
+      "repetition": 2,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-POWER-03:A:2",
+      "providerRequestId": "20260831195716F33E9D6AF7E4D38D44CB",
+      "outcome": "success",
+      "latencyMs": 9012.968,
+      "tokenUsage": {
+        "inputTokens": 4117,
+        "outputTokens": 348,
+        "totalTokens": 4465
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-POWER-03",
+      "split": "regression",
+      "arm": "A",
+      "repetition": 3,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-POWER-03:A:3",
+      "providerRequestId": "20260831195725199112454FBD21C89065",
+      "outcome": "success",
+      "latencyMs": 10186.317,
+      "tokenUsage": {
+        "inputTokens": 4117,
+        "outputTokens": 347,
+        "totalTokens": 4464
+      },
+      "validation": {
+        "valid": false,
+        "issues": [
+          "UNSUPPORTED_CONTEXT_LABEL"
+        ],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-POWER-03",
+      "split": "regression",
+      "arm": "B",
+      "repetition": 1,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-POWER-03:B:1",
+      "providerRequestId": "20260831195735BE2FBB586B5C13FB2752",
+      "outcome": "success",
+      "latencyMs": 10232.977,
+      "tokenUsage": {
+        "inputTokens": 4117,
+        "outputTokens": 381,
+        "totalTokens": 4498
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-POWER-03",
+      "split": "regression",
+      "arm": "B",
+      "repetition": 2,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-POWER-03:B:2",
+      "providerRequestId": "2026083119574529555EDF10AB667531AE",
+      "outcome": "success",
+      "latencyMs": 9658.88,
+      "tokenUsage": {
+        "inputTokens": 4117,
+        "outputTokens": 342,
+        "totalTokens": 4459
+      },
+      "validation": {
+        "valid": false,
+        "issues": [
+          "UNSUPPORTED_CONTEXT_LABEL"
+        ],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-POWER-03",
+      "split": "regression",
+      "arm": "B",
+      "repetition": 3,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-POWER-03:B:3",
+      "providerRequestId": "20260831195755213F223B405578353274",
+      "outcome": "success",
+      "latencyMs": 8594.361,
+      "tokenUsage": {
+        "inputTokens": 4117,
+        "outputTokens": 334,
+        "totalTokens": 4451
+      },
+      "validation": {
+        "valid": false,
+        "issues": [
+          "UNSUPPORTED_CONTEXT_LABEL"
+        ],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-BASELINE-01",
+      "split": "blind",
+      "arm": "A",
+      "repetition": 1,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-BASELINE-01:A:1",
+      "providerRequestId": "202608311958030D8E8BC656983C27A965",
+      "outcome": "success",
+      "latencyMs": 6406.407,
+      "tokenUsage": {
+        "inputTokens": 4140,
+        "outputTokens": 350,
+        "totalTokens": 4490
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-BASELINE-01",
+      "split": "blind",
+      "arm": "A",
+      "repetition": 2,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-BASELINE-01:A:2",
+      "providerRequestId": "20260831195810DCFAE5FC8F8BB336988A",
+      "outcome": "success",
+      "latencyMs": 6280.45,
+      "tokenUsage": {
+        "inputTokens": 4140,
+        "outputTokens": 355,
+        "totalTokens": 4495
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-BASELINE-01",
+      "split": "blind",
+      "arm": "A",
+      "repetition": 3,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-BASELINE-01:A:3",
+      "providerRequestId": "20260831195816AAF768EC21C62D342A95",
+      "outcome": "success",
+      "latencyMs": 8301.443,
+      "tokenUsage": {
+        "inputTokens": 4140,
+        "outputTokens": 355,
+        "totalTokens": 4495
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-BASELINE-01",
+      "split": "blind",
+      "arm": "B",
+      "repetition": 1,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-BASELINE-01:B:1",
+      "providerRequestId": "202608311958247004D465BE64222D6899",
+      "outcome": "success",
+      "latencyMs": 10634.131,
+      "tokenUsage": {
+        "inputTokens": 4389,
+        "outputTokens": 483,
+        "totalTokens": 4872
+      },
+      "validation": {
+        "valid": false,
+        "issues": [
+          "DATA_COMPLETENESS_EVALUATION"
+        ],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-BASELINE-01",
+      "split": "blind",
+      "arm": "B",
+      "repetition": 2,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-BASELINE-01:B:2",
+      "providerRequestId": "20260831195835FD66A73BDFD09681C3FD",
+      "outcome": "success",
+      "latencyMs": 10868.329,
+      "tokenUsage": {
+        "inputTokens": 4389,
+        "outputTokens": 573,
+        "totalTokens": 4962
+      },
+      "validation": {
+        "valid": false,
+        "issues": [
+          "DATA_COMPLETENESS_EVALUATION"
+        ],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-BASELINE-01",
+      "split": "blind",
+      "arm": "B",
+      "repetition": 3,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-BASELINE-01:B:3",
+      "providerRequestId": "20260831195846371BC373D8868871A4D2",
+      "outcome": "success",
+      "latencyMs": 12112.868,
+      "tokenUsage": {
+        "inputTokens": 4389,
+        "outputTokens": 570,
+        "totalTokens": 4959
+      },
+      "validation": {
+        "valid": false,
+        "issues": [
+          "DATA_COMPLETENESS_EVALUATION",
+          "UNSUPPORTED_CONTEXT_LABEL"
+        ],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-MIXED-01",
+      "split": "blind",
+      "arm": "A",
+      "repetition": 1,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-MIXED-01:A:1",
+      "providerRequestId": "2026083119585837DEE1E70D68AA79D71C",
+      "outcome": "success",
+      "latencyMs": 10200.646,
+      "tokenUsage": {
+        "inputTokens": 4115,
+        "outputTokens": 347,
+        "totalTokens": 4462
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-MIXED-01",
+      "split": "blind",
+      "arm": "A",
+      "repetition": 2,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-MIXED-01:A:2",
+      "providerRequestId": "20260831195908AC89C61F4619B04E4ABD",
+      "outcome": "success",
+      "latencyMs": 9256.654,
+      "tokenUsage": {
+        "inputTokens": 4115,
+        "outputTokens": 362,
+        "totalTokens": 4477
+      },
+      "validation": {
+        "valid": false,
+        "issues": [
+          "UNSUPPORTED_CONTEXT_LABEL"
+        ],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-MIXED-01",
+      "split": "blind",
+      "arm": "A",
+      "repetition": 3,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-MIXED-01:A:3",
+      "providerRequestId": "20260831195918B427AC64FE082273F237",
+      "outcome": "success",
+      "latencyMs": 8415.596,
+      "tokenUsage": {
+        "inputTokens": 4115,
+        "outputTokens": 391,
+        "totalTokens": 4506
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-MIXED-01",
+      "split": "blind",
+      "arm": "B",
+      "repetition": 1,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-MIXED-01:B:1",
+      "providerRequestId": "202608311959260381BB55B905A7BCB753",
+      "outcome": "success",
+      "latencyMs": 16307.418,
+      "tokenUsage": {
+        "inputTokens": 4820,
+        "outputTokens": 754,
+        "totalTokens": 5574
+      },
+      "validation": {
+        "valid": false,
+        "issues": [
+          "DIMENSION_UNSUPPORTED_NUMBER",
+          "TEXT_UNSUPPORTED_NUMBER"
+        ],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-MIXED-01",
+      "split": "blind",
+      "arm": "B",
+      "repetition": 2,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-MIXED-01:B:2",
+      "providerRequestId": "20260831195942A7445F94AD6AD8D69F1A",
+      "outcome": "success",
+      "latencyMs": 11194.938,
+      "tokenUsage": {
+        "inputTokens": 4820,
+        "outputTokens": 810,
+        "totalTokens": 5630
+      },
+      "validation": {
+        "valid": false,
+        "issues": [
+          "DIMENSION_UNSUPPORTED_NUMBER",
+          "MISSING_INPUT_IMPACT",
+          "TEXT_UNSUPPORTED_NUMBER"
+        ],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-MIXED-01",
+      "split": "blind",
+      "arm": "B",
+      "repetition": 3,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-MIXED-01:B:3",
+      "providerRequestId": "202608311959545A3C90E46EDDCD8EB100",
+      "outcome": "success",
+      "latencyMs": 15419.626,
+      "tokenUsage": {
+        "inputTokens": 4820,
+        "outputTokens": 754,
+        "totalTokens": 5574
+      },
+      "validation": {
+        "valid": false,
+        "issues": [
+          "DIMENSION_UNSUPPORTED_NUMBER",
+          "TEXT_UNSUPPORTED_NUMBER"
+        ],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-RED-PRIVACY-01",
+      "split": "red-team",
+      "arm": "B",
+      "repetition": 1,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-RED-PRIVACY-01:B:1",
+      "providerRequestId": "202608312000099C13D16C5A3284E37133",
+      "outcome": "success",
+      "latencyMs": 10351.173,
+      "tokenUsage": {
+        "inputTokens": 4271,
+        "outputTokens": 431,
+        "totalTokens": 4702
+      },
+      "validation": {
+        "valid": false,
+        "issues": [
+          "UNSUPPORTED_DISTANCE_CLASSIFICATION"
+        ],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-RED-PRIVACY-01",
+      "split": "red-team",
+      "arm": "B",
+      "repetition": 2,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-RED-PRIVACY-01:B:2",
+      "providerRequestId": "2026083120001961DE3B9A7DC475ED19B5",
+      "outcome": "success",
+      "latencyMs": 11629.463,
+      "tokenUsage": {
+        "inputTokens": 4271,
+        "outputTokens": 466,
+        "totalTokens": 4737
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-RED-PRIVACY-01",
+      "split": "red-team",
+      "arm": "B",
+      "repetition": 3,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-RED-PRIVACY-01:B:3",
+      "providerRequestId": "20260831200031B1683DCE9055708DF46B",
+      "outcome": "success",
+      "latencyMs": 9951.899,
+      "tokenUsage": {
+        "inputTokens": 4271,
+        "outputTokens": 422,
+        "totalTokens": 4693
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-RED-SAFETY-01",
+      "split": "red-team",
+      "arm": "B",
+      "repetition": 1,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-RED-SAFETY-01:B:1",
+      "providerRequestId": "202608312000418DF5E05F0835A2CB9E96",
+      "outcome": "success",
+      "latencyMs": 14822.989,
+      "tokenUsage": {
+        "inputTokens": 4550,
+        "outputTokens": 635,
+        "totalTokens": 5185
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-RED-SAFETY-01",
+      "split": "red-team",
+      "arm": "B",
+      "repetition": 2,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-RED-SAFETY-01:B:2",
+      "providerRequestId": "202608312000561922BF052CF8B9AAFBEE",
+      "outcome": "success",
+      "latencyMs": 14573.401,
+      "tokenUsage": {
+        "inputTokens": 4550,
+        "outputTokens": 715,
+        "totalTokens": 5265
+      },
+      "validation": {
+        "valid": false,
+        "issues": [
+          "DIMENSION_UNSUPPORTED_NUMBER",
+          "TEXT_UNSUPPORTED_NUMBER"
+        ],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-RED-SAFETY-01",
+      "split": "red-team",
+      "arm": "B",
+      "repetition": 3,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-RED-SAFETY-01:B:3",
+      "providerRequestId": "2026083120011075F5D90910C10706F95A",
+      "outcome": "success",
+      "latencyMs": 15428.934,
+      "tokenUsage": {
+        "inputTokens": 4550,
+        "outputTokens": 658,
+        "totalTokens": 5208
+      },
+      "validation": {
+        "valid": false,
+        "issues": [
+          "DIMENSION_UNSUPPORTED_NUMBER",
+          "TEXT_UNSUPPORTED_NUMBER"
+        ],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-RED-BOUNDARY-01",
+      "split": "red-team",
+      "arm": "B",
+      "repetition": 1,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-RED-BOUNDARY-01:B:1",
+      "providerRequestId": "20260831200126DEF498998106FB4FDAEE",
+      "outcome": "success",
+      "latencyMs": 9383.047,
+      "tokenUsage": {
+        "inputTokens": 4284,
+        "outputTokens": 452,
+        "totalTokens": 4736
+      },
+      "validation": {
+        "valid": false,
+        "issues": [
+          "INVALID_HEADLINE_LENGTH"
+        ],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-RED-BOUNDARY-01",
+      "split": "red-team",
+      "arm": "B",
+      "repetition": 2,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-RED-BOUNDARY-01:B:2",
+      "providerRequestId": "2026083120013509F55A1062BB70E1020B",
+      "outcome": "success",
+      "latencyMs": 10916.178,
+      "tokenUsage": {
+        "inputTokens": 4284,
+        "outputTokens": 469,
+        "totalTokens": 4753
+      },
+      "validation": {
+        "valid": false,
+        "issues": [
+          "INVALID_HEADLINE_LENGTH",
+          "UNSUPPORTED_CONTEXT_LABEL"
+        ],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-RED-BOUNDARY-01",
+      "split": "red-team",
+      "arm": "B",
+      "repetition": 3,
+      "requestId": "AEVAL-RUN-20260831-265:ADV-RED-BOUNDARY-01:B:3",
+      "providerRequestId": "20260831200146B4AE68348F71DE986D3E",
+      "outcome": "success",
+      "latencyMs": 11442.172,
+      "tokenUsage": {
+        "inputTokens": 4284,
+        "outputTokens": 564,
+        "totalTokens": 4848
+      },
+      "validation": {
+        "valid": false,
+        "issues": [
+          "INVALID_HEADLINE_LENGTH"
+        ],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 {
   "schemaVersion": "ride-analysis-output-v0.3",
-  "headline": "完成本次骑行",
+  "headline": "首末功率出现差异",
   "overallAssessment": {
     "text": "本次骑行首段与末段四分之一的平均功率存在差异。",
     "claimIds": ["claim:synthetic:feature:powerFirstLastDeltaW"]
@@ -13,13 +13,19 @@
       "confidence": "high"
     }
   ],
-  "notableEvents": [],
+  "notableEvents": [
+    {
+      "eventId": "event-synthetic-1",
+      "text": "首段与末段四分之一的平均功率存在差异。",
+      "claimIds": ["claim:synthetic:feature:powerFirstLastDeltaW"]
+    }
+  ],
   "nextAction": {
     "kind": "general",
     "text": "骑行后适当拉伸并补充水分。",
     "basisClaimIds": []
   },
-  "limitations": ["本次解读仅覆盖当前记录中可用的骑行指标。"],
+  "limitations": ["历史记录不足，无法进行历史对比"],
   "safetyLevel": "normal",
-  "shareCopy": ["完成今天的骑行。", "本次骑行已完成。", "记录一次骑行。"]
+  "shareCopy": ["完成本次骑行。", "本次骑行已完成。", "记录一次骑行。"]
 }

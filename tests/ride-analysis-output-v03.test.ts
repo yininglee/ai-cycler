@@ -107,7 +107,9 @@ test("model output is rejected whenever eligibility says not to call the model",
     activity: structuredClone(getRideFixture("l1-built-in-sample").activity),
     series: structuredClone(getRideFixture("l1-built-in-sample").series),
   });
-  noFeatureContext.allowedClaims = noFeatureContext.allowedClaims.filter((claim) => claim.kind !== "feature");
+  noFeatureContext.allowedClaims = noFeatureContext.allowedClaims.filter(
+    (claim) => claim.kind !== "feature" && claim.kind !== "advanced",
+  );
   noFeatureContext.featureSnapshot = { ...noFeatureContext.featureSnapshot, features: [] };
   const ineligible = buildAnalysisEligibility(noFeatureContext);
   assert.equal(ineligible.eligible, false);
@@ -251,7 +253,7 @@ test("fact-only output remains valid when no meaningful feature evidence is avai
   );
   const eligibility = buildAnalysisEligibility(analysisContext);
   const output = validOutput();
-  output.headline = "平均配速25km/h，累计爬升260米";
+  output.headline = "平均配速与累计爬升";
   output.overallAssessment = {
     text: "本次骑行完成25公里，用时1小时，平均速度25km/h，累计爬升260米。",
     claimIds: [
@@ -454,7 +456,7 @@ test("sensor limitations with an explicit impact and low-risk share copy are val
     confidence: "high",
   }];
   output.limitations = ["无心率、功率和踏频数据，因此本次解读不涉及运动强度、发力和踩踏节奏。"];
-  output.shareCopy = ["完成本次骑行，享受骑行的日常~", "记录一次25km骑行。", "完成1小时骑行。"];
+  output.shareCopy = ["完成本次骑行，享受骑行的日常~", "记录这次骑行。", "完成本次骑行。"];
   const result = validateRideAnalysisOutputV03(output, analysisContext, eligibility);
   assert.equal(result.valid, true, result.issues.join(","));
 });
@@ -539,4 +541,56 @@ test("safety output must reflect a stop-generation or critical-safety flag", () 
   const result = validateRideAnalysisOutputV03(output, unsafeContext, unsafeEligibility);
   assert.equal(result.valid, false);
   assert.ok(result.issues.includes("SAFETY_LEVEL_MISMATCH"));
+});
+
+test("unbound text cannot combine numbers from multiple claims", () => {
+  const { analysisContext, eligibility } = context("l3-built-in-sample");
+  const output = validOutput();
+  output.headline = "平均速度25.7km/h，平均心率150bpm";
+  let result = validateRideAnalysisOutputV03(output, analysisContext, eligibility);
+  assert.equal(result.valid, false);
+  assert.ok(result.issues.includes("UNBOUND_TEXT_CROSS_CLAIM_NUMBER"));
+
+  output.headline = "平均速度25.7km/h";
+  result = validateRideAnalysisOutputV03(output, analysisContext, eligibility);
+  assert.equal(result.valid, true, result.issues.join(","));
+});
+
+test("time, scene, and route context labels each require their own claim category", () => {
+  const { analysisContext, eligibility } = context("l1-built-in-sample");
+  const output = validOutput();
+  output.overallAssessment = {
+    text: "本次骑行完成25公里。",
+    claimIds: ["claim:ride-l1-built-in-sample:distanceM"],
+  };
+  output.dimensions = [];
+  output.headline = "今天骑行";
+  output.shareCopy = ["完成本次骑行。", "记录这次骑行。", "完成本次骑行。"];
+  let result = validateRideAnalysisOutputV03(output, analysisContext, eligibility);
+  assert.equal(result.valid, false);
+  assert.ok(result.issues.includes("UNSUPPORTED_CONTEXT_LABEL"));
+
+  const dateClaim = { ...analysisContext.allowedClaims[0]!, claimId: "claim:ride-l1-built-in-sample:context:date", key: "context.date" };
+  analysisContext.allowedClaims.push(dateClaim);
+  result = validateRideAnalysisOutputV03(output, analysisContext, eligibility);
+  assert.equal(result.valid, true, result.issues.join(","));
+
+  output.headline = "晨骑";
+  result = validateRideAnalysisOutputV03(output, analysisContext, eligibility);
+  assert.equal(result.valid, false);
+  assert.ok(result.issues.includes("UNSUPPORTED_CONTEXT_LABEL"));
+});
+
+test("field names cannot be used as business dimension keys", () => {
+  const { analysisContext, eligibility } = context("l1-built-in-sample");
+  const output = validOutput();
+  output.dimensions = [{
+    key: "distance" as never,
+    text: "本次骑行完成25公里。",
+    claimIds: ["claim:ride-l1-built-in-sample:distanceM"],
+    confidence: "high",
+  }];
+  const result = validateRideAnalysisOutputV03(output, analysisContext, eligibility);
+  assert.equal(result.valid, false);
+  assert.ok(result.issues.includes("DIMENSION_FIELD_LABEL"));
 });

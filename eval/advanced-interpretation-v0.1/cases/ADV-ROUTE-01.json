@@ -1,0 +1,131 @@
+{
+  "schemaVersion": "advanced-interpretation-case-v0.1",
+  "caseId": "ADV-ROUTE-01",
+  "split": "regression",
+  "source": {
+    "kind": "synthetic_deidentified",
+    "privacy": "No raw FIT/GPX, filename, coordinates, route points, identity, or health free text."
+  },
+  "modelInput": {
+    "schemaVersion": "0.3",
+    "rulesVersion": "ride-analysis-context-rules-v0.3",
+    "contextType": "ride_analysis",
+    "rideId": "eval-adv-route-01",
+    "userScope": "advanced-eval",
+    "allowedClaims": [
+      {
+        "claimId": "claim:eval-adv-route-01:base:distanceM",
+        "kind": "metric",
+        "key": "distanceM",
+        "confidence": "high",
+        "provenance": "recorded",
+        "evidenceIds": [
+          "evidence:eval-adv-route-01:base:distanceM"
+        ],
+        "formulaVersion": "ride-base-claim-rules-v0.1",
+        "value": 30000,
+        "unit": "m",
+        "text": "骑行距离 30.0 km"
+      },
+      {
+        "claimId": "claim:eval-adv-route-01:base:elapsedTimeS",
+        "kind": "metric",
+        "key": "elapsedTimeS",
+        "confidence": "high",
+        "provenance": "recorded",
+        "evidenceIds": [
+          "evidence:eval-adv-route-01:base:elapsedTimeS"
+        ],
+        "formulaVersion": "ride-base-claim-rules-v0.1",
+        "value": 3600,
+        "unit": "s",
+        "text": "骑行用时 60 分钟"
+      },
+      {
+        "claimId": "claim:eval-adv-route-01:base:speedSeriesMeanMps",
+        "kind": "feature",
+        "key": "speedSeriesMeanMps",
+        "confidence": "high",
+        "provenance": "recorded",
+        "evidenceIds": [
+          "evidence:eval-adv-route-01:base:speedSeriesMeanMps"
+        ],
+        "formulaVersion": "ride-base-claim-rules-v0.1",
+        "value": 6.5,
+        "unit": "m/s",
+        "text": "平均速度特征 23.4 km/h"
+      },
+      {
+        "claimId": "claim:eval-adv-route-01:advanced:route.trendClimbDistanceM",
+        "kind": "advanced",
+        "key": "route.trendClimbDistanceM",
+        "confidence": "high",
+        "provenance": "calculated",
+        "evidenceIds": [
+          "evidence:eval-adv-route-01:advanced:route.trendClimbDistanceM"
+        ],
+        "formulaVersion": "ride-advanced-claim-rules-v0.1",
+        "value": 0,
+        "unit": "m",
+        "text": "长趋势爬坡里程 0 km"
+      },
+      {
+        "claimId": "claim:eval-adv-route-01:advanced:route.trendFlatDistanceM",
+        "kind": "advanced",
+        "key": "route.trendFlatDistanceM",
+        "confidence": "high",
+        "provenance": "calculated",
+        "evidenceIds": [
+          "evidence:eval-adv-route-01:advanced:route.trendFlatDistanceM"
+        ],
+        "formulaVersion": "ride-advanced-claim-rules-v0.1",
+        "value": 21800,
+        "unit": "m",
+        "text": "长趋势平路里程 21.8 km"
+      },
+      {
+        "claimId": "claim:eval-adv-route-01:advanced:elevation.rangeM",
+        "kind": "advanced",
+        "key": "elevation.rangeM",
+        "confidence": "high",
+        "provenance": "calculated",
+        "evidenceIds": [
+          "evidence:eval-adv-route-01:advanced:elevation.rangeM"
+        ],
+        "formulaVersion": "ride-advanced-claim-rules-v0.1",
+        "value": 86,
+        "unit": "m",
+        "text": "海拔范围 86 m"
+      }
+    ],
+    "forbiddenClaims": [
+      "historyComparison",
+      "trend"
+    ],
+    "limitations": [],
+    "safetyFlags": [],
+    "privacyFlags": [
+      "raw_track_excluded",
+      "precise_coordinates_excluded",
+      "source_filename_excluded",
+      "untrusted_free_text_excluded"
+    ]
+  },
+  "analysisEligibility": {
+    "eligible": true,
+    "status": "eligible",
+    "fallback": "b0"
+  },
+  "expected": {
+    "focus": [
+      "说明累积微小爬升不等于长趋势爬坡里程"
+    ],
+    "forbidden": [
+      "虚构爬坡表现",
+      "将海拔范围等同累计爬升"
+    ],
+    "hardChecks": [
+      "route_semantics_preserved"
+    ]
+  }
+}

@@ -6,7 +6,7 @@ export const ANALYSIS_ELIGIBILITY_RULES_VERSION = "analysis-eligibility-rules-v0
 
 export type AnalysisEligibilityStatus = "eligible" | "not_eligible" | "blocked";
 export type AnalysisDimensionKey = "endurance" | "pace" | "climbing" | "heartRate" | "power" | "cadence" | "history";
-export type AnalysisInsightSource = "feature" | "history";
+export type AnalysisInsightSource = "feature" | "history" | "advanced";
 
 export type AnalysisEligibilityReasonCode =
   | "CONTEXT_INVALID"
@@ -37,12 +37,27 @@ const DIMENSION_BY_FEATURE_PREFIX: Array<[string, AnalysisDimensionKey]> = [
   ["elevation", "climbing"],
 ];
 
+const DIMENSION_BY_ADVANCED_PREFIX: Array<[string, AnalysisDimensionKey]> = [
+  ["timing.", "pace"],
+  ["cruise.", "pace"],
+  ["route.", "climbing"],
+  ["elevation.", "climbing"],
+  ["climb.", "climbing"],
+  ["heartRate.", "heartRate"],
+  ["power.", "power"],
+  ["cadence.", "cadence"],
+];
+
 function unique<T>(values: T[]): T[] {
   return [...new Set(values)];
 }
 
 function dimensionForFeature(key: string): AnalysisDimensionKey | undefined {
   return DIMENSION_BY_FEATURE_PREFIX.find(([prefix]) => key.startsWith(prefix))?.[1];
+}
+
+function dimensionForAdvancedClaim(key: string): AnalysisDimensionKey | undefined {
+  return DIMENSION_BY_ADVANCED_PREFIX.find(([prefix]) => key.startsWith(prefix))?.[1];
 }
 
 function historyCapabilityAvailable(context: RideAnalysisContext): boolean {
@@ -101,6 +116,7 @@ export function buildAnalysisEligibility(context: RideAnalysisContext): Analysis
   const metricClaims = context.allowedClaims.filter((claim) => claim.kind === "metric");
   const featureClaims = context.allowedClaims.filter((claim) => claim.kind === "feature");
   const historyClaims = context.allowedClaims.filter((claim) => claim.kind === "history");
+  const advancedClaims = context.allowedClaims.filter((claim) => claim.kind === "advanced");
   if (metricClaims.length === 0) {
     return {
       schemaVersion: ANALYSIS_ELIGIBILITY_SCHEMA_VERSION,
@@ -131,6 +147,14 @@ export function buildAnalysisEligibility(context: RideAnalysisContext): Analysis
     dimensions.push("history");
     requiredClaimIds.push(...historyClaims.map((claim) => claim.claimId));
   }
+  if (advancedClaims.length > 0) {
+    sources.push("advanced");
+    for (const advancedClaim of advancedClaims) {
+      const dimension = dimensionForAdvancedClaim(advancedClaim.key);
+      if (dimension) dimensions.push(dimension);
+    }
+    requiredClaimIds.push(...advancedClaims.map((claim) => claim.claimId));
+  }
 
   if (sources.length === 0) {
     return {
@@ -154,6 +178,7 @@ export function buildAnalysisEligibility(context: RideAnalysisContext): Analysis
     reasonCodes: [
       ...(featureClaims.length > 0 ? ["FEATURES_AVAILABLE" as const] : []),
       ...(historyClaims.length > 0 && historyCapabilityAvailable(context) ? ["HISTORY_COMPARISON_AVAILABLE" as const] : []),
+      ...(advancedClaims.length > 0 ? ["FEATURES_AVAILABLE" as const] : []),
     ],
     insightSources: unique(sources),
     allowedDimensionKeys: unique(dimensions),
@@ -170,7 +195,7 @@ export function validateAnalysisEligibility(value: AnalysisEligibility): { valid
   if (value.status === "blocked" && value.fallback !== "b0" && value.fallback !== "safety_stop") issues.push("INVALID_BLOCKED_FALLBACK");
   if (value.status !== "blocked" && value.fallback !== "b0") issues.push("INVALID_FALLBACK");
   if (value.allowedDimensionKeys.some((key) => !["endurance", "pace", "climbing", "heartRate", "power", "cadence", "history"].includes(key))) issues.push("UNKNOWN_DIMENSION");
-  if (value.insightSources.some((source) => !["feature", "history"].includes(source))) issues.push("UNKNOWN_INSIGHT_SOURCE");
+  if (value.insightSources.some((source) => !["feature", "history", "advanced"].includes(source))) issues.push("UNKNOWN_INSIGHT_SOURCE");
   if (value.status === "eligible" && value.insightSources.length === 0) issues.push("ELIGIBLE_WITHOUT_SOURCE");
   if (value.status !== "eligible" && value.requiredClaimIds.length > 0) issues.push("INELIGIBLE_WITH_REQUIRED_CLAIMS");
   // Keep the registry check runtime-safe without comparing a fixed-length tuple

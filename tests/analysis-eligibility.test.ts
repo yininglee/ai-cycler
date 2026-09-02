@@ -36,6 +36,9 @@ test("only current summary claims without deterministic features do not call the
       features: [],
     },
   });
+  context.allowedClaims = context.allowedClaims.filter(
+    (claim) => claim.kind !== "feature" && claim.kind !== "advanced",
+  );
   const eligibility = buildAnalysisEligibility(context);
 
   assert.equal(eligibility.status, "not_eligible");
@@ -50,11 +53,11 @@ test("feature availability opens only the dimensions backed by actual determinis
   const eligibility = buildAnalysisEligibility(context);
 
   assert.equal(eligibility.status, "eligible");
-  assert.deepEqual(eligibility.insightSources, ["feature"]);
+  assert.deepEqual(eligibility.insightSources, ["feature", "advanced"]);
   assert.deepEqual(eligibility.allowedDimensionKeys, ["pace", "heartRate", "power", "cadence", "climbing"]);
   assert.equal(eligibility.allowedDimensionKeys.includes("history"), false);
   assert.equal(eligibility.allowedDimensionKeys.includes("endurance"), false);
-  assert.ok(eligibility.requiredClaimIds.every((claimId) => claimId.includes(":feature:")));
+  assert.ok(eligibility.requiredClaimIds.every((claimId) => claimId.includes(":feature:") || claimId.includes(":advanced:")));
 });
 
 test("a comparable historical snapshot adds history without opening unimplemented trend", () => {
@@ -69,7 +72,7 @@ test("a comparable historical snapshot adds history without opening unimplemente
   const eligibility = buildAnalysisEligibility(context);
 
   assert.equal(eligibility.status, "eligible");
-  assert.deepEqual(eligibility.insightSources, ["feature", "history"]);
+  assert.deepEqual(eligibility.insightSources, ["feature", "history", "advanced"]);
   assert.equal(eligibility.allowedDimensionKeys.includes("history"), true);
   assert.equal(eligibility.allowedDimensionKeys.includes("trend" as never), false);
   assert.ok(eligibility.reasonCodes.includes("HISTORY_COMPARISON_AVAILABLE"));

@@ -1,6 +1,6 @@
 import type { RideAnalysisContext } from "../domain/ride-analysis-context.ts";
 
-export const RIDE_ANALYSIS_MODEL_CONTEXT_PROJECTION_VERSION = "ride-analysis-model-context-projection-v0.1" as const;
+export const RIDE_ANALYSIS_MODEL_CONTEXT_PROJECTION_VERSION = "ride-analysis-model-context-projection-v0.2" as const;
 
 /**
  * The model-facing context keeps only fields referenced by the Prompt contract.

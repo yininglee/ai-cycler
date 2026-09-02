@@ -24,6 +24,7 @@
     "regression:advanced": "node scripts/regression-advanced-rules.ts",
     "eval:advanced:export": "node scripts/export-advanced-interpretation-cases.ts",
     "eval:advanced:preflight": "node scripts/preflight-advanced-interpretation.ts",
+    "eval:advanced:run": "node scripts/run-advanced-interpretation-eval.ts",
     "export:coze-inputs": "node scripts/export-coze-inputs.ts",
     "export:coze:v014:repair": "node scripts/export-v014-repair-input.ts",
     "export:coze:t001": "node scripts/export-t001-coze-inputs.ts"

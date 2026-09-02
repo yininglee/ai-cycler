@@ -80,7 +80,8 @@ test("a valid first model result returns B2 with the new version matrix", async 
   assert.equal(result.attempts, 1);
   assert.equal(result.fallbackCode, undefined);
   assert.equal(result.versions.outputSchema, "ride-analysis-output-v0.3");
-  assert.equal(result.versions.prompt, "3.1.2");
+  assert.equal(result.versions.prompt, "3.1.6");
+  assert.equal(result.versions.outputContract, "ride-analysis-output-v0.3.2");
   assert.equal(result.versions.fewShotMode, "disabled");
   assert.equal(result.versions.modelId, "test-fast-model");
   assert.deepEqual(result.selectedExampleIds, []);

@@ -1,0 +1,143 @@
+{
+  "schemaVersion": "coze-smoke-run-v0.1",
+  "runId": "SMOKE-20260831180658",
+  "workflow": {
+    "name": "ride_analysis_v2",
+    "id": "7676429753852018707",
+    "version": "v0.0.9"
+  },
+  "promptVersion": "3.1.6",
+  "outputContractVersion": "ride-analysis-output-v0.3.2",
+  "scope": "restricted_smoke_only",
+  "rawOutputsStored": false,
+  "results": [
+    {
+      "label": "L1",
+      "inputFile": "output/coze-inputs/l1-built-in-sample.json",
+      "workflow": {
+        "name": "ride_analysis_v2",
+        "id": "7676429753852018707",
+        "version": "v0.0.9"
+      },
+      "promptVersion": "3.1.6",
+      "outputContractVersion": "ride-analysis-output-v0.3.2",
+      "requestId": "SMOKE-20260831180658:L1",
+      "providerRequestId": "20260901020658417D6127E252A7C37A55",
+      "outcome": "success",
+      "latencyMs": 11079.976,
+      "tokenUsage": {
+        "inputTokens": 6959,
+        "outputTokens": 523,
+        "totalTokens": 7482
+      },
+      "repairTriggered": false,
+      "b0Fallback": "not_exercised_direct_provider_call",
+      "validation": {
+        "schema": true,
+        "claims": true,
+        "numbers": true,
+        "safety": true,
+        "valid": true,
+        "issues": [],
+        "qualityWarnings": []
+      }
+    },
+    {
+      "label": "L2",
+      "inputFile": "output/coze-inputs/l2-built-in-sample.json",
+      "workflow": {
+        "name": "ride_analysis_v2",
+        "id": "7676429753852018707",
+        "version": "v0.0.9"
+      },
+      "promptVersion": "3.1.6",
+      "outputContractVersion": "ride-analysis-output-v0.3.2",
+      "requestId": "SMOKE-20260831180658:L2",
+      "providerRequestId": "20260901020709DFA602E0C1C48A4BC6C3",
+      "outcome": "success",
+      "latencyMs": 16683.857,
+      "tokenUsage": {
+        "inputTokens": 8104,
+        "outputTokens": 894,
+        "totalTokens": 8998
+      },
+      "repairTriggered": false,
+      "b0Fallback": "not_exercised_direct_provider_call",
+      "validation": {
+        "schema": false,
+        "claims": false,
+        "numbers": false,
+        "safety": false,
+        "valid": false,
+        "issues": [
+          "UNSUPPORTED_CONTEXT_LABEL"
+        ],
+        "qualityWarnings": []
+      }
+    },
+    {
+      "label": "L3",
+      "inputFile": "output/coze-inputs/l3-built-in-sample.json",
+      "workflow": {
+        "name": "ride_analysis_v2",
+        "id": "7676429753852018707",
+        "version": "v0.0.9"
+      },
+      "promptVersion": "3.1.6",
+      "outputContractVersion": "ride-analysis-output-v0.3.2",
+      "requestId": "SMOKE-20260831180658:L3",
+      "providerRequestId": "2026090102072678D2CCECC3B6E990AAE5",
+      "outcome": "success",
+      "latencyMs": 14561.112,
+      "tokenUsage": {
+        "inputTokens": 9230,
+        "outputTokens": 1082,
+        "totalTokens": 10312
+      },
+      "repairTriggered": false,
+      "b0Fallback": "not_exercised_direct_provider_call",
+      "validation": {
+        "schema": false,
+        "claims": false,
+        "numbers": false,
+        "safety": false,
+        "valid": false,
+        "issues": [
+          "UNSUPPORTED_CONTEXT_LABEL"
+        ],
+        "qualityWarnings": []
+      }
+    },
+    {
+      "label": "L3-repair",
+      "inputFile": "output/coze-inputs/l3-built-in-sample-repair-v3.1.6.json",
+      "workflow": {
+        "name": "ride_analysis_v2",
+        "id": "7676429753852018707",
+        "version": "v0.0.9"
+      },
+      "promptVersion": "3.1.6",
+      "outputContractVersion": "ride-analysis-output-v0.3.2",
+      "requestId": "SMOKE-20260831180658:L3-repair",
+      "providerRequestId": "202609010207408F778788CCA67AD89D30",
+      "outcome": "success",
+      "latencyMs": 19780.251,
+      "tokenUsage": {
+        "inputTokens": 11398,
+        "outputTokens": 1160,
+        "totalTokens": 12558
+      },
+      "repairTriggered": true,
+      "b0Fallback": "not_exercised_direct_provider_call",
+      "validation": {
+        "schema": true,
+        "claims": true,
+        "numbers": true,
+        "safety": true,
+        "valid": true,
+        "issues": [],
+        "qualityWarnings": []
+      }
+    }
+  ]
+}

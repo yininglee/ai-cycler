@@ -1,0 +1,586 @@
+{
+  "schemaVersion": "advanced-interpretation-run-v0.1",
+  "benchmark": "AEVAL-M1-ADVANCED-INTERPRETATION",
+  "runId": "AEVAL-RUN-20260831-836",
+  "startedAt": "2026-08-31T09:52:51.458Z",
+  "completedAt": "2026-08-31T09:56:48.349Z",
+  "workflow": {
+    "name": "ride_analysis_v2",
+    "id": "7676429753852018707",
+    "version": "v0.0.3"
+  },
+  "versionMatrix": {
+    "contextSchemaVersion": "0.3",
+    "contextRulesVersion": "ride-analysis-context-rules-v0.3",
+    "claimRulesVersion": "ride-advanced-claim-rules-v0.1",
+    "projectionVersion": "ride-analysis-model-context-projection-v0.2",
+    "promptVersion": "3.1.2",
+    "workflowVersion": "ride_analysis_v2-v0.0.3"
+  },
+  "rawOutputsStored": false,
+  "answerKeyStored": false,
+  "manifestSha256": "b4b26d8ef442b46cf87f7e356702cf9781b88d05a5974d90b272c495ff8fbfff",
+  "answerKeySha256": "b43496039f391e5021b37c1236fee219582b11435402c18ec346d862f5907aee",
+  "authorization": {
+    "expectedSlots": 81,
+    "executedSlots": 22,
+    "candidateAttempts": 10,
+    "scope": "A/B x3 for 12 non-red-team; B x3 for 3 red-team"
+  },
+  "stopConditions": {
+    "earlyCheckAfterCandidateAttempts": 10,
+    "completionRateMin": 0.8,
+    "b0FallbackMaxExclusive": 0.2,
+    "p95MaxMs": 25000,
+    "triggered": {
+      "reason": "EARLY_STOP_B0_FALLBACK_GT_20",
+      "afterCandidateAttempts": 10
+    }
+  },
+  "summary": {
+    "successCount": 22,
+    "failureCount": 0,
+    "validOutputCount": 3,
+    "p50Ms": 9821.637,
+    "p95Ms": 14659.549,
+    "candidateP95Ms": 15588.52
+  },
+  "results": [
+    {
+      "caseId": "ADV-TIME-01",
+      "split": "dev",
+      "arm": "A",
+      "repetition": 1,
+      "requestId": "AEVAL-RUN-20260831-836:ADV-TIME-01:A:1",
+      "providerRequestId": "202608311752519C94ABB3FACB7966ADBB",
+      "outcome": "success",
+      "latencyMs": 7186.826,
+      "tokenUsage": {
+        "inputTokens": 4105,
+        "outputTokens": 338,
+        "totalTokens": 4443
+      },
+      "validation": {
+        "valid": false,
+        "issues": [
+          "HEADLINE_NOT_EVALUATIVE"
+        ],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "not_triggered_direct_provider_call"
+    },
+    {
+      "caseId": "ADV-TIME-01",
+      "split": "dev",
+      "arm": "A",
+      "repetition": 2,
+      "requestId": "AEVAL-RUN-20260831-836:ADV-TIME-01:A:2",
+      "providerRequestId": "202608311752589885F561E1D5FCE5EAD7",
+      "outcome": "success",
+      "latencyMs": 9591.18,
+      "tokenUsage": {
+        "inputTokens": 4105,
+        "outputTokens": 361,
+        "totalTokens": 4466
+      },
+      "validation": {
+        "valid": false,
+        "issues": [
+          "UNSUPPORTED_CONTEXT_LABEL",
+          "HEADLINE_NOT_EVALUATIVE"
+        ],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "not_triggered_direct_provider_call"
+    },
+    {
+      "caseId": "ADV-TIME-01",
+      "split": "dev",
+      "arm": "A",
+      "repetition": 3,
+      "requestId": "AEVAL-RUN-20260831-836:ADV-TIME-01:A:3",
+      "providerRequestId": "20260831175308D6641901803BBB6EE9F0",
+      "outcome": "success",
+      "latencyMs": 8799.868,
+      "tokenUsage": {
+        "inputTokens": 4105,
+        "outputTokens": 358,
+        "totalTokens": 4463
+      },
+      "validation": {
+        "valid": false,
+        "issues": [
+          "HEADLINE_NOT_EVALUATIVE"
+        ],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "not_triggered_direct_provider_call"
+    },
+    {
+      "caseId": "ADV-TIME-01",
+      "split": "dev",
+      "arm": "B",
+      "repetition": 1,
+      "requestId": "AEVAL-RUN-20260831-836:ADV-TIME-01:B:1",
+      "providerRequestId": "202608311753177004D465BE642215D8CF",
+      "outcome": "success",
+      "latencyMs": 7683.634,
+      "tokenUsage": {
+        "inputTokens": 4779,
+        "outputTokens": 511,
+        "totalTokens": 5290
+      },
+      "validation": {
+        "valid": false,
+        "issues": [
+          "HEADLINE_NOT_EVALUATIVE"
+        ],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "not_triggered_direct_provider_call"
+    },
+    {
+      "caseId": "ADV-TIME-01",
+      "split": "dev",
+      "arm": "B",
+      "repetition": 2,
+      "requestId": "AEVAL-RUN-20260831-836:ADV-TIME-01:B:2",
+      "providerRequestId": "20260831175324567877946D2E91689EC1",
+      "outcome": "success",
+      "latencyMs": 15588.52,
+      "tokenUsage": {
+        "inputTokens": 4779,
+        "outputTokens": 659,
+        "totalTokens": 5438
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-TIME-01",
+      "split": "dev",
+      "arm": "B",
+      "repetition": 3,
+      "requestId": "AEVAL-RUN-20260831-836:ADV-TIME-01:B:3",
+      "providerRequestId": "20260831175340AA1FD35865A69F5DA4CC",
+      "outcome": "success",
+      "latencyMs": 12610.825,
+      "tokenUsage": {
+        "inputTokens": 4779,
+        "outputTokens": 626,
+        "totalTokens": 5405
+      },
+      "validation": {
+        "valid": false,
+        "issues": [
+          "HEADLINE_NOT_EVALUATIVE"
+        ],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "not_triggered_direct_provider_call"
+    },
+    {
+      "caseId": "ADV-ROUTE-01",
+      "split": "regression",
+      "arm": "A",
+      "repetition": 1,
+      "requestId": "AEVAL-RUN-20260831-836:ADV-ROUTE-01:A:1",
+      "providerRequestId": "20260831175352F9681D893960F3EF1C4F",
+      "outcome": "success",
+      "latencyMs": 13979.219,
+      "tokenUsage": {
+        "inputTokens": 4115,
+        "outputTokens": 370,
+        "totalTokens": 4485
+      },
+      "validation": {
+        "valid": false,
+        "issues": [
+          "UNSUPPORTED_CONTEXT_LABEL",
+          "HEADLINE_NOT_EVALUATIVE"
+        ],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "not_triggered_direct_provider_call"
+    },
+    {
+      "caseId": "ADV-ROUTE-01",
+      "split": "regression",
+      "arm": "A",
+      "repetition": 2,
+      "requestId": "AEVAL-RUN-20260831-836:ADV-ROUTE-01:A:2",
+      "providerRequestId": "2026083117540618D3A95263C31EB60074",
+      "outcome": "success",
+      "latencyMs": 6388.775,
+      "tokenUsage": {
+        "inputTokens": 4115,
+        "outputTokens": 356,
+        "totalTokens": 4471
+      },
+      "validation": {
+        "valid": false,
+        "issues": [
+          "HEADLINE_NOT_EVALUATIVE"
+        ],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "not_triggered_direct_provider_call"
+    },
+    {
+      "caseId": "ADV-ROUTE-01",
+      "split": "regression",
+      "arm": "A",
+      "repetition": 3,
+      "requestId": "AEVAL-RUN-20260831-836:ADV-ROUTE-01:A:3",
+      "providerRequestId": "20260831175413D6641901803BBB6F1D79",
+      "outcome": "success",
+      "latencyMs": 13422.556,
+      "tokenUsage": {
+        "inputTokens": 4115,
+        "outputTokens": 398,
+        "totalTokens": 4513
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-ROUTE-01",
+      "split": "regression",
+      "arm": "B",
+      "repetition": 1,
+      "requestId": "AEVAL-RUN-20260831-836:ADV-ROUTE-01:B:1",
+      "providerRequestId": "20260831175426E1DCCE7FCD7FD37B45AE",
+      "outcome": "success",
+      "latencyMs": 11636.135,
+      "tokenUsage": {
+        "inputTokens": 4509,
+        "outputTokens": 607,
+        "totalTokens": 5116
+      },
+      "validation": {
+        "valid": true,
+        "issues": [],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "none"
+    },
+    {
+      "caseId": "ADV-ROUTE-01",
+      "split": "regression",
+      "arm": "B",
+      "repetition": 2,
+      "requestId": "AEVAL-RUN-20260831-836:ADV-ROUTE-01:B:2",
+      "providerRequestId": "20260831175438E1DB608F216C3B9A811F",
+      "outcome": "success",
+      "latencyMs": 12351.656,
+      "tokenUsage": {
+        "inputTokens": 4509,
+        "outputTokens": 524,
+        "totalTokens": 5033
+      },
+      "validation": {
+        "valid": false,
+        "issues": [
+          "UNSUPPORTED_CONTEXT_LABEL",
+          "HEADLINE_NOT_EVALUATIVE"
+        ],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "not_triggered_direct_provider_call"
+    },
+    {
+      "caseId": "ADV-ROUTE-01",
+      "split": "regression",
+      "arm": "B",
+      "repetition": 3,
+      "requestId": "AEVAL-RUN-20260831-836:ADV-ROUTE-01:B:3",
+      "providerRequestId": "20260831175450E8A14A581D6473A0CC04",
+      "outcome": "success",
+      "latencyMs": 14051.195,
+      "tokenUsage": {
+        "inputTokens": 4509,
+        "outputTokens": 677,
+        "totalTokens": 5186
+      },
+      "validation": {
+        "valid": false,
+        "issues": [
+          "UNSUPPORTED_DISTANCE_CLASSIFICATION",
+          "HEADLINE_NOT_EVALUATIVE"
+        ],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "not_triggered_direct_provider_call"
+    },
+    {
+      "caseId": "ADV-CLIMB-01",
+      "split": "blind",
+      "arm": "A",
+      "repetition": 1,
+      "requestId": "AEVAL-RUN-20260831-836:ADV-CLIMB-01:A:1",
+      "providerRequestId": "202608311755048AD945827E1AF49780E6",
+      "outcome": "success",
+      "latencyMs": 9821.637,
+      "tokenUsage": {
+        "inputTokens": 4115,
+        "outputTokens": 393,
+        "totalTokens": 4508
+      },
+      "validation": {
+        "valid": false,
+        "issues": [
+          "UNSUPPORTED_DISTANCE_CLASSIFICATION",
+          "UNSUPPORTED_CONTEXT_LABEL",
+          "HEADLINE_NOT_EVALUATIVE"
+        ],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "not_triggered_direct_provider_call"
+    },
+    {
+      "caseId": "ADV-CLIMB-01",
+      "split": "blind",
+      "arm": "A",
+      "repetition": 2,
+      "requestId": "AEVAL-RUN-20260831-836:ADV-CLIMB-01:A:2",
+      "providerRequestId": "202608311755147EB728E382D69C15995E",
+      "outcome": "success",
+      "latencyMs": 6889.943,
+      "tokenUsage": {
+        "inputTokens": 4115,
+        "outputTokens": 349,
+        "totalTokens": 4464
+      },
+      "validation": {
+        "valid": false,
+        "issues": [
+          "HEADLINE_NOT_EVALUATIVE"
+        ],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "not_triggered_direct_provider_call"
+    },
+    {
+      "caseId": "ADV-CLIMB-01",
+      "split": "blind",
+      "arm": "A",
+      "repetition": 3,
+      "requestId": "AEVAL-RUN-20260831-836:ADV-CLIMB-01:A:3",
+      "providerRequestId": "2026083117552126B245D3A8257E916999",
+      "outcome": "success",
+      "latencyMs": 9740.227,
+      "tokenUsage": {
+        "inputTokens": 4115,
+        "outputTokens": 371,
+        "totalTokens": 4486
+      },
+      "validation": {
+        "valid": false,
+        "issues": [
+          "UNSUPPORTED_CONTEXT_LABEL",
+          "HEADLINE_NOT_EVALUATIVE"
+        ],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "not_triggered_direct_provider_call"
+    },
+    {
+      "caseId": "ADV-CLIMB-01",
+      "split": "blind",
+      "arm": "B",
+      "repetition": 1,
+      "requestId": "AEVAL-RUN-20260831-836:ADV-CLIMB-01:B:1",
+      "providerRequestId": "20260831175531FB9115BCA77C10275C23",
+      "outcome": "success",
+      "latencyMs": 14659.549,
+      "tokenUsage": {
+        "inputTokens": 4532,
+        "outputTokens": 659,
+        "totalTokens": 5191
+      },
+      "validation": {
+        "valid": false,
+        "issues": [
+          "UNSUPPORTED_DISTANCE_CLASSIFICATION",
+          "HEADLINE_NOT_EVALUATIVE"
+        ],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "not_triggered_direct_provider_call"
+    },
+    {
+      "caseId": "ADV-CLIMB-01",
+      "split": "blind",
+      "arm": "B",
+      "repetition": 2,
+      "requestId": "AEVAL-RUN-20260831-836:ADV-CLIMB-01:B:2",
+      "providerRequestId": "20260831175545E1DB608F216C3B9AB213",
+      "outcome": "success",
+      "latencyMs": 12778.244,
+      "tokenUsage": {
+        "inputTokens": 4532,
+        "outputTokens": 555,
+        "totalTokens": 5087
+      },
+      "validation": {
+        "valid": false,
+        "issues": [
+          "UNSUPPORTED_DISTANCE_CLASSIFICATION",
+          "HEADLINE_NOT_EVALUATIVE"
+        ],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "not_triggered_direct_provider_call"
+    },
+    {
+      "caseId": "ADV-CLIMB-01",
+      "split": "blind",
+      "arm": "B",
+      "repetition": 3,
+      "requestId": "AEVAL-RUN-20260831-836:ADV-CLIMB-01:B:3",
+      "providerRequestId": "20260831175558AA1FD35865A69F5E0151",
+      "outcome": "success",
+      "latencyMs": 13823.264,
+      "tokenUsage": {
+        "inputTokens": 4532,
+        "outputTokens": 675,
+        "totalTokens": 5207
+      },
+      "validation": {
+        "valid": false,
+        "issues": [
+          "UNSUPPORTED_DISTANCE_CLASSIFICATION",
+          "UNSUPPORTED_CONTEXT_LABEL",
+          "HEADLINE_NOT_EVALUATIVE"
+        ],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "not_triggered_direct_provider_call"
+    },
+    {
+      "caseId": "ADV-HR-01",
+      "split": "blind",
+      "arm": "A",
+      "repetition": 1,
+      "requestId": "AEVAL-RUN-20260831-836:ADV-HR-01:A:1",
+      "providerRequestId": "2026083117561233F52F5A4F89E41996F1",
+      "outcome": "success",
+      "latencyMs": 8220.827,
+      "tokenUsage": {
+        "inputTokens": 4115,
+        "outputTokens": 355,
+        "totalTokens": 4470
+      },
+      "validation": {
+        "valid": false,
+        "issues": [
+          "HEADLINE_NOT_EVALUATIVE"
+        ],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "not_triggered_direct_provider_call"
+    },
+    {
+      "caseId": "ADV-HR-01",
+      "split": "blind",
+      "arm": "A",
+      "repetition": 2,
+      "requestId": "AEVAL-RUN-20260831-836:ADV-HR-01:A:2",
+      "providerRequestId": "20260831175620C3CC76068813E5C1C80B",
+      "outcome": "success",
+      "latencyMs": 5851.201,
+      "tokenUsage": {
+        "inputTokens": 4115,
+        "outputTokens": 288,
+        "totalTokens": 4403
+      },
+      "validation": {
+        "valid": false,
+        "issues": [
+          "UNSUPPORTED_CONTEXT_LABEL",
+          "HEADLINE_NOT_EVALUATIVE"
+        ],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "not_triggered_direct_provider_call"
+    },
+    {
+      "caseId": "ADV-HR-01",
+      "split": "blind",
+      "arm": "A",
+      "repetition": 3,
+      "requestId": "AEVAL-RUN-20260831-836:ADV-HR-01:A:3",
+      "providerRequestId": "20260831175626E704529A8A12DB4CA81E",
+      "outcome": "success",
+      "latencyMs": 7615.332,
+      "tokenUsage": {
+        "inputTokens": 4115,
+        "outputTokens": 362,
+        "totalTokens": 4477
+      },
+      "validation": {
+        "valid": false,
+        "issues": [
+          "HEADLINE_NOT_EVALUATIVE"
+        ],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "not_triggered_direct_provider_call"
+    },
+    {
+      "caseId": "ADV-HR-01",
+      "split": "blind",
+      "arm": "B",
+      "repetition": 1,
+      "requestId": "AEVAL-RUN-20260831-836:ADV-HR-01:B:1",
+      "providerRequestId": "20260831175634F0BB0AAFDCD715E97F87",
+      "outcome": "success",
+      "latencyMs": 14199.694,
+      "tokenUsage": {
+        "inputTokens": 4548,
+        "outputTokens": 568,
+        "totalTokens": 5116
+      },
+      "validation": {
+        "valid": false,
+        "issues": [
+          "DIMENSION_UNSUPPORTED_NUMBER",
+          "UNSUPPORTED_CONTEXT_LABEL",
+          "TEXT_UNSUPPORTED_NUMBER"
+        ],
+        "qualityWarnings": []
+      },
+      "repairTriggered": false,
+      "b0Fallback": "not_triggered_direct_provider_call"
+    }
+  ]
+}

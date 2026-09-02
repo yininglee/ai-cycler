@@ -128,7 +128,7 @@ T0.1结论：B0已具备作为模型失败兜底和后续增量对照组的工�
 
 ### 9.3 结论
 
-G0决定：`NO-GO`。B1/B2/B3继续为`NOT_RUN`；在ITEM-G0-FIX-001完成并复审G0前，不接入扣子模型。详细证据见`reviews/ITEM-G0-001-g0-release-review.md`。
+G0决定：`NO-GO`。B1/B2/B3继续为`NOT_RUN`；在ITEM-G0-FIX-001完成并复审G0前，不接入扣子模型。详细证据见`../archive/legacy-delivery-system-2026-08-27/reviews/ITEM-G0-001-g0-release-review.md`。
 
 ---
 
@@ -1007,7 +1007,7 @@ DEC-024已被用户接受并由DEC-025正式确认。取消60字符下限只解�
 
 ## 57｜T0.50｜V014统计量意义校验与Prompt v3.1.2静态复验（2026-08-23）
 
-> 类型：Prompt、服务端校验和自动测试；未调用真实模型。证据：[ITEM-V014评审](../reviews/ITEM-V014-prompt-few-shot-coze-input-review.md#18-v312-统计量意义修订)
+> 类型：Prompt、服务端校验和自动测试；未调用真实模型。证据：[ITEM-V014评审](../archive/legacy-delivery-system-2026-08-27/reviews/ITEM-V014-prompt-few-shot-coze-input-review.md#18-v312-统计量意义修订)
 
 | 检查项 | 结果 | 说明 |
 |---|---:|---|
@@ -1023,7 +1023,7 @@ DEC-024已被用户接受并由DEC-025正式确认。取消60字符下限只解�
 
 ## 58｜T0.51｜V014统计量解释强制项撤销（2026-08-23）
 
-> 类型：用户反馈后的 Prompt/校验规则修订；未调用真实模型。证据：[ITEM-V014评审](../reviews/ITEM-V014-prompt-few-shot-coze-input-review.md#19-用户修订后的-v312-统计量降级规则)
+> 类型：用户反馈后的 Prompt/校验规则修订；未调用真实模型。证据：[ITEM-V014评审](../archive/legacy-delivery-system-2026-08-27/reviews/ITEM-V014-prompt-few-shot-coze-input-review.md#19-用户修订后的-v312-统计量降级规则)
 
 | 检查项 | 结果 | 说明 |
 |---|---:|---|
@@ -1105,7 +1105,7 @@ DEC-024已被用户接受并由DEC-025正式确认。取消60字符下限只解�
 
 ## 64｜T1准备｜ITEM-T001新合同评测迁移与B0基线（2026-08-23）
 
-> 评审：[ITEM-T001评测迁移审查](../reviews/ITEM-T001-eval-migration-review.md)
+> 评审：[ITEM-T001评测迁移审查](../archive/legacy-delivery-system-2026-08-27/reviews/ITEM-T001-eval-migration-review.md)
 > 迁移清单：[ride-analysis-cases-v0.3-migration.json](ride-analysis-cases-v0.3-migration.json)
 
 ### 64.1 迁移审查
@@ -1305,7 +1305,7 @@ DEC-024已被用户接受并由DEC-025正式确认。取消60字符下限只解�
 
 > 原始批次：[RUN-20260824-367-raw.json](runs/RUN-20260824-367-raw.json)
 > 回放结果：[RUN-20260824-367.json](runs/RUN-20260824-367.json)
-> 详细评审：[ITEM-T001评测迁移审查](../reviews/ITEM-T001-eval-migration-review.md#25-扣子-b2-正式批次完成与回放结果)
+> 详细评审：[ITEM-T001评测迁移审查](../archive/legacy-delivery-system-2026-08-27/reviews/ITEM-T001-eval-migration-review.md#25-扣子-b2-正式批次完成与回放结果)
 > 类型：扣子测试环境真实 B2 批次；服务端回放通过，质量/性能保持未评分。
 
 | 指标 | 结果 | 边界 |
@@ -1338,7 +1338,7 @@ DEC-024已被用户接受并由DEC-025正式确认。取消60字符下限只解�
 
 ## 74｜T1跟进｜B0能力判断与运行时修复（2026-08-25）
 
-> 详细修复：[ITEM-T001-B2-runtime-remediation-review](../reviews/ITEM-T001-B2-runtime-remediation-review.md)
+> 详细修复：[ITEM-T001-B2-runtime-remediation-review](../archive/legacy-delivery-system-2026-08-27/reviews/ITEM-T001-B2-runtime-remediation-review.md)
 
 本地实现已修复室内仅心率/仅功率记录因缺少路线距离而被整体判定为 rejected 的问题，并补齐首轮/修复超时不重试第三次的回归。随后按用户确认补充解读质量回归：有意义特征未使用时产生非阻断质量警告；没有安全、直接解释价值时事实罗列仍合法；通用行动与绑定 Claim 的行动结构分离；overall 只要求必要维度子集且主题引用完整。`pnpm verify` 为 `196/196 PASS`，生产构建、`git diff --check` 和交付系统校验均通过；未重新调用扣子，因此不宣称历史 31/54 降级率已经改善。该条是本地修复与合同回归验证，不是新的模型 benchmark；下一次受限 B2 复测需另行授权。
 
@@ -1346,7 +1346,7 @@ DEC-024已被用户接受并由DEC-025正式确认。取消60字符下限只解�
 
 > 原始批次：[RUN-20260825-756-raw.json](runs/RUN-20260825-756-raw.json)
 > 回放结果：[RUN-20260825-756.json](runs/RUN-20260825-756.json)
-> 详细评审：[ITEM-T001-B2 Prompt同步与受限复测](../reviews/ITEM-T001-B2-prompt-sync-review.md)
+> 详细评审：[ITEM-T001-B2 Prompt同步与受限复测](../archive/legacy-delivery-system-2026-08-27/reviews/ITEM-T001-B2-prompt-sync-review.md)
 > 类型：扣子测试环境真实受限批次；不是完整54槽基准，不形成G1结论。
 
 | 指标 | 结果 | 边界 |
@@ -1365,7 +1365,7 @@ DEC-024已被用户接受并由DEC-025正式确认。取消60字符下限只解�
 ## 76｜T1跟进｜Prompt v3.1.2 与 Compact Candidate A/B（2026-08-25）
 
 > 合同：[t001-prompt-ab-manifest-v0.1](t001-prompt-ab-manifest-v0.1.json)
-> 详细评审：[ITEM-T001 Prompt A/B范围预览](../reviews/ITEM-T001-prompt-ab-preview-review.md)
+> 详细评审：[ITEM-T001 Prompt A/B范围预览](../archive/legacy-delivery-system-2026-08-27/reviews/ITEM-T001-prompt-ab-preview-review.md)
 > 类型：同条件候选对照；A/B 真实运行和双人匿名评审均已完成，结果仅用于 Demo 方案选择。
 
 | 条件 | A | B |
@@ -1403,7 +1403,7 @@ A 不重新运行，直接作为基线。机器指标比较 B2 成功率、超�
 > 原始批次：[RUN-20260825-918-raw.json](runs/RUN-20260825-918-raw.json)
 > 回放结果：[RUN-20260825-918.json](runs/RUN-20260825-918.json)
 > 比较结果：[T001-original-prompt-projection-comparison-v0.1.json](runs/T001-original-prompt-projection-comparison-v0.1.json)
-> 详细评审：[ITEM-T001原版Prompt可靠性恢复](../reviews/ITEM-T001-B2-original-prompt-reliability-preview.md)
+> 详细评审：[ITEM-T001原版Prompt可靠性恢复](../archive/legacy-delivery-system-2026-08-27/reviews/ITEM-T001-B2-original-prompt-reliability-preview.md)
 
 在Prompt、模型、Workflow、Few-shot和`15000ms`超时不变的条件下，模型输入投影将本次4条上下文由`69181`字节降至`29141`字节（`-57.88%`）。真实结果为4/4合同回放通过，B2 `1`、B0 `3`、超时`2`、修复`0`、安全停止`0`；不准入案例`RA-AUTO-018`保持0调用。
 
@@ -1413,7 +1413,7 @@ A 不重新运行，直接作为基线。机器指标比较 B2 成功率、超�
 
 > 原始批次：[RUN-20260825-510-raw.json](runs/RUN-20260825-510-raw.json)
 > 回放结果：[RUN-20260825-510.json](runs/RUN-20260825-510.json)
-> 详细评审：[ITEM-T001 25秒可靠性复测](../reviews/ITEM-T001-B2-25s-reliability-preview.md)
+> 详细评审：[ITEM-T001 25秒可靠性复测](../archive/legacy-delivery-system-2026-08-27/reviews/ITEM-T001-B2-25s-reliability-preview.md)
 > 类型：同四槽、同Prompt/模型/Workflow的等待预算诊断；不是完整21/54槽基准，不形成G1结论。
 
 | 指标 | 15秒同四槽 `RUN-20260825-918` | 25秒 `RUN-20260825-510` | 边界 |
@@ -1428,3 +1428,133 @@ A 不重新运行，直接作为基线。机器指标比较 B2 成功率、超�
 | 合同回放 | `PASS` | `PASS` | `benchmarkStatus=NOT_SCORED` |
 
 结论：在这4个同案例槽位中，25秒等待预算降低了两个此前15秒直接超时的B0降级，B2从1/4提升到3/4；但两个恢复均依赖修复，P95约34.6秒，仍明显高于G1的8秒目标。因此结果仅支持“25秒可提高小样本的可完成率”，不支持性能通过、生产放行、质量外推或G1判断。下一步等待用户验收后再决定是否保持Demo边界或另行批准更大样本/异步性能专项。
+
+## 79｜AEVAL-SMOKE-20260831-001｜扣子 v0.0.3 开发联调冒烟（2026-08-31）
+
+> 结构化证据：[SMOKE-20260831061352.json](runs/SMOKE-20260831061352.json)
+> 执行器：`scripts/run-coze-smoke.ts`
+> 类型：用户授权的 4 条开发联调调用；不是正式 AI 测评、人工盲评或 G1 放行。
+
+| 项目 | 结果 | 边界 |
+|---|---:|---|
+| Workflow | `ride_analysis_v2` / `7676429753852018707` / `v0.0.3` | Prompt `3.1.2`；4 个内置脱敏合同输入 |
+| 调用范围 | 4/4 成功 | L1、L2、L3 首轮各 1 次；L3 受限 repair 1 次 |
+| 程序校验 | Schema、Claim 引用、数字忠实性、安全边界均 4/4 通过 | 每条 `issues=[]`；未保存原始模型输出 |
+| Provider 请求 ID | 4/4 可观测 | 仅记录 ID，不记录 Token/API 密钥 |
+| 延迟 | `14859.612 / 15867.705 / 18751.714 / 22919.046ms` | 本组 P95=`22919.046ms`，不作为性能通过 |
+| Token | input=`28737`、output=`4115`、total=`32852` | 仅开发联调用量，不作成本结论 |
+| B0 fallback | 未执行 | 本次直接调用 Provider，不验证服务层 fallback 路径 |
+
+运行备注：首次沙箱执行未触达 Provider；一次外网重试前 2 条成功、后 2 条遇瞬时 `PROVIDER_HTTP_ERROR`，中间证据保留但不纳入功能判定；随后使用新 Run ID 完整重跑 4 条成功。结论：v0.0.3 的 L1/L2/L3 输入合同、受限修复参数和端到端响应通路均可用，返回内容通过现有程序硬门。该结果不改变 `AEVAL-M1-ADVANCED-INTERPRETATION` 的 `DRAFT`、检查点 A/B 待确认状态，也不启动 `ITEM-V017`。
+
+## 80｜AEVAL-RUN-20260831-COMBINED｜高阶事实接入正式批次（2026-08-31）
+
+> 类型：按已批准 `RUN_APPROVED` 执行的程序硬门批次；不是人工评分、G1 评审或发布放行。原始模型输出不落盘，答案键仅以哈希校验。
+
+### 80.1 版本与范围
+
+- Workflow：`ride_analysis_v2` / `7676429753852018707` / `v0.0.3`；Prompt `3.1.2`；Context `0.3`；Claim 规则 `ride-advanced-claim-rules-v0.1`；投影 `ride-analysis-model-context-projection-v0.2`。
+- 冻结集：15 个合成脱敏案例；非 red-team A/B 各 3 次、red-team 仅 B 各 3 次，共 81 槽。manifest SHA-256：`b4b26d8ef442b46cf87f7e356702cf9781b88d05a5974d90b272c495ff8fbfff`。
+- 组成证据：[`AEVAL-RUN-20260831-836`](runs/AEVAL-RUN-20260831-836.json)、[`AEVAL-RUN-20260831-803`](runs/AEVAL-RUN-20260831-803.json)；首次网络受限诊断 [`AEVAL-RUN-20260831-564`](runs/AEVAL-RUN-20260831-564.json) 不计入功能结果。
+
+### 80.2 机器结果
+
+| 指标 | 结果 | 说明 |
+|---|---:|---|
+| 执行槽位 | 81/81 | 完成授权范围 |
+| Provider 响应 | 80/81（98.8%） | 1 次 `PROVIDER_INVALID_RESPONSE` |
+| 完整输出合同通过 | 4/81（4.9%） | 76/81 校验失败，未达到 100% 硬门 |
+| 总耗时 P50 / P95 | 10058 / 14660 ms | 候选 P95 17063 ms |
+| 前 10 候选早停 | 未触发 | 完成率、fallback、P95 均未超过停止条件 |
+| B0 fallback | 0/81 | 直接 Provider 批次，不验证服务层 fallback |
+
+主要失败聚类（按校验码计）：`HEADLINE_NOT_EVALUATIVE` 66、`UNSUPPORTED_CONTEXT_LABEL` 36、`DIMENSION_UNSUPPORTED_NUMBER` 11、`TEXT_UNSUPPORTED_NUMBER` 11、`MISSING_INPUT_IMPACT` 8、`UNSUPPORTED_DISTANCE_CLASSIFICATION` 6、`DATA_COMPLETENESS_EVALUATION` 6、`INVALID_HEADLINE_LENGTH` 5、`OVERALL_UNSUPPORTED_NUMBER` 2、`FORBIDDEN_HIGH_RISK_TOPIC` 2、`MISSING_INPUT_LISTING` 1，以及 Provider 无效响应 1。聚类用于修复定位，不代表对模型原文的复述。
+
+### 80.3 结论与后续
+
+检查点 D：`FAILED`。由于输出合同硬门失败，不进入人工盲评和检查点 E，不标记 `AI-ADV-01` 完成，也不启动 `ITEM-V017`。下一步是建立失败修复任务卡，待用户授权后递增 Prompt/合同版本，重新执行零模型预检并以新 Run ID 复测；本批次证据保持不可变。
+
+## 81｜AEVAL-RUN-20260831-265｜Prompt 3.1.3 P0 修订复测（2026-08-31）
+
+> 类型：按已授权冻结集执行的程序硬门复测；不是人工评分、G1 评审或发布放行。
+
+- 证据：[结构化 Run](runs/AEVAL-RUN-20260831-265.json)。冻结集 15 案例、81 槽；manifest SHA-256 `d319781281880224a7b3dd0aa93493094963eacafd437ee36b9a8b76529fe37e`。
+- 版本：Prompt `3.1.3`、输出合同 `ride-analysis-output-v0.3.1`、wire schema `ride-analysis-output-v0.3`。控制台截图显示 Workflow `v0.0.4`，但 Run 结构化记录为 `v0.0.3`，版本观测存在不一致。
+- 结果：Provider 响应 81/81；调用成功 81/81；完整输出合同通过 33/81（40.7%）；校验失败 48/81；P50/P95 `9358.256/14822.989ms`，候选 P95 `15428.934ms`；未触发早停。
+- 失败聚类：`UNSUPPORTED_CONTEXT_LABEL` 28、`DIMENSION_UNSUPPORTED_NUMBER` 9、`TEXT_UNSUPPORTED_NUMBER` 9、`MISSING_INPUT_IMPACT` 7、`UNSUPPORTED_DISTANCE_CLASSIFICATION` 6、`DATA_COMPLETENESS_EVALUATION` 6、`INVALID_HEADLINE_LENGTH` 5、`OVERALL_UNSUPPORTED_NUMBER` 3。
+- 结论：P0 标题规则已更新，但本批次合同硬门仍未通过；检查点 D 记为 `PENDING_REVIEW`，不进入人工盲评、检查点 E 或 `ITEM-V017`。先核对 Workflow 版本字段，再决定是否保持冻结条件重跑。
+
+## 82｜AEVAL-RUN-20260831-892｜Prompt 3.1.3 / Workflow v0.0.4 正式复测（2026-08-31）
+
+> 类型：按已批准 `RUN_APPROVED` 执行的程序硬门批次；不是人工评分、G1 评审或发布放行。
+
+- 证据：[结构化 Run](runs/AEVAL-RUN-20260831-892.json)。冻结集 15 案例、81 槽；manifest SHA-256 `792f79a0c324ad44edb5cd370e68c6fd48ea816e2b3be0d0fd9eaf32aae88607`。
+- 版本：Workflow `ride_analysis_v2 v0.0.4`、Prompt `3.1.3`、输出合同 `ride-analysis-output-v0.3.1`、wire schema `ride-analysis-output-v0.3`，版本字段已与控制台发布一致。
+- 结果：Provider 响应 81/81；调用成功 81/81；完整输出合同通过 22/81（27.2%）；校验失败 59/81；P50/P95 `9452.776/14641.49ms`，候选 P95 `15657.016ms`；未触发早停。
+- 失败聚类：`UNSUPPORTED_CONTEXT_LABEL` 40、`INVALID_OUTPUT_SCHEMA_VERSION` 16、`TEXT_UNSUPPORTED_NUMBER` 10、`DIMENSION_UNSUPPORTED_NUMBER` 9、`MISSING_INPUT_IMPACT` 7、`DATA_COMPLETENESS_EVALUATION` 6、`UNSUPPORTED_DISTANCE_CLASSIFICATION` 4、`OVERALL_UNSUPPORTED_NUMBER` 2、`LOW_VALUE_META_LANGUAGE` 2、`FORBIDDEN_HIGH_RISK_TOPIC` 1、`OVERALL_TOPIC_WITHOUT_CLAIM` 1、`INVALID_HEADLINE_LENGTH` 1。
+- 结论：版本链路问题已排除，但合同硬门仍失败，检查点 D `FAILED`；不进入人工盲评、检查点 E 或 `ITEM-V017`。下一步优先修复扣子结构化输出的 schemaVersion 固定和剩余硬门问题，完成新版本、新 Run ID 复测。
+
+## 83｜AI-ADV-01-FIX-001-P0-B-v0.0.6-SMOKE｜P0-B 发布后受限冒烟（2026-08-31）
+
+> 类型：P0-B 配置发布后的 4 条 AI 冒烟；不是 81 槽正式测评、人工盲评或 G1 放行。原始模型输出不落盘。
+> 结构化证据：[SMOKE-20260831143855](runs/SMOKE-20260831143855.json)
+
+### 83.1 版本与范围
+
+- Workflow：`ride_analysis_v2` / `7676429753852018707` / `v0.0.6`；Prompt `3.1.4`；输出合同 `ride-analysis-output-v0.3.2`；wire schema `ride-analysis-output-v0.3`；few-shot `disabled`。
+- 范围：L1、L2、L3 首轮各 1 条，L3 受限 repair 1 条，共 4 条；直接调用 Provider，B0 fallback 未执行。
+
+### 83.2 机器结果
+
+| 指标 | 结果 | 说明 |
+|---|---:|---|
+| Provider 调用成功 | 4/4 | 无供应商错误或超时 |
+| 完整输出合同通过 | 1/4 | 仅 L3-repair 通过全部校验 |
+| `INVALID_OUTPUT_SCHEMA_VERSION` | 2 | L1、L3 首轮各 1 条 |
+| `UNSUPPORTED_CONTEXT_LABEL` | 1 | L2 首轮 1 条 |
+| 延迟 P50 / P95 | 16128 / 20810 ms | 四条直接 Provider 调用，不作为性能放行 |
+| Token input / output / total | 32319 / 4031 / 36350 | 仅本轮冒烟用量，不作正式成本结论 |
+
+### 83.3 结论
+
+P0-B 冒烟硬门未全过，检查点 D 继续 `FAILED`，不消耗 81 槽正式测评预算，不进入人工盲评或检查点 E。下一步修复首轮 `schemaVersion` 一致性和剩余上下文标签问题，以递增 Workflow 版本和新 Run ID 重测。
+
+## 84｜AI-ADV-01-FIX-001-P0-B-v0.0.7-SMOKE｜代码节点固定 wire 版本后的受限冒烟（2026-08-31）
+
+> 类型：P0-B 配置修复后的 4 条 AI 冒烟；不是 81 槽正式测评、人工盲评或 G1 放行。原始模型输出不落盘。
+
+- 证据：[结构化 Run](runs/SMOKE-20260831153345.json)。
+- 版本：Workflow `ride_analysis_v2 v0.0.7`、Prompt `3.1.4`、输出合同 `ride-analysis-output-v0.3.2`、wire schema `ride-analysis-output-v0.3`、few-shot `disabled`。
+- 运行范围：L1、L2、L3 首轮各 1 条，L3 受限 repair 1 条；Provider 调用 4/4 成功。
+- 完整合同校验：1/4 通过；L3-repair 通过，其余首轮分别为 `UNSUPPORTED_CONTEXT_LABEL`、`OVERALL_UNKNOWN_CLAIM`、`OVERALL_UNSUPPORTED_NUMBER`。
+- 结构硬门：`INVALID_OUTPUT_SCHEMA_VERSION=0`。代码节点输出固定 `ride-analysis-output-v0.3`，结束节点映射代码节点的 `schemaVersion`，该配置修复达到预期。
+- 性能与用量：延迟 P50/P95 `13681.920/17891.345ms`；Token input/output/total `32319/4048/36367`；B0 fallback 未执行。
+- 结论：结构版本问题已修复，但 P0-B 语义硬门仍失败，检查点 D 继续 `FAILED`。暂不执行 81 槽正式测评、人工盲评或 `ITEM-V017`；下一步修复剩余上下文标签、未知 Claim 和数字白名单失败后，递增 Workflow 版本并重新冒烟。
+
+## 85｜AEVAL-RUN-20260831-356｜P0-B v0.0.9 正式复测（2026-09-01）
+
+> 类型：用户确认 P0-B 验收后，按既有 `RUN_APPROVED` 执行的程序硬门批次；不是人工评分、G1 评审或发布放行。原始模型输出不落盘。
+> 结构化证据：[AEVAL-RUN-20260831-356](runs/AEVAL-RUN-20260831-356.json)。受限网络环境首次尝试 [AEVAL-RUN-20260831-138](runs/AEVAL-RUN-20260831-138.json) 因 `PROVIDER_HTTP_ERROR` 自动早停，不计入功能或质量分母。
+
+### 85.1 版本与范围
+
+- 授权范围：15 个冻结合成脱敏案例；12 个非 red-team 的 A/B 各 3 次、3 个 red-team 的 B 各 3 次，共 81 槽。执行前 `pnpm eval:advanced:preflight` 为 15/15 PASS，无模型调用。
+- 实际运行：Workflow `ride_analysis_v2` / `7676429753852018707` / `v0.0.9`；Prompt `3.1.6`；输出合同 `ride-analysis-output-v0.3.2`；wire schema `ride-analysis-output-v0.3`。
+- 可追溯性限制：Run 的 `workflow` 字段记录实际 `v0.0.9`，而冻结 manifest 的 `versionMatrix.workflowVersion` 仍为旧 `ride_analysis_v2-v0.0.5`。该不一致不改变本次硬门失败结论；下一轮须重新导出并在运行前核对版本矩阵。
+
+### 85.2 机器结果
+
+| 指标 | 结果 | 说明 |
+|---|---:|---|
+| 执行槽位 / Provider 响应 | 81/81 / 81/81 | 无 Provider 失败 |
+| 完整输出合同通过 | 41/81（50.6%） | A `24/36`；B `17/45`；未达到 100% 硬门 |
+| 总耗时 P50 / P95 | 8031.766 / 11356.691 ms | 端到端直接 Provider 调用 |
+| 候选 P95 | 13154.364 ms | 低于 25 秒早停阈值，高于 8 秒阶段目标 |
+| 前 10 候选早停 | 未触发 | 完成率 100%，无服务层 B0 fallback |
+| Token / 成本 | `NOT_OBSERVABLE` | Provider 未暴露可用于成本结论的数据 |
+
+失败聚类（按校验码计）：`UNSUPPORTED_CONTEXT_LABEL` 23、`OVERALL_TOPIC_WITHOUT_CLAIM` 11、`DATA_COMPLETENESS_EVALUATION` 8、`UNSUPPORTED_DISTANCE_CLASSIFICATION` 5、`DIMENSION_UNSUPPORTED_NUMBER` 2、`TEXT_UNSUPPORTED_NUMBER` 2、`MISSING_INPUT_IMPACT` 1、`UNSCOPED_CONSISTENCY_CONCLUSION` 1。
+
+### 85.3 结论与后续
+
+检查点 D：`FAILED`。虽然运行完整性满足早停规则，但 40/81 输出未通过事实/边界合同，不能进入人工盲评、检查点 E 或 `ITEM-V017`。下一步需要用户确认 Prompt、合同或受控投影的修复范围；修复后重新导出且核对版本矩阵、运行零模型预检和受限冒烟，再以新 Run ID 申请正式复测。本 Run 保持不可变。

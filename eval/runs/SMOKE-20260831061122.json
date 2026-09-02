@@ -1,0 +1,132 @@
+{
+  "schemaVersion": "coze-smoke-run-v0.1",
+  "runId": "SMOKE-20260831061122",
+  "workflow": {
+    "name": "ride_analysis_v2",
+    "id": "7676429753852018707",
+    "version": "v0.0.3"
+  },
+  "promptVersion": "3.1.2",
+  "scope": "restricted_smoke_only",
+  "rawOutputsStored": false,
+  "results": [
+    {
+      "label": "L1",
+      "inputFile": "output/coze-inputs/l1-built-in-sample.json",
+      "workflow": {
+        "name": "ride_analysis_v2",
+        "id": "7676429753852018707",
+        "version": "v0.0.3"
+      },
+      "promptVersion": "3.1.2",
+      "requestId": "SMOKE-20260831061122:L1",
+      "providerRequestId": "20260831141122AD5A16608B9E9FB56B83",
+      "outcome": "success",
+      "latencyMs": 18256.551,
+      "tokenUsage": {
+        "inputTokens": 5502,
+        "outputTokens": 713,
+        "totalTokens": 6215
+      },
+      "repairTriggered": false,
+      "b0Fallback": "not_exercised_direct_provider_call",
+      "validation": {
+        "schema": false,
+        "claims": false,
+        "numbers": false,
+        "safety": false,
+        "valid": false,
+        "issues": [
+          "UNSUPPORTED_CONTEXT_LABEL"
+        ],
+        "qualityWarnings": []
+      }
+    },
+    {
+      "label": "L2",
+      "inputFile": "output/coze-inputs/l2-built-in-sample.json",
+      "workflow": {
+        "name": "ride_analysis_v2",
+        "id": "7676429753852018707",
+        "version": "v0.0.3"
+      },
+      "promptVersion": "3.1.2",
+      "requestId": "SMOKE-20260831061122:L2",
+      "providerRequestId": "2026083114114036208C2BBC3FC4805064",
+      "outcome": "success",
+      "latencyMs": 22340.494,
+      "tokenUsage": {
+        "inputTokens": 6647,
+        "outputTokens": 1076,
+        "totalTokens": 7723
+      },
+      "repairTriggered": false,
+      "b0Fallback": "not_exercised_direct_provider_call",
+      "validation": {
+        "schema": false,
+        "claims": false,
+        "numbers": false,
+        "safety": false,
+        "valid": false,
+        "issues": [
+          "OVERALL_UNKNOWN_CLAIM"
+        ],
+        "qualityWarnings": []
+      }
+    },
+    {
+      "label": "L3",
+      "inputFile": "output/coze-inputs/l3-built-in-sample.json",
+      "workflow": {
+        "name": "ride_analysis_v2",
+        "id": "7676429753852018707",
+        "version": "v0.0.3"
+      },
+      "promptVersion": "3.1.2",
+      "requestId": "SMOKE-20260831061122:L3",
+      "providerRequestId": "NOT_OBSERVABLE",
+      "outcome": "failure",
+      "latencyMs": 25004.682,
+      "tokenUsage": "NOT_OBSERVABLE",
+      "repairTriggered": false,
+      "b0Fallback": "not_exercised_direct_provider_call",
+      "validation": {
+        "schema": false,
+        "claims": false,
+        "numbers": false,
+        "safety": false,
+        "valid": false,
+        "issues": [
+          "AI_TIMEOUT"
+        ]
+      }
+    },
+    {
+      "label": "L3-repair",
+      "inputFile": "output/coze-inputs/l3-built-in-sample-repair-v3.1.2.json",
+      "workflow": {
+        "name": "ride_analysis_v2",
+        "id": "7676429753852018707",
+        "version": "v0.0.3"
+      },
+      "promptVersion": "3.1.2",
+      "requestId": "SMOKE-20260831061122:L3-repair",
+      "providerRequestId": "NOT_OBSERVABLE",
+      "outcome": "failure",
+      "latencyMs": 25001.84,
+      "tokenUsage": "NOT_OBSERVABLE",
+      "repairTriggered": true,
+      "b0Fallback": "not_exercised_direct_provider_call",
+      "validation": {
+        "schema": false,
+        "claims": false,
+        "numbers": false,
+        "safety": false,
+        "valid": false,
+        "issues": [
+          "AI_TIMEOUT"
+        ]
+      }
+    }
+  ]
+}

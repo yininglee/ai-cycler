@@ -22,12 +22,13 @@ import type {
   RideRecord,
 } from "./ride-schema.ts";
 import type { UserProfile } from "./user-profile.ts";
+import { buildRideAdvancedClaimSnapshot } from "./ride-advanced-claims.ts";
 
-export const RIDE_ANALYSIS_CONTEXT_SCHEMA_VERSION = "0.2" as const;
-export const RIDE_ANALYSIS_CONTEXT_RULES_VERSION = "ride-analysis-context-rules-v0.2" as const;
+export const RIDE_ANALYSIS_CONTEXT_SCHEMA_VERSION = "0.3" as const;
+export const RIDE_ANALYSIS_CONTEXT_RULES_VERSION = "ride-analysis-context-rules-v0.3" as const;
 
 export type ContextMetricBucket = "recorded" | "derived" | "estimated";
-export type ContextClaimKind = "metric" | "feature" | "history";
+export type ContextClaimKind = "metric" | "feature" | "history" | "advanced";
 export type ProfileContextKey = "age" | "heightCm" | "weightKg" | "maxHeartRate" | "ftp";
 
 export interface AnalysisContextMetric {
@@ -112,6 +113,9 @@ const PRIVACY_FLAGS = [
   "untrusted_free_text_excluded",
 ] as const;
 
+// New deterministic facts enter model context only in their dedicated AI task.
+const AI_EXCLUDED_METRIC_KEYS = new Set<MetricKey>(["elevationLossM"]);
+
 function finite(value: unknown): value is number {
   return typeof value === "number" && Number.isFinite(value);
 }
@@ -158,7 +162,8 @@ function displayFields(metricKey: MetricKey, metric: Metric): Pick<AnalysisConte
     case "movingTimeS": displayValue = formatDuration(metric.value); displayUnit = "duration"; break;
     case "avgSpeedMps":
     case "maxSpeedMps": displayValue = compactNumber(metric.value * 3.6); displayUnit = "km/h"; break;
-    case "elevationGainM": displayValue = compactNumber(metric.value, 0); displayUnit = "m"; break;
+    case "elevationGainM":
+    case "elevationLossM": displayValue = compactNumber(metric.value, 0); displayUnit = "m"; break;
     case "avgHeartRateBpm":
     case "maxHeartRateBpm": displayValue = compactNumber(metric.value, 0); displayUnit = "bpm"; break;
     case "avgPowerW":
@@ -297,6 +302,22 @@ function unavailableClaims(capabilities: AtomicCapability[]): string[] {
   return capabilities.filter((capability) => !capability.available).map((capability) => capability.key);
 }
 
+function withAdvancedCapabilities(
+  capabilities: AtomicCapability[],
+  availableKeys: AtomicCapability["key"][],
+): AtomicCapability[] {
+  const available = new Set(availableKeys);
+  return capabilities.map((capability) => !available.has(capability.key)
+    ? capability
+    : {
+      ...capability,
+      available: true,
+      sources: [...new Set([...capability.sources, "deterministic_rule" as const])],
+      qualityStatus: capability.key === "maxHeartRateBaseline" && capability.qualityStatus === "estimated" ? "estimated" : "valid",
+      unavailableReason: undefined,
+    });
+}
+
 export function buildRideAnalysisContext(record: RideRecord, options: BuildRideAnalysisContextOptions = {}): RideAnalysisContext {
   const userScope = options.userScope ?? "local-demo";
   if (!userScope.trim()) throw new Error("userScope must not be empty");
@@ -309,23 +330,32 @@ export function buildRideAnalysisContext(record: RideRecord, options: BuildRideA
   }
 
   const atomic = buildAtomicCapabilityProfile(record, options.profile);
-  const capabilities = withHistoryCapabilities(atomic, options.historicalComparison);
+  const advanced = buildRideAdvancedClaimSnapshot(record, options.profile);
+  const capabilities = withAdvancedCapabilities(
+    withHistoryCapabilities(atomic, options.historicalComparison),
+    advanced.availableCapabilityKeys,
+  );
   const recordedMetrics: RideAnalysisContext["recordedMetrics"] = {};
   const derivedMetrics: RideAnalysisContext["derivedMetrics"] = {};
   const estimatedMetrics: RideAnalysisContext["estimatedMetrics"] = {};
   const claims: AnalysisContextClaim[] = [];
 
   for (const [metricKey, metric] of Object.entries(record.activity.metrics) as [MetricKey, Metric][]) {
-    if (!metric || metric.qualityStatus !== "valid" || !finite(metric.value)) continue;
+    if (AI_EXCLUDED_METRIC_KEYS.has(metricKey) || !metric || metric.qualityStatus !== "valid" || !finite(metric.value)) continue;
     const bucket = metric.provenance === "recorded" ? recordedMetrics : metric.provenance === "calculated" ? derivedMetrics : estimatedMetrics;
     bucket[metricKey] = copyMetric(metricKey, metric);
     claims.push(metricClaim(record.activity.rideId, metricKey, metric));
   }
-  claims.push(...featureClaims(featureSnapshot), ...(options.historicalComparison ? historyClaims(options.historicalComparison) : []));
+  claims.push(
+    ...featureClaims(featureSnapshot),
+    ...(options.historicalComparison ? historyClaims(options.historicalComparison) : []),
+    ...advanced.claims,
+  );
   const dedupedClaims = [...new Map(claims.map((claim) => [claim.claimId, claim])).values()];
   const limitations = unique([
     ...featureSnapshot.unavailable.map((item) => `${item.key}:${item.reason}`),
     ...capabilities.filter((capability) => !capability.available && capability.unavailableReason).map((capability) => `${capability.key}:${capability.unavailableReason}`),
+    ...advanced.limitations,
   ]);
 
   return {
