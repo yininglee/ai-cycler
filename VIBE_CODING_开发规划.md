@@ -110,8 +110,8 @@ M0 已继承工程基线（Done）
   - [x] `AI-ADV-02C-IMPL-009` 建立候选呈现 ViewModel，将 L8 渲染块映射到现有确定性图表。状态：`Done`（2026-09-01 用户明确“继续下一项工作”）；完成候选视觉绑定和未解析视觉降级；不接生产详情页。
   - [x] `AI-ADV-02C-IMPL-010` 完成候选 AI 解读页桌面/移动视觉预览。状态：`Done`（2026-09-01，用户以“继续下一项工作”确认）；已完成独立离线预览页、详情页同款壳层和响应式样式，四层语义以自然语言段落呈现；仅使用 fixture，未进入生产链路。
   - [x] `AI-ADV-02C-IMPL-011` 修订候选自然语言输出结构。状态：`Done`（2026-09-01，用户随后要求进入 `GATE-01`，视为验收确认）；将四层内部槽位改为单段自然语言 `text`，增加可追溯高光 `highlights`，保留整体评价、多维度评价、限制和一条行动建议；Coze 适配为 System Prompt 承载规则、User Prompt 仅接收 `{{ride_interpretation_input}}`；不改变事实/安全边界，不导入 Coze。表现高光作为整体评价卡片子内容展示，合同仍保留根级 `highlights[]` 以便校验、追溯和迁移。
-  - [ ] `AI-ADV-02C-GATE-01` 迁移决策门：用户确认 Prompt/合同/Workflow 迁移范围，并在 AI 测评文档建立新数据集、版本矩阵和 Run 计划。状态：`In Progress`（2026-09-01，已按用户请求启动）；依赖 `IMPL-008`--`IMPL-011`。
-  - [ ] `AI-ADV-02C-MIG-01` 经 `GATE-01` 和用户明确授权后，递增版本并迁移 Coze，执行零模型预检、受限冒烟和新的 AI 测评批次。状态：`Backlog`；不得提前启动。
+  - [x] `AI-ADV-02C-GATE-01` 迁移决策门：用户确认 Prompt/合同/Workflow 迁移范围，并在 AI 测评文档建立新数据集、版本矩阵和 Run 计划。状态：`Done`（2026-09-02，用户确认 Gate-01 决策包）；依赖 `IMPL-008`--`IMPL-011`。
+  - [ ] `AI-ADV-02C-MIG-01` 经 `GATE-01` 和用户明确授权后，递增版本并迁移 Coze，执行零模型预检、受限冒烟和新的 AI 测评批次。状态：`Ready`；等待用户明确授权，不得提前启动。
   - [ ] `AI-ADV-02D` 接入单次解读所需的持久历史查询。状态：`Backlog`；用户确认当前阶段不接持久数据，按整体规划延期至 M2 的 `MVP-FOUNDATION-01`--`03` 与 `MVP-REPEAT-01`，不能在进程内 Demo 存储上直接实现。
 - [ ] `AI-CAP-01` 骑行水平/能力评估独立模块设计。状态：`Review`（已形成独立产品边界、纵向链路、能力维度和前端模块草案；不得随 `AI-ADV-02` 自动进入开发）。
 
@@ -119,12 +119,12 @@ M0 已继承工程基线（Done）
 
 `AI-ADV-02C-GATE-01` 任务卡：
 
-- 状态：`In Progress`（2026-09-01，用户明确要求进入本 Gate）。
+- 状态：`Done`（2026-09-02，用户确认 Gate-01 决策包）。
 - 目标：在离线候选链路已完成后，冻结一次可审查的 v0.4 迁移范围、测评数据集版本、版本矩阵和后续 Run 计划。
 - 非目标：不修改 `cycling-buddy-ride-analysis-v3.1.6.md`、`ride-analysis-output-v0.3.2`、生产 Coze Workflow；不接持久历史；不调用模型、不执行冒烟或正式 Run。
-- 验收条件：候选输入/输出/Prompt/Schema/fixture 的版本和哈希可复现；数据集拆分、正反例覆盖、硬门、预算、停止条件和回滚路径写入 AI 测评文档；迁移范围明确区分“必须迁移”“暂不迁移”和“待用户确认”；`AI-ADV-02C-MIG-01` 保持 `Backlog`。
-- 交付：`eval/ride-interpretation-v0.4-candidate/manifest.json`、`eval/ride-interpretation-v0.4-candidate/migration-gate-v0.1.md`，以及 `AI_AGENT_测评计划与记录.md` 中的新 AEVAL 计划条目。当前两份 Gate 资产已创建并待用户决策。
-- 进入下一任务：仅在用户确认 Gate-01 决策包后，将本任务记为 `Done` 并把 `AI-ADV-02C-MIG-01` 置为 `Ready`；迁移仍需用户明确授权。
+- 验收条件：候选输入/输出/Prompt/Schema/fixture 的版本和哈希可复现；数据集拆分、正反例覆盖、硬门、预算、停止条件和回滚路径写入 AI 测评文档；迁移范围明确区分“必须迁移”“暂不迁移”和“待用户确认”；Gate 通过后 `AI-ADV-02C-MIG-01` 置为 `Ready`，但未获明确授权不得启动。
+- 交付：`eval/ride-interpretation-v0.4-candidate/manifest.json`、`eval/ride-interpretation-v0.4-candidate/migration-gate-v0.1.md`，以及 `AI_AGENT_测评计划与记录.md` 中的新 AEVAL 计划条目。两份 Gate 资产已冻结并经用户确认。
+- 进入下一任务：`AI-ADV-02C-MIG-01` 已置为 `Ready`；迁移仍需用户明确授权，授权前不修改 Coze 或调用模型。
 
 用户验收结果：2026-09-01，用户明确回复“当前设计验收通过”，确认单次骑后解读边界、L0-L8 分层、关系/历史 Claim、7 个业务维度、默认/展开预算、四层解读语义及三阶段前端展示。`AI-ADV-02C` 已完成离线候选切片并由用户授权继续后续工作；用户后续确认当前阶段不接持久数据，`AI-ADV-02D` 因此延期至 M2 `Backlog`。本次不覆盖独立的 `AI-CAP-01`。
 

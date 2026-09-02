@@ -312,7 +312,7 @@ M2 不默认新增 Agent 能力。只有持久历史、用户资料、分享文�
 | `AEVAL-M1-ADVANCED-INTERPRETATION` | 高阶事实接入骑后 AI 解读 | `PAUSED`：A/B/C 已确认，D `FAILED`，E 未开始 | `12+3` 合成脱敏案例；`AEVAL-RUN-20260831-356` 完成 81 槽但仅 41/81 合同通过；旧链路问题转入 `AI-ADV-02` 规则重构 | [冻结资产](eval/advanced-interpretation-v0.1/manifest.json)、[正式 Run](eval/runs/AEVAL-RUN-20260831-356.json) | 完成 `AI-ADV-02` 设计并验收后，重新定义迁移范围、版本矩阵和新测评集；不在旧 Prompt 体系上继续追加修复 |
 | `AEVAL-M1-USER-PILOT` | 5 人 AI 产品验证 | `NOT_RUN`：0/5（Paused） | 旧材料已准备；当前不是模型质量盲评 | `eval/user-testing/T017-*` | 完成优化并经用户验收后再确认启动 |
 | `AEVAL-M1-RIDE-INTERPRETATION-V04-CANDIDATE` | 单次骑后解读 v0.4.1 候选结构 | `DONE`：候选结构已确认，未调用模型 | 自然语言整体/维度、高光和下一步结构已建立；迁移由独立 `GATE-01` 管理 | `coze/ride-interpretation-output-v04-candidate-schema.json`、`prompts/cycling-buddy-ride-interpretation-v0.4-candidate.md` | 审阅 `AI-ADV-02C-GATE-01` 决策包并确认是否授权 `MIG-01` |
-| `AEVAL-M1-RIDE-INTERPRETATION-V04-GATE-01` | v0.4.1 候选迁移决策门 | `IN_PROGRESS`：范围、版本矩阵和冒烟计划已冻结，待用户决策 | 不修改生产 v0.3.2/Workflow v0.0.9；不接持久历史；不调用模型；不授权正式 81 槽 | `eval/ride-interpretation-v0.4-candidate/manifest.json`、`eval/ride-interpretation-v0.4-candidate/migration-gate-v0.1.md` | 用户确认候选 Workflow 标识与迁移授权后进入 `AI-ADV-02C-MIG-01` |
+| `AEVAL-M1-RIDE-INTERPRETATION-V04-GATE-01` | v0.4.1 候选迁移决策门 | `DONE`：用户于 2026-09-02 确认决策包 | 不修改生产 v0.3.2/Workflow v0.0.9；不接持久历史；不调用模型；不授权正式 81 槽 | `eval/ride-interpretation-v0.4-candidate/manifest.json`、`eval/ride-interpretation-v0.4-candidate/migration-gate-v0.1.md` | 用户另行明确迁移授权后进入 `AI-ADV-02C-MIG-01` |
 | `AEVAL-M3-CHAT` | AI 骑行伙伴 | `BACKLOG` | 正常任务和正式指标未冻结 | [对话草案](eval/ride-chat-cases-v0.1.jsonl) | M3 开始时执行检查点 A/B |
 | `AEVAL-M4-TRAIN` | 训练计划 AI 表达 | `BLOCKED` | 缺规则金标与专业审核授权 | 待建立 | 满足进入条件后共同设计 |
 
@@ -323,7 +323,7 @@ M2 不默认新增 Agent 能力。只有持久历史、用户资料、分享文�
 - Coze 提示词分工：System Prompt 承载角色、输出结构、Claim/数字/安全边界；User Prompt 只通过 `{{ride_interpretation_input}}` 接收服务端投影 JSON，不重复规则、不拼接原始数据。当前仅形成可复制文本，未同步 Coze。
 - 离线资产：候选输出 Schema/合法示例、2 个候选输入计划 fixture、7 个序列化正反响应 fixture；均为脱敏内置样例，不含原始轨迹、文件名、精确位置或持久历史。
 - 当前结论：候选合同与 Prompt 预检通过，尚无 Provider 结果；本条记录不构成迁移批准、冒烟通过或正式测评授权。
-- 下一步：`AI-ADV-02C-GATE-01` 已建立并冻结候选迁移范围、版本哈希和 4 条冒烟方案；待用户确认决策包后，才启动 `AI-ADV-02C-MIG-01`。
+- 下一步：`AI-ADV-02C-GATE-01` 决策包已于 2026-09-02 确认；待用户另行明确迁移授权后，才启动 `AI-ADV-02C-MIG-01`。
 
 #### AI-ADV-02C-GATE-01｜候选迁移决策包
 
@@ -332,8 +332,15 @@ M2 不默认新增 Agent 能力。只有持久历史、用户资料、分享文�
 - 必须迁移：候选 System Prompt、`{{ride_interpretation_input}}` 单变量、候选输出 Schema、独立 Workflow 映射。
 - 暂不迁移：生产 Prompt/合同/Workflow、持久历史、长期能力画像、正式 81 槽、人工盲评和 `ITEM-V017`。
 - 冒烟计划：发布独立候选 Workflow 后，以新 `AEVAL-SMOKE-YYYYMMDD-NNN` 执行 L1、L2、L3、L3-repair 四条；4/4 Provider 成功且结构、Claim、数字、视觉、安全校验全通过才算通过。
-- 当前结论：Gate-01 `IN_PROGRESS`；本阶段尚未修改 Coze、尚未调用模型，也未授权正式测评。
-- 用户决策项：确认候选 Workflow 名称/ID/版本、模型与额度条件，并明确是否允许 Gate 后进入 `AI-ADV-02C-MIG-01`。
+- 当前结论：Gate-01 `DONE`；用户于 2026-09-02 确认决策包。本阶段尚未修改 Coze、尚未调用模型，也未授权正式测评；`AI-ADV-02C-MIG-01` 已置为 `Ready`。
+- 用户决策项：另行明确候选 Workflow 迁移授权，并确认名称/ID/版本、模型与额度条件。
+
+#### Gate-01 用户确认（2026-09-02）
+
+- 用户确认：`确认 Gate-01 决策包`。
+- 决策结果：候选仅允许迁移到独立 Coze Workflow；生产 Prompt/合同/Workflow、持久历史、长期能力画像、正式 81 槽和 `ITEM-V017` 均不在本 Gate 范围内。
+- 测评边界：迁移授权与 4 条受限冒烟是后续独立动作；本确认不产生 Provider 结果，不构成正式测评授权。
+- 下一步：用户明确授权 `AI-ADV-02C-MIG-01` 后，再记录实际 Workflow 版本并执行新的 `AEVAL-SMOKE` 四槽计划。
 
 ### 历史批次索引
 
