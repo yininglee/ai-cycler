@@ -1,0 +1,76 @@
+{
+  "schemaVersion": "ride-interpretation-migration-gate-v0.1",
+  "gateId": "AI-ADV-02C-GATE-01",
+  "status": "READY_FOR_USER_DECISION",
+  "createdAt": "2026-09-01",
+  "candidate": {
+    "inputVersion": "ride-interpretation-input-v0.4-candidate",
+    "outputVersion": "ride-interpretation-output-v0.4.1-candidate",
+    "promptVersion": "cycling-buddy-ride-interpretation-v0.4-candidate",
+    "wireSchemaVersion": "ride-interpretation-output-v0.4.1-candidate",
+    "productionBaseline": {
+      "promptVersion": "3.1.6",
+      "outputContractVersion": "ride-analysis-output-v0.3.2",
+      "wireSchemaVersion": "ride-analysis-output-v0.3",
+      "workflowVersion": "v0.0.9"
+    }
+  },
+  "sourceFiles": [
+    { "path": "prompts/cycling-buddy-ride-interpretation-v0.4-candidate.md", "sha256": "fcff11119f93b7f4d5e251f33816ec19d20ebb1d73bb0b84bc35c86ed0c2d9c3" },
+    { "path": "coze/ride-interpretation-output-v04-candidate-schema.json", "sha256": "87905c0e8d462b8671d1d41df2541a1430f0092d3fe4ea0b7f3956d5ada6a364" },
+    { "path": "coze/ride-interpretation-output-v04-candidate-example.json", "sha256": "eec665bdd9e402251ce2ada4ee427f79122b509489178b651eda2a4426a672dc" },
+    { "path": "eval/ride-interpretation-v0.4-candidate/fixtures.json", "sha256": "45bddc119cca275c3d67933e280253841634c50480499343f8fc85f90ca9ef12" },
+    { "path": "eval/ride-interpretation-v0.4-candidate/response-fixtures.json", "sha256": "806cc79f3d3be20c616c03f97a4f7f193e85a58e5f4d805cfd7cd02063bcbf88" },
+    { "path": "output/ride-interpretation-v0.4-candidate/prompt-input-l3.json", "sha256": "941e670954348bfa03ee593a301754be29aab0d9b9f757b8b7ec193062f4f178" }
+  ],
+  "offlineChecks": {
+    "candidateFixtures": "pnpm eval:interpretation:candidate:preflight",
+    "outputSchema": "pnpm eval:interpretation:schema:preflight",
+    "responseFixtures": "pnpm eval:interpretation:responses:preflight",
+    "presentation": "pnpm eval:interpretation:presentation:preflight",
+    "presentationViewModel": "pnpm eval:interpretation:presentation-vm:preflight",
+    "prompt": "pnpm eval:interpretation:prompt:preflight",
+    "modelCalls": 0
+  },
+  "migrationScope": {
+    "mustMigrate": [
+      "候选 System Prompt 全文",
+      "User Prompt 单变量 {{ride_interpretation_input}}",
+      "候选输出 Schema ride-interpretation-output-v0.4.1-candidate",
+      "独立候选 Workflow 的输入/输出映射和版本标识"
+    ],
+    "doNotMigrate": [
+      "生产 Prompt 3.1.6",
+      "生产 output contract ride-analysis-output-v0.3.2",
+      "生产 Workflow v0.0.9",
+      "持久历史和 history_change 真实数据链路",
+      "正式 81 槽测评和 ITEM-V017 用户测试"
+    ],
+    "userDecisionRequired": [
+      "候选 Workflow 名称、ID 和发布版本",
+      "扣子模型、超时和额度是否允许 4 条受限冒烟",
+      "是否授权通过冒烟后进入新的正式 AI 测评计划"
+    ]
+  },
+  "smokePlan": {
+    "runIdPattern": "AEVAL-SMOKE-YYYYMMDD-NNN",
+    "cases": [
+      { "slot": "L1", "purpose": "基础事实和自然语言整体评价" },
+      { "slot": "L2", "purpose": "心率/节奏维度与限制降级" },
+      { "slot": "L3", "purpose": "功率、多维事实和表现高光" },
+      { "slot": "L3-repair", "purpose": "受限修复后再校验" }
+    ],
+    "passCriteria": [
+      "4/4 Provider 调用成功",
+      "4/4 输出 Schema、Claim、数字、视觉和安全校验通过",
+      "整体评价为自然语言段落，高光只作为整体评价卡片子内容展示",
+      "不出现未知维度、未知 Claim、越权数字、长期能力或危险建议"
+    ],
+    "stopCriteria": [
+      "任一结构或安全硬门失败",
+      "任一 Provider 额度/权限错误",
+      "任一输出泄露未投影数据或引入未注册视觉"
+    ]
+  },
+  "nextTask": "AI-ADV-02C-MIG-01"
+}

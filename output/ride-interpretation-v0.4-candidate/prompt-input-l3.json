@@ -1,0 +1,300 @@
+{
+  "ride_interpretation_input": {
+    "contractVersion": "ride-interpretation-input-v0.4-candidate",
+    "sourceCandidateVersion": "ride-interpretation-v0.4-candidate",
+    "planVersion": "ride-interpretation-plan-v0.1",
+    "rideId": "ride-l3-power-preview",
+    "mode": "default",
+    "allowedClaims": [
+      {
+        "claimId": "claim:ride-l3-power-preview:distanceM",
+        "kind": "metric",
+        "key": "distanceM",
+        "value": 45000,
+        "unit": "m",
+        "provenance": "recorded",
+        "confidence": "high",
+        "evidenceIds": [
+          "EV-SL3-001"
+        ],
+        "displayValue": "45",
+        "displayUnit": "km",
+        "displayFormulaVersion": "metric-display-v0.1"
+      },
+      {
+        "claimId": "claim:ride-l3-power-preview:avgHeartRateBpm",
+        "kind": "metric",
+        "key": "avgHeartRateBpm",
+        "value": 150,
+        "unit": "bpm",
+        "provenance": "recorded",
+        "confidence": "high",
+        "evidenceIds": [
+          "EV-SL3-005"
+        ],
+        "displayValue": "150",
+        "displayUnit": "bpm",
+        "displayFormulaVersion": "metric-display-v0.1"
+      },
+      {
+        "claimId": "claim:ride-l3-power-preview:avgPowerW",
+        "kind": "metric",
+        "key": "avgPowerW",
+        "value": 198,
+        "unit": "W",
+        "provenance": "recorded",
+        "confidence": "high",
+        "evidenceIds": [
+          "EV-SL3-006"
+        ],
+        "displayValue": "198",
+        "displayUnit": "W",
+        "displayFormulaVersion": "metric-display-v0.1"
+      },
+      {
+        "claimId": "claim:ride-l3-power-preview:feature:speedSeriesMeanMps",
+        "kind": "feature",
+        "key": "speedSeriesMeanMps",
+        "value": 7.142857142857143,
+        "unit": "m/s",
+        "confidence": "high",
+        "evidenceIds": [
+          "evidence:ride-l3-power-preview:series:speed"
+        ],
+        "formulaVersion": "series-mean-v0.1",
+        "displayValue": "25.71",
+        "displayUnit": "km/h",
+        "displayFormulaVersion": "metric-display-v0.1"
+      },
+      {
+        "claimId": "claim:ride-l3-power-preview:feature:heartRateSeriesMeanBpm",
+        "kind": "feature",
+        "key": "heartRateSeriesMeanBpm",
+        "value": 151.73099632403745,
+        "unit": "bpm",
+        "confidence": "high",
+        "evidenceIds": [
+          "evidence:ride-l3-power-preview:series:heart_rate"
+        ],
+        "formulaVersion": "series-mean-v0.1",
+        "displayValue": "151.73",
+        "displayUnit": "bpm",
+        "displayFormulaVersion": "metric-display-v0.1"
+      },
+      {
+        "claimId": "claim:ride-l3-power-preview:feature:powerSeriesMeanW",
+        "kind": "feature",
+        "key": "powerSeriesMeanW",
+        "value": 172.11992354578723,
+        "unit": "W",
+        "confidence": "high",
+        "evidenceIds": [
+          "evidence:ride-l3-power-preview:series:power"
+        ],
+        "formulaVersion": "series-mean-v0.1",
+        "displayValue": "172.12",
+        "displayUnit": "W",
+        "displayFormulaVersion": "metric-display-v0.1"
+      }
+    ],
+    "candidateClaims": [
+      {
+        "claimId": "candidate:power_output:fact",
+        "dimensionId": "power_output",
+        "claimType": "fact",
+        "sourceClaimIds": [
+          "claim:ride-l3-power-preview:avgPowerW"
+        ],
+        "availability": "available"
+      },
+      {
+        "claimId": "candidate:power_output:performance",
+        "dimensionId": "power_output",
+        "claimType": "performance",
+        "sourceClaimIds": [
+          "claim:ride-l3-power-preview:feature:powerSeriesMeanW"
+        ],
+        "availability": "available"
+      },
+      {
+        "claimId": "candidate:power_output:capability_evidence",
+        "dimensionId": "power_output",
+        "claimType": "capability_evidence",
+        "sourceClaimIds": [
+          "claim:ride-l3-power-preview:feature:powerSeriesMeanW"
+        ],
+        "availability": "available"
+      },
+      {
+        "claimId": "candidate:heart_rate:fact",
+        "dimensionId": "heart_rate",
+        "claimType": "fact",
+        "sourceClaimIds": [
+          "claim:ride-l3-power-preview:avgHeartRateBpm"
+        ],
+        "availability": "available"
+      },
+      {
+        "claimId": "candidate:heart_rate:performance",
+        "dimensionId": "heart_rate",
+        "claimType": "performance",
+        "sourceClaimIds": [
+          "claim:ride-l3-power-preview:feature:heartRateSeriesMeanBpm"
+        ],
+        "availability": "available"
+      },
+      {
+        "claimId": "candidate:heart_rate:capability_evidence",
+        "dimensionId": "heart_rate",
+        "claimType": "capability_evidence",
+        "sourceClaimIds": [
+          "claim:ride-l3-power-preview:feature:heartRateSeriesMeanBpm"
+        ],
+        "availability": "available"
+      },
+      {
+        "claimId": "candidate:route_pacing:fact",
+        "dimensionId": "route_pacing",
+        "claimType": "fact",
+        "sourceClaimIds": [
+          "claim:ride-l3-power-preview:distanceM"
+        ],
+        "availability": "available"
+      },
+      {
+        "claimId": "candidate:route_pacing:performance",
+        "dimensionId": "route_pacing",
+        "claimType": "performance",
+        "sourceClaimIds": [
+          "claim:ride-l3-power-preview:feature:speedSeriesMeanMps"
+        ],
+        "availability": "available"
+      },
+      {
+        "claimId": "candidate:route_pacing:capability_evidence",
+        "dimensionId": "route_pacing",
+        "claimType": "capability_evidence",
+        "sourceClaimIds": [
+          "claim:ride-l3-power-preview:feature:speedSeriesMeanMps"
+        ],
+        "availability": "available"
+      }
+    ],
+    "overallAssessment": {
+      "factClaimIds": [
+        "candidate:power_output:fact"
+      ],
+      "performanceClaimIds": [
+        "candidate:power_output:performance"
+      ],
+      "capabilityEvidenceClaimIds": [
+        "candidate:power_output:capability_evidence"
+      ],
+      "meaningClaimIds": [
+        "candidate:power_output:fact",
+        "candidate:power_output:performance"
+      ],
+      "visualRefIds": [
+        "visual:series:power"
+      ]
+    },
+    "dimensionInterpretations": [
+      {
+        "dimensionId": "power_output",
+        "factClaimIds": [
+          "candidate:power_output:fact"
+        ],
+        "performanceClaimIds": [
+          "candidate:power_output:performance"
+        ],
+        "capabilityEvidenceClaimIds": [
+          "candidate:power_output:capability_evidence"
+        ],
+        "meaningClaimIds": [
+          "candidate:power_output:fact",
+          "candidate:power_output:performance"
+        ],
+        "visualRefIds": [
+          "visual:series:power"
+        ]
+      },
+      {
+        "dimensionId": "heart_rate",
+        "factClaimIds": [
+          "candidate:heart_rate:fact"
+        ],
+        "performanceClaimIds": [
+          "candidate:heart_rate:performance"
+        ],
+        "capabilityEvidenceClaimIds": [
+          "candidate:heart_rate:capability_evidence"
+        ],
+        "meaningClaimIds": [
+          "candidate:heart_rate:fact",
+          "candidate:heart_rate:performance"
+        ],
+        "visualRefIds": [
+          "visual:series:heart_rate"
+        ]
+      },
+      {
+        "dimensionId": "route_pacing",
+        "factClaimIds": [
+          "candidate:route_pacing:fact"
+        ],
+        "performanceClaimIds": [
+          "candidate:route_pacing:performance"
+        ],
+        "capabilityEvidenceClaimIds": [
+          "candidate:route_pacing:capability_evidence"
+        ],
+        "meaningClaimIds": [
+          "candidate:route_pacing:fact",
+          "candidate:route_pacing:performance"
+        ],
+        "visualRefIds": [
+          "visual:series:speed"
+        ]
+      }
+    ],
+    "visualRegistry": [
+      {
+        "visualId": "visual:series:power",
+        "type": "trend",
+        "sourceClaimIds": [
+          "claim:ride-l3-power-preview:avgPowerW",
+          "claim:ride-l3-power-preview:feature:powerSeriesMeanW"
+        ],
+        "availability": "available",
+        "ruleVersion": "ride-visual-rules-v0.1"
+      },
+      {
+        "visualId": "visual:series:heart_rate",
+        "type": "zone_distribution",
+        "sourceClaimIds": [
+          "claim:ride-l3-power-preview:avgHeartRateBpm",
+          "claim:ride-l3-power-preview:feature:heartRateSeriesMeanBpm"
+        ],
+        "availability": "available",
+        "ruleVersion": "ride-visual-rules-v0.1"
+      },
+      {
+        "visualId": "visual:series:speed",
+        "type": "trend",
+        "sourceClaimIds": [
+          "claim:ride-l3-power-preview:feature:speedSeriesMeanMps"
+        ],
+        "availability": "available",
+        "ruleVersion": "ride-visual-rules-v0.1"
+      }
+    ],
+    "limitations": [],
+    "safetyFlags": [],
+    "privacyFlags": [
+      "raw_track_excluded",
+      "precise_coordinates_excluded",
+      "source_filename_excluded",
+      "untrusted_free_text_excluded"
+    ]
+  }
+}
