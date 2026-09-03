@@ -124,7 +124,7 @@ M0 已继承工程基线（Done）
 - 非目标：不修改 `cycling-buddy-ride-analysis-v3.1.6.md`、`ride-analysis-output-v0.3.2`、生产 Coze Workflow；不接持久历史；不调用模型、不执行冒烟或正式 Run。
 - 验收条件：候选输入/输出/Prompt/Schema/fixture 的版本和哈希可复现；数据集拆分、正反例覆盖、硬门、预算、停止条件和回滚路径写入 AI 测评文档；迁移范围明确区分“必须迁移”“暂不迁移”和“待用户确认”；Gate 通过后 `AI-ADV-02C-MIG-01` 置为 `Ready`，但未获明确授权不得启动。
 - 交付：`eval/ride-interpretation-v0.4-candidate/manifest.json`、`eval/ride-interpretation-v0.4-candidate/migration-gate-v0.1.md`，以及 `AI_AGENT_测评计划与记录.md` 中的新 AEVAL 计划条目。两份 Gate 资产已冻结并经用户确认。
-- 进入下一任务：`AI-ADV-02C-MIG-01` 已获授权并进入 `In Progress`；确认独立候选 Workflow 标识后执行扣子配置，仍不得复用生产 Workflow。
+- 进入下一任务：`AI-ADV-02C-MIG-01` 已获授权，但因独立候选 Workflow 标识、模型与额度条件未确认而为 `Blocked`；条件齐备后执行扣子配置，仍不得复用生产 Workflow。
 
 用户验收结果：2026-09-01，用户明确回复“当前设计验收通过”，确认单次骑后解读边界、L0-L8 分层、关系/历史 Claim、7 个业务维度、默认/展开预算、四层解读语义及三阶段前端展示。`AI-ADV-02C` 已完成离线候选切片并由用户授权继续后续工作；用户后续确认当前阶段不接持久数据，`AI-ADV-02D` 因此延期至 M2 `Backlog`。本次不覆盖独立的 `AI-CAP-01`。
 
