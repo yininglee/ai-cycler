@@ -1,0 +1,116 @@
+{
+  "schemaVersion": "ride-interpretation-candidate-smoke-run-v0.1",
+  "runId": "AEVAL-SMOKE-20260902093345",
+  "workflow": {
+    "name": "ride_analysis_v3",
+    "id": "7680762018618359814",
+    "version": "v0.0.1",
+    "modelId": "豆包·2.0·lite"
+  },
+  "promptVersion": "v0.4.5",
+  "outputContractVersion": "ride-interpretation-output-v0.4.2-candidate",
+  "scope": "restricted_smoke_only",
+  "rawOutputsStored": false,
+  "passed": false,
+  "results": [
+    {
+      "label": "L1",
+      "fixtureId": "l1-built-in-sample",
+      "outcome": "failure",
+      "source": "b0",
+      "attempts": 2,
+      "repairTriggered": true,
+      "noThirdAttempt": true,
+      "b0Fallback": true,
+      "latencyMs": 35311.682,
+      "providerRequestIds": [
+        "20260902173345D7CE47B5D13E908224E6",
+        "202609021734042D0D9B1E02C4D2990D64"
+      ],
+      "validation": {
+        "valid": false,
+        "issues": [
+          "HIGHLIGHTS_BUDGET_EXCEEDED",
+          "OVERALL_CLAIM_OUTSIDE_PLAN"
+        ]
+      },
+      "fallbackCode": "REPAIR_FAILED"
+    },
+    {
+      "label": "L2",
+      "fixtureId": "l2-built-in-sample",
+      "outcome": "failure",
+      "source": "b0",
+      "attempts": 2,
+      "repairTriggered": true,
+      "noThirdAttempt": true,
+      "b0Fallback": true,
+      "latencyMs": 33956.435,
+      "providerRequestIds": [
+        "2026090217342176F8260DD47AEB8DD0A6",
+        "20260902173439D83478281223D58F1F81"
+      ],
+      "validation": {
+        "valid": false,
+        "issues": [
+          "HIGHLIGHTS_BUDGET_EXCEEDED",
+          "ONE_LINE_LABEL_UNSUPPORTED_NUMBER",
+          "OVERALL_UNSUPPORTED_NUMBER"
+        ]
+      },
+      "fallbackCode": "REPAIR_FAILED"
+    },
+    {
+      "label": "L3",
+      "fixtureId": "l3-power-preview",
+      "outcome": "failure",
+      "source": "b0",
+      "attempts": 2,
+      "repairTriggered": true,
+      "noThirdAttempt": true,
+      "b0Fallback": true,
+      "latencyMs": 27007.32,
+      "providerRequestIds": [
+        "2026090217345560484153FB6A26E05983",
+        "20260902173511E889FDD6F09F14613B74"
+      ],
+      "validation": {
+        "valid": false,
+        "issues": [
+          "HIGHLIGHTS_BUDGET_EXCEEDED",
+          "ONE_LINE_LABEL_PERFORMANCE_EVIDENCE_MISSING",
+          "OVERALL_CLAIM_OUTSIDE_PLAN",
+          "ONE_LINE_LABEL_UNSUPPORTED_NUMBER",
+          "OVERALL_UNSUPPORTED_NUMBER"
+        ]
+      },
+      "fallbackCode": "REPAIR_FAILED"
+    },
+    {
+      "label": "L3-repair",
+      "fixtureId": "l3-power-preview",
+      "outcome": "failure",
+      "source": "explicit_repair_entry",
+      "attempts": 1,
+      "repairTriggered": true,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 19376.928,
+      "providerRequestIds": [
+        "20260902173522B3D388C3D04CBF03CE37"
+      ],
+      "tokenUsage": {
+        "inputTokens": 3286,
+        "outputTokens": 775,
+        "totalTokens": 4061
+      },
+      "validation": {
+        "valid": false,
+        "issues": [
+          "HIGHLIGHTS_BUDGET_EXCEEDED",
+          "ONE_LINE_LABEL_UNSUPPORTED_NUMBER"
+        ]
+      }
+    }
+  ]
+}

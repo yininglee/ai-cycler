@@ -57,7 +57,7 @@ export default function RideInterpretationPreviewPage() {
 
         <div className="candidate-preview-content">
           <header className="candidate-preview-header">
-            <p className="kicker">OFFLINE CANDIDATE · V0.4.1</p>
+            <p className="kicker">OFFLINE CANDIDATE · V0.4.2</p>
             <h1>骑后 AI 解读预览</h1>
           <p>基于脱敏内置样例，检查整体评价、多维度解读、表现高光和下一步建议的自然语言阅读顺序。</p>
           </header>
@@ -73,7 +73,7 @@ export default function RideInterpretationPreviewPage() {
           <div className="candidate-evidence-strip">
             {blockVisuals.get("overall_assessment")?.map((binding) => <RideSeriesChart chart={binding.chart!} cruiseSegments={[]} key={binding.visualId} />)}
           </div>
-          {output.highlights.length > 0 && <div className="candidate-highlights"><h3>表现高光</h3><ul>{output.highlights.map((highlight, index) => <li key={`highlight-${index}`}>{highlight.text}</li>)}</ul></div>}
+          {output.highlights.some((highlight) => highlight.target.kind === "overall") && <div className="candidate-highlights"><h3>表现高光</h3><ul>{output.highlights.map((highlight, index) => highlight.target.kind === "overall" ? <li key={`highlight-overall-${index}`}>{highlight.text}</li> : null)}</ul></div>}
         </section>
 
         <section className="candidate-dimensions-section">

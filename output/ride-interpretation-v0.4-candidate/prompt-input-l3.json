@@ -1,5 +1,5 @@
 {
-  "ride_interpretation_input": {
+  "ride_interp_input": {
     "contractVersion": "ride-interpretation-input-v0.4-candidate",
     "sourceCandidateVersion": "ride-interpretation-v0.4-candidate",
     "planVersion": "ride-interpretation-plan-v0.1",

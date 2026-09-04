@@ -1,0 +1,87 @@
+{
+  "schemaVersion": "ride-interpretation-candidate-smoke-run-v0.1",
+  "runId": "AEVAL-SMOKE-20260902085300",
+  "workflow": {
+    "name": "ride_analysis_v3",
+    "id": "7680762018618359814",
+    "version": "v0.0.1",
+    "modelId": "豆包·2.0·lite"
+  },
+  "promptVersion": "v0.4.5",
+  "outputContractVersion": "ride-interpretation-output-v0.4.2-candidate",
+  "scope": "restricted_smoke_only",
+  "rawOutputsStored": false,
+  "passed": false,
+  "results": [
+    {
+      "label": "L1",
+      "fixtureId": "l1-built-in-sample",
+      "outcome": "failure",
+      "source": "b0",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": true,
+      "latencyMs": 24.655,
+      "providerRequestIds": [],
+      "validation": {
+        "valid": false,
+        "issues": []
+      },
+      "fallbackCode": "PROVIDER_ERROR"
+    },
+    {
+      "label": "L2",
+      "fixtureId": "l2-built-in-sample",
+      "outcome": "failure",
+      "source": "b0",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": true,
+      "latencyMs": 1.761,
+      "providerRequestIds": [],
+      "validation": {
+        "valid": false,
+        "issues": []
+      },
+      "fallbackCode": "PROVIDER_ERROR"
+    },
+    {
+      "label": "L3",
+      "fixtureId": "l3-power-preview",
+      "outcome": "failure",
+      "source": "b0",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": true,
+      "latencyMs": 597.34,
+      "providerRequestIds": [],
+      "validation": {
+        "valid": false,
+        "issues": []
+      },
+      "fallbackCode": "PROVIDER_ERROR"
+    },
+    {
+      "label": "L3-repair",
+      "fixtureId": "l3-power-preview",
+      "outcome": "failure",
+      "source": "explicit_repair_entry",
+      "attempts": 1,
+      "repairTriggered": true,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 1.262,
+      "providerRequestIds": [],
+      "tokenUsage": "NOT_OBSERVABLE",
+      "validation": {
+        "valid": false,
+        "issues": [
+          "PROVIDER_HTTP_ERROR"
+        ]
+      }
+    }
+  ]
+}

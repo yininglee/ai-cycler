@@ -20,5 +20,5 @@ const input = projectRideInterpretationInputV04Candidate(context, plan);
 if (!input) throw new Error("l3-power-preview must create a candidate prompt input");
 
 mkdirSync(dirname(OUTPUT_PATH), { recursive: true });
-writeFileSync(OUTPUT_PATH, `${JSON.stringify({ ride_interpretation_input: input }, null, 2)}\n`, "utf8");
+writeFileSync(OUTPUT_PATH, `${JSON.stringify({ ride_interp_input: input }, null, 2)}\n`, "utf8");
 console.log(`Exported candidate prompt input: ${OUTPUT_PATH}`);

@@ -73,11 +73,14 @@ export function assembleRideInterpretationPresentationV04Candidate(
     },
   ];
 
-  // Performance highlights are part of the overall assessment reading unit.
+  // All highlights are shown in the overall assessment card. Their evidence
+  // may originate from any selected dimension, but L8 requires it to be part
+  // of the overall assessment evidence subset.
   for (let index = 0; index < output.highlights.length; index += 1) {
     const highlight = output.highlights[index]!;
+    if (highlight.target.kind !== "overall") continue;
     blocks.push({
-      blockId: `highlight:${index}`,
+      blockId: `highlight:overall:${index}`,
       kind: "highlight",
       candidateClaimIds: [...highlight.claimIds],
       visualRefIds: [...highlight.visualRefIds],

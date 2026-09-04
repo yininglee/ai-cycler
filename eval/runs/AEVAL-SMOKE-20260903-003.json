@@ -1,0 +1,35 @@
+{
+  "schemaVersion": "ride-interpretation-candidate-smoke-run-v0.1",
+  "runId": "AEVAL-SMOKE-20260903-003",
+  "workflow": {
+    "name": "ride_analysis_v3",
+    "id": "7680762018618359814",
+    "version": "v0.0.5",
+    "modelId": "豆包·2.0·lite"
+  },
+  "promptVersion": "v0.4.9",
+  "outputContractVersion": "ride-interpretation-output-v0.4.2-candidate",
+  "scope": "restricted_smoke_only",
+  "rawOutputsStored": false,
+  "status": "running",
+  "passed": false,
+  "results": [
+    {
+      "label": "L1",
+      "fixtureId": "l1-built-in-sample",
+      "outcome": "failure",
+      "source": "b0",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": true,
+      "latencyMs": 160.579,
+      "providerRequestIds": [],
+      "validation": {
+        "valid": false,
+        "issues": []
+      },
+      "fallbackCode": "PROVIDER_ERROR"
+    }
+  ]
+}

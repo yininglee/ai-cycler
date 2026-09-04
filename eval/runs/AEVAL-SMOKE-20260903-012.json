@@ -1,0 +1,104 @@
+{
+  "schemaVersion": "ride-interpretation-candidate-smoke-run-v0.1",
+  "runId": "AEVAL-SMOKE-20260903-012",
+  "workflow": {
+    "name": "ride_analysis_v3",
+    "id": "7680762018618359814",
+    "version": "v0.0.7",
+    "modelId": "豆包·2.0·lite"
+  },
+  "promptVersion": "v0.4.10",
+  "outputContractVersion": "ride-interpretation-output-v0.4.2-candidate",
+  "scope": "restricted_smoke_only",
+  "rawOutputsStored": false,
+  "status": "complete",
+  "passed": false,
+  "results": [
+    {
+      "label": "L1",
+      "fixtureId": "l1-built-in-sample",
+      "outcome": "failure",
+      "source": "b0",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": true,
+      "latencyMs": 13749.398,
+      "providerRequestIds": [],
+      "validation": {
+        "valid": false,
+        "issues": []
+      },
+      "fallbackCode": "PROVIDER_ERROR"
+    },
+    {
+      "label": "L2",
+      "fixtureId": "l2-built-in-sample",
+      "outcome": "failure",
+      "source": "b0",
+      "attempts": 2,
+      "repairTriggered": true,
+      "noThirdAttempt": true,
+      "b0Fallback": true,
+      "latencyMs": 27290.995,
+      "providerRequestIds": [
+        "20260903165738E55516A9194E77B5E451",
+        "20260903165754736E7CF5827BA140ABB0"
+      ],
+      "validation": {
+        "valid": false,
+        "issues": [
+          "OVERALL_DATA_COMPLETENESS_EVALUATION",
+          "HIGHLIGHT_0_TARGET_INVALID",
+          "HIGHLIGHT_1_TARGET_INVALID"
+        ]
+      },
+      "fallbackCode": "REPAIR_FAILED"
+    },
+    {
+      "label": "L3",
+      "fixtureId": "l3-power-preview",
+      "outcome": "failure",
+      "source": "b0",
+      "attempts": 2,
+      "repairTriggered": true,
+      "noThirdAttempt": true,
+      "b0Fallback": true,
+      "latencyMs": 28362.327,
+      "providerRequestIds": [
+        "2026090316580697C448311A035A4067A7",
+        "20260903165822829C6639CE6C40439284"
+      ],
+      "validation": {
+        "valid": false,
+        "issues": [
+          "HIGHLIGHT_0_TARGET_DIMENSION_NOT_RENDERED",
+          "HIGHLIGHT_1_TARGET_DIMENSION_NOT_RENDERED"
+        ]
+      },
+      "fallbackCode": "REPAIR_FAILED"
+    },
+    {
+      "label": "L3-repair",
+      "fixtureId": "l3-power-preview",
+      "outcome": "success",
+      "source": "injected_first_l8_failure_then_real_repair",
+      "attempts": 2,
+      "repairTriggered": true,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 10030.595,
+      "providerRequestIds": [
+        "20260903165834212091751C89D0BBB1A6"
+      ],
+      "tokenUsage": "NOT_OBSERVABLE",
+      "validation": {
+        "valid": true,
+        "issues": [
+          "INVALID_OUTPUT_SCHEMA_VERSION"
+        ]
+      },
+      "injectedFirstFailure": "INVALID_OUTPUT_SCHEMA_VERSION"
+    }
+  ]
+}

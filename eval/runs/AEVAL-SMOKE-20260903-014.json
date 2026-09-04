@@ -1,0 +1,90 @@
+{
+  "schemaVersion": "ride-interpretation-candidate-smoke-run-v0.1",
+  "runId": "AEVAL-SMOKE-20260903-014",
+  "workflow": {
+    "name": "ride_analysis_v3",
+    "id": "7680762018618359814",
+    "version": "v0.0.8",
+    "modelId": "豆包·2.0·lite"
+  },
+  "promptVersion": "v0.4.11",
+  "outputContractVersion": "ride-interpretation-output-v0.4.2-candidate",
+  "scope": "restricted_smoke_only",
+  "rawOutputsStored": false,
+  "status": "complete",
+  "passed": false,
+  "results": [
+    {
+      "label": "L1",
+      "fixtureId": "l1-built-in-sample",
+      "outcome": "failure",
+      "source": "b0",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": true,
+      "latencyMs": 23.416,
+      "providerRequestIds": [],
+      "validation": {
+        "valid": false,
+        "issues": []
+      },
+      "fallbackCode": "PROVIDER_ERROR"
+    },
+    {
+      "label": "L2",
+      "fixtureId": "l2-built-in-sample",
+      "outcome": "failure",
+      "source": "b0",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": true,
+      "latencyMs": 1.327,
+      "providerRequestIds": [],
+      "validation": {
+        "valid": false,
+        "issues": []
+      },
+      "fallbackCode": "PROVIDER_ERROR"
+    },
+    {
+      "label": "L3",
+      "fixtureId": "l3-power-preview",
+      "outcome": "failure",
+      "source": "b0",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": true,
+      "latencyMs": 596.097,
+      "providerRequestIds": [],
+      "validation": {
+        "valid": false,
+        "issues": []
+      },
+      "fallbackCode": "PROVIDER_ERROR"
+    },
+    {
+      "label": "L3-repair",
+      "fixtureId": "l3-power-preview",
+      "outcome": "failure",
+      "source": "injected_first_l8_failure_then_real_repair",
+      "attempts": 2,
+      "repairTriggered": true,
+      "noThirdAttempt": true,
+      "b0Fallback": true,
+      "latencyMs": 2.331,
+      "providerRequestIds": [],
+      "tokenUsage": "NOT_OBSERVABLE",
+      "validation": {
+        "valid": false,
+        "issues": [
+          "INVALID_OUTPUT_SCHEMA_VERSION"
+        ]
+      },
+      "injectedFirstFailure": "INVALID_OUTPUT_SCHEMA_VERSION",
+      "fallbackCode": "REPAIR_FAILED"
+    }
+  ]
+}

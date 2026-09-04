@@ -1,13 +1,13 @@
 {
   "schemaVersion": "ride-interpretation-migration-gate-v0.1",
   "gateId": "AI-ADV-02C-GATE-01",
-  "status": "READY_FOR_USER_DECISION",
+  "status": "APPROVED",
   "createdAt": "2026-09-01",
   "candidate": {
     "inputVersion": "ride-interpretation-input-v0.4-candidate",
-    "outputVersion": "ride-interpretation-output-v0.4.1-candidate",
-    "promptVersion": "cycling-buddy-ride-interpretation-v0.4-candidate",
-    "wireSchemaVersion": "ride-interpretation-output-v0.4.1-candidate",
+    "outputVersion": "ride-interpretation-output-v0.4.2-candidate",
+    "promptVersion": "cycling-buddy-ride-interpretation-v0.4.12-candidate",
+    "wireSchemaVersion": "ride-interpretation-output-v0.4.2-candidate",
     "productionBaseline": {
       "promptVersion": "3.1.6",
       "outputContractVersion": "ride-analysis-output-v0.3.2",
@@ -16,12 +16,13 @@
     }
   },
   "sourceFiles": [
-    { "path": "prompts/cycling-buddy-ride-interpretation-v0.4-candidate.md", "sha256": "fcff11119f93b7f4d5e251f33816ec19d20ebb1d73bb0b84bc35c86ed0c2d9c3" },
-    { "path": "coze/ride-interpretation-output-v04-candidate-schema.json", "sha256": "87905c0e8d462b8671d1d41df2541a1430f0092d3fe4ea0b7f3956d5ada6a364" },
-    { "path": "coze/ride-interpretation-output-v04-candidate-example.json", "sha256": "eec665bdd9e402251ce2ada4ee427f79122b509489178b651eda2a4426a672dc" },
+    { "path": "prompts/cycling-buddy-ride-interpretation-v0.4.12-candidate.md", "sha256": "3bc434e87b4b36476fcd91dbd9a85cf7a85cf0a968f9ee0f91ffd4f97eeb42a0" },
+    { "path": "coze/ride_interpretation_v04_candidate-配置指南.md", "sha256": "e4774a1849e8548c84fd8f07b8a9d5cefd50b5b98422b83541f378e214578e98" },
+    { "path": "coze/ride-interpretation-output-v04-candidate-schema.json", "sha256": "ab0c17dc2e99306d935b3ca88eaa7b0009c498c95294041d350e139322ef3d01" },
+    { "path": "coze/ride-interpretation-output-v04-candidate-example.json", "sha256": "5ae1de2dc865be9e1badc5a635dbcd8f9d20b7e46ba199d9b32e2056db8c1584" },
     { "path": "eval/ride-interpretation-v0.4-candidate/fixtures.json", "sha256": "45bddc119cca275c3d67933e280253841634c50480499343f8fc85f90ca9ef12" },
-    { "path": "eval/ride-interpretation-v0.4-candidate/response-fixtures.json", "sha256": "806cc79f3d3be20c616c03f97a4f7f193e85a58e5f4d805cfd7cd02063bcbf88" },
-    { "path": "output/ride-interpretation-v0.4-candidate/prompt-input-l3.json", "sha256": "941e670954348bfa03ee593a301754be29aab0d9b9f757b8b7ec193062f4f178" }
+    { "path": "eval/ride-interpretation-v0.4-candidate/response-fixtures.json", "sha256": "cd2ba8fe670eca312c4279038d4c50ed5ff7abae03153d4be62dff9469c9e445" },
+    { "path": "output/ride-interpretation-v0.4-candidate/prompt-input-l3.json", "sha256": "8515621931d36a6cb5d136aad54dfc60778546fd8e7782f9ad644a83cd71570d" }
   ],
   "offlineChecks": {
     "candidateFixtures": "pnpm eval:interpretation:candidate:preflight",
@@ -35,8 +36,10 @@
   "migrationScope": {
     "mustMigrate": [
       "候选 System Prompt 全文",
-      "User Prompt 单变量 {{ride_interpretation_input}}",
-      "候选输出 Schema ride-interpretation-output-v0.4.1-candidate",
+      "候选 Coze 节点与一次受限修复配置指南",
+      "User Prompt 三变量 {{ride_interp_input}} + {{repair_instruction}} + {{previous_output}}（扣子变量名不超过 20 字符；首轮后两项为空）",
+      "同一大模型入口的一次受限修复（服务端第二次调用）",
+      "候选输出 Schema ride-interpretation-output-v0.4.2-candidate（高光统一归属整体评价）",
       "独立候选 Workflow 的输入/输出映射和版本标识"
     ],
     "doNotMigrate": [
@@ -55,10 +58,10 @@
   "smokePlan": {
     "runIdPattern": "AEVAL-SMOKE-YYYYMMDD-NNN",
     "cases": [
-      { "slot": "L1", "purpose": "基础事实和自然语言整体评价" },
-      { "slot": "L2", "purpose": "心率/节奏维度与限制降级" },
-      { "slot": "L3", "purpose": "功率、多维事实和表现高光" },
-      { "slot": "L3-repair", "purpose": "受限修复后再校验" }
+      { "slot": "L1", "purpose": "基础事实和自然语言整体评价；确认首轮后两修复变量为空" },
+      { "slot": "L2", "purpose": "心率/节奏维度与限制降级；确认单模型入口映射稳定" },
+      { "slot": "L3", "purpose": "功率、多维事实和表现高光；确认三变量输入边界" },
+      { "slot": "L3-repair", "purpose": "故意触发 L8 后唯一一次受限修复，再校验并确认无第三次调用" }
     ],
     "passCriteria": [
       "4/4 Provider 调用成功",

@@ -4,7 +4,9 @@ import test from "node:test";
 import { projectRideInterpretationInputV04Candidate } from "../src/ai/ride-interpretation-input-v04-candidate.ts";
 import { buildRideInterpretationPlan } from "../src/ai/ride-interpretation-plan.ts";
 import {
+  ONE_LINE_LABEL_MAX_LENGTH,
   buildRideInterpretationOutputV04CandidateFixture,
+  normalizeRideInterpretationOutputV04Candidate,
   validateRideInterpretationOutputV04Candidate,
 } from "../src/ai/ride-interpretation-output-v04-candidate.ts";
 import { buildAnalysisEligibility } from "../src/domain/analysis-eligibility.ts";
@@ -45,7 +47,41 @@ test("partial power output preserves its deterministic limitation", () => {
   assert.deepEqual(validateRideInterpretationOutputV04Candidate(output, input), { valid: true, issues: [] });
 });
 
-test("candidate output rejects plan drift, invented events, and invalid action evidence", () => {
+test("candidate output allows only the evidence a natural-language card actually uses", () => {
+  const input = inputFor();
+  const output = buildRideInterpretationOutputV04CandidateFixture(input);
+
+  const concise = structuredClone(output);
+  concise.overallAssessment.claimIds = concise.overallAssessment.claimIds.slice(0, 2);
+  concise.dimensions[0]!.claimIds = concise.dimensions[0]!.claimIds.slice(0, 2);
+  assert.deepEqual(validateRideInterpretationOutputV04Candidate(concise, input), { valid: true, issues: [] });
+
+  const combinedOverall = structuredClone(output);
+  const reusableDimensionClaim = input.dimensionInterpretations
+    .flatMap((dimension) => [
+      ...dimension.factClaimIds,
+      ...dimension.performanceClaimIds,
+      ...dimension.capabilityEvidenceClaimIds,
+      ...dimension.meaningClaimIds,
+    ])
+    .find((claimId) => !combinedOverall.overallAssessment.claimIds.includes(claimId));
+  assert.ok(reusableDimensionClaim);
+  const reusableCandidate = input.candidateClaims.find((claim) => claim.claimId === reusableDimensionClaim);
+  const reusableSource = input.allowedClaims.find((claim) => claim.claimId === reusableCandidate?.sourceClaimIds[0]);
+  assert.ok(reusableSource?.displayValue);
+  combinedOverall.overallAssessment.claimIds = [
+    ...combinedOverall.overallAssessment.claimIds,
+    reusableDimensionClaim,
+  ].filter((claimId, index, ids) => ids.indexOf(claimId) === index);
+  combinedOverall.overallAssessment.text = `整体补充${reusableSource.displayValue}${reusableSource.displayUnit ?? ""}。`;
+  assert.deepEqual(validateRideInterpretationOutputV04Candidate(combinedOverall, input), { valid: true, issues: [] });
+
+  const crossPlanEvidence = structuredClone(output);
+  crossPlanEvidence.dimensions[0]!.claimIds = [crossPlanEvidence.dimensions[1]!.claimIds[0]!];
+  assert.ok(validateRideInterpretationOutputV04Candidate(crossPlanEvidence, input).issues.includes("DIMENSION_power_output_CLAIM_OUTSIDE_PLAN"));
+});
+
+test("candidate output rejects plan drift, misplaced highlights, and invalid action evidence", () => {
   const input = inputFor();
   const output = buildRideInterpretationOutputV04CandidateFixture(input);
 
@@ -54,12 +90,55 @@ test("candidate output rejects plan drift, invented events, and invalid action e
   assert.ok(validateRideInterpretationOutputV04Candidate(changedVisual, input).issues.includes("DIMENSION_power_output_VISUAL_MISMATCH"));
 
   const inventedHighlight = structuredClone(output);
-  inventedHighlight.highlights = [{ text: "越权高光", claimIds: ["invented"], visualRefIds: [] }];
+  inventedHighlight.highlights = [{ text: "越权高光", claimIds: ["invented"], visualRefIds: [], target: { kind: "overall" } }];
   assert.ok(validateRideInterpretationOutputV04Candidate(inventedHighlight, input).issues.includes("HIGHLIGHT_0_CLAIM_INVALID"));
+
+  const dimensionTargetHighlight = structuredClone(output);
+  dimensionTargetHighlight.highlights = [{
+    text: "错误地使用了维度归属。",
+    claimIds: [dimensionTargetHighlight.dimensions[1]!.claimIds[0]!],
+    visualRefIds: [],
+    target: { kind: "dimension", dimensionId: dimensionTargetHighlight.dimensions[0]!.dimensionId },
+  }] as unknown as typeof dimensionTargetHighlight.highlights;
+  assert.ok(validateRideInterpretationOutputV04Candidate(dimensionTargetHighlight, input).issues.includes("HIGHLIGHT_0_TARGET_INVALID"));
 
   const invalidAction = structuredClone(output);
   invalidAction.nextAction = { kind: "general", text: "整理本次体感。", basisClaimIds: [input.candidateClaims[0]!.claimId] };
   assert.ok(validateRideInterpretationOutputV04Candidate(invalidAction, input).issues.includes("GENERAL_ACTION_HAS_BASIS"));
+});
+
+test("candidate output keeps all highlights in the overall assessment evidence boundary", () => {
+  const input = inputFor();
+  const output = buildRideInterpretationOutputV04CandidateFixture(input);
+  assert.ok(output.highlights.every((highlight) => highlight.target.kind === "overall"));
+  assert.ok(output.highlights.every((highlight) => highlight.claimIds.every((claimId) => output.overallAssessment.claimIds.includes(claimId))));
+  assert.deepEqual(validateRideInterpretationOutputV04Candidate(output, input), { valid: true, issues: [] });
+});
+
+test("candidate output requires one next action and defaults to general without evidence", () => {
+  const input = inputFor();
+  const output = buildRideInterpretationOutputV04CandidateFixture(input);
+  assert.equal(output.nextAction.kind, "general");
+  assert.deepEqual(output.nextAction.basisClaimIds, []);
+
+  const missingAction = { ...structuredClone(output), nextAction: null } as unknown as typeof output;
+  const validation = validateRideInterpretationOutputV04Candidate(missingAction, input);
+  assert.ok(validation.issues.includes("NEXT_ACTION_REQUIRED"));
+});
+
+test("candidate output rejects missing highlights instead of masking an end-node mapping error", () => {
+  const input = inputFor();
+  const output = buildRideInterpretationOutputV04CandidateFixture(input);
+  const normalized = normalizeRideInterpretationOutputV04Candidate({ ...output, highlights: null });
+  assert.equal(normalized, undefined);
+
+  const trimmed = normalizeRideInterpretationOutputV04Candidate({
+    ...output,
+    highlights: [...output.highlights, ...output.highlights, ...output.highlights, ...output.highlights],
+  });
+  assert.ok(trimmed);
+  assert.equal(trimmed.highlights.length, 3);
+  assert.deepEqual(validateRideInterpretationOutputV04Candidate(trimmed, input), { valid: true, issues: [] });
 });
 
 test("candidate output validates each semantic layer against its own Claim boundary", () => {
@@ -88,4 +167,58 @@ test("candidate output validates each semantic layer against its own Claim bound
   const dataCompleteness = structuredClone(output);
   dataCompleteness.dimensions[0]!.text = "数据记录完整，因此可作为结论。";
   assert.ok(validateRideInterpretationOutputV04Candidate(dataCompleteness, input).issues.includes("DIMENSION_power_output_DATA_COMPLETENESS_EVALUATION"));
+});
+
+test("one-line labels allow traceable numbers and fall back to factual wording without performance evidence", () => {
+  const input = inputFor();
+  const output = buildRideInterpretationOutputV04CandidateFixture(input);
+  const factCandidateId = input.overallAssessment.factClaimIds[0]!;
+  const factCandidate = input.candidateClaims.find((claim) => claim.claimId === factCandidateId);
+  const factSource = input.allowedClaims.find((claim) => claim.claimId === factCandidate?.sourceClaimIds[0]);
+  assert.equal(typeof factSource?.displayValue, "string");
+
+  const numericFactLabel = structuredClone(output);
+  numericFactLabel.oneLineLabel = {
+    text: `功率${factSource!.displayValue}${factSource!.displayUnit}`,
+    claimIds: [factCandidateId],
+  };
+  assert.deepEqual(validateRideInterpretationOutputV04Candidate(numericFactLabel, input), { valid: true, issues: [] });
+
+  const unsupportedFactEvaluation = structuredClone(numericFactLabel);
+  unsupportedFactEvaluation.oneLineLabel.text = "本次功率表现出色。";
+  assert.ok(validateRideInterpretationOutputV04Candidate(unsupportedFactEvaluation, input).issues.includes("ONE_LINE_LABEL_EVALUATION_WITHOUT_PERFORMANCE_EVIDENCE"));
+});
+
+test("one-line labels can use performance evidence to describe a supported ride characteristic", () => {
+  const input = inputFor();
+  const output = buildRideInterpretationOutputV04CandidateFixture(input);
+  const performanceClaimId = output.oneLineLabel.claimIds[0]!;
+  const performanceCandidate = input.candidateClaims.find((claim) => claim.claimId === performanceClaimId);
+  const performanceSource = input.allowedClaims.find((claim) => claim.claimId === performanceCandidate?.sourceClaimIds[0]);
+  assert.ok(performanceSource?.displayValue);
+
+  const dataOnlyLabel = structuredClone(output);
+  dataOnlyLabel.oneLineLabel.text = `功率${performanceSource!.displayValue}${performanceSource!.displayUnit}`;
+  assert.deepEqual(validateRideInterpretationOutputV04Candidate(dataOnlyLabel, input), { valid: true, issues: [] });
+
+  const characteristicLabel = structuredClone(dataOnlyLabel);
+  characteristicLabel.oneLineLabel.text = `功率稳定${performanceSource!.displayValue}${performanceSource!.displayUnit}`;
+  assert.deepEqual(validateRideInterpretationOutputV04Candidate(characteristicLabel, input), { valid: true, issues: [] });
+});
+
+test("one-line labels are limited to twelve visible characters", () => {
+  const input = inputFor();
+  const output = buildRideInterpretationOutputV04CandidateFixture(input);
+  const compactLabel = structuredClone(output);
+  const distanceFactId = input.candidateClaims.find((claim) => claim.dimensionId === "route_pacing" && claim.claimType === "fact")?.claimId;
+  assert.ok(distanceFactId);
+  compactLabel.oneLineLabel.claimIds = [...compactLabel.oneLineLabel.claimIds, distanceFactId];
+  compactLabel.oneLineLabel.text = "45公里中长途稳定骑行";
+  assert.equal(Array.from(compactLabel.oneLineLabel.text).length, 11);
+  assert.deepEqual(validateRideInterpretationOutputV04Candidate(compactLabel, input), { valid: true, issues: [] });
+
+  const tooLongLabel = structuredClone(compactLabel);
+  tooLongLabel.oneLineLabel.text = "45公里中长途稳定骑行表现";
+  assert.equal(Array.from(tooLongLabel.oneLineLabel.text).length, ONE_LINE_LABEL_MAX_LENGTH + 1);
+  assert.ok(validateRideInterpretationOutputV04Candidate(tooLongLabel, input).issues.includes("ONE_LINE_LABEL_TOO_LONG"));
 });

@@ -1,0 +1,245 @@
+{
+  "schemaVersion": "ride-interpretation-targeted-diagnostic-run-v0.1",
+  "benchmark": "AEVAL-M1-RIDE-INTERPRETATION-V04-FORMAL",
+  "runId": "AEVAL-TARGET-20260903-266",
+  "originalFormalRunId": "AEVAL-RUN-20260903-117",
+  "targetCaseId": "F04",
+  "targetFixtureId": "l2-built-in-sample",
+  "planFile": "formal-stability-plan-v0.4.json",
+  "planSha256": "4d04c4e63fe2cb3b93fdfc6a3ed55dd61c10526110655867123a45eb41ae8714",
+  "inputSha256": "8f04e7952ee74fcb3819a1d43e491cf4fe07b716a05730b3238534d9e693a4ec",
+  "workflow": {
+    "name": "ride_analysis_v3",
+    "id": "7680762018618359814",
+    "version": "v0.0.8",
+    "modelId": "豆包·2.0·lite"
+  },
+  "versionMatrix": {
+    "workflowName": "ride_analysis_v3",
+    "workflowId": "7680762018618359814",
+    "workflowVersion": "v0.0.8",
+    "modelId": "豆包·2.0·lite",
+    "promptVersion": "v0.4.11",
+    "inputContractVersion": "ride-interpretation-input-v0.4-candidate",
+    "outputContractVersion": "ride-interpretation-output-v0.4.2-candidate"
+  },
+  "rawOutputsStored": false,
+  "candidateInputsStored": false,
+  "tokenUsageStored": false,
+  "status": "complete",
+  "authorization": {
+    "repetitions": 9,
+    "scope": "F04 frozen de-identified candidate input",
+    "diagnosticOnly": true
+  },
+  "summary": {
+    "executedSlots": 9,
+    "acceptedCount": 9,
+    "failedCount": 0,
+    "firstPassCount": 7,
+    "repairedPassCount": 2,
+    "b0Count": 0,
+    "noThirdAttempt": true,
+    "issueCounts": {
+      "OVERALL_DATA_COMPLETENESS_EVALUATION": 1,
+      "DIMENSION_terrain_climb_DATA_COMPLETENESS_EVALUATION": 1
+    }
+  },
+  "results": [
+    {
+      "slot": "F04:R1",
+      "caseId": "F04",
+      "fixtureId": "l2-built-in-sample",
+      "tier": "L2",
+      "repetition": 1,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 2,
+      "repairTriggered": true,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 20336,
+      "providerRequestIds": [
+        "2026090322415028129F2F1F79A7ECACB6",
+        "20260903224203F0590B92DBB20C8335FB"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": [
+          "OVERALL_DATA_COMPLETENESS_EVALUATION"
+        ]
+      }
+    },
+    {
+      "slot": "F04:R2",
+      "caseId": "F04",
+      "fixtureId": "l2-built-in-sample",
+      "tier": "L2",
+      "repetition": 2,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 10116,
+      "providerRequestIds": [
+        "202609032242108B983557922811840628"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F04:R3",
+      "caseId": "F04",
+      "fixtureId": "l2-built-in-sample",
+      "tier": "L2",
+      "repetition": 3,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 11293,
+      "providerRequestIds": [
+        "20260903224220AB42DA5EE6626681604B"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F04:R4",
+      "caseId": "F04",
+      "fixtureId": "l2-built-in-sample",
+      "tier": "L2",
+      "repetition": 4,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 2,
+      "repairTriggered": true,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 18520,
+      "providerRequestIds": [
+        "20260903224232DAB07110B69A9880AF08",
+        "202609032242425F879803FD8BB7F1A0A5"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": [
+          "DIMENSION_terrain_climb_DATA_COMPLETENESS_EVALUATION"
+        ]
+      }
+    },
+    {
+      "slot": "F04:R5",
+      "caseId": "F04",
+      "fixtureId": "l2-built-in-sample",
+      "tier": "L2",
+      "repetition": 5,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 12139,
+      "providerRequestIds": [
+        "2026090322425028129F2F1F79A7ECD9EC"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F04:R6",
+      "caseId": "F04",
+      "fixtureId": "l2-built-in-sample",
+      "tier": "L2",
+      "repetition": 6,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 12267,
+      "providerRequestIds": [
+        "2026090322430265CED022110506848E38"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F04:R7",
+      "caseId": "F04",
+      "fixtureId": "l2-built-in-sample",
+      "tier": "L2",
+      "repetition": 7,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 11558,
+      "providerRequestIds": [
+        "20260903224315C6E7D5339170B3ECF16A"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F04:R8",
+      "caseId": "F04",
+      "fixtureId": "l2-built-in-sample",
+      "tier": "L2",
+      "repetition": 8,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 9947,
+      "providerRequestIds": [
+        "2026090322432672362348F91D6D855A3B"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F04:R9",
+      "caseId": "F04",
+      "fixtureId": "l2-built-in-sample",
+      "tier": "L2",
+      "repetition": 9,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 8804,
+      "providerRequestIds": [
+        "202609032243360F7CE64B08B35E7FF0E1"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    }
+  ]
+}

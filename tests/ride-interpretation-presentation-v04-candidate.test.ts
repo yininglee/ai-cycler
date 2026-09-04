@@ -34,9 +34,13 @@ test("accepted output becomes an ordered, traceable presentation without creatin
   assert.deepEqual(presentation.errorCodes, []);
   assert.deepEqual(presentation.acceptedOutput, output);
   assert.deepEqual(presentation.renderedBlocks.slice(0, 2).map((block) => block.kind), ["one_line_label", "overall_assessment"]);
-  const highlightIndex = presentation.renderedBlocks.findIndex((block) => block.kind === "highlight");
+  const highlightIndex = presentation.renderedBlocks.findIndex((block) => block.blockId.startsWith("highlight:overall:"));
   const firstDimensionIndex = presentation.renderedBlocks.findIndex((block) => block.kind === "dimension");
   assert.ok(highlightIndex > 1 && highlightIndex < firstDimensionIndex);
+  const firstDimension = output.dimensions[0]!;
+  const dimensionBlockIndex = presentation.renderedBlocks.findIndex((block) => block.blockId === `dimension:${firstDimension.dimensionId}`);
+  assert.notEqual(presentation.renderedBlocks[dimensionBlockIndex + 1]?.kind, "highlight");
+  assert.ok(presentation.renderedBlocks.filter((block) => block.kind === "highlight").every((block) => block.blockId.startsWith("highlight:overall:")));
   assert.deepEqual(presentation.renderedBlocks.filter((block) => block.kind === "dimension").map((block) => block.dimensionId), output.dimensions.map((dimension) => dimension.dimensionId));
   assert.ok(presentation.traceRefs.candidateClaimIds.every((claimId) => input.candidateClaims.some((claim) => claim.claimId === claimId)));
   assert.ok(presentation.resolvedVisuals.every((visual) => input.visualRegistry.some((entry) => entry.visualId === visual.visualId)));
@@ -46,9 +50,11 @@ test("partial data keeps its limitation next to the affected dimension", () => {
   const { input, output } = presentationFor(true);
   const presentation = assembleRideInterpretationPresentationV04Candidate(output, input);
   const powerDimensionIndex = presentation.renderedBlocks.findIndex((block) => block.blockId === "dimension:power_output");
+  const powerLimitationIndex = presentation.renderedBlocks.findIndex((block) => block.blockId === "limitation:power_output");
 
   assert.equal(presentation.validationStatus, "accepted");
-  assert.equal(presentation.renderedBlocks[powerDimensionIndex + 1]?.blockId, "limitation:power_output");
+  assert.ok(powerLimitationIndex > powerDimensionIndex);
+  assert.ok(presentation.renderedBlocks.slice(powerDimensionIndex + 1, powerLimitationIndex).every((block) => block.kind !== "highlight"));
 });
 
 test("invalid output rejects all candidate text and visuals for B0 fallback", () => {

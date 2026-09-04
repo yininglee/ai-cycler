@@ -1,0 +1,100 @@
+{
+  "schemaVersion": "ride-interpretation-candidate-smoke-run-v0.1",
+  "runId": "AEVAL-SMOKE-20260902-010",
+  "workflow": {
+    "name": "ride_analysis_v3",
+    "id": "7680762018618359814",
+    "version": "v0.0.3",
+    "modelId": "豆包·2.0·lite"
+  },
+  "promptVersion": "v0.4.7",
+  "outputContractVersion": "ride-interpretation-output-v0.4.2-candidate",
+  "scope": "restricted_smoke_only",
+  "rawOutputsStored": false,
+  "status": "complete",
+  "passed": true,
+  "results": [
+    {
+      "label": "L1",
+      "fixtureId": "l1-built-in-sample",
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 2,
+      "repairTriggered": true,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 24256.67,
+      "providerRequestIds": [
+        "202609022217420B1DD0AE6A513C37B100",
+        "2026090222175547F75D71680EA025C192"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": [
+          "ONE_LINE_LABEL_PERFORMANCE_SUMMARY_MISSING"
+        ]
+      }
+    },
+    {
+      "label": "L2",
+      "fixtureId": "l2-built-in-sample",
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 2,
+      "repairTriggered": true,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 23608.195,
+      "providerRequestIds": [
+        "202609022218069A7BDFD6118FE824A800",
+        "20260902221818414FEA265B2CEB3264CB"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": [
+          "ONE_LINE_LABEL_PERFORMANCE_SUMMARY_MISSING"
+        ]
+      }
+    },
+    {
+      "label": "L3",
+      "fixtureId": "l3-power-preview",
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 13546.685,
+      "providerRequestIds": [
+        "202609022218304D22FD5DA99D81EBCC8D"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "label": "L3-repair",
+      "fixtureId": "l3-power-preview",
+      "outcome": "success",
+      "source": "injected_first_l8_failure_then_real_repair",
+      "attempts": 2,
+      "repairTriggered": true,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 10595.886,
+      "providerRequestIds": [
+        "20260902221844AA0FCE7D0D91722BCCC7"
+      ],
+      "tokenUsage": "NOT_OBSERVABLE",
+      "validation": {
+        "valid": true,
+        "issues": [
+          "INVALID_OUTPUT_SCHEMA_VERSION"
+        ]
+      },
+      "injectedFirstFailure": "INVALID_OUTPUT_SCHEMA_VERSION"
+    }
+  ]
+}

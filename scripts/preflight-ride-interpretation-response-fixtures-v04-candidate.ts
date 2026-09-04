@@ -24,7 +24,7 @@ const payload = JSON.parse(readFileSync(resolve("eval/ride-interpretation-v0.4-c
   cases: FixtureCase[];
 };
 assert.equal(payload.schemaVersion, "ride-interpretation-response-fixtures-v0.1");
-assert.equal(payload.cases.length, 7);
+assert.equal(payload.cases.length, 16);
 
 function inputFor(inputId: InputId) {
   const fixture = getRideFixture("l3-power-preview");

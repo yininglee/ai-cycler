@@ -3,7 +3,10 @@ import { dirname, resolve } from "node:path";
 
 import { buildRideInterpretationPlan } from "../src/ai/ride-interpretation-plan.ts";
 import { projectRideInterpretationInputV04Candidate } from "../src/ai/ride-interpretation-input-v04-candidate.ts";
-import { buildRideInterpretationOutputV04CandidateFixture } from "../src/ai/ride-interpretation-output-v04-candidate.ts";
+import {
+  RIDE_INTERPRETATION_OUTPUT_V04_CANDIDATE_VERSION,
+  buildRideInterpretationOutputV04CandidateFixture,
+} from "../src/ai/ride-interpretation-output-v04-candidate.ts";
 import { buildAnalysisEligibility } from "../src/domain/analysis-eligibility.ts";
 import { buildRideAnalysisContext } from "../src/domain/ride-analysis-context.ts";
 import { createUserProfile } from "../src/domain/user-profile.ts";
@@ -27,20 +30,20 @@ const output = buildRideInterpretationOutputV04CandidateFixture(input);
 mkdirSync(dirname(SCHEMA_PATH), { recursive: true });
 const schema = {
   $schema: "https://json-schema.org/draft/2020-12/schema",
-  $id: "ride-interpretation-output-v0.4.1-candidate",
-  title: "AI 骑后解读 v0.4.1 候选输出（离线）",
+  $id: RIDE_INTERPRETATION_OUTPUT_V04_CANDIDATE_VERSION,
+  title: "AI 骑后解读 v0.4.2 候选输出（离线）",
   description: "自然语言整体评价、多维度评价、表现高光和下一步建议；仅用于离线合同审查，不替换生产合同。",
   type: "object",
   additionalProperties: false,
   required: ["schemaVersion", "oneLineLabel", "overallAssessment", "dimensions", "highlights", "limitations", "nextAction"],
   properties: {
-    schemaVersion: { const: "ride-interpretation-output-v0.4.1-candidate" },
+    schemaVersion: { const: RIDE_INTERPRETATION_OUTPUT_V04_CANDIDATE_VERSION },
     oneLineLabel: { $ref: "#/$defs/label" },
     overallAssessment: { $ref: "#/$defs/narrative" },
     dimensions: { type: "array", maxItems: 6, items: { $ref: "#/$defs/dimension" } },
-    highlights: { type: "array", maxItems: 3, items: { $ref: "#/$defs/narrative" } },
+    highlights: { type: "array", maxItems: 3, items: { $ref: "#/$defs/highlight" } },
     limitations: { type: "array", items: { $ref: "#/$defs/limitation" } },
-    nextAction: { oneOf: [{ type: "null" }, { $ref: "#/$defs/groundedAction" }, { $ref: "#/$defs/generalAction" }] },
+    nextAction: { oneOf: [{ $ref: "#/$defs/groundedAction" }, { $ref: "#/$defs/generalAction" }] },
   },
   $defs: {
     dimensionId: { enum: ["route_pacing", "terrain_climb", "heart_rate", "power_output", "cadence", "pacing_stability"] },
@@ -50,6 +53,15 @@ const schema = {
       properties: { text: { type: "string", minLength: 1, maxLength: 500 }, claimIds: { $ref: "#/$defs/claimIds" }, visualRefIds: { $ref: "#/$defs/claimIds" } },
     },
     dimension: { allOf: [{ $ref: "#/$defs/narrative" }, { type: "object", required: ["dimensionId"], properties: { dimensionId: { $ref: "#/$defs/dimensionId" } } }] },
+    highlight: {
+      type: "object", additionalProperties: false, required: ["text", "claimIds", "visualRefIds", "target"],
+      properties: {
+        text: { type: "string", minLength: 1, maxLength: 500 },
+        claimIds: { $ref: "#/$defs/claimIds", minItems: 1 },
+        visualRefIds: { $ref: "#/$defs/claimIds" },
+        target: { type: "object", additionalProperties: false, required: ["kind"], properties: { kind: { const: "overall" } } },
+      },
+    },
     label: { type: "object", additionalProperties: false, required: ["text", "claimIds"], properties: { text: { type: "string", minLength: 1, maxLength: 40 }, claimIds: { $ref: "#/$defs/claimIds", minItems: 1 } } },
     limitation: { type: "object", additionalProperties: false, required: ["dimensionId", "claimIds"], properties: { dimensionId: { $ref: "#/$defs/dimensionId" }, claimIds: { $ref: "#/$defs/claimIds", minItems: 1 } } },
     groundedAction: { type: "object", additionalProperties: false, required: ["kind", "text", "basisClaimIds"], properties: { kind: { const: "grounded" }, text: { type: "string", minLength: 1 }, basisClaimIds: { $ref: "#/$defs/claimIds", minItems: 1 } } },

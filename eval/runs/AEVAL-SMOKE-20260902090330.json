@@ -1,0 +1,121 @@
+{
+  "schemaVersion": "ride-interpretation-candidate-smoke-run-v0.1",
+  "runId": "AEVAL-SMOKE-20260902090330",
+  "workflow": {
+    "name": "ride_analysis_v3",
+    "id": "7680762018618359814",
+    "version": "v0.0.1",
+    "modelId": "豆包·2.0·lite"
+  },
+  "promptVersion": "v0.4.5",
+  "outputContractVersion": "ride-interpretation-output-v0.4.2-candidate",
+  "scope": "restricted_smoke_only",
+  "rawOutputsStored": false,
+  "passed": false,
+  "results": [
+    {
+      "label": "L1",
+      "fixtureId": "l1-built-in-sample",
+      "outcome": "failure",
+      "source": "b0",
+      "attempts": 2,
+      "repairTriggered": true,
+      "noThirdAttempt": true,
+      "b0Fallback": true,
+      "latencyMs": 34837.34,
+      "providerRequestIds": [
+        "20260902170331B5AEB814F3942DC51345",
+        "202609021703507DD20CB3BE304233BDA1"
+      ],
+      "validation": {
+        "valid": false,
+        "issues": [
+          "HIGHLIGHTS_BUDGET_EXCEEDED",
+          "OVERALL_CLAIM_MISMATCH",
+          "OVERALL_UNSUPPORTED_NUMBER"
+        ]
+      },
+      "fallbackCode": "REPAIR_FAILED"
+    },
+    {
+      "label": "L2",
+      "fixtureId": "l2-built-in-sample",
+      "outcome": "failure",
+      "source": "b0",
+      "attempts": 2,
+      "repairTriggered": true,
+      "noThirdAttempt": true,
+      "b0Fallback": true,
+      "latencyMs": 33175.05,
+      "providerRequestIds": [
+        "202609021704050C0F88CD91EDC8A8ED32",
+        "2026090217042360E34A8C85E28E252233"
+      ],
+      "validation": {
+        "valid": false,
+        "issues": [
+          "HIGHLIGHTS_BUDGET_EXCEEDED",
+          "ONE_LINE_LABEL_UNSUPPORTED_NUMBER",
+          "OVERALL_CLAIM_MISMATCH",
+          "OVERALL_UNSUPPORTED_NUMBER",
+          "DIMENSION_heart_rate_CLAIM_MISMATCH",
+          "DIMENSION_route_pacing_CLAIM_MISMATCH",
+          "DIMENSION_terrain_climb_CLAIM_MISMATCH"
+        ]
+      },
+      "fallbackCode": "REPAIR_FAILED"
+    },
+    {
+      "label": "L3",
+      "fixtureId": "l3-power-preview",
+      "outcome": "failure",
+      "source": "b0",
+      "attempts": 2,
+      "repairTriggered": true,
+      "noThirdAttempt": true,
+      "b0Fallback": true,
+      "latencyMs": 28406.361,
+      "providerRequestIds": [
+        "202609021704397D171D58B84C75AAF118",
+        "202609021704547D87F43AB482DC2A380B"
+      ],
+      "validation": {
+        "valid": false,
+        "issues": [
+          "HIGHLIGHTS_BUDGET_EXCEEDED",
+          "OVERALL_CLAIM_MISMATCH",
+          "DIMENSION_power_output_CLAIM_MISMATCH",
+          "DIMENSION_heart_rate_CLAIM_MISMATCH",
+          "DIMENSION_route_pacing_CLAIM_MISMATCH"
+        ]
+      },
+      "fallbackCode": "REPAIR_FAILED"
+    },
+    {
+      "label": "L3-repair",
+      "fixtureId": "l3-power-preview",
+      "outcome": "failure",
+      "source": "explicit_repair_entry",
+      "attempts": 1,
+      "repairTriggered": true,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 16887.545,
+      "providerRequestIds": [
+        "20260902170507B5AEB814F3942DC55B63"
+      ],
+      "tokenUsage": {
+        "inputTokens": 3286,
+        "outputTokens": 888,
+        "totalTokens": 4174
+      },
+      "validation": {
+        "valid": false,
+        "issues": [
+          "HIGHLIGHTS_BUDGET_EXCEEDED",
+          "OVERALL_UNSUPPORTED_NUMBER"
+        ]
+      }
+    }
+  ]
+}

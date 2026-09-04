@@ -1,0 +1,67 @@
+{
+  "schemaVersion": "ride-interpretation-formal-run-v0.1",
+  "benchmark": "AEVAL-M1-RIDE-INTERPRETATION-V04-FORMAL",
+  "runId": "AEVAL-RUN-20260903-559",
+  "planSha256": "639f97fd33f2388ace6d39a2db9bf7f4b31a1084859c4fc4f545d2765161d608",
+  "workflow": {
+    "name": "ride_analysis_v3",
+    "id": "7680762018618359814",
+    "version": "v0.0.5",
+    "modelId": "豆包·2.0·lite"
+  },
+  "versionMatrix": {
+    "workflowName": "ride_analysis_v3",
+    "workflowId": "7680762018618359814",
+    "workflowVersion": "v0.0.5",
+    "modelId": "豆包·2.0·lite",
+    "promptVersion": "v0.4.9",
+    "inputContractVersion": "ride-interpretation-input-v0.4-candidate",
+    "outputContractVersion": "ride-interpretation-output-v0.4.2-candidate"
+  },
+  "rawOutputsStored": false,
+  "candidateInputsStored": false,
+  "tokenUsageStored": false,
+  "status": "stopped",
+  "stopped": {
+    "reason": "EARLY_STOP_B0:PROVIDER_ERROR",
+    "afterSlots": 1
+  },
+  "authorization": {
+    "expectedSlots": 81,
+    "executedSlots": 1,
+    "scope": "9 frozen de-identified candidate inputs x 9 independent repetitions"
+  },
+  "summary": {
+    "acceptedCount": 0,
+    "failedCount": 1,
+    "firstPassCount": 0,
+    "repairedPassCount": 0,
+    "b0Count": 1,
+    "p50Ms": 14472,
+    "p95Ms": 14472
+  },
+  "results": [
+    {
+      "slot": "F01:R1",
+      "caseId": "F01",
+      "fixtureId": "l1-built-in-sample",
+      "tier": "L1",
+      "repetition": 1,
+      "outcome": "failure",
+      "source": "b0",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": true,
+      "fallbackCode": "PROVIDER_ERROR",
+      "latencyMs": 14472,
+      "providerRequestIds": [
+        "NOT_OBSERVABLE"
+      ],
+      "validation": {
+        "valid": false,
+        "issues": []
+      }
+    }
+  ]
+}

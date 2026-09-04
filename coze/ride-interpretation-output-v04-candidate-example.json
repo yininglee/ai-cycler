@@ -1,110 +1,58 @@
 {
-  "schemaVersion": "ride-interpretation-output-v0.4.1-candidate",
+  "schemaVersion": "ride-interpretation-output-v0.4.2-candidate",
   "oneLineLabel": {
-    "text": "本次表现的可追溯解读",
+    "text": "本次节奏保持稳定",
     "claimIds": [
       "candidate:power_output:performance"
     ]
   },
   "overallAssessment": {
-    "factClaimIds": [
-      "candidate:power_output:fact"
-    ],
-    "performanceClaimIds": [
-      "candidate:power_output:performance"
-    ],
-    "capabilityEvidenceClaimIds": [
-      "candidate:power_output:capability_evidence"
-    ],
-    "meaningClaimIds": [
-      "candidate:power_output:fact",
-      "candidate:power_output:performance"
-    ],
-    "visualRefIds": [
-      "visual:series:power"
-    ],
     "text": "本次记录提供了该维度的可靠证据；这些证据共同反映了本次骑行的表现，也让你可以从对应证据理解这次骑行。",
     "claimIds": [
       "candidate:power_output:fact",
       "candidate:power_output:performance",
       "candidate:power_output:capability_evidence"
+    ],
+    "visualRefIds": [
+      "visual:series:power"
     ]
   },
   "dimensions": [
     {
-      "dimensionId": "power_output",
-      "factClaimIds": [
-        "candidate:power_output:fact"
-      ],
-      "performanceClaimIds": [
-        "candidate:power_output:performance"
-      ],
-      "capabilityEvidenceClaimIds": [
-        "candidate:power_output:capability_evidence"
-      ],
-      "meaningClaimIds": [
-        "candidate:power_output:fact",
-        "candidate:power_output:performance"
-      ],
-      "visualRefIds": [
-        "visual:series:power"
-      ],
       "text": "本次记录提供了该维度的可靠证据；这些证据共同反映了本次骑行的表现，也让你可以从对应证据理解这次骑行。",
       "claimIds": [
         "candidate:power_output:fact",
         "candidate:power_output:performance",
         "candidate:power_output:capability_evidence"
-      ]
-    },
-    {
-      "dimensionId": "heart_rate",
-      "factClaimIds": [
-        "candidate:heart_rate:fact"
-      ],
-      "performanceClaimIds": [
-        "candidate:heart_rate:performance"
-      ],
-      "capabilityEvidenceClaimIds": [
-        "candidate:heart_rate:capability_evidence"
-      ],
-      "meaningClaimIds": [
-        "candidate:heart_rate:fact",
-        "candidate:heart_rate:performance"
       ],
       "visualRefIds": [
-        "visual:series:heart_rate"
+        "visual:series:power"
       ],
+      "dimensionId": "power_output"
+    },
+    {
       "text": "本次记录提供了该维度的可靠证据；这些证据共同反映了本次骑行的表现，也让你可以从对应证据理解这次骑行。",
       "claimIds": [
         "candidate:heart_rate:fact",
         "candidate:heart_rate:performance",
         "candidate:heart_rate:capability_evidence"
-      ]
-    },
-    {
-      "dimensionId": "route_pacing",
-      "factClaimIds": [
-        "candidate:route_pacing:fact"
-      ],
-      "performanceClaimIds": [
-        "candidate:route_pacing:performance"
-      ],
-      "capabilityEvidenceClaimIds": [
-        "candidate:route_pacing:capability_evidence"
-      ],
-      "meaningClaimIds": [
-        "candidate:route_pacing:fact",
-        "candidate:route_pacing:performance"
       ],
       "visualRefIds": [
-        "visual:series:speed"
+        "visual:series:heart_rate"
       ],
+      "dimensionId": "heart_rate"
+    },
+    {
       "text": "本次记录提供了该维度的可靠证据；这些证据共同反映了本次骑行的表现，也让你可以从对应证据理解这次骑行。",
       "claimIds": [
         "candidate:route_pacing:fact",
         "candidate:route_pacing:performance",
         "candidate:route_pacing:capability_evidence"
-      ]
+      ],
+      "visualRefIds": [
+        "visual:series:speed"
+      ],
+      "dimensionId": "route_pacing"
     }
   ],
   "highlights": [
@@ -113,9 +61,16 @@
       "claimIds": [
         "candidate:power_output:performance"
       ],
-      "visualRefIds": []
+      "visualRefIds": [],
+      "target": {
+        "kind": "overall"
+      }
     }
   ],
   "limitations": [],
-  "nextAction": null
+  "nextAction": {
+    "kind": "general",
+    "text": "骑行后适当补充水分并记录本次体感，便于下次继续观察。",
+    "basisClaimIds": []
+  }
 }

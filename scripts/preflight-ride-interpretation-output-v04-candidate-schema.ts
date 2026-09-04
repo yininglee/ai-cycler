@@ -20,8 +20,8 @@ const schema = JSON.parse(readFileSync(resolve("coze/ride-interpretation-output-
 const example = JSON.parse(readFileSync(resolve("coze/ride-interpretation-output-v04-candidate-example.json"), "utf8"));
 
 assert.equal(schema.$schema, "https://json-schema.org/draft/2020-12/schema");
-assert.equal(schema.$id, "ride-interpretation-output-v0.4.1-candidate");
-assert.deepEqual(schema.properties?.schemaVersion, { const: "ride-interpretation-output-v0.4.1-candidate" });
+assert.equal(schema.$id, "ride-interpretation-output-v0.4.2-candidate");
+assert.deepEqual(schema.properties?.schemaVersion, { const: "ride-interpretation-output-v0.4.2-candidate" });
 for (const field of ["schemaVersion", "oneLineLabel", "overallAssessment", "dimensions", "highlights", "limitations", "nextAction"]) {
   assert.ok(schema.required?.includes(field), `schema required field missing: ${field}`);
 }
@@ -34,8 +34,10 @@ assert.deepEqual(schema.$defs?.dimension, {
 });
 assert.ok(schema.$defs?.groundedAction);
 assert.ok(schema.$defs?.generalAction);
-assert.equal(example.schemaVersion, "ride-interpretation-output-v0.4.1-candidate");
+assert.ok(schema.$defs?.highlight);
+assert.equal(example.schemaVersion, "ride-interpretation-output-v0.4.2-candidate");
 assert.ok(Array.isArray(example.highlights));
+assert.ok(example.highlights.every((highlight: { target?: { kind?: string } }) => highlight.target?.kind === "overall"));
 
 const fixture = getRideFixture("l3-power-preview");
 const context = buildRideAnalysisContext(

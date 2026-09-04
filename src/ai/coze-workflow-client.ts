@@ -20,13 +20,22 @@ export type CozeWorkflowErrorCode =
   | "PROVIDER_INVALID_RESPONSE"
   | "PROVIDER_REJECTED_REQUEST";
 
+export interface CozeWorkflowErrorDetails {
+  httpStatus?: number;
+  businessCode?: number;
+  responseJson?: boolean;
+  responseBytes?: number;
+}
+
 export class CozeWorkflowError extends Error {
   readonly code: CozeWorkflowErrorCode;
+  readonly details?: CozeWorkflowErrorDetails;
 
-  constructor(code: CozeWorkflowErrorCode, message: string) {
+  constructor(code: CozeWorkflowErrorCode, message: string, details?: CozeWorkflowErrorDetails) {
     super(message);
     this.name = "CozeWorkflowError";
     this.code = code;
+    this.details = details;
   }
 }
 

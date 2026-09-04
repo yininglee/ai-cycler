@@ -6,7 +6,8 @@ import {
   type RideInterpretationInputV04Candidate,
 } from "./ride-interpretation-input-v04-candidate.ts";
 
-export const RIDE_INTERPRETATION_OUTPUT_V04_CANDIDATE_VERSION = "ride-interpretation-output-v0.4.1-candidate" as const;
+export const RIDE_INTERPRETATION_OUTPUT_V04_CANDIDATE_VERSION = "ride-interpretation-output-v0.4.2-candidate" as const;
+export const ONE_LINE_LABEL_MAX_LENGTH = 12;
 
 export interface RideInterpretationOutputTextUnit {
   text: string;
@@ -18,7 +19,12 @@ export interface RideInterpretationOutputDimension extends RideInterpretationOut
   dimensionId: NonNullable<CandidateInterpretationUnit["dimensionId"]>;
 }
 
-export interface RideInterpretationOutputHighlight extends RideInterpretationOutputTextUnit {}
+/** Highlights are rendered in the overall assessment card, regardless of source dimension. */
+export type RideInterpretationOutputHighlightTarget = { kind: "overall" };
+
+export interface RideInterpretationOutputHighlight extends RideInterpretationOutputTextUnit {
+  target: RideInterpretationOutputHighlightTarget;
+}
 
 export interface RideInterpretationOutputNextAction {
   kind: "grounded" | "general";
@@ -36,12 +42,33 @@ export interface RideInterpretationOutputV04Candidate {
   dimensions: RideInterpretationOutputDimension[];
   highlights: RideInterpretationOutputHighlight[];
   limitations: CandidateLimitation[];
-  nextAction: RideInterpretationOutputNextAction | null;
+  /** Exactly one safe next step is required; use general when no grounded evidence exists. */
+  nextAction: RideInterpretationOutputNextAction;
 }
 
 export interface RideInterpretationOutputV04CandidateValidationResult {
   valid: boolean;
   issues: string[];
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+/** Optional highlights never carry required narrative content, so enforce their display budget before L8. */
+export function normalizeRideInterpretationOutputV04Candidate(
+  value: unknown,
+): RideInterpretationOutputV04Candidate | undefined {
+  if (!isRecord(value)) return undefined;
+  const output = value as unknown as RideInterpretationOutputV04Candidate;
+  if (!isRecord(output.oneLineLabel) || !isRecord(output.overallAssessment)
+    || !Array.isArray(output.dimensions) || !Array.isArray(output.limitations)
+    || output.nextAction === undefined) return undefined;
+  const highlights = output.highlights as unknown;
+  // `highlights` is a required wire field. Do not silently synthesize an empty
+  // array: that would hide a misspelled or un-mapped Coze end-node variable.
+  if (!Array.isArray(highlights)) return undefined;
+  return highlights.length > 3 ? { ...output, highlights: highlights.slice(0, 3) } : output;
 }
 
 function unique(values: string[]): string[] {
@@ -56,8 +83,17 @@ function sameIds(left: string[], right: string[]): boolean {
   return left.length === right.length && left.every((id, index) => id === right[index]);
 }
 
+function isSubset(values: string[], allowed: string[]): boolean {
+  const allowedIds = new Set(allowed);
+  return values.every((value) => allowedIds.has(value));
+}
+
 function validateText(value: string, issues: string[], code: string): void {
   if (typeof value !== "string" || value.trim().length === 0) issues.push(code);
+}
+
+function visibleCharacterCount(value: string): number {
+  return Array.from(value.trim()).length;
 }
 
 const NUMBER_PATTERN = /[-+]?\d+(?:\.\d+)?/g;
@@ -72,6 +108,7 @@ const LONG_TERM_CAPABILITY_PATTERNS = [
 const UNAUTHORIZED_HISTORY_PATTERNS = [/(?:历史|过往|以往|上次|此前)\s*(?:骑行|记录|数据|表现)?/, /(?:相较|相比)\s*(?:自己|过去|上次|此前)?/];
 const UNSUPPORTED_CAUSALITY_PATTERNS = [/(?:因为|由于).{0,24}(?:导致|造成|所以)/, /(?:导致|造成).{0,24}(?:疲劳|体能|表现|能力)/];
 const ACTION_LANGUAGE_PATTERNS = [/(?:建议|应当|应该|下次|训练计划|恢复\d*天|可以尝试)/];
+const FACT_ONLY_LABEL_EVALUATION_PATTERNS = [/(?:表现|发挥|能力|水平|状态|强度|稳定|高效|出色|优秀|轻松|吃力|良好|不错|较好|较差|强劲|疲劳)/];
 
 function hasPattern(text: string, patterns: RegExp[]): boolean {
   return patterns.some((pattern) => pattern.test(text));
@@ -168,7 +205,8 @@ function validateNarrativeUnit(
   issues: string[],
   scope: string,
 ): void {
-  if (!sameIds(output.claimIds, expectedClaimIds)) issues.push(`${scope}_CLAIM_MISMATCH`);
+  if (output.claimIds.length === 0) issues.push(`${scope}_CLAIM_MISSING`);
+  if (!isSubset(output.claimIds, expectedClaimIds)) issues.push(`${scope}_CLAIM_OUTSIDE_PLAN`);
   if (!sameIds(output.visualRefIds, expectedVisualRefIds)) issues.push(`${scope}_VISUAL_MISMATCH`);
   if (hasDuplicates(output.claimIds)) issues.push(`${scope}_DUPLICATE_CLAIM`);
   if (hasDuplicates(output.visualRefIds)) issues.push(`${scope}_DUPLICATE_VISUAL`);
@@ -184,6 +222,9 @@ export function validateRideInterpretationOutputV04Candidate(
   if (!inputValidation.valid) issues.push("INPUT_CONTRACT_INVALID");
   if (output.schemaVersion !== RIDE_INTERPRETATION_OUTPUT_V04_CANDIDATE_VERSION) issues.push("INVALID_OUTPUT_SCHEMA_VERSION");
   validateText(output.oneLineLabel.text, issues, "ONE_LINE_LABEL_EMPTY");
+  if (typeof output.oneLineLabel.text === "string" && visibleCharacterCount(output.oneLineLabel.text) > ONE_LINE_LABEL_MAX_LENGTH) {
+    issues.push("ONE_LINE_LABEL_TOO_LONG");
+  }
   const highlights = Array.isArray(output.highlights) ? output.highlights : [];
   if (!Array.isArray(output.highlights) || highlights.length > 3) issues.push("HIGHLIGHTS_BUDGET_EXCEEDED");
   if (hasDuplicates(output.oneLineLabel.claimIds)) issues.push("ONE_LINE_LABEL_DUPLICATE_CLAIM");
@@ -193,17 +234,20 @@ export function validateRideInterpretationOutputV04Candidate(
   if (output.oneLineLabel.claimIds.length === 0 || output.oneLineLabel.claimIds.some((claimId) => !inputCandidateClaims.has(claimId))) {
     issues.push("ONE_LINE_LABEL_CLAIM_INVALID");
   }
-  if (!output.oneLineLabel.claimIds.some((claimId) => inputCandidateClaims.get(claimId)?.claimType === "performance")) {
-    issues.push("ONE_LINE_LABEL_PERFORMANCE_EVIDENCE_MISSING");
+  const labelHasPerformanceEvidence = output.oneLineLabel.claimIds.some((claimId) => {
+    const type = inputCandidateClaims.get(claimId)?.claimType;
+    return type === "performance" || type === "relation";
+  });
+  if (!labelHasPerformanceEvidence && hasPattern(output.oneLineLabel.text, FACT_ONLY_LABEL_EVALUATION_PATTERNS)) {
+    issues.push("ONE_LINE_LABEL_EVALUATION_WITHOUT_PERFORMANCE_EVIDENCE");
   }
   validateNarrativeText(output.oneLineLabel.text, output.oneLineLabel.claimIds, inputCandidateClaims, inputAllowedClaims, issues, "ONE_LINE_LABEL");
 
-  const overallClaimIds = unique([
-    ...input.overallAssessment.factClaimIds,
-    ...input.overallAssessment.performanceClaimIds,
-    ...input.overallAssessment.capabilityEvidenceClaimIds,
-    ...input.overallAssessment.meaningClaimIds,
-  ]);
+  // The overall narrative is where multiple selected dimensions may be interpreted together.
+  // Dimension cards remain limited to their own planned evidence below.
+  const overallClaimIds = input.candidateClaims
+    .filter((claim) => claim.claimType !== "limitation")
+    .map((claim) => claim.claimId);
   validateNarrativeUnit(output.overallAssessment, overallClaimIds, input.overallAssessment.visualRefIds, inputCandidateClaims, inputAllowedClaims, issues, "OVERALL");
   if (output.dimensions.length !== input.dimensionInterpretations.length) issues.push("DIMENSION_COUNT_MISMATCH");
   for (let index = 0; index < output.dimensions.length; index += 1) {
@@ -227,6 +271,12 @@ export function validateRideInterpretationOutputV04Candidate(
     if (highlight.claimIds.length === 0) issues.push(`HIGHLIGHT_${index}_CLAIM_MISSING`);
     if (highlight.claimIds.some((claimId) => !inputCandidateClaims.has(claimId))) issues.push(`HIGHLIGHT_${index}_CLAIM_INVALID`);
     if (highlight.visualRefIds.some((visualId) => !input.visualRegistry.some((visual) => visual.visualId === visualId))) issues.push(`HIGHLIGHT_${index}_VISUAL_INVALID`);
+    if (!highlight.target || highlight.target.kind !== "overall") {
+      issues.push(`HIGHLIGHT_${index}_TARGET_INVALID`);
+    } else {
+      if (!isSubset(highlight.claimIds, output.overallAssessment.claimIds)) issues.push(`HIGHLIGHT_${index}_CLAIM_OUTSIDE_TARGET`);
+      if (!isSubset(highlight.visualRefIds, output.overallAssessment.visualRefIds)) issues.push(`HIGHLIGHT_${index}_VISUAL_OUTSIDE_TARGET`);
+    }
     validateNarrativeText(highlight.text, highlight.claimIds, inputCandidateClaims, inputAllowedClaims, issues, `HIGHLIGHT_${index}`);
   }
   if (output.dimensions.some((dimension) => dimension.dimensionId === "history_change")) issues.push("HISTORY_DIMENSION_NOT_ALLOWED");
@@ -243,7 +293,9 @@ export function validateRideInterpretationOutputV04Candidate(
     }
   }
 
-  if (output.nextAction) {
+  if (!output.nextAction) {
+    issues.push("NEXT_ACTION_REQUIRED");
+  } else {
     validateText(output.nextAction.text, issues, "NEXT_ACTION_EMPTY");
     if (output.nextAction.kind === "general" && output.nextAction.basisClaimIds.length > 0) issues.push("GENERAL_ACTION_HAS_BASIS");
     if (output.nextAction.kind === "grounded") {
@@ -268,7 +320,6 @@ export function buildRideInterpretationOutputV04CandidateFixture(
   const labelClaim = input.overallAssessment.performanceClaimIds[0];
   if (!labelClaim) throw new Error("Output fixture requires overall performance evidence");
   const textUnit = (unit: CandidateInterpretationUnit) => ({
-    ...unit,
     text: "本次记录提供了该维度的可靠证据；这些证据共同反映了本次骑行的表现，也让你可以从对应证据理解这次骑行。",
     claimIds: unique([
       ...unit.factClaimIds,
@@ -281,11 +332,22 @@ export function buildRideInterpretationOutputV04CandidateFixture(
   });
   return {
     schemaVersion: RIDE_INTERPRETATION_OUTPUT_V04_CANDIDATE_VERSION,
-    oneLineLabel: { text: "本次表现的可追溯解读", claimIds: [labelClaim] },
+    oneLineLabel: { text: "本次节奏保持稳定", claimIds: [labelClaim] },
     overallAssessment: textUnit(input.overallAssessment),
     dimensions: input.dimensionInterpretations.map((unit) => textUnit(unit) as RideInterpretationOutputDimension),
-    highlights: input.overallAssessment.performanceClaimIds.slice(0, 2).map((claimId) => ({ text: "这组证据是本次骑行表现中值得回看的高光。", claimIds: [claimId], visualRefIds: [] })),
+    highlights: [
+      ...input.overallAssessment.performanceClaimIds.slice(0, 1).map((claimId) => ({
+        text: "这组证据是本次骑行表现中值得回看的高光。",
+        claimIds: [claimId],
+        visualRefIds: [],
+        target: { kind: "overall" as const },
+      })),
+    ],
     limitations: input.limitations.map((limitation) => ({ ...limitation, claimIds: [...limitation.claimIds] })),
-    nextAction: null,
+    nextAction: {
+      kind: "general",
+      text: "骑行后适当补充水分并记录本次体感，便于下次继续观察。",
+      basisClaimIds: [],
+    },
   };
 }
