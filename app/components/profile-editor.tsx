@@ -5,16 +5,14 @@ import type { FormEvent } from "react";
 
 import {
   createUserProfile,
-  deserializeUserProfile,
   parseProfileInput,
   ProfileValidationError,
-  serializeUserProfile,
   updateUserProfile,
   type ProfileField,
   type UserProfile,
 } from "../../src/domain/user-profile";
+import type { ConsentRecord } from "../../src/persistence/application-repository";
 
-const STORAGE_KEY = "ai-cycling-buddy:user-profile:v0.1";
 type FormValues = Record<ProfileField, string>;
 
 const emptyValues: FormValues = { age: "", heightCm: "", weightKg: "", maxHeartRateBpm: "", ftpWatts: "" };
@@ -40,13 +38,19 @@ export default function ProfileEditor() {
   const [hydrated, setHydrated] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [consent, setConsent] = useState<ConsentRecord | null>(null);
 
   useEffect(() => {
-    const saved = deserializeUserProfile(window.localStorage.getItem(STORAGE_KEY) ?? "");
-    const next = saved ?? createUserProfile();
-    setProfile(next);
-    setValues(valuesFromProfile(next));
-    setHydrated(true);
+    fetch("/api/profile", { cache: "no-store" }).then((response) => response.ok ? response.json() : null).then((saved: UserProfile | null) => {
+      const next = saved ?? createUserProfile();
+      setProfile(next); setValues(valuesFromProfile(next)); setHydrated(true);
+    }).catch(() => { setHydrated(true); setError("资料暂时无法读取"); });
+  }, []);
+
+  useEffect(() => {
+    fetch("/api/consent", { cache: "no-store" }).then((response) => response.ok ? response.json() : null).then((value: ConsentRecord | null) => {
+      setConsent(value);
+    }).catch(() => undefined);
   }, []);
 
   const estimatedNote = useMemo(() => {
@@ -67,22 +71,37 @@ export default function ProfileEditor() {
     setError("");
     try {
       const next = updateUserProfile(profile, parseProfileInput(values), new Date());
-      window.localStorage.setItem(STORAGE_KEY, serializeUserProfile(next));
-      setProfile(next);
-      setValues(valuesFromProfile(next));
-      setMessage("已保存。下次打开仍会保留这份资料。");
+      fetch("/api/profile", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(parseProfileInput(values)) }).then(async (response) => {
+        if (!response.ok) throw new Error("save");
+        const saved = await response.json() as UserProfile;
+        setProfile(saved); setValues(valuesFromProfile(saved)); setMessage("已保存。下次打开仍会保留这份资料。");
+      }).catch(() => setError("保存失败，请稍后重试"));
     } catch (cause) {
       setError(cause instanceof ProfileValidationError ? cause.message : "保存失败，请检查输入");
     }
   }
 
   function clearAll() {
-    const next = createUserProfile();
-    window.localStorage.removeItem(STORAGE_KEY);
-    setProfile(next);
-    setValues(emptyValues);
-    setMessage("已清除当前浏览器中的个人资料。");
+    fetch("/api/profile", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ age: null, heightCm: null, weightKg: null, maxHeartRateBpm: null, ftpWatts: null }) }).then(async (response) => {
+      if (!response.ok) throw new Error("clear");
+      const next = await response.json() as UserProfile;
+      setProfile(next); setValues(emptyValues); setMessage("已清除当前会话中的个人资料。"); setError("");
+    }).catch(() => setError("清除失败，请稍后重试"));
+  }
+
+  async function deleteAccount() {
+    if (!window.confirm("删除账户、骑行记录、个人资料及 AI 解读？此操作不可撤销。")) return;
+    const response = await fetch("/api/account", { method: "DELETE" });
+    if (!response.ok) { setError("账户删除失败，请稍后重试"); return; }
+    const next = createUserProfile(); setProfile(next); setValues(emptyValues); setConsent(null); setMessage("账户数据已删除。");
+  }
+
+  async function acceptConsent() {
+    const response = await fetch("/api/consent", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ accepted: true }) });
+    if (!response.ok) { setError("同意记录保存失败，请稍后重试"); return; }
+    setConsent(await response.json() as ConsentRecord);
     setError("");
+    setMessage("已记录当前隐私说明版本的确认。");
   }
 
   return (
@@ -90,7 +109,7 @@ export default function ProfileEditor() {
       <form className="profile-card" onSubmit={save}>
         <div className="profile-card-heading">
           <div><p className="kicker">基本资料</p><h2>先建立你的个人基线</h2></div>
-          <span className="local-badge">仅本机</span>
+          <span className="local-badge">开发会话</span>
         </div>
         <p className="profile-card-copy">年龄用于估算默认最大心率；身高和体重会为后续运动消耗等确定性计算提供输入。模型不会从聊天中猜测这些值。</p>
         <div className="profile-fields">
@@ -114,8 +133,13 @@ export default function ProfileEditor() {
           <ProfileFact label="FTP" value={profile.ftp ? `${profile.ftp.valueWatts} W` : "未设置"} detail={profile.ftp ? "用户填写 · 已确认" : "不会自动估算"} time={profile.ftp?.updatedAt} />
           <ProfileFact label="身体数据" value={profile.heightCm || profile.weightKg ? `${profile.heightCm?.value ?? "—"} cm · ${profile.weightKg?.value ?? "—"} kg` : "未设置"} detail="仅用于后续确定性指标" time={profile.heightCm?.updatedAt ?? profile.weightKg?.updatedAt} />
         </div>
-        <button className="clear-profile" type="button" onClick={clearAll}>清除本机资料</button>
-        <p className="privacy-note profile-privacy">Demo 阶段资料只保存在此浏览器的 localStorage，不会自动发送给模型。</p>
+        <button className="clear-profile" type="button" onClick={clearAll}>清除当前资料</button>
+        <div className="consent-status">
+          <div><span>隐私说明确认</span><p>{consent ? `已确认 · ${formatTime(consent.acceptedAt)}` : "尚未确认"}</p></div>
+          {!consent && <button className="clear-profile" type="button" onClick={acceptConsent}>确认隐私说明</button>}
+        </div>
+        <button className="clear-profile" type="button" onClick={deleteAccount}>删除账户数据</button>
+        <p className="privacy-note profile-privacy">当前为本地开发会话，资料保存在服务端开发适配器；生产 OIDC 尚未接入。</p>
       </section>
     </div>
   );

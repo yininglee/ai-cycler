@@ -8,6 +8,10 @@ import { RideSensorAnalysisGroups } from "../../components/ride-zone-distributio
 import { RidePowerDataSection } from "../../components/ride-power";
 import { RideAiAnalysis } from "../../components/ride-ai-analysis";
 import { getRideRecord } from "../../../src/imports/demo-ride-store";
+import { isDemoRideId } from "../../../src/ui/ride-view-model";
+import { getNextSessionUserId } from "../../../src/auth/next-session.ts";
+import { getApplicationRepository } from "../../../src/persistence/application-repository.ts";
+import RideDeleteButton from "../../components/ride-delete-button";
 import { buildRidePageViewModelFromRecord } from "../../../src/ui/ride-view-model";
 
 export default async function RideDetailPage({
@@ -19,7 +23,9 @@ export default async function RideDetailPage({
 }) {
   const { id } = await params;
   const query = await searchParams;
-  const record = getRideRecord(id);
+  const isFixture = isDemoRideId(id);
+  const userId = isFixture ? null : await getNextSessionUserId();
+  const record = isFixture ? getRideRecord(id) : userId ? await getApplicationRepository().getRide(userId, id) : null;
   if (!record) notFound();
   const view = buildRidePageViewModelFromRecord(record);
   const { snapshot } = view.analysis;
@@ -29,6 +35,7 @@ export default async function RideDetailPage({
   return (
     <AppShell active="rides">
       <RideDetailTabs
+        rideId={id}
         analysisPanel={<section className="analysis-tab" aria-label="骑行分析">
           {rejected ? <section className="rejected-card"><span className="error-mark">!</span><h2>记录未通过校验</h2><p>损坏或矛盾记录不展示图表，请检查原始文件后重新导入。</p></section> : <>
             <RideSeriesCharts charts={view.visuals.charts} cruiseSegments={view.timing.cruiseSegments} routeShape={view.visuals.routeShape} />
@@ -60,6 +67,7 @@ export default async function RideDetailPage({
             <section className="summary-record-heading" aria-label="骑行记录信息">
               <span className="summary-record-icon"><BikeIcon /></span>
               <div>{view.rideMeta.dateLabel && <p>{view.rideMeta.dateLabel}</p>}<h1>{view.rideMeta.titleLabel}</h1></div>
+              {!isFixture && <RideDeleteButton rideId={id} />}
             </section>
             <section className="summary-metrics" aria-label="核心骑行事实">
               {view.factCards.map((fact) => <article className="summary-metric" key={fact.claimId}><p>{fact.label}</p><strong>{fact.value}</strong></article>)}

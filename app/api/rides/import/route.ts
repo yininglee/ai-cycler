@@ -1,13 +1,16 @@
 import { createImportedRideId, saveImportedRide } from "../../../../src/imports/demo-ride-store.ts";
+import { AuthConfigurationError, resolveOrCreateRequestSession, sessionCookieHeader } from "../../../../src/auth/session.ts";
+import { getApplicationRepository } from "../../../../src/persistence/application-repository.ts";
+import { createDemoEvent } from "../../../../src/observability/demo-events.ts";
 import { parseRideRecord, isRideParseError } from "../../../../src/parsers/index.ts";
 import { MAX_UPLOAD_BYTES } from "../../../../src/parsers/parser-utils.ts";
 
 export const runtime = "nodejs";
 
-function noStoreJson(value: unknown, status = 200): Response {
+function noStoreJson(value: unknown, status = 200, headers: Record<string, string> = {}): Response {
   return Response.json(value, {
     status,
-    headers: { "Cache-Control": "no-store" },
+    headers: { "Cache-Control": "no-store", ...headers },
   });
 }
 
@@ -17,6 +20,12 @@ function isSupportedFileName(fileName: string): boolean {
 }
 
 export async function POST(request: Request): Promise<Response> {
+  let session;
+  try { session = resolveOrCreateRequestSession(request); } catch (error) {
+    if (error instanceof AuthConfigurationError) return noStoreJson({ error: error.code }, 503);
+    return noStoreJson({ error: "AUTH_UNAVAILABLE" }, 503);
+  }
+  await getApplicationRepository().saveDemoEvent(session.userId, createDemoEvent({ type: "import_started" }));
   const contentLength = Number(request.headers.get("content-length"));
   if (Number.isFinite(contentLength) && contentLength > MAX_UPLOAD_BYTES) {
     return noStoreJson({ error: "FILE_TOO_LARGE", message: "上传文件超过 50 MB 限制" }, 413);
@@ -47,8 +56,15 @@ export async function POST(request: Request): Promise<Response> {
       fileName: upload.name,
       content: new Uint8Array(await upload.arrayBuffer()),
     });
+    await getApplicationRepository().saveRide(session.userId, record);
+    await getApplicationRepository().saveDemoEvent(session.userId, createDemoEvent({
+      type: "import_completed",
+      rideId,
+      attributes: { source: record.activity.source.kind },
+    }));
+    // Keep the legacy in-memory fixture bridge for existing development tests.
     saveImportedRide(record);
-    return noStoreJson({ rideId }, 201);
+    return noStoreJson({ rideId }, 201, sessionCookieHeader(session));
   } catch (error) {
     if (isRideParseError(error)) {
       const status = error.code === "FILE_TOO_LARGE" ? 413 : 422;

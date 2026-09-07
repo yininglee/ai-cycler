@@ -68,7 +68,7 @@ export function RideFileUpload() {
         {error && <p className="upload-error" role="alert">{error}</p>}
         <button className="primary-button" type="submit" disabled={state === "uploading"}>{state === "uploading" ? "正在解析骑行数据" : "导入并查看骑行"}</button>
       </form>
-      <p className="upload-privacy-note">原始文件不发送给 AI；解析成功后不在本机保存，重启服务后导入记录会清除。</p>
+      <p className="upload-privacy-note">原始文件不发送给 AI；仅保存脱敏后的标准化数据，重启服务后仍可恢复。</p>
     </section>
   );
 }

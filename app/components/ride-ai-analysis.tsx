@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { recordDemoEvent } from "./demo-event-client";
 
 type AiDimension = {
   key: string;
@@ -41,6 +42,8 @@ const FALLBACK_MESSAGES: Record<string, string> = {
   AI_DISABLED: "AI 解读当前未开启。",
 };
 
+const EVENT_FALLBACK_CODES = new Set(["AI_TIMEOUT", "PROVIDER_ERROR", "REPAIR_FAILED", "DATA_NOT_ELIGIBLE", "AI_NOT_CONFIGURED", "AI_DISABLED"]);
+
 function dimensionLabel(key: string): string {
   return DIMENSION_LABELS[key] ?? "骑行表现";
 }
@@ -48,6 +51,18 @@ function dimensionLabel(key: string): string {
 export function RideAiAnalysis({ rideId }: { rideId: string }) {
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "fallback" | "error">("idle");
   const [response, setResponse] = useState<AiResponse | null>(null);
+  const [feedback, setFeedback] = useState<"helpful" | "not_helpful" | null>(null);
+
+  useEffect(() => {
+    if (status === "fallback" && response?.fallbackCode && EVENT_FALLBACK_CODES.has(response.fallbackCode)) {
+      recordDemoEvent({ type: "b0_visible", rideId, code: response.fallbackCode as "AI_DISABLED" | "AI_NOT_CONFIGURED" | "DATA_NOT_ELIGIBLE" | "AI_TIMEOUT" | "PROVIDER_ERROR" | "REPAIR_FAILED" });
+    }
+  }, [response, rideId, status]);
+
+  function submitFeedback(value: "helpful" | "not_helpful") {
+    setFeedback(value);
+    recordDemoEvent({ type: "feedback_submitted", rideId, feedback: value });
+  }
 
   async function loadAnalysis() {
     if (status === "loading") return;
@@ -100,6 +115,7 @@ export function RideAiAnalysis({ rideId }: { rideId: string }) {
       <section className="ride-ai-panel ride-ai-fallback" aria-live="polite">
         <div><p className="kicker">RIDE INSIGHT</p><h2>{aiDisabled ? "AI 解读当前未开启" : "本次暂未生成 AI 解读"}</h2><p>{aiDisabled ? "当前仅展示基础骑行摘要，不会自动调用 AI。" : fallbackMessage}</p></div>
         {!aiDisabled && <button className="ride-ai-secondary-button" type="button" onClick={loadAnalysis}>重新尝试</button>}
+        <FeedbackButtons feedback={feedback} onSubmit={submitFeedback} />
       </section>
     );
   }
@@ -118,6 +134,17 @@ export function RideAiAnalysis({ rideId }: { rideId: string }) {
       </div>}
       {output.nextAction && <div className="ride-ai-action"><p>{output.nextAction.kind === "grounded" ? "基于本次数据的建议" : "通用建议"}</p><strong>{output.nextAction.text}</strong></div>}
       {output.limitations.length > 0 && <div className="ride-ai-limitations">{output.limitations.map((limitation) => <p key={limitation}>{limitation}</p>)}</div>}
+      <FeedbackButtons feedback={feedback} onSubmit={submitFeedback} />
     </section>
   );
+}
+
+function FeedbackButtons({ feedback, onSubmit }: { feedback: "helpful" | "not_helpful" | null; onSubmit: (value: "helpful" | "not_helpful") => void }) {
+  return <div className="feedback-row">
+    <p>{feedback ? "反馈已记录" : "这份解读有帮助吗？"}</p>
+    <div>
+      <button type="button" onClick={() => onSubmit("helpful")} disabled={feedback !== null}>有帮助</button>
+      <button type="button" onClick={() => onSubmit("not_helpful")} disabled={feedback !== null}>待改进</button>
+    </div>
+  </div>;
 }

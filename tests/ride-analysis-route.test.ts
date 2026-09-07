@@ -2,7 +2,8 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { POST } from "../app/api/ride-analysis/route.ts";
-import { saveImportedRide } from "../src/imports/demo-ride-store.ts";
+import { resolveOrCreateRequestSession } from "../src/auth/session.ts";
+import { getApplicationRepository } from "../src/persistence/application-repository.ts";
 import { parseRideRecord } from "../src/parsers/index.ts";
 
 const TIMED_GPX = `<gpx version="1.1"><trk><trkseg>
@@ -52,11 +53,13 @@ test("ride-analysis route can analyze a record imported into the local demo stor
       fileName: "private-ride.gpx",
       content: TIMED_GPX,
     });
-    saveImportedRide(record);
+    const sessionRequest = new Request("http://localhost");
+    const session = resolveOrCreateRequestSession(sessionRequest);
+    await getApplicationRepository().saveRide(session.userId, record);
 
     const response = await POST(new Request("http://localhost/api/ride-analysis", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", Cookie: session.setCookie!.split(";", 1)[0] },
       body: JSON.stringify({ rideId: "upload-analysis-route" }),
     }));
     const body = await response.json() as Record<string, unknown>;

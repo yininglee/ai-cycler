@@ -1,0 +1,7 @@
+{
+  "schemaVersion": "ride-chat-output-v0.1",
+  "route": "current_ride",
+  "reply": "本次平均功率是 205 W。",
+  "claimIds": ["claim:context:1"],
+  "capabilityKeys": []
+}

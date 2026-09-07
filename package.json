@@ -43,6 +43,7 @@
     "eval:interpretation:provider:diagnose": "node scripts/diagnose-ride-interpretation-coze-v04-candidate.ts",
     "export:interpretation:prompt-candidate": "node scripts/export-ride-interpretation-prompt-v04-candidate.ts",
     "eval:advanced:run": "node scripts/run-advanced-interpretation-eval.ts",
+    "eval:chat:preflight": "node scripts/preflight-ride-chat-eval.ts",
     "export:coze-inputs": "node scripts/export-coze-inputs.ts",
     "export:coze:v014:repair": "node scripts/export-v014-repair-input.ts",
     "export:coze:t001": "node scripts/export-t001-coze-inputs.ts"

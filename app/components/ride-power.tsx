@@ -4,20 +4,9 @@ import { useEffect, useMemo, useState } from "react";
 
 import { buildRidePowerSummary, type PowerZoneBin, type RidePowerSummary } from "../../src/domain/ride-power";
 import type { RideRecord } from "../../src/domain/ride-schema";
-import { deserializeUserProfile, type UserProfile } from "../../src/domain/user-profile";
+import { type UserProfile } from "../../src/domain/user-profile";
 import type { RideSeriesChartDisplay } from "../../src/ui/ride-series-view-model";
 import { SeriesChartSvg } from "./ride-visuals";
-
-const PROFILE_STORAGE_KEY = "ai-cycling-buddy:user-profile:v0.1";
-
-function readProfile(): UserProfile | null {
-  try {
-    const raw = window.localStorage.getItem(PROFILE_STORAGE_KEY);
-    return raw ? deserializeUserProfile(raw) : null;
-  } catch {
-    return null;
-  }
-}
 
 function compact(value: number, digits = 1): string {
   return Number(value.toFixed(digits)).toString();
@@ -90,12 +79,9 @@ function PowerPeakPanel({ summary }: { summary: RidePowerSummary }) {
 export function RidePowerAnalysis({ record, chart }: { record: RideRecord; chart?: RideSeriesChartDisplay }) {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   useEffect(() => {
-    setProfile(readProfile());
-    const onStorage = (event: StorageEvent) => {
-      if (event.key === PROFILE_STORAGE_KEY) setProfile(readProfile());
-    };
-    window.addEventListener("storage", onStorage);
-    return () => window.removeEventListener("storage", onStorage);
+    let active = true;
+    fetch("/api/profile", { cache: "no-store" }).then((response) => response.ok ? response.json() : null).then((value: UserProfile | null) => { if (active) setProfile(value); }).catch(() => undefined);
+    return () => { active = false; };
   }, []);
   const summary = useMemo(() => buildRidePowerSummary(record, profile), [profile, record]);
   if (!chart) return null;
@@ -122,12 +108,9 @@ function PowerMetricRow({ label, value, source = "规则计算" }: { label: stri
 export function RidePowerDataSection({ record }: { record: RideRecord }) {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   useEffect(() => {
-    setProfile(readProfile());
-    const onStorage = (event: StorageEvent) => {
-      if (event.key === PROFILE_STORAGE_KEY) setProfile(readProfile());
-    };
-    window.addEventListener("storage", onStorage);
-    return () => window.removeEventListener("storage", onStorage);
+    let active = true;
+    fetch("/api/profile", { cache: "no-store" }).then((response) => response.ok ? response.json() : null).then((value: UserProfile | null) => { if (active) setProfile(value); }).catch(() => undefined);
+    return () => { active = false; };
   }, []);
   const summary = useMemo(() => buildRidePowerSummary(record, profile), [profile, record]);
   const average = record.activity.metrics.avgPowerW;

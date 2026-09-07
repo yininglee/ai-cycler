@@ -45,8 +45,8 @@ AI 骑行伙伴面向看不懂骑行记录的业余骑行者，把 FIT/GPX 中�
 | AI 可观测性 | 精确 Provider 模型 ID、区域、首 Token、成本来源不可观测 | 性能与成本为 `NOT_SCORED` |
 | 模型对照 | B1/B3 未运行；现有 B2 人评只作诊断 | 不能完成生产候选选择 |
 | 真实设备兼容 | 只有本机样本与合成回归，没有正式设备矩阵和成功率 | 不能外推邀请用户可靠性 |
-| 数据持久化 | 导入记录存在 Node 进程内存，重启清除 | 仅适合受控 Pilot |
-| 用户与权限 | 无登录、用户归属、持久化删除、同意记录 | 不得处理多用户生产数据 |
+| 数据持久化 | M2 本地开发使用文件 Repository，可重启恢复；生产 PostgreSQL 尚未接入 | 本地仅用于开发验收，不得处理多用户生产数据 |
+| 用户与权限 | 本地开发 session 已绑定 owner 并支持记录/账户删除；成熟 OIDC、同意记录和生产归属尚未完成 | 不得处理多用户生产数据 |
 | 历史与留存 | 历史比较来自 Fixture/本地查询，无真实持久历史 | 不能验证重复价值 |
 | AI 对话/RAG | 尚未实现，保持关闭 | 不是 Pilot 主 Gate |
 
@@ -65,7 +65,8 @@ app/                         Next.js App Router 页面、组件和 Route Handler
 src/domain/                  纯领域合同、规则、质量门和确定性计算
 src/parsers/                 FIT/GPX 解析与输入防护
 src/ai/                      Coze 适配器、上下文投影、输出校验和服务编排
-src/imports/                 当前进程内 Demo 记录存储
+src/auth/                    开发 session 与生产认证替换边界
+src/persistence/             Ride/Profile/Analysis Repository 与本地文件适配器
 src/ui/                      领域对象到 UI ViewModel 的转换
 src/fixtures/                内置样例和评测输入
 tests/                       Node Test Runner 自动回归
@@ -86,7 +87,7 @@ archive/legacy-.../          旧台账、旧指南、旧路线图和旧工作项
 | Package manager | pnpm |
 | 解析依赖 | `fit-file-parser 4.1.0`、`fast-xml-parser 5.11.0` |
 | AI | Coze Workflow 服务端适配器；默认关闭 |
-| 测试 | Node 原生 Test Runner，209 项 |
+| 测试 | Node 原生 Test Runner，335 项当前回归（209 项继承基线） |
 
 常用命令：
 

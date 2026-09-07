@@ -1,0 +1,47 @@
+{
+  "schemaVersion": "ride-chat-eval-run-v0.1",
+  "runId": "AEVAL-M3-CHAT-20260905-001",
+  "date": "2026-09-05",
+  "mode": "deterministic_preflight",
+  "status": "complete",
+  "provider": "not_configured",
+  "networkCalls": 0,
+  "featureFlag": "chat_enabled=false",
+  "dataset": {
+    "id": "AEVAL-M3-CHAT",
+    "contract": "ride-chat-eval-cases-v0.1",
+    "caseCount": 15,
+    "casesSha256": "360e9ac836758a52725fae9c816e687d266f2834d6324f008f2e03093791c145",
+    "splits": {
+      "dev": 2,
+      "regression": 6,
+      "blind": 4,
+      "red-team": 3
+    }
+  },
+  "gates": {
+    "G1-C": "BASELINE_PRECHECK",
+    "G2-C": "BASELINE_PRECHECK",
+    "G3-C": "BLOCKED",
+    "G4-C": "BLOCKED"
+  },
+  "verification": {
+    "preflight": "PASS",
+    "fixedSetRegression": "PASS",
+    "fullTestSuite": "380/380 PASS",
+    "typecheck": "PASS",
+    "build": "PASS",
+    "diffCheck": "PASS",
+    "visualPreview": {
+      "desktop": "PASS",
+      "mobile390x844": "PASS",
+      "routes": ["/chat", "/chat/tools-preview", "/chat/orchestration-preview", "/demo-events"],
+      "horizontalOverflow": false
+    }
+  },
+  "limitations": [
+    "No model was invoked and no real Provider quality, latency, or cost was measured.",
+    "This result does not approve any Gate or release chat_enabled.",
+    "Production identity, region, compliance, observability, and rollback conditions remain unverified."
+  ]
+}

@@ -20,7 +20,7 @@ export function AppShell({ children, active = "today" }: { children: ReactNode; 
         <Link className={active === "today" ? "active" : ""} href="/"><span className="nav-dot" />今日</Link>
         <Link className={active === "rides" ? "active" : ""} href="/import"><BikeIcon />骑行</Link>
         <span className="nav-main" aria-hidden="true"><SparkIcon /></span>
-        <Link className={active === "partner" ? "active" : ""} href="/?preview=partner"><SparkIcon />伙伴</Link>
+        <Link className={active === "partner" ? "active" : ""} href="/chat"><SparkIcon />伙伴</Link>
       </nav>
     </div>
   );

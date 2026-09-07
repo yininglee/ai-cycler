@@ -3,6 +3,9 @@ import Link from "next/link";
 import { AppShell, Brand } from "../components/app-shell";
 import { ArrowIcon, CheckIcon } from "../components/icons";
 import { RideFileUpload } from "../components/ride-file-upload";
+import { getNextSessionUserId } from "../../src/auth/next-session.ts";
+import { getApplicationRepository } from "../../src/persistence/application-repository.ts";
+import type { MetricKey, RideRecord } from "../../src/domain/ride-schema.ts";
 
 const samples = [
   { id: "l1-built-in-sample", capability: "轨迹", title: "只有轨迹", note: "距离、时间、速度、爬升" },
@@ -10,8 +13,54 @@ const samples = [
   { id: "l3-power-preview", capability: "功率", title: "包含功率", note: "在心率上增加完整功率数据" },
 ] as const;
 
+function formatNumber(value: number, digits = 1): string {
+  return Number(value.toFixed(digits)).toString();
+}
+
+function formatDuration(seconds: number): string {
+  const minutes = Math.round(seconds / 60);
+  const hours = Math.floor(minutes / 60);
+  const remainder = minutes % 60;
+  if (hours === 0) return `${remainder} 分钟`;
+  return remainder === 0 ? `${hours} 小时` : `${hours} 小时 ${remainder} 分钟`;
+}
+
+function formatRideDate(startTime: string | undefined): string | undefined {
+  if (!startTime || Number.isNaN(Date.parse(startTime))) return undefined;
+  return new Intl.DateTimeFormat("zh-CN", { timeZone: "Asia/Shanghai", year: "numeric", month: "numeric", day: "numeric" }).format(new Date(startTime));
+}
+
+function formatRideTitle(startTime: string | undefined): string {
+  if (!startTime || Number.isNaN(Date.parse(startTime))) return "骑行记录";
+  return new Intl.DateTimeFormat("zh-CN", { timeZone: "Asia/Shanghai", month: "numeric", day: "numeric" }).format(new Date(startTime)) + "骑行";
+}
+
+function metricLabel(record: RideRecord, key: MetricKey): string | undefined {
+  const value = record.activity.metrics[key]?.value;
+  if (value === undefined || !Number.isFinite(value)) return undefined;
+  if (key === "distanceM") return `${formatNumber(value / 1_000)} km`;
+  if (key === "movingTimeS" || key === "elapsedTimeS") return formatDuration(value);
+  if (key === "avgSpeedMps" || key === "maxSpeedMps") return `${formatNumber(value * 3.6)} km/h`;
+  if (key === "elevationGainM") return `${Math.round(value)} m`;
+  return undefined;
+}
+
+function privateRideSummary(record: RideRecord): string {
+  return [
+    metricLabel(record, "distanceM"),
+    metricLabel(record, "movingTimeS") ?? metricLabel(record, "elapsedTimeS"),
+    metricLabel(record, "avgSpeedMps"),
+  ].filter(Boolean).join(" · ") || "已导入，暂无可显示的核心指标";
+}
+
+function sourceLabel(record: RideRecord): string {
+  return record.activity.source.kind.toUpperCase();
+}
+
 export default async function ImportPage({ searchParams }: { searchParams: Promise<{ state?: string }> }) {
   const state = (await searchParams).state ?? "empty";
+  const userId = await getNextSessionUserId();
+  const privateRides = userId ? await getApplicationRepository().listRides(userId) : [];
 
   return (
     <AppShell active="rides">
@@ -27,6 +76,17 @@ export default async function ImportPage({ searchParams }: { searchParams: Promi
       {state !== "loading" && state !== "error" && (
         <>
           <RideFileUpload />
+
+          {userId && <section className="section-block imported-rides-block" aria-labelledby="imported-rides-title">
+            <div className="section-heading"><div><p className="kicker">我的记录</p><h2 id="imported-rides-title">已导入记录</h2></div><span className="private-count">{privateRides.length} 条</span></div>
+            {privateRides.length > 0 ? <div className="sample-list">
+              {privateRides.map(({ record }) => <Link key={record.activity.rideId} className="sample-card private-ride-card" href={`/rides/${record.activity.rideId}`}>
+                <span className="level-badge private-level-badge">{sourceLabel(record)}</span>
+                <div><p className="private-ride-date">{formatRideDate(record.activity.startTime) ?? "无日期"}</p><h3>{formatRideTitle(record.activity.startTime)}</h3><p>{privateRideSummary(record)}</p></div>
+                <ArrowIcon />
+              </Link>)}
+            </div> : <div className="private-empty"><p>还没有导入记录</p><span>选择上方的 FIT 或 GPX 文件，导入后会出现在这里。</span></div>}
+          </section>}
 
           <section className="section-block">
             <div className="section-heading"><div><p className="kicker">立即体验</p><h2>选择示例记录</h2></div></div>

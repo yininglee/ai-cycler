@@ -8,12 +8,11 @@ import {
   buildHeartRateZoneDistribution,
   type ZoneDistribution,
 } from "../../src/domain/ride-zones";
-import { deserializeUserProfile, type UserProfile } from "../../src/domain/user-profile";
+import { type UserProfile } from "../../src/domain/user-profile";
 import type { RideSeriesChartDisplay } from "../../src/ui/ride-series-view-model";
 import { SeriesChartSvg } from "./ride-visuals";
 import { RidePowerAnalysis } from "./ride-power";
 
-const PROFILE_STORAGE_KEY = "ai-cycling-buddy:user-profile:v0.1";
 
 function formatDuration(seconds: number): string {
   const roundedSeconds = Math.round(seconds);
@@ -23,15 +22,6 @@ function formatDuration(seconds: number): string {
   const minutes = totalMinutes % 60;
   if (hours === 0) return `${minutes}分钟`;
   return minutes === 0 ? `${hours}小时` : `${hours}小时${minutes}分钟`;
-}
-
-function readProfile(): UserProfile | null {
-  try {
-    const raw = window.localStorage.getItem(PROFILE_STORAGE_KEY);
-    return raw ? deserializeUserProfile(raw) : null;
-  } catch {
-    return null;
-  }
 }
 
 function ZoneDistributionPanel({ distribution, title }: {
@@ -101,12 +91,9 @@ export function RideSensorAnalysisGroups({ record, charts }: {
   const [profile, setProfile] = useState<UserProfile | null>(null);
 
   useEffect(() => {
-    setProfile(readProfile());
-    const onStorage = (event: StorageEvent) => {
-      if (event.key === PROFILE_STORAGE_KEY) setProfile(readProfile());
-    };
-    window.addEventListener("storage", onStorage);
-    return () => window.removeEventListener("storage", onStorage);
+    let active = true;
+    fetch("/api/profile", { cache: "no-store" }).then((response) => response.ok ? response.json() : null).then((value: UserProfile | null) => { if (active) setProfile(value); }).catch(() => undefined);
+    return () => { active = false; };
   }, []);
 
   const distributions = useMemo(() => ({

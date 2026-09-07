@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState, type KeyboardEvent, type ReactNode } from "react";
 
 import { BackIcon } from "./icons";
+import { recordDemoEvent } from "./demo-event-client";
 
 type RideDetailTab = "summary" | "analysis" | "data";
 
@@ -25,12 +26,14 @@ function tabFromLocation(): RideDetailTab {
 
 export function RideDetailTabs({
   initialTab,
+  rideId,
   rejected,
   summaryPanel,
   analysisPanel,
   dataPanel,
 }: {
   initialTab: RideDetailTab;
+  rideId: string;
   rejected: boolean;
   summaryPanel: ReactNode;
   analysisPanel: ReactNode;
@@ -47,6 +50,10 @@ export function RideDetailTabs({
     window.addEventListener("popstate", handlePopState);
     return () => window.removeEventListener("popstate", handlePopState);
   }, []);
+
+  useEffect(() => {
+    if (activeTab === "data") recordDemoEvent({ type: "evidence_viewed", rideId });
+  }, [activeTab, rideId]);
 
   function selectTab(tab: RideDetailTab) {
     if (tab === activeTab) return;

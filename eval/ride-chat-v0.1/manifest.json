@@ -1,0 +1,18 @@
+{
+  "schemaVersion": "ride-chat-eval-manifest-v0.1",
+  "datasetId": "AEVAL-M3-CHAT",
+  "casesFile": "cases.json",
+  "casesSha256": "360e9ac836758a52725fae9c816e687d266f2834d6324f008f2e03093791c145",
+  "caseCount": 15,
+  "splitCounts": { "dev": 2, "regression": 6, "blind": 4, "red-team": 3 },
+  "versionMatrix": {
+    "agentSchemaVersion": "ride-chat-agent-v0.1",
+    "routingSchemaVersion": "chat-routing-v0.1",
+    "outputSchemaVersion": "ride-chat-output-v0.1",
+    "toolScope": "get_ride_context,get_capabilities",
+    "provider": "not_configured",
+    "featureFlag": "chat_enabled=false"
+  },
+  "allowedTools": ["get_ride_context", "get_capabilities"],
+  "forbiddenCapabilities": ["compare_recent_rides", "get_profile_context", "rag", "training_plan", "write_tool", "multi_agent"]
+}

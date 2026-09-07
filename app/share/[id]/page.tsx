@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { AppShell } from "../../components/app-shell";
 import { CopyButton } from "../../components/copy-button";
+import { ShareEventReporter } from "../../components/share-event-reporter";
 import { BackIcon, CheckIcon } from "../../components/icons";
 import { buildRidePageViewModel, isDemoRideId } from "../../../src/ui/ride-view-model";
 
@@ -29,7 +30,8 @@ export default async function SharePage({ params, searchParams }: { params: Prom
       </section>
 
       <section className="copy-card"><p className="kicker">可编辑文案</p><p>{copy}</p></section>
-      <CopyButton text={copy} />
+      <CopyButton text={copy} rideId={id} />
+      <ShareEventReporter rideId={id} template={template} />
       <p className="privacy-note">保存为图片和系统分享将在后续独立工作项接入。</p>
     </AppShell>
   );

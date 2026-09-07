@@ -42,14 +42,14 @@
 - `pnpm verify` 209/209 通过，生产构建通过。
 - G0 已放行；V018 已验收本机 FIT/GPX 临时导入和 B0/AI 入口。
 - AI 可由服务端合同约束并降级为 B0，但当前同步路径 P95 远高于 8 秒目标。
-- 导入记录只在 Node 进程内存，个人资料只在 localStorage，不具备多用户数据治理。
+- M2 基础实现已提供服务端文件 Repository、开发 session、owner 隔离和记录/账户删除闭环；该适配器只用于本地验收，生产 PostgreSQL/OIDC 尚未接入。
 
 ### 假设与待决策
 
 - 假设：5 名用户中至少 3 名认为解读比原始记录有帮助。
 - 假设：真实分享/导出是留存或传播的必要组成，而不仅是口头意愿。
 - 待决策：Pilot 后保留同步 Coze、改为 B0-first 异步补充，还是迁移可观测 Provider。
-- 待决策：MVP 首个部署地域、认证方案、数据库托管和第三方数据处理边界。
+- 治理基线已冻结为 PostgreSQL + OIDC 服务端 session、30 天结构化数据保留和级联删除；待确认具体部署地域、OIDC 提供商、法务主体、备份轮换和跨境处理边界。
 - 待决策：原始 FIT/GPX 是否完全不留存，还是经明确同意短期加密保存用于重算。
 
 ### 非目标
@@ -69,7 +69,7 @@
 | `src/domain/` | Schema、质量门、概要、能力、特征、历史、准入 | 纯函数为主，自动测试覆盖充分 |
 | `src/parsers/` | FIT/GPX 输入校验、解析、标准化 | 已覆盖关键损坏/占位/GPS 异常 |
 | `src/ai/` | Coze 配置、投影、输出合同、修复和 B0 降级 | Provider 已隔离；完整可观测性不足 |
-| `src/imports/` | `globalThis Map` 临时记录 | 仅 Pilot 本机使用，不可横向扩展 |
+| `src/auth/`、`src/persistence/` | 开发 session 与文件 Repository；保留 PostgreSQL/OIDC 替换边界 | 本地验收可用；生产参数确认后迁移 |
 | `src/ui/` | 领域模型到页面 ViewModel | 使 UI 不直接计算领域指标 |
 | `eval/` | 固定集、RUN、人工评测与基准报告 | 保留为可复验 AI 证据源 |
 
@@ -82,7 +82,7 @@
 
 ### 第一项工程/产品行动
 
-规划体系已通过用户审阅。当前第一项行动不是启动 `ITEM-V017`，而是等待并确认 `DEMO-FEEDBACK-01`：收集当前 Demo 问题，拆分优化任务并由用户确认顺序。普通优化由 Codex 自测后提交用户验收；只有改变 AI 行为时才按 `AI_AGENT_测评计划与记录.md` 协作测评。相关优化完成并经用户验收后，才恢复 `ITEM-V017` 的 `P01` 受控用户测试。
+规划体系已通过用户审阅。M2 基础前两项已验收，当前第一项行动是等待用户明确启动 `MVP-FOUNDATION-03`，接入成熟认证 session 并补齐同意/跨用户回归；生产地域、OIDC 提供商和数据处理边界确认前，不开放邀请用户或 `chat_enabled`。
 
 ## 3. 架构原则与技术选型
 
@@ -104,7 +104,7 @@
 | Language | TypeScript strict | 领域合同和 AI Schema 需要编译期约束 | 不变 |
 | Domain | 纯函数 + 显式版本常量 | 可脱离 UI/网络/DB 测试和重放 | 不变；只按业务模块渐进归组 |
 | Parser | `fit-file-parser` + `fast-xml-parser`，外加确定性质量门 | 已有 209 项回归和真实问题修复 | 目标设备私有字段失败率成为前三大导入问题 |
-| Pilot storage | 内存记录 + localStorage 资料 | 数据短命、便于受控验证 | 开始多用户邀请测试前必须替换 |
+| Pilot storage | 内存记录 + localStorage 资料（历史基线） | 数据短命、便于受控验证 | 已由 M2 本地文件 Repository/开发 session 承接；邀请用户前必须迁移生产实现 |
 | MVP storage | PostgreSQL + 最小 Repository 接口 | 事务、归属、删除、历史查询适合关系模型 | 时序查询量或数据规模证明需要分区/专用时序存储 |
 | 原文件 | 默认不持久化；必要时对象存储短期加密保留 | 降低位置/健康数据风险 | 重算、申诉或兼容调试无法在标准化记录上完成，且同意/删除流程已就绪 |
 | AI | 现有 Coze Adapter + 严格输出校验 | 保留既有投入和 Demo 证据 | 无法满足 P95、成本或版本可观测性；Provider 迁移需同矩阵重评 |
@@ -122,7 +122,8 @@ Browser
   │                           ├─ 输入大小/扩展名/格式校验
   │                           ├─ FIT/GPX Parser
   │                           ├─ RideActivity + RideSeries
-  │                           └─ Pilot: in-memory store
+  │                           ├─ M2 dev: FileApplicationRepository + dev session
+  │                           └─ Production: PostgreSQL + OIDC session（待环境确认）
   ├─ /rides/[id] ─────────> ViewModel ──> B0 事实/轨迹/曲线
   └─ 点击 AI ─────────────> POST /api/ride-analysis
                               ├─ RideFeatureSnapshot
@@ -160,7 +161,7 @@ app/
 |---|---|---|
 | `RideActivity v0.2` | 单次活动聚合事实、来源、公式和质量 | 当前权威活动合同 |
 | `RideSeries v0.1` | 隐私裁剪后的相对轨迹与时序 | 当前；不向模型发送原始点 |
-| `UserProfile v0.1` | 年龄、身高、体重、最大心率、FTP 及来源/时间 | 当前 localStorage；MVP 迁移用户归属存储 |
+| `UserProfile v0.1` | 年龄、身高、体重、最大心率、FTP 及来源/时间 | 当前由 Repository 按开发 session 归属；生产迁移用户归属存储 |
 | `AtomicCapabilityProfile v0.1` | 每项能力的可用性、来源、质量和原因 | 当前；替代业务 L1/L2/L3 门 |
 | `RideFeatureSnapshot v0.1` | 可复算统计和直接关系 Claim | 当前；新增分类必须单独版本化 |
 | `HistoricalComparisonSnapshot v0.1` | 固定窗口、样本、口径、可比性和变化 | 当前 Fixture；MVP 接持久历史 |
@@ -257,8 +258,8 @@ AI 解读前端采用“Claim 驱动图表”模式，并保持“骑行详情�
 
 | 接口 | 用途 | 当前边界 | 后续 |
 |---|---|---|---|
-| `POST /api/rides/import` | 单文件 FIT/GPX 导入 | 50 MB；扩展名/解析校验；进程内存 | 加认证、MIME/文件头、限流、持久化和删除 |
-| `POST /api/ride-analysis` | 对已知 rideId 执行 B2/B0 | 1 KB JSON；无用户身份；当前进程记录 | 从 session 绑定 userId；持久 AnalysisRun；可选异步 |
+| `POST /api/rides/import` | 单文件 FIT/GPX 导入 | 50 MB；开发 session；文件 Repository；扩展名/解析校验 | 生产补 MIME/文件头、限流、幂等和 PostgreSQL |
+| `POST /api/ride-analysis` | 对已知 rideId 执行 B2/B0 | 由开发 session 校验 owner；AnalysisRun 可持久化 | 生产迁移 PostgreSQL；可选异步 |
 
 ### MVP API 边界
 
@@ -398,3 +399,4 @@ AI 改异步不是默认答案。只有用户测试证明等待影响价值，�
 | ADR-019 | 采用“确定性分层/能力门/Claim → 受控 LLM 表达”，暂停在旧 Prompt 上继续堆叠限制项 | 高阶事实增加后，旧链路出现事实罗列、跨指标洞察不足和边界脆弱；分层可复算、可测试、可降级 | `AI-ADV-02` 用户验收、离线 fixture 和新旧输出对照完成后复审 |
 | ADR-020 | 能力评估先做多维纵向画像，不做单次总分或全球排名 | 速度、功率、爬升和路线难度受场景/设备/体重影响；单次记录不足以代表稳定能力 | 获得足够纵向样本、参考群体和专业审核后，才复审是否开放校准状态词 |
 | ADR-021 | AI 文本与确定性可视化必须通过受控 `visualRef` 绑定 | 参考图展示了“结论旁证据图表”的阅读模式；直接让模型画图会引入新数字、坐标和颜色语义，破坏可追溯性 | `AI-ADV-02C` 离线 fixture、视觉引用校验和移动/桌面预览完成后复审 |
+| ADR-022 | M2/M3 以 PostgreSQL + OIDC 服务端 session 为唯一持久化/身份基线；默认不保留原始 FIT/GPX、精确坐标或完整时序；结构化私有数据保留 30 天并支持记录/账户级联删除 | 后续 Repository、导入、AI 工具和分享均从服务端 session 绑定资源归属；本地开发以文件 Repository/开发 session 验收，生产数据库与认证提供商通过环境配置注入 | 邀请用户前确认 `DATA_REGION`、OIDC 提供商、法务主体、备份轮换周期和跨境处理边界；任一项未确认不得开放生产注册或 `chat_enabled` |

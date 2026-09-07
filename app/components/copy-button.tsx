@@ -1,12 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { recordDemoEvent } from "./demo-event-client";
 
-export function CopyButton({ text }: { text: string }) {
+export function CopyButton({ text, rideId }: { text: string; rideId: string }) {
   const [copied, setCopied] = useState(false);
 
   async function copy() {
     await navigator.clipboard.writeText(text);
+    recordDemoEvent({ type: "share_copied", rideId });
     setCopied(true);
     window.setTimeout(() => setCopied(false), 1600);
   }

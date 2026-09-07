@@ -84,11 +84,11 @@ export function validateRideActivity(activity: RideActivity): RideValidationResu
     issues.push(issue("MISSING_RIDE_ID", "error", "缺少骑行记录 ID", "rideId"));
   }
 
-  if (activity.source.kind === "fit" && !activity.source.fileName?.toLowerCase().endsWith(".fit")) {
+  if (activity.source.kind === "fit" && activity.source.fileName && !activity.source.fileName.toLowerCase().endsWith(".fit")) {
     issues.push(issue("SOURCE_EXTENSION_MISMATCH", "error", "FIT 来源必须使用 .fit 文件", "source.fileName"));
   }
 
-  if (activity.source.kind === "gpx" && !activity.source.fileName?.toLowerCase().endsWith(".gpx")) {
+  if (activity.source.kind === "gpx" && activity.source.fileName && !activity.source.fileName.toLowerCase().endsWith(".gpx")) {
     issues.push(issue("SOURCE_EXTENSION_MISMATCH", "error", "GPX 来源必须使用 .gpx 文件", "source.fileName"));
   }
 

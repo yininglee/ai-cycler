@@ -8,3 +8,4 @@ coverage/
 test-data/private/
 .env*
 !.env.example
+.local-data/
