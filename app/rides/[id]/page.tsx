@@ -33,7 +33,7 @@ export default async function RideDetailPage({
           {rejected ? <section className="rejected-card"><span className="error-mark">!</span><h2>记录未通过校验</h2><p>损坏或矛盾记录不展示图表，请检查原始文件后重新导入。</p></section> : <>
             <RideSeriesCharts charts={view.visuals.charts} cruiseSegments={view.timing.cruiseSegments} routeShape={view.visuals.routeShape} />
             <RideSensorAnalysisGroups record={record} charts={view.visuals.charts} />
-            <RideAiAnalysis rideId={id} />
+            <RideAiAnalysis rideId={id} title={view.rideMeta.titleLabel} dateLabel={view.rideMeta.dateLabel} />
           </>}
         </section>}
         dataPanel={<section className="data-tab" aria-label="骑行详细数据">
@@ -64,7 +64,7 @@ export default async function RideDetailPage({
             <section className="summary-metrics" aria-label="核心骑行事实">
               {view.factCards.map((fact) => <article className="summary-metric" key={fact.claimId}><p>{fact.label}</p><strong>{fact.value}</strong></article>)}
             </section>
-            <RideAiAnalysis rideId={id} />
+            <RideAiAnalysis rideId={id} title={view.rideMeta.titleLabel} dateLabel={view.rideMeta.dateLabel} />
           </div>
         </>}
 

@@ -1,0 +1,1762 @@
+{
+  "schemaVersion": "ride-interpretation-formal-run-v0.1",
+  "benchmark": "AEVAL-M1-RIDE-INTERPRETATION-V04-FORMAL",
+  "runId": "AEVAL-RUN-20260906-955",
+  "planSha256": "8653af8691411980858591e82aa083b02b6e8f4bb071a4aa70575c69c717702f",
+  "workflow": {
+    "name": "ride_analysis_v3",
+    "id": "7680762018618359814",
+    "version": "v0.0.11",
+    "modelId": "豆包·2.0·lite"
+  },
+  "versionMatrix": {
+    "workflowName": "ride_analysis_v3",
+    "workflowId": "7680762018618359814",
+    "workflowVersion": "v0.0.11",
+    "modelId": "豆包·2.0·lite",
+    "promptVersion": "v0.4.14",
+    "inputContractVersion": "ride-interpretation-input-v0.4-candidate",
+    "outputContractVersion": "ride-interpretation-output-v0.4.2-candidate"
+  },
+  "rawOutputsStored": false,
+  "candidateInputsStored": false,
+  "tokenUsageStored": false,
+  "status": "complete",
+  "stopped": null,
+  "overallPassed": true,
+  "authorization": {
+    "expectedSlots": 81,
+    "executedSlots": 81,
+    "scope": "9 frozen de-identified candidate inputs x 9 independent repetitions"
+  },
+  "summary": {
+    "acceptedCount": 81,
+    "failedCount": 0,
+    "firstPassCount": 75,
+    "repairedPassCount": 6,
+    "b0Count": 0,
+    "p50Ms": 10735,
+    "p95Ms": 18915
+  },
+  "results": [
+    {
+      "slot": "F01:R1",
+      "caseId": "F01",
+      "fixtureId": "l1-built-in-sample",
+      "tier": "L1",
+      "repetition": 1,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 12586,
+      "providerRequestIds": [
+        "20260906160352C98DF7FAD4ED78CE5842"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F01:R2",
+      "caseId": "F01",
+      "fixtureId": "l1-built-in-sample",
+      "tier": "L1",
+      "repetition": 2,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 10067,
+      "providerRequestIds": [
+        "20260906160405A79818ED78834AF34BD3"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F01:R3",
+      "caseId": "F01",
+      "fixtureId": "l1-built-in-sample",
+      "tier": "L1",
+      "repetition": 3,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 9620,
+      "providerRequestIds": [
+        "2026090616041593975558EDDE7FF09265"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F01:R4",
+      "caseId": "F01",
+      "fixtureId": "l1-built-in-sample",
+      "tier": "L1",
+      "repetition": 4,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 10393,
+      "providerRequestIds": [
+        "20260906160425C8CB216B6BA901A926D8"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F01:R5",
+      "caseId": "F01",
+      "fixtureId": "l1-built-in-sample",
+      "tier": "L1",
+      "repetition": 5,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 14156,
+      "providerRequestIds": [
+        "2026090616043554A7A0C5DEAA93BEEB00"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F01:R6",
+      "caseId": "F01",
+      "fixtureId": "l1-built-in-sample",
+      "tier": "L1",
+      "repetition": 6,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 2,
+      "repairTriggered": true,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 23565,
+      "providerRequestIds": [
+        "20260906160449855467A602F63BC7DEDF",
+        "20260906160504D9B2AB86EF4153DB8C89"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": [
+          "DIMENSION_terrain_climb_DATA_COMPLETENESS_EVALUATION"
+        ]
+      }
+    },
+    {
+      "slot": "F01:R7",
+      "caseId": "F01",
+      "fixtureId": "l1-built-in-sample",
+      "tier": "L1",
+      "repetition": 7,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 9684,
+      "providerRequestIds": [
+        "20260906160513A79818ED78834AF38112"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F01:R8",
+      "caseId": "F01",
+      "fixtureId": "l1-built-in-sample",
+      "tier": "L1",
+      "repetition": 8,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 10948,
+      "providerRequestIds": [
+        "202609061605231CDF7C59567D4587410E"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F01:R9",
+      "caseId": "F01",
+      "fixtureId": "l1-built-in-sample",
+      "tier": "L1",
+      "repetition": 9,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 9296,
+      "providerRequestIds": [
+        "2026090616053452CE73D2CB6BD5ACB4C0"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F02:R1",
+      "caseId": "F02",
+      "fixtureId": "l1-gpx-normal",
+      "tier": "L1",
+      "repetition": 1,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 10894,
+      "providerRequestIds": [
+        "20260906160543777D04C8A9CDE6ADCD69"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F02:R2",
+      "caseId": "F02",
+      "fixtureId": "l1-gpx-normal",
+      "tier": "L1",
+      "repetition": 2,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 11233,
+      "providerRequestIds": [
+        "202609061605548D850E35810922D548ED"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F02:R3",
+      "caseId": "F02",
+      "fixtureId": "l1-gpx-normal",
+      "tier": "L1",
+      "repetition": 3,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 13546,
+      "providerRequestIds": [
+        "202609061606067CD8239C2E67B5DA923B"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F02:R4",
+      "caseId": "F02",
+      "fixtureId": "l1-gpx-normal",
+      "tier": "L1",
+      "repetition": 4,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 11846,
+      "providerRequestIds": [
+        "202609061606196D6F35D98643CCEE05FB"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F02:R5",
+      "caseId": "F02",
+      "fixtureId": "l1-gpx-normal",
+      "tier": "L1",
+      "repetition": 5,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 11813,
+      "providerRequestIds": [
+        "20260906160631E409F8DED794B3B3561E"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F02:R6",
+      "caseId": "F02",
+      "fixtureId": "l1-gpx-normal",
+      "tier": "L1",
+      "repetition": 6,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 13402,
+      "providerRequestIds": [
+        "2026090616064346C188FE3356A4A54CE9"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F02:R7",
+      "caseId": "F02",
+      "fixtureId": "l1-gpx-normal",
+      "tier": "L1",
+      "repetition": 7,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 10974,
+      "providerRequestIds": [
+        "202609061606579A0A60F1B4B979D33AF2"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F02:R8",
+      "caseId": "F02",
+      "fixtureId": "l1-gpx-normal",
+      "tier": "L1",
+      "repetition": 8,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 8411,
+      "providerRequestIds": [
+        "20260906160708F694A4044F964BDA892B"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F02:R9",
+      "caseId": "F02",
+      "fixtureId": "l1-gpx-normal",
+      "tier": "L1",
+      "repetition": 9,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 11467,
+      "providerRequestIds": [
+        "20260906160716D5439103289868F1A3BE"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F03:R1",
+      "caseId": "F03",
+      "fixtureId": "l1-gps-spike",
+      "tier": "L1",
+      "repetition": 1,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 5335,
+      "providerRequestIds": [
+        "202609061607281CDF7C59567D45879D71"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F03:R2",
+      "caseId": "F03",
+      "fixtureId": "l1-gps-spike",
+      "tier": "L1",
+      "repetition": 2,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 8738,
+      "providerRequestIds": [
+        "20260906160733E409F8DED794B3B38422"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F03:R3",
+      "caseId": "F03",
+      "fixtureId": "l1-gps-spike",
+      "tier": "L1",
+      "repetition": 3,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 6647,
+      "providerRequestIds": [
+        "2026090616074246C188FE3356A4A57BF3"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F03:R4",
+      "caseId": "F03",
+      "fixtureId": "l1-gps-spike",
+      "tier": "L1",
+      "repetition": 4,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 6228,
+      "providerRequestIds": [
+        "202609061607499A0A60F1B4B979D360AF"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F03:R5",
+      "caseId": "F03",
+      "fixtureId": "l1-gps-spike",
+      "tier": "L1",
+      "repetition": 5,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 7769,
+      "providerRequestIds": [
+        "20260906160755CFE57BD0B73486D943C9"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F03:R6",
+      "caseId": "F03",
+      "fixtureId": "l1-gps-spike",
+      "tier": "L1",
+      "repetition": 6,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 10640,
+      "providerRequestIds": [
+        "20260906160803880A553ACF0CCA887979"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F03:R7",
+      "caseId": "F03",
+      "fixtureId": "l1-gps-spike",
+      "tier": "L1",
+      "repetition": 7,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 9465,
+      "providerRequestIds": [
+        "20260906160813E106602A39E679EF61A8"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F03:R8",
+      "caseId": "F03",
+      "fixtureId": "l1-gps-spike",
+      "tier": "L1",
+      "repetition": 8,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 7219,
+      "providerRequestIds": [
+        "20260906160823DBABA1269852D0B0A974"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F03:R9",
+      "caseId": "F03",
+      "fixtureId": "l1-gps-spike",
+      "tier": "L1",
+      "repetition": 9,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 6511,
+      "providerRequestIds": [
+        "20260906160830B9513C8390ED9BC6F4B8"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F04:R1",
+      "caseId": "F04",
+      "fixtureId": "l2-built-in-sample",
+      "tier": "L2",
+      "repetition": 1,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 2,
+      "repairTriggered": true,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 23686,
+      "providerRequestIds": [
+        "2026090616083711FC90A6F9BCAED11BDB",
+        "20260906160850CFE57BD0B73486D968FC"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": [
+          "DIMENSION_terrain_climb_DATA_COMPLETENESS_EVALUATION"
+        ]
+      }
+    },
+    {
+      "slot": "F04:R2",
+      "caseId": "F04",
+      "fixtureId": "l2-built-in-sample",
+      "tier": "L2",
+      "repetition": 2,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 9059,
+      "providerRequestIds": [
+        "20260906160901F49E3A32A7CD5D7EE113"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F04:R3",
+      "caseId": "F04",
+      "fixtureId": "l2-built-in-sample",
+      "tier": "L2",
+      "repetition": 3,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 11281,
+      "providerRequestIds": [
+        "20260906160910E106602A39E679EF8993"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F04:R4",
+      "caseId": "F04",
+      "fixtureId": "l2-built-in-sample",
+      "tier": "L2",
+      "repetition": 4,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 11224,
+      "providerRequestIds": [
+        "20260906160921EC4DCE31C9A931B4EB8B"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F04:R5",
+      "caseId": "F04",
+      "fixtureId": "l2-built-in-sample",
+      "tier": "L2",
+      "repetition": 5,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 10830,
+      "providerRequestIds": [
+        "2026090616093264B5785DFDA8DEBFA7F6"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F04:R6",
+      "caseId": "F04",
+      "fixtureId": "l2-built-in-sample",
+      "tier": "L2",
+      "repetition": 6,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 10914,
+      "providerRequestIds": [
+        "2026090616094311FC90A6F9BCAED14B12"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F04:R7",
+      "caseId": "F04",
+      "fixtureId": "l2-built-in-sample",
+      "tier": "L2",
+      "repetition": 7,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 2,
+      "repairTriggered": true,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 22866,
+      "providerRequestIds": [
+        "20260906160954540BAD2117A32DD37B59",
+        "20260906161008FC9C8824DF36CAE7E9EC"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": [
+          "DIMENSION_terrain_climb_DATA_COMPLETENESS_EVALUATION"
+        ]
+      }
+    },
+    {
+      "slot": "F04:R8",
+      "caseId": "F04",
+      "fixtureId": "l2-built-in-sample",
+      "tier": "L2",
+      "repetition": 8,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 10245,
+      "providerRequestIds": [
+        "20260906161017195F8A34D377D48731F7"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F04:R9",
+      "caseId": "F04",
+      "fixtureId": "l2-built-in-sample",
+      "tier": "L2",
+      "repetition": 9,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 11815,
+      "providerRequestIds": [
+        "20260906161028BB359664D5A25BC1D15D"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F05:R1",
+      "caseId": "F05",
+      "fixtureId": "l2-fit-heart-rate",
+      "tier": "L2",
+      "repetition": 1,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 10735,
+      "providerRequestIds": [
+        "20260906161039BD37F2B1AB4931BB7548"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F05:R2",
+      "caseId": "F05",
+      "fixtureId": "l2-fit-heart-rate",
+      "tier": "L2",
+      "repetition": 2,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 11807,
+      "providerRequestIds": [
+        "2026090616105011FC90A6F9BCAED17B6F"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F05:R3",
+      "caseId": "F05",
+      "fixtureId": "l2-fit-heart-rate",
+      "tier": "L2",
+      "repetition": 3,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 10146,
+      "providerRequestIds": [
+        "2026090616110283656E7270BD91D4013E"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F05:R4",
+      "caseId": "F05",
+      "fixtureId": "l2-fit-heart-rate",
+      "tier": "L2",
+      "repetition": 4,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 10006,
+      "providerRequestIds": [
+        "20260906161112F49E3A32A7CD5D7F36F2"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F05:R5",
+      "caseId": "F05",
+      "fixtureId": "l2-fit-heart-rate",
+      "tier": "L2",
+      "repetition": 5,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 11761,
+      "providerRequestIds": [
+        "20260906161122195F8A34D377D4875DD0"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F05:R6",
+      "caseId": "F05",
+      "fixtureId": "l2-fit-heart-rate",
+      "tier": "L2",
+      "repetition": 6,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 11934,
+      "providerRequestIds": [
+        "20260906161134979C1DD34D5739CC2C62"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F05:R7",
+      "caseId": "F05",
+      "fixtureId": "l2-fit-heart-rate",
+      "tier": "L2",
+      "repetition": 7,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 2,
+      "repairTriggered": true,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 18915,
+      "providerRequestIds": [
+        "202609061611462C6D3CB9F1CFDDB02766",
+        "2026090616115889CF18EC1244C8DA654E"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": [
+          "DIMENSION_terrain_climb_DATA_COMPLETENESS_EVALUATION"
+        ]
+      }
+    },
+    {
+      "slot": "F05:R8",
+      "caseId": "F05",
+      "fixtureId": "l2-fit-heart-rate",
+      "tier": "L2",
+      "repetition": 8,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 10258,
+      "providerRequestIds": [
+        "202609061612054BB86432D951C2D789A6"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F05:R9",
+      "caseId": "F05",
+      "fixtureId": "l2-fit-heart-rate",
+      "tier": "L2",
+      "repetition": 9,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 11163,
+      "providerRequestIds": [
+        "202609061612167BD806D9AD64B389EAE2"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F06:R1",
+      "caseId": "F06",
+      "fixtureId": "fit-heart-rate-dropout",
+      "tier": "L2",
+      "repetition": 1,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 9065,
+      "providerRequestIds": [
+        "20260906161227F169CD9ED4B8F292311D"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F06:R2",
+      "caseId": "F06",
+      "fixtureId": "fit-heart-rate-dropout",
+      "tier": "L2",
+      "repetition": 2,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 7691,
+      "providerRequestIds": [
+        "202609061612369225274089E7DFB06A3D"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F06:R3",
+      "caseId": "F06",
+      "fixtureId": "fit-heart-rate-dropout",
+      "tier": "L2",
+      "repetition": 3,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 9467,
+      "providerRequestIds": [
+        "202609061612442C6D3CB9F1CFDDB0545B"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F06:R4",
+      "caseId": "F06",
+      "fixtureId": "fit-heart-rate-dropout",
+      "tier": "L2",
+      "repetition": 4,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 10273,
+      "providerRequestIds": [
+        "20260906161253EBA78DE63EC17ACFFFB0"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F06:R5",
+      "caseId": "F06",
+      "fixtureId": "fit-heart-rate-dropout",
+      "tier": "L2",
+      "repetition": 5,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 2,
+      "repairTriggered": true,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 15313,
+      "providerRequestIds": [
+        "20260906161304E4A9A6247D4B36C82E6B",
+        "202609061613137BD806D9AD64B38A1502"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": [
+          "ONE_LINE_LABEL_TOO_LONG"
+        ]
+      }
+    },
+    {
+      "slot": "F06:R6",
+      "caseId": "F06",
+      "fixtureId": "fit-heart-rate-dropout",
+      "tier": "L2",
+      "repetition": 6,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 8641,
+      "providerRequestIds": [
+        "20260906161319F169CD9ED4B8F2925573"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F06:R7",
+      "caseId": "F06",
+      "fixtureId": "fit-heart-rate-dropout",
+      "tier": "L2",
+      "repetition": 7,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 9647,
+      "providerRequestIds": [
+        "20260906161328587232343D83EBB48AD5"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F06:R8",
+      "caseId": "F06",
+      "fixtureId": "fit-heart-rate-dropout",
+      "tier": "L2",
+      "repetition": 8,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 7404,
+      "providerRequestIds": [
+        "20260906161338FCCAB0EBC4CD61B7DFCC"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F06:R9",
+      "caseId": "F06",
+      "fixtureId": "fit-heart-rate-dropout",
+      "tier": "L2",
+      "repetition": 9,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 9890,
+      "providerRequestIds": [
+        "20260906161345AC9F708C8900D7D326FD"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F07:R1",
+      "caseId": "F07",
+      "fixtureId": "l3-built-in-sample",
+      "tier": "L3",
+      "repetition": 1,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 11381,
+      "providerRequestIds": [
+        "20260906161355798D916A1C6188D4C460"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F07:R2",
+      "caseId": "F07",
+      "fixtureId": "l3-built-in-sample",
+      "tier": "L3",
+      "repetition": 2,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 11149,
+      "providerRequestIds": [
+        "2026090616140633FD932CE80C2191F259"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F07:R3",
+      "caseId": "F07",
+      "fixtureId": "l3-built-in-sample",
+      "tier": "L3",
+      "repetition": 3,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 10666,
+      "providerRequestIds": [
+        "2026090616141828CD01A2BABA7388026B"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F07:R4",
+      "caseId": "F07",
+      "fixtureId": "l3-built-in-sample",
+      "tier": "L3",
+      "repetition": 4,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 10337,
+      "providerRequestIds": [
+        "20260906161429AB49CB7357F41BC67863"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F07:R5",
+      "caseId": "F07",
+      "fixtureId": "l3-built-in-sample",
+      "tier": "L3",
+      "repetition": 5,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 10773,
+      "providerRequestIds": [
+        "20260906161439BFAFC5675D622FB1DD20"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F07:R6",
+      "caseId": "F07",
+      "fixtureId": "l3-built-in-sample",
+      "tier": "L3",
+      "repetition": 6,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 8450,
+      "providerRequestIds": [
+        "20260906161450AC9F708C8900D7D34FB9"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F07:R7",
+      "caseId": "F07",
+      "fixtureId": "l3-built-in-sample",
+      "tier": "L3",
+      "repetition": 7,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 10273,
+      "providerRequestIds": [
+        "20260906161458798D916A1C6188D4EDFD"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F07:R8",
+      "caseId": "F07",
+      "fixtureId": "l3-built-in-sample",
+      "tier": "L3",
+      "repetition": 8,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 10593,
+      "providerRequestIds": [
+        "202609061615091564AEEBD849AA86C216"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F07:R9",
+      "caseId": "F07",
+      "fixtureId": "l3-built-in-sample",
+      "tier": "L3",
+      "repetition": 9,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 9897,
+      "providerRequestIds": [
+        "2026090616151985832C5A73C0D193A85D"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F08:R1",
+      "caseId": "F08",
+      "fixtureId": "l3-fit-power",
+      "tier": "L3",
+      "repetition": 1,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 11528,
+      "providerRequestIds": [
+        "2026090616152937A7A8D39101FDC27197"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F08:R2",
+      "caseId": "F08",
+      "fixtureId": "l3-fit-power",
+      "tier": "L3",
+      "repetition": 2,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 9993,
+      "providerRequestIds": [
+        "20260906161541DB4FE16DCE4B96C6E1FD"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F08:R3",
+      "caseId": "F08",
+      "fixtureId": "l3-fit-power",
+      "tier": "L3",
+      "repetition": 3,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 11460,
+      "providerRequestIds": [
+        "20260906161551AC9F708C8900D7D37B3B"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F08:R4",
+      "caseId": "F08",
+      "fixtureId": "l3-fit-power",
+      "tier": "L3",
+      "repetition": 4,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 9944,
+      "providerRequestIds": [
+        "20260906161602A461D553E8EF23D3B492"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F08:R5",
+      "caseId": "F08",
+      "fixtureId": "l3-fit-power",
+      "tier": "L3",
+      "repetition": 5,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 10332,
+      "providerRequestIds": [
+        "202609061616131564AEEBD849AA86EC48"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F08:R6",
+      "caseId": "F08",
+      "fixtureId": "l3-fit-power",
+      "tier": "L3",
+      "repetition": 6,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 9878,
+      "providerRequestIds": [
+        "20260906161623E4F5CE13B673828AD4DC"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F08:R7",
+      "caseId": "F08",
+      "fixtureId": "l3-fit-power",
+      "tier": "L3",
+      "repetition": 7,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 12324,
+      "providerRequestIds": [
+        "20260906161633AEA530EABC01A6BE598A"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F08:R8",
+      "caseId": "F08",
+      "fixtureId": "l3-fit-power",
+      "tier": "L3",
+      "repetition": 8,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 10518,
+      "providerRequestIds": [
+        "20260906161645E930999284C9E2C0EC58"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F08:R9",
+      "caseId": "F08",
+      "fixtureId": "l3-fit-power",
+      "tier": "L3",
+      "repetition": 9,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 11128,
+      "providerRequestIds": [
+        "20260906161656AC9F708C8900D7D3A7F5"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F09:R1",
+      "caseId": "F09",
+      "fixtureId": "fit-power-dropout-with-heart-rate",
+      "tier": "L3",
+      "repetition": 1,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 11143,
+      "providerRequestIds": [
+        "20260906161707A461D553E8EF23D3DDD2"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F09:R2",
+      "caseId": "F09",
+      "fixtureId": "fit-power-dropout-with-heart-rate",
+      "tier": "L3",
+      "repetition": 2,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 12055,
+      "providerRequestIds": [
+        "20260906161718627662C5108ECA066F5A"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F09:R3",
+      "caseId": "F09",
+      "fixtureId": "fit-power-dropout-with-heart-rate",
+      "tier": "L3",
+      "repetition": 3,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 10648,
+      "providerRequestIds": [
+        "20260906161730E4F5CE13B673828B0012"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F09:R4",
+      "caseId": "F09",
+      "fixtureId": "fit-power-dropout-with-heart-rate",
+      "tier": "L3",
+      "repetition": 4,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 2,
+      "repairTriggered": true,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 21089,
+      "providerRequestIds": [
+        "2026090616174137A7A8D39101FDC2E92C",
+        "2026090616175324517A60D8C09EB2DD42"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": [
+          "OVERALL_UNSUPPORTED_NUMBER"
+        ]
+      }
+    },
+    {
+      "slot": "F09:R5",
+      "caseId": "F09",
+      "fixtureId": "fit-power-dropout-with-heart-rate",
+      "tier": "L3",
+      "repetition": 5,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 11185,
+      "providerRequestIds": [
+        "20260906161802C34AD3BB295A21CBAFD5"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F09:R6",
+      "caseId": "F09",
+      "fixtureId": "fit-power-dropout-with-heart-rate",
+      "tier": "L3",
+      "repetition": 6,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 12007,
+      "providerRequestIds": [
+        "20260906161814A461D553E8EF23D40A40"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F09:R7",
+      "caseId": "F09",
+      "fixtureId": "fit-power-dropout-with-heart-rate",
+      "tier": "L3",
+      "repetition": 7,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 10764,
+      "providerRequestIds": [
+        "20260906161826557556F9117ADB853098"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F09:R8",
+      "caseId": "F09",
+      "fixtureId": "fit-power-dropout-with-heart-rate",
+      "tier": "L3",
+      "repetition": 8,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 11434,
+      "providerRequestIds": [
+        "202609061618373523560174AC84FB1C0A"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F09:R9",
+      "caseId": "F09",
+      "fixtureId": "fit-power-dropout-with-heart-rate",
+      "tier": "L3",
+      "repetition": 9,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 12296,
+      "providerRequestIds": [
+        "2026090616184837A7A8D39101FDC3288E"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    }
+  ]
+}

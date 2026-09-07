@@ -3,7 +3,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
-import type { ServerEnvironment } from "../src/ai/coze-workflow-client.ts";
+import type { ServerEnvironment } from "../src/ai/coze-workflow-error.ts";
 import {
   RideInterpretationCozeClientV04Candidate,
   readRideInterpretationCozeConfigV04Candidate,

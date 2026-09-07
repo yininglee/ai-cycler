@@ -2,16 +2,17 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 
-const prompt = readFileSync(new URL("../prompts/cycling-buddy-ride-interpretation-v0.4.12-candidate.md", import.meta.url), "utf8");
+const prompt = readFileSync(new URL("../prompts/cycling-buddy-ride-interpretation-v0.4.14-candidate.md", import.meta.url), "utf8");
 
-test("v0.4 candidate prompt is isolated from the production Coze prompt and fixes the four semantic layers", () => {
+test("v0.4 candidate prompt is isolated from the production Coze prompt and fixes the three narrative layers", () => {
   assert.match(prompt, /状态：`OFFLINE_CANDIDATE`/);
   assert.match(prompt, /ride-interpretation-input-v0\.4-candidate/);
   assert.match(prompt, /ride-interpretation-output-v0\.4\.2-candidate/);
   assert.match(prompt, /自然语言/);
   assert.match(prompt, /highlights/);
   assert.match(prompt, /一次受限修复与用户输入提示词/);
-  assert.match(prompt, /事实→本次骑行表现→体现\/反映的骑行能力→用户意义/);
+  assert.match(prompt, /事实→本次骑行表现→体现\/反映的骑行能力/);
+  assert.doesNotMatch(prompt, /用户意义/);
   assert.match(prompt, /同一扣子大模型入口最多调用两次/);
   assert.match(prompt, /首轮使用 `ride_interp_input`/);
   assert.match(prompt, /L8 失败才允许一次修复/);
@@ -43,6 +44,11 @@ test("v0.4 candidate prompt retains Claim, numeric, visual, history, and action 
     "repair_instruction`、`previous_output` 为空",
     "固定给一条下一步建议",
     "高光仍可概括某个维度，但统一挂在整体评价下",
+    "整体评价和任何维度解读中不得出现任何行动建议、行动引导或行动清单",
+    "所有建议只能写在 nextAction",
+    "失败反例 1",
+    "失败反例 2",
+    "合规样例 1",
   ]) {
     assert.ok(prompt.includes(expected), `Prompt must contain: ${expected}`);
   }

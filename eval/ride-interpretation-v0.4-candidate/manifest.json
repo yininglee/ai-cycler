@@ -6,7 +6,7 @@
   "candidate": {
     "inputVersion": "ride-interpretation-input-v0.4-candidate",
     "outputVersion": "ride-interpretation-output-v0.4.2-candidate",
-    "promptVersion": "cycling-buddy-ride-interpretation-v0.4.12-candidate",
+    "promptVersion": "cycling-buddy-ride-interpretation-v0.4.14-candidate",
     "wireSchemaVersion": "ride-interpretation-output-v0.4.2-candidate",
     "productionBaseline": {
       "promptVersion": "3.1.6",
@@ -16,12 +16,12 @@
     }
   },
   "sourceFiles": [
-    { "path": "prompts/cycling-buddy-ride-interpretation-v0.4.12-candidate.md", "sha256": "3bc434e87b4b36476fcd91dbd9a85cf7a85cf0a968f9ee0f91ffd4f97eeb42a0" },
-    { "path": "coze/ride_interpretation_v04_candidate-配置指南.md", "sha256": "e4774a1849e8548c84fd8f07b8a9d5cefd50b5b98422b83541f378e214578e98" },
+    { "path": "prompts/cycling-buddy-ride-interpretation-v0.4.14-candidate.md", "sha256": "1467095b53d3b19be477e7d7acbfabed56950edc8502c02f8dd808de78f775c3" },
+    { "path": "coze/ride_interpretation_v04_candidate-配置指南.md", "sha256": "c165dc4bc19cd4b4b1a7a6ee4a6f04e45014535a79ac8436d8b0bf7d943be1a7" },
     { "path": "coze/ride-interpretation-output-v04-candidate-schema.json", "sha256": "ab0c17dc2e99306d935b3ca88eaa7b0009c498c95294041d350e139322ef3d01" },
     { "path": "coze/ride-interpretation-output-v04-candidate-example.json", "sha256": "5ae1de2dc865be9e1badc5a635dbcd8f9d20b7e46ba199d9b32e2056db8c1584" },
     { "path": "eval/ride-interpretation-v0.4-candidate/fixtures.json", "sha256": "45bddc119cca275c3d67933e280253841634c50480499343f8fc85f90ca9ef12" },
-    { "path": "eval/ride-interpretation-v0.4-candidate/response-fixtures.json", "sha256": "cd2ba8fe670eca312c4279038d4c50ed5ff7abae03153d4be62dff9469c9e445" },
+    { "path": "eval/ride-interpretation-v0.4-candidate/response-fixtures.json", "sha256": "ce78a213950719b38eb7a604ce2bbcffeb92b9f443e21fdc6c35338fdb4a4371" },
     { "path": "output/ride-interpretation-v0.4-candidate/prompt-input-l3.json", "sha256": "8515621931d36a6cb5d136aad54dfc60778546fd8e7782f9ad644a83cd71570d" }
   ],
   "offlineChecks": {

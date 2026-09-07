@@ -6,7 +6,7 @@ import { performance } from "node:perf_hooks";
 import {
   CozeWorkflowError,
   type ServerEnvironment,
-} from "../src/ai/coze-workflow-client.ts";
+} from "../src/ai/coze-workflow-error.ts";
 import {
   RideInterpretationCozeClientV04Candidate,
   readRideInterpretationCozeConfigV04Candidate,
@@ -23,12 +23,12 @@ import { createUserProfile } from "../src/domain/user-profile.ts";
 import { getRideFixture } from "../src/fixtures/rides.ts";
 
 const ROOT = process.cwd();
-const PROMPT_VERSION = "v0.4.12";
+const PROMPT_VERSION = "v0.4.14";
 const OUTPUT_CONTRACT_VERSION = "ride-interpretation-output-v0.4.2-candidate";
 const CANDIDATE_WORKFLOW = {
   name: "ride_analysis_v3",
   id: "7680762018618359814",
-  version: "v0.0.9",
+  version: "v0.0.11",
   modelId: "豆包·2.0·lite",
 } as const;
 

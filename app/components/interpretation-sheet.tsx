@@ -1,0 +1,81 @@
+"use client";
+
+import { useEffect } from "react";
+
+import { InterpretationView } from "./interpretation-view";
+
+/**
+ * Bottom-sheet drawer for the AI ride interpretation.
+ *
+ * Pure component: mounted/unmounted by the caller (`RideAiAnalysis`) based on
+ * local state — no route involved. Renders `InterpretationView` inside a
+ * fixed-position sheet that slides up from the bottom on mobile and centers
+ * as a modal on desktop. Closes via the X button, the backdrop, or the ESC
+ * key (all funnel into `onClose`). Body scroll is locked while open.
+ */
+export function InterpretationSheet({
+  rideId,
+  title,
+  dateLabel,
+  onClose,
+}: {
+  rideId: string;
+  title: string;
+  dateLabel?: string;
+  onClose: () => void;
+}) {
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        onClose();
+      }
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    const previousPaddingRight = document.body.style.paddingRight;
+    const scrollbarGap = window.innerWidth - document.documentElement.clientWidth;
+    document.body.style.overflow = "hidden";
+    if (scrollbarGap > 0) document.body.style.paddingRight = `${scrollbarGap}px`;
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.body.style.paddingRight = previousPaddingRight;
+    };
+  }, []);
+
+  return (
+    <div
+      className="interpretation-sheet-backdrop"
+      onClick={onClose}
+      role="presentation"
+    >
+      <div
+        className="interpretation-sheet"
+        role="dialog"
+        aria-modal="true"
+        aria-label="AI 骑行解读"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <header className="interpretation-sheet-header">
+          <span className="interpretation-sheet-handle" aria-hidden="true" />
+          <p className="kicker interpretation-sheet-kicker">RIDE INSIGHT</p>
+          <button
+            type="button"
+            className="interpretation-sheet-close"
+            onClick={onClose}
+            aria-label="关闭 AI 解读"
+          >
+            ×
+          </button>
+        </header>
+        <div className="interpretation-sheet-body">
+          <InterpretationView rideId={rideId} title={title} dateLabel={dateLabel} />
+        </div>
+      </div>
+    </div>
+  );
+}

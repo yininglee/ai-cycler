@@ -28,6 +28,17 @@ function inputFor(softPowerGap = false) {
   return input;
 }
 
+function inputForFixture(fixtureId: string) {
+  const fixture = getRideFixture(fixtureId);
+  const record = { activity: structuredClone(fixture.activity), series: structuredClone(fixture.series) };
+  const profile = createUserProfile({ age: 35, maxHeartRateBpm: 188, weightKg: 70, ftpWatts: 240 }, NOW);
+  const context = buildRideAnalysisContext(record, { profile });
+  const plan = buildRideInterpretationPlan(context, buildAnalysisEligibility(context));
+  const input = projectRideInterpretationInputV04Candidate(context, plan);
+  assert.ok(input);
+  return input;
+}
+
 test("candidate output fixture mirrors the selected L7 plan", () => {
   const input = inputFor();
   const output = buildRideInterpretationOutputV04CandidateFixture(input);
@@ -160,6 +171,47 @@ test("candidate output validates each semantic layer against its own Claim bound
   longTermCapability.overallAssessment.text = "你具备较强的长期骑行能力。";
   assert.ok(validateRideInterpretationOutputV04Candidate(longTermCapability, input).issues.includes("OVERALL_LONG_TERM_CAPABILITY_LANGUAGE"));
 
+  const cautiousLongTermReference = structuredClone(output);
+  cautiousLongTermReference.overallAssessment.text = "本次可作为后续骑行能力观察的一次参考。";
+  assert.deepEqual(validateRideInterpretationOutputV04Candidate(cautiousLongTermReference, input), { valid: true, issues: [] });
+
+  const actionInOverall = structuredClone(output);
+  actionInOverall.overallAssessment.text = "建议下次继续记录本次体感变化。";
+  assert.ok(validateRideInterpretationOutputV04Candidate(actionInOverall, input).issues.includes("OVERALL_ACTION_LANGUAGE_NOT_ALLOWED"));
+
+  const actionInDimension = structuredClone(output);
+  actionInDimension.dimensions[0]!.text = "建议下次继续观察这一维度的变化。";
+  assert.ok(validateRideInterpretationOutputV04Candidate(actionInDimension, input).issues.includes("DIMENSION_power_output_ACTION_LANGUAGE_NOT_ALLOWED"));
+
+  const commonSenseActionInOverall = structuredClone(output);
+  commonSenseActionInOverall.overallAssessment.text = "本次记录显示后程心率偏高，建议骑后适当休息并补水。";
+  assert.ok(validateRideInterpretationOutputV04Candidate(commonSenseActionInOverall, input).issues.includes("OVERALL_ACTION_LANGUAGE_NOT_ALLOWED"));
+
+  const commonSenseActionInDimension = structuredClone(output);
+  commonSenseActionInDimension.dimensions[0]!.text = "该维度后程波动较大，建议下次留意体感并适当调整节奏。";
+  assert.ok(validateRideInterpretationOutputV04Candidate(commonSenseActionInDimension, input).issues.includes("DIMENSION_power_output_ACTION_LANGUAGE_NOT_ALLOWED"));
+
+  const commonSenseMonitoringAction = structuredClone(output);
+  commonSenseMonitoringAction.overallAssessment.text = "本次心率变化值得关注，建议下次查看体感并按需调整节奏。";
+  assert.ok(validateRideInterpretationOutputV04Candidate(commonSenseMonitoringAction, input).issues.includes("OVERALL_ACTION_LANGUAGE_NOT_ALLOWED"));
+
+  const unsafeActionInOverall = structuredClone(output);
+  unsafeActionInOverall.overallAssessment.text = "建议下次增加高强度训练安排。";
+  assert.ok(validateRideInterpretationOutputV04Candidate(unsafeActionInOverall, input).issues.includes("OVERALL_ACTION_LANGUAGE_NOT_ALLOWED"));
+
+  const implicitUnsafeActionInOverall = structuredClone(output);
+  implicitUnsafeActionInOverall.overallAssessment.text = "安排间歇训练以提升能力。";
+  assert.ok(validateRideInterpretationOutputV04Candidate(implicitUnsafeActionInOverall, input).issues.includes("OVERALL_ACTION_LANGUAGE_NOT_ALLOWED"));
+
+  const longTermCapabilityInHighlight = structuredClone(output);
+  longTermCapabilityInHighlight.highlights = [{
+    text: "可作为后续骑行能力观察的一次参考。",
+    claimIds: [longTermCapabilityInHighlight.overallAssessment.claimIds[0]!],
+    visualRefIds: [],
+    target: { kind: "overall" },
+  }];
+  assert.ok(validateRideInterpretationOutputV04Candidate(longTermCapabilityInHighlight, input).issues.includes("HIGHLIGHT_0_LONG_TERM_CAPABILITY_LANGUAGE"));
+
   const causalInference = structuredClone(output);
   causalInference.dimensions[0]!.text = "因为该维度变化，所以表现发生变化。";
   assert.ok(validateRideInterpretationOutputV04Candidate(causalInference, input).issues.includes("DIMENSION_power_output_UNSUPPORTED_CAUSALITY"));
@@ -167,6 +219,16 @@ test("candidate output validates each semantic layer against its own Claim bound
   const dataCompleteness = structuredClone(output);
   dataCompleteness.dimensions[0]!.text = "数据记录完整，因此可作为结论。";
   assert.ok(validateRideInterpretationOutputV04Candidate(dataCompleteness, input).issues.includes("DIMENSION_power_output_DATA_COMPLETENESS_EVALUATION"));
+
+});
+
+test("candidate rejects terrain data-completeness wording", () => {
+  const input = inputForFixture("l2-fit-heart-rate");
+  const output = buildRideInterpretationOutputV04CandidateFixture(input);
+  const terrainDimension = output.dimensions.find((dimension) => dimension.dimensionId === "terrain_climb");
+  if (!terrainDimension) return;
+  terrainDimension.text = "爬坡数据完整，说明本次路线记录充分。";
+  assert.ok(validateRideInterpretationOutputV04Candidate(output, input).issues.includes("DIMENSION_terrain_climb_DATA_COMPLETENESS_EVALUATION"));
 });
 
 test("one-line labels allow traceable numbers and fall back to factual wording without performance evidence", () => {

@@ -1,10 +1,12 @@
 # v0.4 候选骑后解读 Coze 配置指南
 
-状态：`CANDIDATE_SMOKE_REVIEW`  
-适用 Prompt：`cycling-buddy-ride-interpretation-v0.4.12-candidate`  
+状态：`CANDIDATE_REVIEW`
+已发布适用版本：`ride_analysis_v3 v0.0.11 / cycling-buddy-ride-interpretation-v0.4.14-candidate`
 输出合同：`ride-interpretation-output-v0.4.2-candidate`
 
 本指南只用于独立候选 Workflow 的迁移核对，不修改生产 `ride_analysis_v2 v0.0.9`，不接持久历史，不执行正式测评。
+
+2026-09-05 `FIX-016` 已发布更新：独立候选 `ride_analysis_v3` 已发布为 `v0.0.11 / Prompt v0.4.14`。`overallAssessment.text` 和 `dimensions[].text` 只写事实→本次骑行表现→体现/反映的骑行能力，不得出现任何行动建议或行动引导；所有建议只能写在 `nextAction.text`。下文关于 `v0.0.9 / Prompt v0.4.12` 的已发布冒烟记录是历史证据，不代表 v0.4.14 的真实诊断或冒烟已完成。
 
 本版 Prompt `v0.4.12` 延续标签规则，并将高光归属简化为整体评价：高光统一使用 `{kind:"overall"}`，仍可概括任意已选维度，但只能复用整体评价已引用的 Claim/图表。高光文字出现数字时，该数字必须由同一条计划内 Candidate Claim 同时支撑高光自身 `claimIds` 和整体评价 `claimIds`；不能同时满足时，删掉数字，必要时删掉整条高光。修复指令会先补齐整体评价中已开放的同一 Claim，再让高光复用；无法合法补齐时不得只删 Claim ID 而保留数字。禁止输出 `dimension`、`dimensionId` 或其他归属类型。输出合同版本、L8 校验、修复次数和生产链路均不变。
 

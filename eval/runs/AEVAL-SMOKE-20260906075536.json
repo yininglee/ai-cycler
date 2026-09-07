@@ -1,0 +1,94 @@
+{
+  "schemaVersion": "ride-interpretation-candidate-smoke-run-v0.1",
+  "runId": "AEVAL-SMOKE-20260906075536",
+  "workflow": {
+    "name": "ride_analysis_v3",
+    "id": "7680762018618359814",
+    "version": "v0.0.11",
+    "modelId": "豆包·2.0·lite"
+  },
+  "promptVersion": "v0.4.14",
+  "outputContractVersion": "ride-interpretation-output-v0.4.2-candidate",
+  "scope": "restricted_smoke_only",
+  "rawOutputsStored": false,
+  "status": "complete",
+  "passed": true,
+  "results": [
+    {
+      "label": "L1",
+      "fixtureId": "l1-built-in-sample",
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 12073.795,
+      "providerRequestIds": [
+        "2026090615553659BD0F206DE5A9CEC014"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "label": "L2",
+      "fixtureId": "l2-built-in-sample",
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 9625.329,
+      "providerRequestIds": [
+        "202609061555489006DAF39CFB6985691D"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "label": "L3",
+      "fixtureId": "l3-power-preview",
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 9949.176,
+      "providerRequestIds": [
+        "202609061555599276C36774D479E5203C"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "label": "L3-repair",
+      "fixtureId": "l3-power-preview",
+      "outcome": "success",
+      "source": "injected_first_l8_failure_then_real_repair",
+      "attempts": 2,
+      "repairTriggered": true,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 8349.675,
+      "providerRequestIds": [
+        "20260906155609A9B171EDAB6D12BF87AE"
+      ],
+      "tokenUsage": "NOT_OBSERVABLE",
+      "validation": {
+        "valid": true,
+        "issues": [
+          "INVALID_OUTPUT_SCHEMA_VERSION"
+        ]
+      },
+      "injectedFirstFailure": "INVALID_OUTPUT_SCHEMA_VERSION"
+    }
+  ]
+}

@@ -13,6 +13,20 @@ import { buildRideAnalysisContext } from "../../../src/domain/ride-analysis-cont
 import { createUserProfile } from "../../../src/domain/user-profile";
 import { getRideFixture } from "../../../src/fixtures/rides";
 
+/* INTERPRETATION-PREVIEW-FIXTURE-MARKER-DO-NOT-REMOVE */
+/**
+ * Developer demonstration page (OFFLINE CANDIDATE · V0.4.2).
+ *
+ * Renders the v0.4 candidate chain against a built-in fixture (`l3-power-preview`)
+ * for visual inspection. NOT a production route — driven by `buildRideInterpretationOutputV04CandidateFixture`
+ * with zero network/Provider calls. The production long page lives at
+ * `/rides/[id]/interpretation` and consumes `/api/ride-analysis` via the
+ * `InterpretationView` client component.
+ *
+ * Keep this page in sync with `InterpretationView` rendering structure and
+ * `app/globals.css` `candidate-preview-*` rules so both routes share the same
+ * shell and density. Source of truth: `骑后解读规则重构设计.md` §6.1 + IMPL-010.
+ */
 const DIMENSION_LABELS: Record<string, string> = {
   route_pacing: "沿途节奏",
   terrain_climb: "地形与爬坡",
@@ -33,7 +47,10 @@ function buildCandidate() {
   if (!input) throw new Error("Candidate preview fixture did not produce an input");
   const output = buildRideInterpretationOutputV04CandidateFixture(input);
   const presentation = assembleRideInterpretationPresentationV04Candidate(output, input);
-  const viewModel = buildRideInterpretationPresentationViewModelV04Candidate(record, presentation);
+  const viewModel = buildRideInterpretationPresentationViewModelV04Candidate(record, presentation, {
+    mode: plan.mode,
+    eligibleDimensionIds: plan.eligibleDimensionIds,
+  });
   return { output, presentation, viewModel };
 }
 

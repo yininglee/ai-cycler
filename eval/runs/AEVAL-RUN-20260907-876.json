@@ -1,0 +1,853 @@
+{
+  "schemaVersion": "ride-interpretation-blind-review-pack-run-v0.1",
+  "benchmark": "AEVAL-M1-RIDE-INTERPRETATION-V04-BLIND-REVIEW",
+  "reviewId": "T002-V04",
+  "reviewVersion": "v0.1",
+  "runId": "AEVAL-RUN-20260907-876",
+  "planFile": "formal-stability-plan-v0.16.json",
+  "planSha256": "8653af8691411980858591e82aa083b02b6e8f4bb071a4aa70575c69c717702f",
+  "workflow": {
+    "name": "ride_analysis_v3",
+    "id": "7680762018618359814",
+    "version": "v0.0.11",
+    "modelId": "豆包·2.0·lite"
+  },
+  "versionMatrix": {
+    "workflowName": "ride_analysis_v3",
+    "workflowId": "7680762018618359814",
+    "workflowVersion": "v0.0.11",
+    "modelId": "豆包·2.0·lite",
+    "promptVersion": "v0.4.14",
+    "inputContractVersion": "ride-interpretation-input-v0.4-candidate",
+    "outputContractVersion": "ride-interpretation-output-v0.4.2-candidate"
+  },
+  "rawOutputsStored": true,
+  "candidateInputsStored": false,
+  "tokenUsageStored": false,
+  "status": "complete",
+  "authorization": {
+    "slots": 9,
+    "scope": "9 frozen de-identified candidate inputs, one call each, outputs stored verbatim for blind review",
+    "authorizedBy": "user"
+  },
+  "summary": {
+    "executedCases": 9,
+    "successCount": 9,
+    "b0Count": 0,
+    "p50Ms": 15202,
+    "maxMs": 16582
+  },
+  "results": [
+    {
+      "caseId": "F01",
+      "fixtureId": "l1-built-in-sample",
+      "tier": "L1",
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "latencyMs": 15320,
+      "validation": {
+        "valid": true,
+        "issues": []
+      },
+      "outputSha256": "f8a6d3d67a507b33c9f03cd8cc4830bb85214372ea560a51ecf70ffd05df4878",
+      "output": {
+        "dimensions": [
+          {
+            "claimIds": [
+              "candidate:route_pacing:fact",
+              "candidate:route_pacing:performance"
+            ],
+            "dimensionId": "route_pacing",
+            "text": "本次骑行路程为25公里，平均速度为25km/h，速度输出符合本次骑行规划，反映出本次推进节奏稳定，体现出对当前输出的把控。",
+            "visualRefIds": [
+              "visual:series:speed"
+            ]
+          },
+          {
+            "claimIds": [
+              "candidate:terrain_climb:fact",
+              "candidate:terrain_climb:performance"
+            ],
+            "dimensionId": "terrain_climb",
+            "text": "本次骑行累计正向爬升为260米，爬升过程完成顺畅，反映出本次骑行对爬坡路段的推进稳定，体现出过程中的爬坡输出保持连贯。",
+            "visualRefIds": [
+              "visual:series:elevation"
+            ]
+          },
+          {
+            "claimIds": [
+              "candidate:pacing_stability:fact",
+              "candidate:pacing_stability:performance"
+            ],
+            "dimensionId": "pacing_stability",
+            "text": "本次骑行速度标准差为2.75km/h，波动幅度较小，说明本次骑行配速变化不大，反映出配速调节连贯，体现出对整体骑行节奏的稳定控制。",
+            "visualRefIds": [
+              "visual:series:speed"
+            ]
+          }
+        ],
+        "highlights": [
+          {
+            "claimIds": [
+              "candidate:route_pacing:performance"
+            ],
+            "target": {
+              "kind": "overall"
+            },
+            "text": "本次全程平均速度达到25km/h，输出保持连贯，配速控制表现突出",
+            "visualRefIds": [
+              "visual:series:speed"
+            ]
+          }
+        ],
+        "limitations": [],
+        "nextAction": {
+          "basisClaimIds": [],
+          "kind": "general",
+          "text": "建议骑后充分休息，关注自身体感，做好拉伸放松。"
+        },
+        "oneLineLabel": {
+          "claimIds": [
+            "candidate:route_pacing:performance",
+            "candidate:pacing_stability:performance"
+          ],
+          "text": "稳定匀速骑行"
+        },
+        "overallAssessment": {
+          "claimIds": [
+            "candidate:route_pacing:fact",
+            "candidate:route_pacing:performance",
+            "candidate:pacing_stability:performance"
+          ],
+          "text": "本次骑行完成25公里路程，平均速度保持在25km/h，速度波动较小，反映出本次骑行节奏平稳，体现出对当前骑行速度的稳定把控。",
+          "visualRefIds": [
+            "visual:series:speed"
+          ]
+        },
+        "schemaVersion": "ride-interpretation-output-v0.4.2-candidate"
+      }
+    },
+    {
+      "caseId": "F02",
+      "fixtureId": "l1-gpx-normal",
+      "tier": "L1",
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "latencyMs": 15968,
+      "validation": {
+        "valid": true,
+        "issues": []
+      },
+      "outputSha256": "1b131bc428a2e78f52677ffc88590d2d9296d1d448913fd9a8971aaace5e2279",
+      "output": {
+        "dimensions": [
+          {
+            "claimIds": [
+              "candidate:route_pacing:fact",
+              "candidate:route_pacing:performance"
+            ],
+            "dimensionId": "route_pacing",
+            "text": "本次骑行里程为35.2公里，平均速度达到25.76km/h，反映出本次骑行的推进状态连贯，体现出对当前配速的良好把控。",
+            "visualRefIds": [
+              "visual:series:speed"
+            ]
+          },
+          {
+            "claimIds": [
+              "candidate:terrain_climb:fact",
+              "candidate:terrain_climb:performance"
+            ],
+            "dimensionId": "terrain_climb",
+            "text": "本次骑行累计爬升386米，正爬升量为386米，反映出本次完成了对应爬升量的骑行过程，体现出完成当前爬升的输出能力。",
+            "visualRefIds": [
+              "visual:series:elevation"
+            ]
+          },
+          {
+            "claimIds": [
+              "candidate:pacing_stability:fact",
+              "candidate:pacing_stability:performance"
+            ],
+            "dimensionId": "pacing_stability",
+            "text": "本次骑行速度标准差为2.83km/h，波动幅度较小，反映出本次骑行过程中配速变化平缓，体现出本次骑行的节奏控制较为稳定。",
+            "visualRefIds": [
+              "visual:series:speed"
+            ]
+          }
+        ],
+        "highlights": [
+          {
+            "claimIds": [
+              "candidate:pacing_stability:performance"
+            ],
+            "target": {
+              "kind": "overall"
+            },
+            "text": "全程配速波动小，节奏保持稳定",
+            "visualRefIds": [
+              "visual:series:speed"
+            ]
+          },
+          {
+            "claimIds": [
+              "candidate:route_pacing:performance"
+            ],
+            "target": {
+              "kind": "overall"
+            },
+            "text": "平均速度保持25.76km/h，推进状态连贯",
+            "visualRefIds": [
+              "visual:series:speed"
+            ]
+          }
+        ],
+        "limitations": [],
+        "nextAction": {
+          "basisClaimIds": [],
+          "kind": "general",
+          "text": "骑后注意充分拉伸休息，补充水分和能量。"
+        },
+        "oneLineLabel": {
+          "claimIds": [
+            "candidate:route_pacing:performance",
+            "candidate:pacing_stability:performance"
+          ],
+          "text": "节奏稳定推进"
+        },
+        "overallAssessment": {
+          "claimIds": [
+            "candidate:route_pacing:fact",
+            "candidate:route_pacing:performance",
+            "candidate:pacing_stability:performance"
+          ],
+          "text": "本次骑行记录35.2公里，平均速度25.76km/h，速度波动较小，反映出本次骑行节奏把控较好，体现出对当前骑行速度的稳定控制能力。",
+          "visualRefIds": [
+            "visual:series:speed"
+          ]
+        },
+        "schemaVersion": "ride-interpretation-output-v0.4.2-candidate"
+      }
+    },
+    {
+      "caseId": "F03",
+      "fixtureId": "l1-gps-spike",
+      "tier": "L1",
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "latencyMs": 8940,
+      "validation": {
+        "valid": true,
+        "issues": []
+      },
+      "outputSha256": "434571ef10be01452ef25d50667364b125324899aa6473de9e4a2803a10e4b0b",
+      "output": {
+        "dimensions": [
+          {
+            "claimIds": [
+              "candidate:route_pacing:fact",
+              "candidate:route_pacing:performance"
+            ],
+            "dimensionId": "route_pacing",
+            "text": "本次骑行记录距离较短，总均速为0.5km/h，反映出本次骑行整体行进节奏偏慢，体现出本次骑行偏向缓慢的行进状态。",
+            "visualRefIds": [
+              "visual:series:speed"
+            ]
+          },
+          {
+            "claimIds": [
+              "candidate:terrain_climb:fact",
+              "candidate:terrain_climb:performance"
+            ],
+            "dimensionId": "terrain_climb",
+            "text": "本次骑行记录的正爬升量为0米，说明本次骑行过程中没有累计正向爬升，反映出本次骑行地形相对平坦，体现出本次骑行过程中不存在持续上坡的行进表现。",
+            "visualRefIds": [
+              "visual:series:elevation"
+            ]
+          }
+        ],
+        "highlights": [],
+        "limitations": [],
+        "nextAction": {
+          "basisClaimIds": [],
+          "kind": "general",
+          "text": "骑后注意充分休息，整理本次骑行记录。"
+        },
+        "oneLineLabel": {
+          "claimIds": [
+            "candidate:route_pacing:fact"
+          ],
+          "text": "本次短距离骑行"
+        },
+        "overallAssessment": {
+          "claimIds": [
+            "candidate:route_pacing:fact",
+            "candidate:route_pacing:performance"
+          ],
+          "text": "本次骑行的记录距离较短，总均速较低，整体呈现短距离慢骑的状态，反映出本次骑行过程中推进节奏较慢，体现出本次骑行过程中偏缓慢的行进状态。",
+          "visualRefIds": [
+            "visual:series:speed"
+          ]
+        },
+        "schemaVersion": "ride-interpretation-output-v0.4.2-candidate"
+      }
+    },
+    {
+      "caseId": "F04",
+      "fixtureId": "l2-built-in-sample",
+      "tier": "L2",
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "latencyMs": 16582,
+      "validation": {
+        "valid": true,
+        "issues": []
+      },
+      "outputSha256": "a614e845561ba6fdbf0afefe609bf8acbe3c912153aa88408ec169dc3e1e9266",
+      "output": {
+        "dimensions": [
+          {
+            "claimIds": [
+              "candidate:heart_rate:fact",
+              "candidate:heart_rate:performance"
+            ],
+            "dimensionId": "heart_rate",
+            "text": "本次平均心率为145bpm，全程心率均值稳定，变化幅度平缓，说明本次骑行过程中心率状态稳定，反映出对骑行强度的把控较为平稳。",
+            "visualRefIds": [
+              "visual:series:heart_rate"
+            ]
+          },
+          {
+            "claimIds": [
+              "candidate:route_pacing:fact",
+              "candidate:route_pacing:performance"
+            ],
+            "dimensionId": "route_pacing",
+            "text": "本次骑行完成35公里路程，平均速度达到26.25km/h，速度全程保持连贯均匀，反映出本次骑行的节奏控制较好，体现出稳定的推进状态。",
+            "visualRefIds": [
+              "visual:series:speed"
+            ]
+          },
+          {
+            "claimIds": [
+              "candidate:terrain_climb:fact",
+              "candidate:terrain_climb:performance"
+            ],
+            "dimensionId": "terrain_climb",
+            "text": "本次骑行累计爬升410米，爬升过程完成稳定，反映出本次骑行过程中应对地形变化的输出保持连贯，体现出持续爬坡的状态平稳。",
+            "visualRefIds": [
+              "visual:series:elevation"
+            ]
+          }
+        ],
+        "highlights": [
+          {
+            "claimIds": [
+              "candidate:heart_rate:performance"
+            ],
+            "target": {
+              "kind": "overall"
+            },
+            "text": "全程心率状态稳定，和骑行强度匹配度较好，是本次骑行的突出表现。",
+            "visualRefIds": [
+              "visual:series:heart_rate"
+            ]
+          }
+        ],
+        "limitations": [],
+        "nextAction": {
+          "basisClaimIds": [],
+          "kind": "general",
+          "text": "骑后注意充分拉伸放松，及时补充水分和能量。"
+        },
+        "oneLineLabel": {
+          "claimIds": [
+            "candidate:heart_rate:performance",
+            "candidate:route_pacing:performance"
+          ],
+          "text": "节奏稳定推进"
+        },
+        "overallAssessment": {
+          "claimIds": [
+            "candidate:heart_rate:fact",
+            "candidate:heart_rate:performance",
+            "candidate:route_pacing:fact",
+            "candidate:route_pacing:performance",
+            "candidate:terrain_climb:fact",
+            "candidate:terrain_climb:performance",
+            "candidate:terrain_climb:capability_evidence"
+          ],
+          "text": "本次骑行平均心率145bpm，心率整体保持平稳，配速输出连贯，完成35公里骑行与410米爬升，呈现出对当前骑行状态的稳定把控。",
+          "visualRefIds": [
+            "visual:series:heart_rate"
+          ]
+        },
+        "schemaVersion": "ride-interpretation-output-v0.4.2-candidate"
+      }
+    },
+    {
+      "caseId": "F05",
+      "fixtureId": "l2-fit-heart-rate",
+      "tier": "L2",
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "latencyMs": 15202,
+      "validation": {
+        "valid": true,
+        "issues": []
+      },
+      "outputSha256": "0c117407d0ee49a8c9655efa6918aefb8c4d30528733a8451fc1d73ca74ca6a9",
+      "output": {
+        "dimensions": [
+          {
+            "claimIds": [
+              "candidate:heart_rate:fact",
+              "candidate:heart_rate:performance"
+            ],
+            "dimensionId": "heart_rate",
+            "text": "平均心率 146 bpm；心率序列均值 147.73 bpm。",
+            "visualRefIds": [
+              "visual:series:heart_rate"
+            ]
+          },
+          {
+            "claimIds": [
+              "candidate:route_pacing:fact",
+              "candidate:route_pacing:performance"
+            ],
+            "dimensionId": "route_pacing",
+            "text": "本次骑行记录距离为42km，平均速度为25.2km/h，说明本次骑行维持了稳定的平均配速推进，反映出本次骑行节奏连贯，体现出本次骑行的配速保持能力。",
+            "visualRefIds": [
+              "visual:series:speed"
+            ]
+          },
+          {
+            "claimIds": [
+              "candidate:terrain_climb:fact",
+              "candidate:terrain_climb:performance"
+            ],
+            "dimensionId": "terrain_climb",
+            "text": "本次骑行累计爬升为520m，正向爬升统计结果一致，说明本次骑行过程中爬升积累符合路线地形特征，反映出本次骑行爬升过程输出持续，体现出本次骑行对地形变化的持续推进表现。",
+            "visualRefIds": [
+              "visual:series:elevation"
+            ]
+          }
+        ],
+        "highlights": [
+          {
+            "claimIds": [
+              "candidate:route_pacing:fact",
+              "candidate:route_pacing:performance"
+            ],
+            "target": {
+              "kind": "overall"
+            },
+            "text": "完成42km骑行，平均配速保持稳定",
+            "visualRefIds": []
+          }
+        ],
+        "limitations": [],
+        "nextAction": {
+          "basisClaimIds": [],
+          "kind": "general",
+          "text": "骑后做好拉伸放松，注意休息恢复"
+        },
+        "oneLineLabel": {
+          "claimIds": [
+            "candidate:heart_rate:performance"
+          ],
+          "text": "心率稳定"
+        },
+        "overallAssessment": {
+          "claimIds": [
+            "candidate:heart_rate:fact",
+            "candidate:heart_rate:performance",
+            "candidate:heart_rate:capability_evidence",
+            "candidate:route_pacing:fact",
+            "candidate:route_pacing:performance"
+          ],
+          "text": "平均心率 146 bpm；心率序列均值 147.73 bpm；距离 42 km；速度序列均值 25.2 km/h。",
+          "visualRefIds": [
+            "visual:series:heart_rate"
+          ]
+        },
+        "schemaVersion": "ride-interpretation-output-v0.4.2-candidate"
+      }
+    },
+    {
+      "caseId": "F06",
+      "fixtureId": "fit-heart-rate-dropout",
+      "tier": "L2",
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "latencyMs": 14640,
+      "validation": {
+        "valid": true,
+        "issues": []
+      },
+      "outputSha256": "69807e2122cdf178000a7450c997fee85fbb4830e65f68d71c71eecf8a95070f",
+      "output": {
+        "dimensions": [
+          {
+            "claimIds": [
+              "candidate:route_pacing:fact",
+              "candidate:route_pacing:performance"
+            ],
+            "dimensionId": "route_pacing",
+            "text": "本次骑行距离为30公里，平均速度为24km/h，这个数据呈现出本次骑行推进节奏连贯，体现出对当前输出的把控较为稳定。",
+            "visualRefIds": [
+              "visual:series:speed"
+            ]
+          },
+          {
+            "claimIds": [
+              "candidate:pacing_stability:fact",
+              "candidate:pacing_stability:performance"
+            ],
+            "dimensionId": "pacing_stability",
+            "text": "本次骑行速度标准差为2.64km/h，较小的波动反映出本次骑行配速稳定性较好，体现出过程中节奏调节较为平稳。",
+            "visualRefIds": [
+              "visual:series:speed"
+            ]
+          }
+        ],
+        "highlights": [
+          {
+            "claimIds": [
+              "candidate:route_pacing:performance"
+            ],
+            "target": {
+              "kind": "overall"
+            },
+            "text": "全程保持平均24km/h的行进速度，节奏把控顺畅",
+            "visualRefIds": [
+              "visual:series:speed"
+            ]
+          },
+          {
+            "claimIds": [
+              "candidate:pacing_stability:performance"
+            ],
+            "target": {
+              "kind": "overall"
+            },
+            "text": "速度波动较低，整体配序稳定性好",
+            "visualRefIds": [
+              "visual:series:speed"
+            ]
+          }
+        ],
+        "limitations": [],
+        "nextAction": {
+          "basisClaimIds": [],
+          "kind": "general",
+          "text": "骑后做好拉伸放松，留意身体恢复状态"
+        },
+        "oneLineLabel": {
+          "claimIds": [
+            "candidate:route_pacing:performance",
+            "candidate:pacing_stability:performance"
+          ],
+          "text": "节奏稳定推进"
+        },
+        "overallAssessment": {
+          "claimIds": [
+            "candidate:route_pacing:fact",
+            "candidate:route_pacing:performance",
+            "candidate:pacing_stability:performance"
+          ],
+          "text": "本次骑行记录距离30公里，平均速度达到24km/h，速度波动较低，整体节奏连贯顺畅，体现出对本次骑行推进节奏的稳定把控。",
+          "visualRefIds": [
+            "visual:series:speed"
+          ]
+        },
+        "schemaVersion": "ride-interpretation-output-v0.4.2-candidate"
+      }
+    },
+    {
+      "caseId": "F07",
+      "fixtureId": "l3-built-in-sample",
+      "tier": "L3",
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "latencyMs": 16253,
+      "validation": {
+        "valid": true,
+        "issues": []
+      },
+      "outputSha256": "a33579d7c96d9a5b6efda70b3ba84d0c91fe3bb64148a145daf2c86508de8987",
+      "output": {
+        "dimensions": [
+          {
+            "claimIds": [
+              "candidate:power_output:fact",
+              "candidate:power_output:performance"
+            ],
+            "dimensionId": "power_output",
+            "text": "本次骑行平均功率为198W，功率输出的序列均值为172.1W，输出过程整体连贯，反映出本次骑行中功率输出节奏稳定，体现出本次骑行过程中对输出的稳定控制。",
+            "visualRefIds": [
+              "visual:series:power"
+            ]
+          },
+          {
+            "claimIds": [
+              "candidate:heart_rate:fact",
+              "candidate:heart_rate:performance"
+            ],
+            "dimensionId": "heart_rate",
+            "text": "本次骑行平均心率为150bpm，心率序列均值为151.73bpm，心率变化过程稳定，反映出本次骑行中心率状态保持平稳，体现出本次骑行过程中身体状态调节稳定。",
+            "visualRefIds": [
+              "visual:series:heart_rate"
+            ]
+          },
+          {
+            "claimIds": [
+              "candidate:route_pacing:fact",
+              "candidate:route_pacing:performance"
+            ],
+            "dimensionId": "route_pacing",
+            "text": "本次骑行记录距离为45km，速度序列均值为25.71km/h，速度变化连贯，反映出本次骑行的配速节奏稳定，体现出本次骑行过程中对推进节奏的较好把控。",
+            "visualRefIds": [
+              "visual:series:speed"
+            ]
+          }
+        ],
+        "highlights": [
+          {
+            "claimIds": [
+              "candidate:power_output:performance"
+            ],
+            "target": {
+              "kind": "overall"
+            },
+            "text": "功率输出全程连贯稳定，体现出较好的输出控制表现",
+            "visualRefIds": [
+              "visual:series:power"
+            ]
+          }
+        ],
+        "limitations": [],
+        "nextAction": {
+          "basisClaimIds": [],
+          "kind": "general",
+          "text": "骑后注意充分拉伸放松，记录本次骑行的体感感受"
+        },
+        "oneLineLabel": {
+          "claimIds": [
+            "candidate:power_output:performance"
+          ],
+          "text": "输出稳定连贯"
+        },
+        "overallAssessment": {
+          "claimIds": [
+            "candidate:power_output:fact",
+            "candidate:power_output:performance",
+            "candidate:power_output:capability_evidence"
+          ],
+          "text": "本次骑行平均功率为198W，功率序列均值为172.1W，整体输出波动平缓，反映出本次骑行的功率控制较好，体现出对当前输出节奏的稳定把控。",
+          "visualRefIds": [
+            "visual:series:power"
+          ]
+        },
+        "schemaVersion": "ride-interpretation-output-v0.4.2-candidate"
+      }
+    },
+    {
+      "caseId": "F08",
+      "fixtureId": "l3-fit-power",
+      "tier": "L3",
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "latencyMs": 15117,
+      "validation": {
+        "valid": true,
+        "issues": []
+      },
+      "outputSha256": "ee83be87ea29bc149e44bf0d141406a0f1b1fc7ce8c0ba4097680ac53daf5c24",
+      "output": {
+        "dimensions": [
+          {
+            "claimIds": [
+              "candidate:power_output:fact",
+              "candidate:power_output:performance"
+            ],
+            "dimensionId": "power_output",
+            "text": "本次骑行平均功率为205瓦，功率序列整体均值稳定，说明本次骑行过程中功率输出保持连贯，反映出对当前输出水平的稳定控制。",
+            "visualRefIds": [
+              "visual:series:power"
+            ]
+          },
+          {
+            "claimIds": [
+              "candidate:heart_rate:fact",
+              "candidate:heart_rate:performance"
+            ],
+            "dimensionId": "heart_rate",
+            "text": "本次骑行平均心率为151bpm，心率序列整体均值稳定，说明本次骑行中心率变化平稳，反映出身体状态保持平稳。",
+            "visualRefIds": [
+              "visual:series:heart_rate"
+            ]
+          },
+          {
+            "claimIds": [
+              "candidate:route_pacing:fact",
+              "candidate:route_pacing:performance"
+            ],
+            "dimensionId": "route_pacing",
+            "text": "本次骑行总距离为50公里，速度序列整体平均为25km/h，说明本次骑行全程速度保持均匀，反映出配速控制稳定。",
+            "visualRefIds": [
+              "visual:series:speed"
+            ]
+          }
+        ],
+        "highlights": [
+          {
+            "claimIds": [
+              "candidate:power_output:performance"
+            ],
+            "target": {
+              "kind": "overall"
+            },
+            "text": "全程功率输出保持稳定连贯，体现出较好的输出控制",
+            "visualRefIds": [
+              "visual:series:power"
+            ]
+          }
+        ],
+        "limitations": [],
+        "nextAction": {
+          "basisClaimIds": [],
+          "kind": "general",
+          "text": "骑后充分拉伸休息，记录本次骑行的体感感受"
+        },
+        "oneLineLabel": {
+          "claimIds": [
+            "candidate:power_output:performance"
+          ],
+          "text": "输出稳定均衡"
+        },
+        "overallAssessment": {
+          "claimIds": [
+            "candidate:power_output:fact",
+            "candidate:power_output:performance",
+            "candidate:route_pacing:fact"
+          ],
+          "text": "本次骑行完成50公里骑行，全程功率输出维持在平均205瓦，功率序列整体均值稳定，反映出本次骑行功率输出连贯，体现了对功率输出的稳定把控。",
+          "visualRefIds": [
+            "visual:series:power"
+          ]
+        },
+        "schemaVersion": "ride-interpretation-output-v0.4.2-candidate"
+      }
+    },
+    {
+      "caseId": "F09",
+      "fixtureId": "fit-power-dropout-with-heart-rate",
+      "tier": "L3",
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "latencyMs": 13636,
+      "validation": {
+        "valid": true,
+        "issues": []
+      },
+      "outputSha256": "f7a037543728635b6e72fcbb1cd22f646ff135695623ed3a34ad73cba659e8de",
+      "output": {
+        "dimensions": [
+          {
+            "claimIds": [
+              "candidate:heart_rate:fact",
+              "candidate:heart_rate:performance"
+            ],
+            "dimensionId": "heart_rate",
+            "text": "本次骑行平均心率记录为149bpm，全程心率平均为150.73bpm，说明本次骑行过程中心率整体维持在平稳区间，体现出本次骑行强度把控较为稳定。",
+            "visualRefIds": [
+              "visual:series:heart_rate"
+            ]
+          },
+          {
+            "claimIds": [
+              "candidate:route_pacing:fact",
+              "candidate:route_pacing:performance"
+            ],
+            "dimensionId": "route_pacing",
+            "text": "本次骑行总距离为38km，平均速度为25.33km/h，体现出本次骑行推进较为连贯，反映出本次骑行节奏保持的整体状态稳定。",
+            "visualRefIds": [
+              "visual:series:speed"
+            ]
+          },
+          {
+            "claimIds": [
+              "candidate:pacing_stability:fact",
+              "candidate:pacing_stability:performance"
+            ],
+            "dimensionId": "pacing_stability",
+            "text": "本次骑行速度标准差为2.78km/h，波动幅度较小，说明配速变化幅度低，反映出本次骑行的节奏维持得较为稳定，体现出对配速的控制较好。",
+            "visualRefIds": [
+              "visual:series:speed"
+            ]
+          }
+        ],
+        "highlights": [
+          {
+            "claimIds": [
+              "candidate:heart_rate:performance"
+            ],
+            "target": {
+              "kind": "overall"
+            },
+            "text": "全程心率状态平稳，强度把控稳定",
+            "visualRefIds": [
+              "visual:series:heart_rate"
+            ]
+          },
+          {
+            "claimIds": [
+              "candidate:pacing_stability:performance"
+            ],
+            "target": {
+              "kind": "overall"
+            },
+            "text": "配速波动幅度小，整体节奏均匀",
+            "visualRefIds": []
+          }
+        ],
+        "limitations": [],
+        "nextAction": {
+          "basisClaimIds": [],
+          "kind": "general",
+          "text": "骑后注意充分休息，记录本次骑行的体感感受。"
+        },
+        "oneLineLabel": {
+          "claimIds": [
+            "candidate:heart_rate:fact"
+          ],
+          "text": "平均心率149bpm"
+        },
+        "overallAssessment": {
+          "claimIds": [
+            "candidate:heart_rate:fact",
+            "candidate:heart_rate:performance",
+            "candidate:route_pacing:fact",
+            "candidate:route_pacing:performance",
+            "candidate:pacing_stability:performance",
+            "candidate:heart_rate:capability_evidence"
+          ],
+          "text": "本次骑行平均心率为149bpm，心率全程平均在150.73bpm，说明本次骑行中心率状态平稳，反映出对当前骑行强度的把控较为稳定。本次骑行距离38公里，平均速度25.33km/h，速度的波动幅度较小，整体节奏均匀。",
+          "visualRefIds": [
+            "visual:series:heart_rate"
+          ]
+        },
+        "schemaVersion": "ride-interpretation-output-v0.4.2-candidate"
+      }
+    }
+  ]
+}

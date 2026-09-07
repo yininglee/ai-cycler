@@ -70,3 +70,41 @@ test("ride-analysis route can analyze a record imported into the local demo stor
     else process.env.AI_ANALYSIS_ENABLED = previous;
   }
 });
+
+test("ride-analysis route reaches the v0.4 candidate chain and reports its version matrix", async () => {
+  const previousEnabled = process.env.AI_ANALYSIS_ENABLED;
+  const trackedVars = [
+    "COZE_API_URL",
+    "COZE_API_TOKEN",
+    "COZE_INTERPRETATION_WORKFLOW_NAME",
+    "COZE_INTERPRETATION_WORKFLOW_ID",
+    "COZE_INTERPRETATION_WORKFLOW_VERSION",
+  ];
+  const previousVars = trackedVars.map((key) => [key, process.env[key]] as const);
+  process.env.AI_ANALYSIS_ENABLED = "true";
+  for (const key of trackedVars) delete process.env[key];
+  try {
+    const response = await POST(new Request("http://localhost/api/ride-analysis", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ rideId: "l1-built-in-sample" }),
+    }));
+    const body = await response.json() as Record<string, unknown>;
+    const versions = body.versions as Record<string, unknown>;
+
+    assert.equal(response.status, 200);
+    assert.equal(body.source, "b0");
+    assert.equal(body.fallbackCode, "AI_NOT_CONFIGURED");
+    assert.equal(body.output, null);
+    assert.equal(versions.workflowName, "ride_analysis_v3");
+    assert.equal(versions.workflowVersion, "v0.0.11");
+    assert.equal(versions.promptVersion, "v0.4.14");
+  } finally {
+    if (previousEnabled === undefined) delete process.env.AI_ANALYSIS_ENABLED;
+    else process.env.AI_ANALYSIS_ENABLED = previousEnabled;
+    for (const [key, value] of previousVars) {
+      if (value === undefined) delete process.env[key];
+      else process.env[key] = value;
+    }
+  }
+});

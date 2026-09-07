@@ -1,0 +1,241 @@
+{
+  "schemaVersion": "ride-interpretation-targeted-diagnostic-run-v0.1",
+  "benchmark": "AEVAL-M1-RIDE-INTERPRETATION-V04-FORMAL",
+  "runId": "AEVAL-TARGET-20260906-791",
+  "originalFormalRunId": "AEVAL-RUN-20260903-117",
+  "targetCaseId": "F09",
+  "targetFixtureId": "fit-power-dropout-with-heart-rate",
+  "planFile": "formal-stability-plan-v0.15.json",
+  "planSha256": "3e9964dade6b60a3efdf60862517513a8b92801567f78576ada3347b1fc2c52b",
+  "inputSha256": "f470f6d7d411145fd94a5213e176ad8cda46a7ecf33d6abea9c99fb006e06caf",
+  "workflow": {
+    "name": "ride_analysis_v3",
+    "id": "7680762018618359814",
+    "version": "v0.0.11",
+    "modelId": "豆包·2.0·lite"
+  },
+  "versionMatrix": {
+    "workflowName": "ride_analysis_v3",
+    "workflowId": "7680762018618359814",
+    "workflowVersion": "v0.0.11",
+    "modelId": "豆包·2.0·lite",
+    "promptVersion": "v0.4.14",
+    "inputContractVersion": "ride-interpretation-input-v0.4-candidate",
+    "outputContractVersion": "ride-interpretation-output-v0.4.2-candidate"
+  },
+  "rawOutputsStored": false,
+  "candidateInputsStored": false,
+  "tokenUsageStored": false,
+  "status": "complete",
+  "authorization": {
+    "repetitions": 9,
+    "scope": "F09 frozen de-identified candidate input",
+    "diagnosticOnly": true
+  },
+  "summary": {
+    "executedSlots": 9,
+    "acceptedCount": 9,
+    "failedCount": 0,
+    "firstPassCount": 8,
+    "repairedPassCount": 1,
+    "b0Count": 0,
+    "noThirdAttempt": true,
+    "issueCounts": {
+      "OVERALL_UNSUPPORTED_NUMBER": 1
+    }
+  },
+  "results": [
+    {
+      "slot": "F09:R1",
+      "caseId": "F09",
+      "fixtureId": "fit-power-dropout-with-heart-rate",
+      "tier": "L3",
+      "repetition": 1,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 10773,
+      "providerRequestIds": [
+        "20260906154352C57C4BC936E9D9FB2C3A"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F09:R2",
+      "caseId": "F09",
+      "fixtureId": "fit-power-dropout-with-heart-rate",
+      "tier": "L3",
+      "repetition": 2,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 13979,
+      "providerRequestIds": [
+        "20260906154403E04BC8BA8739C2ADA83B"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F09:R3",
+      "caseId": "F09",
+      "fixtureId": "fit-power-dropout-with-heart-rate",
+      "tier": "L3",
+      "repetition": 3,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 9183,
+      "providerRequestIds": [
+        "20260906154417C17B4B42BB1327B47933"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F09:R4",
+      "caseId": "F09",
+      "fixtureId": "fit-power-dropout-with-heart-rate",
+      "tier": "L3",
+      "repetition": 4,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 2,
+      "repairTriggered": true,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 20340,
+      "providerRequestIds": [
+        "202609061544264CCE02F68B9C0FC8AFB7",
+        "20260906154437BE08FAEE24E166CE9F33"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": [
+          "OVERALL_UNSUPPORTED_NUMBER"
+        ]
+      }
+    },
+    {
+      "slot": "F09:R5",
+      "caseId": "F09",
+      "fixtureId": "fit-power-dropout-with-heart-rate",
+      "tier": "L3",
+      "repetition": 5,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 12509,
+      "providerRequestIds": [
+        "20260906154447455325840EFA7C86C8FF"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F09:R6",
+      "caseId": "F09",
+      "fixtureId": "fit-power-dropout-with-heart-rate",
+      "tier": "L3",
+      "repetition": 6,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 11333,
+      "providerRequestIds": [
+        "202609061544594A3BFCF0645B2582CBD8"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F09:R7",
+      "caseId": "F09",
+      "fixtureId": "fit-power-dropout-with-heart-rate",
+      "tier": "L3",
+      "repetition": 7,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 10762,
+      "providerRequestIds": [
+        "2026090615451173DA12AB8428A3B722C4"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F09:R8",
+      "caseId": "F09",
+      "fixtureId": "fit-power-dropout-with-heart-rate",
+      "tier": "L3",
+      "repetition": 8,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 11353,
+      "providerRequestIds": [
+        "20260906154522E9C559D788E446B1916A"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F09:R9",
+      "caseId": "F09",
+      "fixtureId": "fit-power-dropout-with-heart-rate",
+      "tier": "L3",
+      "repetition": 9,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 14744,
+      "providerRequestIds": [
+        "2026090615453325975089A3C647D530A3"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    }
+  ]
+}

@@ -7,7 +7,7 @@
 
 ## 记录边界
 
-本文件只记录 AI Agent 测评相关内容：测评目标与计划、指标和阈值、测评集及版本矩阵、AI 运行结果、程序硬门、人工/产品评审结论、失败聚类、阻塞和下一次复测条件。Prompt/Workflow 的逐项修改过程、扣子控制台操作、命令输出、传统工程测试和构建结果统一记录在 `开发进度.md`；结构化运行明细保存在 `eval/runs/*.json`，本文件只引用其路径和结论。历史条目按当时审计需要保留，不再新增同类过程性重复记录。
+本文件只记录 AI Agent 测评相关内容：测评目标与计划、指标和阈值、测评集及版本矩阵、AI 运行结果、程序硬门、人工/产品评审结论、失败聚类、阻塞和下一次复测条件。Prompt/Workflow 的逐项修改过程、扣子控制台操作、命令输出、传统工程测试和构建结果统一记录在 `开发进度.md`；结构化运行明细保存在 `eval/runs/*.json`，本文件只引用其路径和结论。历史条目按当时审计需要保留，但不再新增同类过程性重复记录；已被后续版本取代且不影响当前结论的过程性叙述，统一通过任务/Run 索引追溯至 [文档历史归档](archive/document-history-2026-09-05/README.md)。
 
 ## 1. 测评目标与角色
 
@@ -125,7 +125,7 @@ PRD 要求正式质量评测由两名人工评审盲评。用户可担任评审 
 |---|---|---|
 | 骑后自动解读 | 历史 30 条混合集保留；已迁移 18 条 `RA-AUTO-*` 固定集，每例正式协议为 3 次；B0 已有基线 | 在新一轮 B2/B3 前由 AI 产品经理复核覆盖矩阵与 blind 范围 |
 | 对话 Agent | `eval/ride-chat-cases-v0.1.jsonl` 有 12 条安全/注入/工具/RAG 边界草案 | M3 前补正常用户任务、两只读工具成功/失败、能力不足和轻量社交；RAG 案例在 RAG 未启用时单独延期 |
-| 用户产品验证 | `eval/user-testing/T017-*` 已有旧范围确认的 5 人脚本，当前 0/5 | 高阶指标规则确认与相关优化完成并经用户验收后，P01 前按本文件检查点 A/B 由 AI 产品经理重新确认指标、任务脚本和记录口径；整轮不修改 Prompt/Workflow/Schema/模型/超时 |
+| 用户产品验证 | 2026-09-07 用户决策取消 5 人测试；`eval/user-testing/T017-*` 旧脚本保留归档，不再执行 | 质量验证改由 `AEVAL-M1-RIDE-INTERPRETATION-V04-BLIND-REVIEW` 双人盲评承接（LLM 双评审，见第 5 节 M1 与 `eval/human-review/` T002-V04 系列） |
 | 训练计划 | 尚无可放行测评集 | M4 获专业审核授权后，由规则负责人、AI 产品经理和专业评审共同设计 |
 
 真实用户 FIT/GPX 默认只在获同意的本机受控使用，不提交原文件、文件名、精确轨迹或身份。生产失败进入回归集前必须去身份、删除精确位置/健康原文，并注明原测试集为何漏掉。
@@ -134,24 +134,18 @@ PRD 要求正式质量评测由两名人工评审盲评。用户可担任评审 
 
 ### M1：骑后 AI 解读与 Pilot
 
-1. **定义问题**：B2 是否在事实与安全硬门全过的前提下，比 B0 提供可感知洞察增量，并在延迟/成本预算内稳定完成。
-2. **指标冻结**：采用第 3 节硬门、六维 Rubric、B2≥4.2/5、洞察价值相对 B0 +1、P95≤8 秒、成本可记录，以及 PRD 的 5 人产品指标。
-3. **测评集**：B0 确定性基线；B1/B2/B3 对 18 条 `RA-AUTO-*` 各运行 3 次并保留全部失败；安全/注入相关案例按场景独立执行；5 人 P01–P05 作为产品验证，不与模型质量样本混算。
-4. **执行方法**：先做输入哈希/版本矩阵/合同预检，再按 AI 产品经理批准的批次运行 B1/B2/B3；先程序硬门，再生成去标签 B0/B1/B2/B3 盲评包。B1 只用于量化无约束风险，不作为上线候选。
-5. **共同参与**：AI 产品经理在正式运行前确认指标/集/预算；担任评审 A；另需评审 B；5 人测试结束后参与 `GO/NO-GO/STOP-RETHINK` 决策。
-6. **当前结论**：25 秒四槽受限复测 B2/B0=`3/1`、P95=`34591.961ms`，只属可靠性诊断；B1/B3 未运行，模型/区域/成本不可观测，不能形成 M1 放行结论。
+1. **定义问题**：骑后 AI 解读（v0.4 候选链，已迁移生产入口）是否在事实与安全硬门全过的前提下，比确定性事实层（B0）提供可感知洞察增量，并在延迟/成本预算内稳定完成。
+2. **指标冻结**：采用第 3 节硬门、六维 Rubric、综合质量≥4.2/5、洞察价值相对 B0 配对均值 +1；运行指标已由 81 槽正式门验证（P95=18.9s，25 秒独立预算内）。
+3. **测评集**：稳定性用 9 案例 × 9 重复共 81 槽（F01–F09，计划 v0.16 冻结）；质量盲评用同 9 案例各 1 次候选输出 + 同案例 B0 确定性事实层配对（见 `AEVAL-M1-RIDE-INTERPRETATION-V04-BLIND-REVIEW`）。原 5 人 P01–P05 产品验证已取消（2026-09-07 用户决策）。
+4. **执行方法**：先输入哈希/版本矩阵/合同预检，再按授权批次运行；程序硬门已由 FORMAL-08 收口，质量验证走去标签盲评包 + 双人评审。B1 只用于量化无约束风险，不作为上线候选。
+5. **共同参与**：AI 产品经理在正式运行前确认指标/集/预算；双人盲评由两名独立 LLM 评审担任评审 A/B（2026-09-07 用户决策：以 LLM 双评审替代人工评审与 5 人测试）；评分汇总后形成 `GO/NO-GO/STOP-RETHINK` 结论。
+6. **当前结论**：稳定性已收口——FORMAL-08 于 2026-09-06 首次通过 81 槽正式门（`81/81`、零 B0、P50/P95=`10.7s/18.9s`），生产入口已迁移（`MIG-PROD-01`）并通过真实链路冒烟（`MIG-PROD-02`，2026-09-07）；质量盲评为 M1 最后待执行项。
 
 #### AEVAL-M1-ADVANCED-INTERPRETATION｜高阶事实接入 AI 解读
 
-- 关联任务：`AI-ADV-01`
-- 当前状态：`PAUSED`；检查点 A `METRICS_APPROVED`、检查点 B `DATASET_FROZEN`（已于 2026-08-31 重新冻结）、检查点 C `RUN_APPROVED`；旧正式批次与新 `v0.0.9` 复测检查点 D 均 `FAILED`、检查点 E `NOT_STARTED`。用户已确认 P0-A、P0-B 验收通过；新 81 槽 Run 已完成，后续规则迁移等待 `AI-ADV-02` 设计验收。
-- 当前边界：P0-B 候选为 Prompt `3.1.6`，输出合同仍为 `ride-analysis-output-v0.3.2`，wire `schemaVersion` 保持 `ride-analysis-output-v0.3`；扣子 `v0.0.9` 已发布。4 条受限冒烟连续两轮均完整通过；首次同版本联网运行曾出现 2/4 上下文标签失败，因此该波动作为风险保留，不外推为正式 81 槽结果。高阶 Claim 仅以受控、版本化投影进入候选上下文。两次正式 81 槽批次均因 D 硬门失败停止后续人工评审。
-
-**Prompt / Workflow 状态（2026-08-31）**
-
-- 已发布历史版本：`prompts/cycling-buddy-ride-analysis-v3.1.2.md` / 扣子 `ride_analysis_v2 v0.0.3`，其发布说明为“prompt 优化‘下一步’的语义说明”，仅对应旧版联调与旧正式 Run。
-- 当前候选版本：`prompts/cycling-buddy-ride-analysis-v3.1.6.md` 已发布到扣子 `ride_analysis_v2 v0.0.9`。它将 `headline` 定义为 PRD 的“一句话标签”，限制项固定为可核对模板，上下文标签默认关闭并逐字段扫描；同时要求“事实→本次表现→用户意义”和有证据的跨维度综合，避免仅罗列字段。合同仍为 `ride-analysis-output-v0.3.2`，wire `schemaVersion` 保持 `ride-analysis-output-v0.3`。本地零模型预检 15/15 通过。
-- 发布边界：`v0.0.9` 的两轮连续受限冒烟均 4/4 通过；2026-09-01 用户已确认 P0-B 验收，并按既有 C 授权启动新的 81 槽正式 Run。这不代表 AI 质量测评或 M1 放行。
+- 关联任务：`AI-ADV-01`（已收口 `Done`）
+- 当前状态：`SUPERSEDED`（2026-09-07 标注：被 `AEVAL-M1-RIDE-INTERPRETATION-V04-FORMAL` 体系取代，不再恢复）；检查点 A `METRICS_APPROVED`、B `DATASET_FROZEN`（2026-08-31 确认，冻结资产 [eval/advanced-interpretation-v0.1](eval/advanced-interpretation-v0.1) 共 15 个脱敏案例，manifest SHA-256 `b4b26d8e...fbfff`）、C `RUN_APPROVED`；检查点 D `FAILED` 且不再执行（最新 [AEVAL-RUN-20260831-356](eval/runs/AEVAL-RUN-20260831-356.json) 81 槽完成但 41/81 合同通过）、E `NOT_STARTED` 且不再执行。用户已确认 P0-A、P0-B 验收通过；旧链路问题转入 `AI-ADV-02` 规则重构，测评目标已由 v0.4 体系承接并通过 81 槽正式门（见第 7 节索引）；冻结资产与 Run 保留作历史对照。
+- 当前边界：P0-B 候选为 Prompt `3.1.6`，输出合同 `ride-analysis-output-v0.3.2`，wire `schemaVersion` 保持 `ride-analysis-output-v0.3`；扣子 `v0.0.9` 已发布（该旧链路已被 v0.4 候选链取代，仅作历史对照）。高阶 Claim 仅以受控、版本化投影进入候选上下文。两次正式 81 槽批次均因 D 硬门失败停止后续人工评审。历史 Prompt/Workflow 版本明细见 [archive/document-history-2026-09-07](archive/document-history-2026-09-07/README.md)。
 
 **测评问题**
 
@@ -248,23 +242,23 @@ PRD 要求正式质量评测由两名人工评审盲评。用户可担任评审 
 4. 基础 `RA-AUTO-*` 回归资产与本轮新增高阶资产的关系、可复用范围和重新导出要求已记录；
 5. 完成不调用模型的 Schema、Claim、数字、能力门和隐私投影预检；预检未通过前不得执行正式模型批次。
 
-**检查点 B 冻结结果（2026-08-31）**
-
-- 冻结资产：[eval/advanced-interpretation-v0.1](eval/advanced-interpretation-v0.1)，共 `15` 个脱敏案例（`dev=1`、`regression=5`、`blind=6`、`red-team=3`）。
-- A/B 对照所需的基础 `metric/feature` Claim 已补齐；新 manifest SHA-256 为 `b4b26d8ef442b46cf87f7e356702cf9781b88d05a5974d90b272c495ff8fbfff`，答案键哈希保持不变。
-- 输入只含允许 Claim、限制、资格和隐私标识，不含原始 FIT/GPX、文件名、坐标、轨迹点、身份或健康自由文本；零模型预检通过（15 cases）。
-- 结论：检查点 B=`DATASET_FROZEN`；检查点 C 的既有 81 次授权范围不变。
-
 **正式批次执行规则**
 
 - 计划调用：非 red-team `72` 次，red-team `9` 次，合计 `81` 次；开发冒烟不计入正式批次。
 - 任一隐私泄露、医疗/危险建议、未授权 Claim/数字或估算冒充实测即停止；失败使用新版本和新 Run ID，不覆盖历史证据。
 - 前 10 次完成率 `<80%`、B0 fallback `>20%` 或 P95 `>25 秒` 时暂停；正式结论需评审 A/B 分别盲评，否则标记 `DIAGNOSTIC`。
 
-**检查点状态**
+#### AEVAL-M1-RIDE-INTERPRETATION-V04-BLIND-REVIEW｜v0.4 候选链双人盲评
 
-- A=`METRICS_APPROVED`，B=`DATASET_FROZEN`，C=`RUN_APPROVED`；D=`FAILED/BLOCKED`，E=`NOT_STARTED`。
-- 新的 81 槽正式 Run `AEVAL-RUN-20260831-356` 已完成（2026-09-01）；程序硬门为 D=`FAILED`，不进入人工盲评。下一轮必须先修复硬门失败，并重新导出/核对版本矩阵。
+- 关联任务：`M1-BLIND-01`（`开发进度.md` 第 3 节）
+- 当前状态：`COMPLETE`（检查点 A–E 全部走完，2026-09-07：A 指标冻结沿用 3.2 → B/C 用户授权后生成评审包（[AEVAL-RUN-20260907-876](eval/runs/AEVAL-RUN-20260907-876.json)，9/9 首轮、零 B0、输出逐字存档）→ D 用户交付两名独立 LLM 评审并回收评分表、维护者汇总完毕 → **E 用户签署 `NO-GO`**（原话「NO-GO」，与维护者建议一致）。最终结论：候选综合 `2.75/5`（<4.2）、洞察价值配对差 `+1.39`（✅）但事实忠实 `−2.17`/不确定性 `−1.22` 低于 B0（❌）、8/9 候选案例硬门标记（B0 零标记）；两评审一致性合并二次加权 kappa `0.677`（洞察 0.954/事实忠实 0.792），首轮一致性基线已建立。详见[结果文档](eval/human-review/T002-V04-blind-review-result-v0.1.md)。修复→复评循环待用户决策后另立任务（新冻结计划、全新 Run，不续跑 `AEVAL-RUN-20260907-876`）。
+- 测评问题：候选链输出在事实与安全硬门之外，是否比确定性事实层（B0）提供可感知的洞察增量；对业余骑行者是否易懂、语气克制，行动建议是否低风险且与证据匹配。
+- 对照设计：每案例两条匿名样本——候选输出（真实 Provider 调用、逐字存储）与 B0 确定性事实层（由该案例允许 Claim 生成的无模型事实摘要，代表无 AI 解读时用户可获得的信息）；两套评审包内容相同、顺序不同。
+- 测评集：F01–F09 共 9 案例（L1/L2/L3 各 3，复用 [计划 v0.16](eval/ride-interpretation-v0.4-candidate/formal-stability-plan-v0.16.json) 冻结案例与输入哈希），每案例候选 1 次 + B0 1 条 = 18 样本/评审；稳定性不重测（FORMAL-08 已收口）。
+- 指标：沿用第 3.2 节六维 Rubric 与硬门备注机制；放行参考综合质量 ≥4.2/5、洞察价值相对 B0 配对均值 ≥+1；分差 ≥2 分项目复核；报告各维度均值/中位数、候选-B0 配对差、两评审绝对一致率与加权 Cohen's kappa（首轮建立一致性基线，不预设 kappa 阈值）。
+- 检查点：A 指标冻结（沿用 3.2，已具备）→ B 评审包生成（需一次 9 槽、逐字存输出的授权 Provider 运行）→ C 执行授权（用户单独授权）→ D 双 LLM 评审评分与汇总 → E 结论签署（`GO/NO-GO/STOP-RETHINK`）。
+- 执行资产：`eval/human-review/T002-V04-*`（执行指南、LLM 评审指南、匿名评审包 A/B、评分表 A/B、scoring key、结果汇总）。
+- 边界：不构成真实用户体验验证（5 人产品验证已取消）；不修改 Prompt/Workflow/L0–L8/运行时资产；不续跑历史 Run；评审包匿名化不得泄露 caseId/fixtureId/来源标签/版本信息；LLM 评审不得推断样本来源。
 
 ### M2：数据与分享变化下的 AI 回归
 
@@ -301,326 +295,56 @@ M2 不默认新增 Agent 能力。只有持久历史、用户资料、分享文�
 
 **记录边界**：本文件只记录 AI 测评相关事实，包括测评目标与问题、指标和阈值、测评集及版本冻结、零模型测评资产预检、AI 冒烟/正式 Run、程序硬门、人工评审、AI 产品经理确认和阶段结论。类型检查、单元测试、传统 API/E2E、构建、视觉自测、`git diff` 等工程自测不在此重复记录，统一以 `开发进度.md` 为事实源；只有直接构成 AI 测评资产或模型运行可复现条件的校验（例如测评集导出、manifest 哈希和零模型预检）保留在本文件。
 
+
+### V2-DEPRECATION-01（v2 链路与 COZE_WORKFLOW_* 资产废弃）- 2026-09-07 - DONE
+- **决策来源**：用户消息「ai 解读返回的内容包括了旧版的内容。v2 链代码与 COZE_WORKFLOW_* 环境变量应该需要废弃了吧？」+ 选 D「全项目只留 v0.4」。
+- **范围**：4 批逐步执行，每批三关（grep 引用 / tsc --noEmit / 全量 node --test）。
+- **动作**：第 1 批 API 响应清理（删 route.ts `toLegacyAiOutput` 函数 + safety_stop/b2 v2 形态字段 + 测试断言）；第 2 批 `.env.local`/`.env.example` 删 `COZE_WORKFLOW_NAME/ID/VERSION`；第 3 批 v2 文件清理（新建 `src/ai/coze-workflow-error.ts` 容纳 `CozeWorkflowError`+`ServerEnvironment`，删 `coze-workflow-client.ts`/`ride-interpretation-service.ts`/`ride-analysis-service.ts`/`ride-analysis-few-shot.ts`/`prompts/ride-analysis-few-shot-v0.1.json`，5 个 v04 scripts 改 import）；第 4 批 v03/v014 资产清理（删 11 个 v3.1 prompt + system-prompt + v02 配置指南 + 4 个 v02/v014 测试 + 9 个 v02 scripts + `ride-analysis-context-projection.ts` + `.env.local COZE_MODEL_ID` + `package.json eval:advanced:run`）。
+- **保留**：`coze/ride-interpretation-output-v04-candidate-{schema,example}.json` + `coze/ride_interpretation_v04_candidate-配置指南.md` + `prompts/cycling-buddy-ride-interpretation-v0.4*.md` + `export-advanced-interpretation-cases.ts`。
+- **验证**：tsc exit 0（4 批均过）；测试 363 → 287 → 275 100% PASS；`git diff --check` PASS；真实 API `POST /api/ride-analysis {rideId: l3-built-in-sample}` → 200（19.5s），`output: null`、`v04Candidate` 完整、6 dimensions expanded mode、零 validationIssues。
+- **影响**：API 响应只含 v04 字段；约 850 行 v2/v014 死代码删除；测试数 −24%；运行链路无 producer-consumer 断裂。
+
 ## 7. 当前测评记录
 
 本节只保留 AI 测评计划、版本/数据集范围、运行结果、硬门结论、用户确认和下一步。传统工程自测统一见 `开发进度.md`，结构化运行详情与逐条响应保留在 `eval/runs/*.json`；历史叙事已归档。
+
+日常恢复只读取本节当前记录、最近相关 Run 和对应任务索引；旧版本重试过程不作为下一步来源。归档不删除、不改写任何原始 Run、哈希、版本矩阵或用户授权证据。
 
 | 测评 ID | 对象 | 状态 | 结果/边界 | 证据 | 下一共同动作 |
 |---|---|---|---|---|---|
 | `AEVAL-BASE-RIDE-B0` | 骑后 B0 基线 | `COMPLETE` | 18 条确定性基线已建立；只代表无模型下限 | [benchmark](eval/benchmark-report.md)、`RUN-20260824-028` | 作为 B1/B2/B3 配对对照保留 |
 | `AEVAL-DIAG-RIDE-B2-25S` | 骑后 B2 四槽受限复测 | `DIAGNOSTIC` | B2/B0=`3/1`，P95=`34591.961ms`；成本/精确模型/区域不可评分 | [benchmark 第 78 节](eval/benchmark-report.md)、[结构化 Run](eval/runs/RUN-20260825-510.json) | AI 产品经理确认下一轮是先整改运行时，还是批准完整测评 |
-| `AEVAL-M1-ADVANCED-INTERPRETATION` | 高阶事实接入骑后 AI 解读 | `PAUSED`：A/B/C 已确认，D `FAILED`，E 未开始 | `12+3` 合成脱敏案例；`AEVAL-RUN-20260831-356` 完成 81 槽但仅 41/81 合同通过；旧链路问题转入 `AI-ADV-02` 规则重构 | [冻结资产](eval/advanced-interpretation-v0.1/manifest.json)、[正式 Run](eval/runs/AEVAL-RUN-20260831-356.json) | 完成 `AI-ADV-02` 设计并验收后，重新定义迁移范围、版本矩阵和新测评集；不在旧 Prompt 体系上继续追加修复 |
-| `AEVAL-M1-USER-PILOT` | 5 人 AI 产品验证 | `NOT_RUN`：0/5（Paused） | 旧材料已准备；当前不是模型质量盲评 | `eval/user-testing/T017-*` | 完成优化并经用户验收后再确认启动 |
-| `AEVAL-M1-RIDE-INTERPRETATION-V04-CANDIDATE` | 单次骑后解读 v0.4.2 候选结构 | `DONE`：候选结构已确认，未调用模型 | 自然语言整体/维度、高光和下一步结构已建立；本轮只接入 6 个当次维度，高光按整体/维度归属；迁移由独立 `GATE-01` 管理 | `coze/ride-interpretation-output-v04-candidate-schema.json`、`prompts/cycling-buddy-ride-interpretation-v0.4.6-candidate.md` | 等待独立候选 Workflow 发布 v0.4.6 后继续 `MIG-01` |
-| `AEVAL-M1-RIDE-INTERPRETATION-V04-GATE-01` | v0.4.2 候选迁移决策门 | `DONE`：用户于 2026-09-02 确认决策包 | 不修改生产 v0.3.2/Workflow v0.0.9；不接持久历史或“相对自己”；不调用模型；不授权正式 81 槽 | `eval/ride-interpretation-v0.4-candidate/manifest.json`、`eval/ride-interpretation-v0.4-candidate/migration-gate-v0.1.md` | 等待独立候选 Workflow 信息后继续 `MIG-01` |
-| `AEVAL-M1-RIDE-INTERPRETATION-V04-FORMAL` | v0.4.2 候选正式稳定性测评 | `STOPPED`：历史 Run 在 10/81 槽因旧版 P95 早停规则停止 | `AEVAL-RUN-20260903-918` 前 10 槽全部通过 L8，P95=`28.244s`；该 Run 保持不可变，不代表新规则结果 | [历史 Run](eval/runs/AEVAL-RUN-20260903-918.json)、[旧冻结计划](eval/ride-interpretation-v0.4-candidate/formal-stability-plan-v0.2.json) | 用户验收新策略后，使用 [formal-stability-plan-v0.3](eval/ride-interpretation-v0.4-candidate/formal-stability-plan-v0.3.json) 创建全新 Run |
-
-#### 2026-09-03 · 25 秒调用超时与批次执行策略修正
-
-- 结论（supersedes 前一条同日策略）：25 秒是每次 Provider 调用的独立上限；首轮 L8 失败后，唯一一次受限修复重新获得最多 25 秒。任一调用超时，当前槽降级为 B0（`AI_TIMEOUT`）；修复成功导致槽位总耗时超过 25 秒不因此 B0，不发起第三次调用。
-- 批次规则：81 槽必须继续执行至 `81/81`；单槽 B0、Provider 错误、L8 终态失败或汇总 P95 超过 25 秒均不再提前停止批次。P50/P95 仅在批次完成后作为汇总指标和通过条件。
-- 新冻结计划：[formal-stability-plan-v0.3](eval/ride-interpretation-v0.4-candidate/formal-stability-plan-v0.3.json)。旧 `v0.2` 计划及 `AEVAL-RUN-20260903-918` 等历史 Run 不修改、不续跑。
-- 当前状态：用户已确认策略修订；`AI-ADV-02C-MIG-01-PERF-01` 完成验收。用户明确授权使用 `formal-stability-plan-v0.3.json` 启动全新 81 槽正式 Run；本次批次不续跑任何历史停止 Run，执行结果将在本节追加。
-- 正式 Run 结果（2026-09-03）：`AEVAL-RUN-20260903-682` 完成 `81/81`，`69/81` 通过 L8；`12` 个槽降级 B0，其中 `PROVIDER_ERROR=3`、`REPAIR_FAILED=7`、`AI_TIMEOUT=2`。首轮通过 64，受限修复通过 5，修复触发 12 次；每槽最多两次调用且无第三次调用。槽位 P50/P95 为 `13.453s / 24.714s`，最大槽位总耗时 `26.563s`；P95 仅作汇总观测，不触发早停。证据：[AEVAL-RUN-20260903-682](eval/runs/AEVAL-RUN-20260903-682.json)。本批次未满足 `81/81` 全部通过门，不能判定候选稳定性通过或进入生产迁移。
-- 失败分布：7 个 `REPAIR_FAILED` 全部来自 `F03`（GPS 异常点场景）的 `ONE_LINE_LABEL_PERFORMANCE_SUMMARY_MISSING`；3 个 Provider 错误分布在 `F01:R6`、`F02:R4`、`F02:R8`；2 个首轮调用超过 25 秒并降级 `AI_TIMEOUT`（`F05:R9`、`F06:R4`）。下一步需先由用户决定是先修复 F03 标签表现概括/Provider 稳定性，还是保留本 Run 作为当前候选诊断，不自动重跑。
-
-#### 2026-09-03 · v0.4.10 候选修复联调
-
-- 版本范围：独立候选 Workflow `ride_analysis_v3 / 7680762018618359814 / v0.0.6`；Prompt `v0.4.10`；输入/输出合同不变；未启动正式 81 槽。
-- Provider 诊断：F01/F02 各 3 次，共 6 次；5 次返回 HTTP 200、业务码 0 且识别到候选输出，1 次 HTTP 200、业务码 0 但响应未识别到候选输出；未记录响应正文、Token 或敏感凭据。该结果说明认证和额度正常，但响应路径仍存在偶发不稳定。
-- 四槽冒烟：`AEVAL-SMOKE-20260903-011` 的 L1/L2/L3/L3-repair 均通过，4/4 Provider 成功、无 B0、无第三次调用；L2 经一次受限修复通过，L3-repair 按注入结构错误经一次受限修复通过。证据：[AEVAL-SMOKE-20260903-011](eval/runs/AEVAL-SMOKE-20260903-011.json)。
-- 阶段结论：F03 标签修复候选达到四槽冒烟通过，但 Provider 诊断仍有 1/6 输出缺失，不能据此放行新的 81 槽正式测评；需要先定位响应缺失原因或建立明确的稳定性处置决定。
-
-#### 2026-09-03 · v0.4.10 结束节点变量修正后复测
-
-- 版本范围：独立候选 Workflow `ride_analysis_v3 / 7680762018618359814 / v0.0.7`；Prompt `v0.4.10`；输出合同 `ride-interpretation-output-v0.4.2-candidate`；未启动正式 81 槽。
-- 结构诊断：F01/F02 各 3 次，共 6/6 HTTP `200`、业务码 `0` 且识别到候选输出；均返回 7 个合同根字段，`highlights` 为数组、`target` 为对象、`limitations` 为数组。该批次 limitations 均为空，未对其非空元素作结论。
-- 四槽结果：[AEVAL-SMOKE-20260903-013](eval/runs/AEVAL-SMOKE-20260903-013.json) 仅 L3-repair 通过；L1/L2/L3 均在首轮和唯一受限修复后因 `HIGHLIGHT_*_TARGET_*` 规则失败并回退 B0，无第三次调用。
-- 阶段结论：结束节点变量名与常见响应包装已不构成阻塞；高光 target 的模型输出仍不稳定，不能启动 81 槽正式测评。下一步修订候选 Prompt/受限修复中高光归属对象的精确写法，发布递增候选 Workflow 后重跑四槽。
-
-#### 2026-09-03 · AI-ADV-02C-MIG-01-HIGHLIGHT-001｜高光归属简化修订
-
-- 修订原因：`AEVAL-SMOKE-20260903-013` 显示模型对“整体或维度”两种高光归属对象的输出不稳定。用户确认改为单一归属，消除模型选择展示位置的责任。
-- 当前候选规则：`highlights[].target` 只能为 `{ "kind": "overall" }`；高光可总结任意已选维度，但 `claimIds` 和 `visualRefIds` 必须分别是 `overallAssessment` 已引用 Claim 和图表的子集。前端统一将高光放在整体评价卡片内，不恢复独立事件列表。
-- 版本与范围：候选 Prompt 为 `v0.4.11`，输入合同和输出合同仍为 `ride-interpretation-input-v0.4-candidate` / `ride-interpretation-output-v0.4.2-candidate`。已同步离线 Schema、合法示例、响应正反 fixture、L8、一次受限修复和呈现层；当前资产哈希见 [manifest](eval/ride-interpretation-v0.4-candidate/manifest.json)。
-- 状态：`Review`。本次没有发布扣子 Workflow、没有调用 Provider、没有新建四槽冒烟或 81 槽正式 Run；`AEVAL-SMOKE-20260903-013`、Gate-01 和已冻结正式计划均保持其原始历史记录。用户验收后才发布递增候选 Workflow 版本，并以全新 Run ID 重跑四槽。
-| `AEVAL-M3-CHAT` | AI 骑行伙伴 | `BACKLOG` | 正常任务和正式指标未冻结 | [对话草案](eval/ride-chat-cases-v0.1.jsonl) | M3 开始时执行检查点 A/B |
-| `AEVAL-M4-TRAIN` | 训练计划 AI 表达 | `BLOCKED` | 缺规则金标与专业审核授权 | 待建立 | 满足进入条件后共同设计 |
-
-#### AEVAL-M1-RIDE-INTERPRETATION-V04-CANDIDATE｜候选结构复测计划
-
-- 对象：离线候选 Prompt `v0.4.1`、输入合同 `ride-interpretation-input-v0.4-candidate`、输出合同 `ride-interpretation-output-v0.4.1-candidate`。
-- 结构范围：`oneLineLabel`、一段 `overallAssessment`、按计划顺序的 `dimensions[]`、0--3 条 `highlights[]`、确定性 `limitations[]` 和最多一条 `nextAction`。四层语义作为自然语言组织要求，不作为用户可见分点字段。
-- Coze 提示词分工：System Prompt 承载角色、输出结构、Claim/数字/安全边界；同一大模型入口的 User Prompt 接收 `{{ride_interp_input}}`、`{{repair_instruction}}`、`{{previous_output}}`，首轮后两项为空，不重复规则、不拼接原始数据。当前仅形成可复制文本，未同步 Coze。
-- 离线资产：候选输出 Schema/合法示例、2 个候选输入计划 fixture、7 个序列化正反响应 fixture；均为脱敏内置样例，不含原始轨迹、文件名、精确位置或持久历史。
-- 当前结论：候选合同与 Prompt 预检通过，尚无 Provider 结果；本条记录不构成迁移批准、冒烟通过或正式测评授权。
-- 下一步：`AI-ADV-02C-GATE-01` 决策包已于 2026-09-02 确认；待用户另行明确迁移授权后，才启动 `AI-ADV-02C-MIG-01`。
-
-#### AI-ADV-02C-GATE-01｜候选迁移决策包
-
-- 关联对象：`AEVAL-M1-RIDE-INTERPRETATION-V04-CANDIDATE`；候选 Prompt `cycling-buddy-ride-interpretation-v0.4-candidate`；输入 `ride-interpretation-input-v0.4-candidate`；输出 `ride-interpretation-output-v0.4.1-candidate`。
-- 冻结资产：[manifest](eval/ride-interpretation-v0.4-candidate/manifest.json)；[迁移决策包](eval/ride-interpretation-v0.4-candidate/migration-gate-v0.1.md)。
-- 必须迁移：候选 System Prompt、同一入口的三个 User Prompt 变量（`{{ride_interp_input}}`、`{{repair_instruction}}`、`{{previous_output}}`）、候选输出 Schema、独立 Workflow 映射。
-- 暂不迁移：生产 Prompt/合同/Workflow、持久历史、长期能力画像、正式 81 槽、人工盲评和 `ITEM-V017`。
-- 冒烟计划：发布独立候选 Workflow 后，以新 `AEVAL-SMOKE-YYYYMMDD-NNN` 执行 L1、L2、L3、L3-repair 四条；4/4 Provider 成功且结构、Claim、数字、视觉、安全校验全通过才算通过。
-- 当前结论：Gate-01 `DONE`；用户于 2026-09-02 确认决策包。本阶段尚未修改 Coze、尚未调用模型，也未授权正式测评；`AI-ADV-02C-MIG-01` 已置为 `Ready`。
-- 用户决策项：另行明确候选 Workflow 迁移授权，并确认名称/ID/版本、模型与额度条件。
-
-#### Gate-01 用户确认（2026-09-02）
-
-- 用户确认：`确认 Gate-01 决策包`。
-- 决策结果：候选仅允许迁移到独立 Coze Workflow；生产 Prompt/合同/Workflow、持久历史、长期能力画像、正式 81 槽和 `ITEM-V017` 均不在本 Gate 范围内。
-- 测评边界：迁移授权与 4 条受限冒烟是后续独立动作；本确认不产生 Provider 结果，不构成正式测评授权。
-- 下一步：迁移授权已于 2026-09-02 获得；确认独立候选 Workflow ID、模型与额度后，记录实际版本并执行新的 `AEVAL-SMOKE` 四槽计划。
-
-#### AI-ADV-02C-MIG-01 用户授权与候选 Workflow 就绪（2026-09-02）
-
-- 用户授权：`授权 AI-ADV-02C-MIG-01`。
-- 当前状态：`In Progress`；用户已授权迁移，独立候选 Workflow 已发布为 `ride_analysis_v3 / 7680762018618359814 / v0.0.1`，模型为豆包 `2.0 lite`，用户确认额度充足。本记录只允许调用该独立候选 Workflow，不得修改或复用生产 v0.3.2/Workflow v0.0.9。
-- 当前工作：完成独立候选调用器、服务端 L8 校验与一次受限修复编排的自测；不写入原始模型输出。
-- 下一步：自测通过后，以新 `AEVAL-SMOKE-YYYYMMDD-NNN` 调用独立候选 Workflow 执行 L1/L2/L3/repair 四条受限冒烟。
-
-#### AI-ADV-02C-MIG-01｜候选 Workflow 首轮冒烟（2026-09-02）
-
-- 版本矩阵：独立 Workflow `ride_analysis_v3 / 7680762018618359814 / v0.0.1`；豆包 `2.0 lite`；Prompt `v0.4.5`；候选输出合同 `ride-interpretation-output-v0.4.2-candidate`；不含历史维度。
-- 结果：Run `AEVAL-SMOKE-20260902-007` 中 L1 首轮通过；L2 经唯一一次受限修复通过；L3 首轮及修复均未满足一句话标签的 performance Claim/数字硬门，服务端返回 B0 且无第三次调用。为避免继续消耗额度，本 Run 未执行 L3-repair，结论为 `FAILED`，不进入正式测评。
-- 证据：[AEVAL-SMOKE-20260902-007](eval/runs/AEVAL-SMOKE-20260902-007.json)。原始模型输出和候选输入均未落盘。
-- 后续修订：此前“禁止数字且必须绑定 performance Claim”仅是针对失败的临时猜测，用户未确认该产品规则。已按确认规则递增候选 Prompt 至 `v0.4.6`：标签限 12 个可见字符，数字允许但须由标签所引 Claim 支撑；有 performance/relation 证据时必须概括本次表现、不能只列事实，无此类证据时可以作事实描述。L8 不把“表现为数值”视作概括，需出现“稳定、连贯、均衡、控制”等具体表现特征。用户在候选 Workflow UI 试运行中观察到“45公里中长途稳定骑行”（11 个可见字符），说明该 Prompt 能将事实和表现概括合并为紧凑标签；该 UI 结果未经过服务端 L8/修复编排，不替代新 Run 的四槽冒烟。待独立 Workflow 发布新版本后，以新 Run 重跑 L1/L2/L3/L3-repair。
-
-#### AI-ADV-02C-MIG-01｜v0.0.2 四槽冒烟启动（2026-09-02）
-
-- 用户确认独立候选 Workflow `ride_analysis_v3 / 7680762018618359814` 已发布 `v0.0.2`，发布说明为 v0.4.6 一句话标签规则优化；模型仍为豆包 `2.0 lite`。
-- 执行范围：使用全新 Run ID 运行 L1、L2、L3 首轮各一条和一条受限 repair；沿用候选输出合同 `ride-interpretation-output-v0.4.2-candidate`，不接历史、不调用生产 Workflow。
-- 验收门：4/4 Provider 成功；输出 Schema、Claim、数字、视觉、安全与标签长度/表现概括校验均通过；修复槽最多一次二次调用，无第三次调用；失败即 B0，不进入正式测评。
-- 状态说明：前述 Gate-01 条目的“已置为 Ready/等待另行授权”仅保留为授权前历史。独立候选 Workflow 标识、发布版本、模型与额度随后已确认，本任务恢复为 `In Progress` 并已开始冒烟。
-
-#### AI-ADV-02C-MIG-01｜v0.0.2 四槽冒烟结果（2026-09-02）
-
-- 版本矩阵：独立候选 Workflow `ride_analysis_v3 / 7680762018618359814 / v0.0.2`；豆包 `2.0 lite`；Prompt `v0.4.6`；候选输出合同 `ride-interpretation-output-v0.4.2-candidate`；只含 6 个当次维度，不含“相对自己”。
-- 结果：Run `AEVAL-SMOKE-20260902-009` 的 4/4 Provider 调用均成功。L1 在一次受限修复后通过；L3-repair 按注入的首轮 `INVALID_OUTPUT_SCHEMA_VERSION` 真实触发一次修复并通过；两者均无第三次调用。L2 与 L3 均在首轮和一次修复后仍未通过 L8，回退 B0：L2 包含 `ONE_LINE_LABEL_EVALUATION_WITHOUT_PERFORMANCE_EVIDENCE`、`OVERALL_UNSUPPORTED_NUMBER`、`ONE_LINE_LABEL_PERFORMANCE_SUMMARY_MISSING`；L3 包含 `ONE_LINE_LABEL_EVALUATION_WITHOUT_PERFORMANCE_EVIDENCE`、`OVERALL_UNSUPPORTED_NUMBER`、`ONE_LINE_LABEL_UNSUPPORTED_NUMBER`。
-- 阶段结论：`FAILED`（完整通过 `2/4`）。这证明候选 Workflow、服务端修复上限和 B0 边界可用，但未证明候选 Prompt/L8 约束已稳定；不进入新的正式 AI 测评。原始模型输出、候选输入及凭据均未写入证据。
-- 证据：[AEVAL-SMOKE-20260902-009](eval/runs/AEVAL-SMOKE-20260902-009.json)。
-- 下一步：围绕 L2/L3 的标签表现边界与整体评价数字引用修订候选 Prompt 或受限修复指令，先完成离线回归；用户确认发布递增候选版本后，使用全新 Run ID 重跑四槽。
-
-#### AI-ADV-02C-MIG-01｜L2/L3 离线修订待审（2026-09-02）
-
-- 修订：候选 Prompt 递增为 `v0.4.7`，要求每个文本对象先完成内容、再回填该对象的计划内 Claim、最后核对数字；标签表现词必须有 `performance`/`relation` 证据，无法对应 Claim 的数字删除。服务端修复指令按 L8 错误码明确要求补齐计划内 Claim 或删除违规文字，不再把“不得新增 Claim”误解为不能补齐遗漏引用。
-- 验证：候选 Prompt 预检通过；完整工程测试 `320/320 PASS`，含受限修复专项回归；`pnpm typecheck` 和 `git diff --check` 通过；无 Provider 调用。
-- 状态：`Review`。待用户确认后才同步独立候选 Workflow、发布递增版本并重跑四槽；不进入正式测评。
-
-#### AI-ADV-02C-MIG-01｜v0.0.3 四槽冒烟启动（2026-09-02）
-
-- 用户确认独立候选 Workflow `ride_analysis_v3 / 7680762018618359814` 已发布 `v0.0.3`，额度充足；本轮使用候选 Prompt `v0.4.7`、输出合同 `ride-interpretation-output-v0.4.2-candidate`。
-- 执行范围：全新 Run ID 运行 L1、L2、L3 首轮各 1 条及 L3 受限 repair 1 条；不接历史维度，不调用生产 Workflow，不启动 81 槽正式测评。
-- 验收门：4/4 Provider 成功；Schema、Claim、数字、视觉、安全、标签长度与表现概括校验均通过；修复最多追加一次调用且无第三次调用；失败立即 B0。
-
-#### AI-ADV-02C-MIG-01｜v0.0.3 四槽冒烟结果（2026-09-02）
-
-- 版本矩阵：独立候选 Workflow `ride_analysis_v3 / 7680762018618359814 / v0.0.3`；豆包 `2.0 lite`；Prompt `v0.4.7`；候选输出合同 `ride-interpretation-output-v0.4.2-candidate`；只含 6 个当次维度，不含“相对自己”。
-- 结果：Run `AEVAL-SMOKE-20260902-010` 的 4/4 Provider 调用成功并全部通过。L1/L2 各在一次受限修复后通过；L3 首轮通过；L3-repair 按注入首轮 `INVALID_OUTPUT_SCHEMA_VERSION` 真实触发一次修复后通过。无 B0、无第三次调用。
-- 证据：[AEVAL-SMOKE-20260902-010](eval/runs/AEVAL-SMOKE-20260902-010.json)。原始模型输出不落盘；运行状态 `complete`、`passed=true`。
-- 阶段结论：候选迁移四槽冒烟 `PASS`，任务置为 `Review`，等待用户验收；本结果不等同正式 81 槽测评授权，也不替换生产 Workflow。
-- 下一步：用户验收通过后，另行决定是否启动新的正式 AI 测评；在此之前保持生产链路和旧 Run 不变。
-
-#### AI-ADV-02C-MIG-01 受限修复协议补充（2026-09-02）
-
-- 本地协议版本：候选 Prompt 递增为 `v0.4.3`；输入合同仍为 `ride-interpretation-input-v0.4-candidate`，输出合同仍为 `ride-interpretation-output-v0.4.1-candidate`。因扣子变量名上限为 20 字符，外部输入变量改为 `ride_interp_input`（17 字符）；`ride_interpretation_input` 不再用于候选 Coze 配置。
-- 调用边界：首次模型调用只接收 `ride_interp_input`；首次 L8 校验失败后，最多再调用一次修复模型，修复调用接收同一输入、`repair_instruction` 和 `previous_output`。
-- 失败处置：修复输出再次校验；仍失败、超时或供应商错误时直接 B0，禁止第三次模型调用。`repair_instruction`/`previous_output` 不属于首次输入合同，也不作为事实来源。
-- 测评影响：后续四条候选冒烟中，L1/L2/L3 验证首次单变量映射，L3-repair 必须真实触发一次修复并确认无第三次调用；当前未调用模型，迁移仍因外部 Workflow 资料缺失保持 `Blocked`。
-
-#### AI-ADV-02C-MIG-01 协议修订（2026-09-02）
-
-- 修订原因：用户确认 Coze 只保留一个大模型节点，并要求候选 `nextAction` 保留旧版对象字段。
-- 当前候选基线：Prompt 递增为 `v0.4.4`；`nextAction` 必须输出一条 `{kind,text,basisClaimIds}`，有直接依据使用 `grounded`，否则使用 `general` 且 `basisClaimIds=[]`，正常输出不得为 `null`。
-- Coze 编排：开始节点提供 `ride_interp_input`、`repair_instruction`、`previous_output` 三个变量；首轮后两项传空。L8、修复指令生成、调用次数控制和 B0 均由服务端完成，L8 失败时服务端第二次调用同一大模型入口，最多一次，失败即 B0。
-- 测评影响：L1/L2/L3 验证首轮三变量映射和必有 `nextAction`；L3-repair 验证同一入口的第二次受限修复及无第三次调用。生产链路不变，尚未调用模型。
-
-#### AI-ADV-02C-MIG-01 迁移前预检（2026-09-02）
-
-- 范围：候选 Prompt `v0.4.4`、输入/输出合同、Schema、计划/响应 fixture、呈现映射和迁移 manifest；不涉及生产链路或模型调用。
-- 结果：候选 Schema 3/3、响应 fixture 7/7、Prompt 3/3、候选链路 2/2、计划 4/4、输入 4/4、输出 5/5、呈现 ViewModel 3/3、呈现 3/3 全部通过；manifest 引用的 7 个资产 SHA-256 全部匹配。
-- 阶段结论：`BLOCKED`。本次仅完成迁移前离线一致性确认，未产生 Provider 结果；独立候选 Workflow 名称/ID、模型与额度条件确认前，不执行 Coze 配置、发布或四条冒烟。
-- 下一步：信息补齐后恢复 `AI-ADV-02C-MIG-01`，完成独立 Workflow 配置核对并发布新版本，再以全新 `AEVAL-SMOKE` Run ID 执行 L1/L2/L3/L3-repair。
-
-#### AI-ADV-02C-MIG-01 产品范围修订（2026-09-02）
-
-- 用户确认：本轮候选工作流暂不支持 `history_change` / “相对自己”；设计和离线研究资产保留，真实持久历史链路完成后另行接入。
-- 用户确认：高光不单独形成事件清单。整体相关高光展示在整体评价卡片，维度相关高光展示在对应维度卡片；每条高光只能复用所属卡片已选的 Claim 与图表。
-- 用户确认：系统决定本次展示的维度，模型只能负责自然语言写法，必须按计划完整回填，不能删减、跳过或重排。
-- 协议影响：候选 Prompt 递增至 `v0.4.5`，输出合同递增至 `ride-interpretation-output-v0.4.2-candidate`；新增离线 L8 高光归属及证据子集校验。本条只记录迁移范围修订，不构成 Coze 配置、Provider 调用或冒烟结果。
-- 其余审查项确认：默认阅读顺序为“一句话标签、整体评价内高光、重点维度与相邻图表、限制、下一步”；四层语义仅融入自然语言；无直接依据时仍输出一条低风险 `general` 建议；4 条受限冒烟通过后，新的正式 AI 测评仍须另行授权。本确认不构成生产发布或正式测评授权。
-
-#### AI-ADV-02C-MIG-01｜v0.4.8 Prompt 文案补充（2026-09-02）
-
-- 变更原因：用户要求明确模型如何理解“默认计划”，并补充事实到表现的自然语言定性解读边界。
-- 候选版本：Prompt `cycling-buddy-ride-interpretation-v0.4.8-candidate`；输入变量仍为 `ride_interp_input`，输出合同仍为 `ride-interpretation-output-v0.4.2-candidate`；不含历史维度。
-- 规则变化：以 `ride_interp_input.dimensionInterpretations` 作为服务端本次选定且必须完整回填的维度数组；`input.mode=default` 时数组最多 3 项，无论实际数量都按原顺序逐项回填。允许直接贴合当前 Claim 的常识性定性解释，但不扩展为长期能力、水平、训练效果或医疗结论。
-- 保持不变：标签证据与数字规则、Claim/视觉白名单、六维度范围、高光归属、固定 `nextAction`、同一大模型入口及一次受限修复、生产链路和正式测评授权均不变。
-- 状态：`Review`。本轮仅完成离线 Prompt/配置/manifest 版本同步，不调用模型；待用户在独立候选 Workflow 同步 v0.4.8 并发布递增版本后，以全新 Run ID 重跑四槽冒烟。旧 Run `AEVAL-SMOKE-20260902-010` 保持不可变。
-
-#### AI-ADV-02C-MIG-01｜v0.4.8 候选 Workflow 四槽冒烟（2026-09-03）
-
-- 范围：独立候选 Workflow `ride_analysis_v3 / 7680762018618359814 / v0.0.4`，Prompt `v0.4.8`，输出合同 `ride-interpretation-output-v0.4.2-candidate`；L1/L2/L3 首轮各 1 条，L3 受限修复 1 条。
-- 结果：Run `AEVAL-SMOKE-20260903-001` 为 `4/4 PASS`。L1/L2/L3 首轮均 Provider 成功并通过 L8；L3-repair 首轮注入 `INVALID_OUTPUT_SCHEMA_VERSION` 后，经同一大模型入口唯一一次受限修复通过。无 B0、无第三次调用，原始模型输出不落盘。
-- 阶段结论：候选迁移达到 Review 验收条件；本结果仅证明四槽冒烟通过，不启动正式 81 槽测评，不替换生产 Workflow。证据：[AEVAL-SMOKE-20260903-001](eval/runs/AEVAL-SMOKE-20260903-001.json)。
-- 下一步：等待用户验收本次四槽结果；正式 AI 测评仍需另行授权。
-
-#### AEVAL-M1-RIDE-INTERPRETATION-V04-FORMAL｜正式 81 槽稳定性测评启动（2026-09-03）
-
-- 用户授权：用户明确“确认本轮冒烟结果，启动新的 81 槽正式测评”。四槽 Run `AEVAL-SMOKE-20260903-001` 视为已验收。
-- 版本矩阵：独立候选 Workflow `ride_analysis_v3 / 7680762018618359814 / v0.0.4`；豆包 `2.0 lite`；Prompt `v0.4.8`；输入合同 `ride-interpretation-input-v0.4-candidate`；输出合同 `ride-interpretation-output-v0.4.2-candidate`；不含历史或“相对自己”。生产 `ride_analysis_v2 v0.0.9` 不在范围内。
-- 冻结测评集：9 个脱敏的可投影当次样例，覆盖 L1/L2/L3 的基础、正常、GPS 异常和心率/功率缺失边界；每例独立运行 9 次，共 81 槽。逐项验证投影输入 SHA-256，但不在 Run 中写入完整输入或模型原文。详见 [formal-stability-plan-v0.1](eval/ride-interpretation-v0.4-candidate/formal-stability-plan-v0.1.json)。
-- 硬门与早停：每槽最终必须通过 L8 的 Schema、维度回填、Claim/数字/视觉、限制、建议与安全校验；最多一次受限修复且无第三次调用；任一 Provider 错误、B0 或修复后 L8 失败立即停止。运行满 10 槽后 P95 超过 25 秒也停止。
-- 结论边界：本批次只评估固定输入上的候选链路稳定性，不等于人工自然语言质量评分、真实用户泛化、长期能力评估或生产发布。
-
-#### AEVAL-M1-RIDE-INTERPRETATION-V04-FORMAL｜正式 81 槽稳定性测评结果（2026-09-03）
-
-- Run：`AEVAL-RUN-20260903-401`；独立候选 Workflow `ride_analysis_v3 / 7680762018618359814 / v0.0.4`；Prompt `v0.4.8`；输入/输出合同 `ride-interpretation-input-v0.4-candidate` / `ride-interpretation-output-v0.4.2-candidate`。
-- 结果：执行 `21/81` 槽后自动停止，`20/21` 最终通过 L8。其中首轮通过 17 槽，一次受限修复后通过 3 槽；无 Provider 错误、无额度错误、无第三次调用。P50/P95 延迟为 `11.648s / 23.080s`。
-- 失败槽：F03（`l1-gps-spike`，GPS 异常边界）第 3 次重复；首轮及唯一一次受限修复后均存在 `ONE_LINE_LABEL_PERFORMANCE_SUMMARY_MISSING`，服务端按协议 B0 并立即早停。原始模型输出、完整输入、Token 和敏感凭据均未落盘。
-- 阶段结论：`STOPPED/FAILED`，不进入人工盲评、生产替换或 `ITEM-V017`。该失败只能说明候选 Prompt/修复指令在该边界仍不稳定，不能外推为全部 L1 或所有候选输出不通过。
-- 恢复条件：先修订标签表现概括的 Prompt/受限修复动作，完成离线回归并由用户发布递增候选 Workflow 版本；随后以全新 `AEVAL-SMOKE` Run ID 完成 L1/L2/L3/L3-repair 四槽。四槽通过后仍须由用户重新授权新正式 Run；本 Run 不可续跑。
-
-#### AI-ADV-02C-MIG-01-LABEL-02｜v0.4.9 标签修订（2026-09-03）
-
-- 原因：正式 Run 的 F03 第 3 次重复在一次受限修复后仍触发 `ONE_LINE_LABEL_PERFORMANCE_SUMMARY_MISSING`，按早停规则停止；不涉及额度或性能。
-- 修订范围：候选 Prompt 递增为 `v0.4.9`；有 `performance`/`relation` Claim 时要求先写 2--6 字、不含数字的表现结论，禁止以“指标为数值”等事实复述代替；服务端一次受限修复指令同步要求只重写标签，默认删除数字，无法概括时退回事实型标签。输出合同、维度范围和调用上限不变。
-- 离线结果：候选/Prompt/输出/响应/呈现/ViewModel 预检通过，`pnpm typecheck` PASS，`pnpm test` `321/321 PASS`，`git diff --check` PASS；无模型调用。
-- 状态：`Blocked`。待用户将 v0.4.9 System Prompt 同步至独立候选 Workflow 并发布 `v0.0.5` 后，以全新 Run ID 重跑四槽；本轮不续跑旧正式 Run，也不启动新的 81 槽测评。
-
-#### AI-ADV-02C-MIG-01-LABEL-02｜v0.4.9 候选 Workflow 四槽冒烟（2026-09-03）
-
-- 范围：独立候选 Workflow `ride_analysis_v3 / 7680762018618359814 / v0.0.5`，Prompt `v0.4.9`，输入/输出合同 `ride-interpretation-input-v0.4-candidate` / `ride-interpretation-output-v0.4.2-candidate`；L1/L2/L3 首轮各 1 条，L3 受限修复 1 条。
-- 结果：Run `AEVAL-SMOKE-20260903-002` 为 `4/4 PASS`。L1、L2、L3 首轮均 Provider 成功并通过 L8；L3-repair 注入首轮 `INVALID_OUTPUT_SCHEMA_VERSION` 后，经同一大模型入口唯一一次受限修复通过。无 B0、无第三次调用，原始模型输出不落盘。
-- 阶段结论：v0.4.9 已满足修订后四槽冒烟门，失败 Run `AEVAL-RUN-20260903-401` 仍保持不可变且不可续跑。本结果不自动启动新正式 Run；需用户重新授权。
-- 证据：[AEVAL-SMOKE-20260903-002](eval/runs/AEVAL-SMOKE-20260903-002.json)。
-
-#### AEVAL-M1-RIDE-INTERPRETATION-V04-FORMAL｜v0.4.9 正式稳定性测评结果（2026-09-03）
-
-- 用户授权：用户确认 `AEVAL-SMOKE-20260903-002` 并授权新的 81 槽正式测评。
-- 版本/数据集：独立候选 Workflow `ride_analysis_v3 / 7680762018618359814 / v0.0.5`；Prompt `v0.4.9`；输入/输出合同 `ride-interpretation-input-v0.4-candidate` / `ride-interpretation-output-v0.4.2-candidate`。冻结计划为 [formal-stability-plan-v0.2](eval/ride-interpretation-v0.4-candidate/formal-stability-plan-v0.2.json)，9 个脱敏样例各 9 次，共 81 槽；零模型输入哈希预检通过。
-- 结果：Run `AEVAL-RUN-20260903-784` 在 `10/81` 槽自动停止，`9/10` 最终通过 L8，其中 8 槽首轮通过、1 槽经唯一一次受限修复通过。第 10 槽 F02:R1 在首次 Provider 调用时返回 `PROVIDER_ERROR`，未产生可供语义或结构硬门判定的模型输出，按协议 B0 且无第三次调用。P50/P95 为 `14.217s / 19.572s`，性能门未失败。
-- 阶段结论：`STOPPED`。该结果不能判定 v0.4.9 的 81 槽稳定性通过或失败，也不表明 F02 的语义质量失败；Run 保持不可变且不可续跑，生产链路不变。
-- 复测条件：确认 Provider 可稳定调用后，重新授权全新 81 槽 Run；复用本冻结计划，若 Prompt、Workflow、合同、样例或哈希有任何变化则先新建递增冻结计划。
-
-#### AEVAL-M1-RIDE-INTERPRETATION-V04-FORMAL｜Provider 重试结果（2026-09-03）
-
-- 范围：用户授权在版本、合同、样例和输入哈希均不变的条件下，复用 `formal-stability-plan-v0.2` 创建全新 81 槽 Run。
-- 结果：Run `AEVAL-RUN-20260903-559` 在首槽 F01:R1 的首次 Provider 调用返回 `PROVIDER_ERROR`，没有模型输出、无受限修复、无第三次调用；服务端 B0 并在 `1/81` 槽自动停止。
-- 阶段结论：`BLOCKED`。重复 Provider 错误不能归因于 Prompt、合同、样例或 L8，不能进行 81 槽质量判定；本 Run 保持不可续跑。
-- 连通诊断：用户终端使用同一 Workflow ID 和短文本 `ride_interp_input` 获得业务 `code=0`，说明 Token 和基础 API 可达；该请求不等价于正式 Run 的完整候选 JSON 和调用参数，且先前完整四槽冒烟已通过，故不改写本 Run 的 Provider 中断结论。
-- 完整请求诊断：首次错误 Token 的完整请求返回 HTTP `401`、业务 `4100`；用户修正 `.env.local` 后，同形完整 L1 请求返回 HTTP `200`、业务 `0`，响应 JSON 可解析。未记录凭据、完整输入或模型输出。
-- 恢复条件：先以修正后的 Token 完成四槽冒烟；通过后再由用户重新授权全新正式 Run，不改写本次或前次停止证据。
-
-#### AI-ADV-02C-MIG-01｜修正 Token 后四槽冒烟结果（2026-09-03）
-
-- 版本/范围：独立候选 Workflow `ride_analysis_v3 / 7680762018618359814 / v0.0.5`，Prompt `v0.4.9`；L1/L2/L3 首轮各 1 条，L3-repair 1 条。
-- 结果：Run `AEVAL-SMOKE-20260903-004` 为 `4/4 PASS`。L1/L2/L3 首轮均通过 L8；L3-repair 注入首轮 `INVALID_OUTPUT_SCHEMA_VERSION` 后，经同一入口唯一一次受限修复通过。无 B0、无第三次调用。
-- 阶段结论：认证阻塞已解除；本结果不等同 81 槽正式测评通过，需用户另行授权新的正式 Run。
-- 证据：[AEVAL-SMOKE-20260903-004](eval/runs/AEVAL-SMOKE-20260903-004.json)。
-
-#### AEVAL-M1-RIDE-INTERPRETATION-V04-FORMAL｜新正式 Run 结果（2026-09-03）
-
-- 用户授权：用户确认 `AEVAL-SMOKE-20260903-004` 并授权新的 81 槽正式测评。
-- 版本/数据集：独立候选 Workflow `ride_analysis_v3 / 7680762018618359814 / v0.0.5`；Prompt `v0.4.9`；冻结计划 [formal-stability-plan-v0.2](eval/ride-interpretation-v0.4-candidate/formal-stability-plan-v0.2.json)，9 个脱敏样例各 9 次，共 81 槽；零模型输入哈希预检通过。
-- 结果：Run `AEVAL-RUN-20260903-978` 执行 `17/81` 槽后自动停止，前 `16/17` 槽最终通过 L8，其中 15 槽首轮通过、1 槽经唯一一次受限修复通过。第 17 槽 F02:R8 首次 Provider 调用返回 `PROVIDER_ERROR`，没有模型输出、无修复、无第三次调用，按协议 B0。P50/P95 为 `15.941s / 24.212s`，性能门未失败。
-- 阶段结论：`STOPPED`。该结果是 Provider 稳定性中断，不是 F02 语义或 L8 质量失败；不能据此判定 81 槽测评通过或失败，Run 保持不可续跑。
-- 恢复条件：确认候选 Workflow 认证、额度和 Provider 调用稳定后，由用户重新授权新的正式 Run；任何资产变化需先新建冻结计划。
-
-#### AEVAL-M1-RIDE-INTERPRETATION-V04-FORMAL｜性能早停重试结果（2026-09-03）
-
-- 范围：用户再次授权复用 `formal-stability-plan-v0.2`，版本固定为 Prompt `v0.4.9` / Workflow `ride_analysis_v3 v0.0.5`。
-- 结果：Run `AEVAL-RUN-20260903-918` 执行 `10/81` 槽后触发 `EARLY_STOP_P95_GT_25S`。前 10 槽全部通过 L8，其中 9 槽首轮、1 槽经唯一一次受限修复；无 B0、无 Provider 错误、无第三次调用。P50/P95 为 `16.115s / 28.244s`。
-- 阶段结论：`STOPPED`。本次停止由性能门触发，不是语义或结构硬门失败；不能判定 81 槽稳定性，Run 不可续跑。
-- 恢复条件：先分析延迟分布及受限修复耗时，形成性能处置决定后，再由用户授权全新 Run。
-- 证据：[AEVAL-RUN-20260903-918](eval/runs/AEVAL-RUN-20260903-918.json)。
-
-#### AI-ADV-02C-MIG-01-HIGHLIGHT-001｜v0.4.11 / v0.0.8 四槽冒烟结果（2026-09-03）
-
-- 发布确认：用户已发布独立候选 Workflow `ride_analysis_v3 / 7680762018618359814 / v0.0.8`，使用 Prompt `v0.4.11`、输出合同 `ride-interpretation-output-v0.4.2-candidate`；生产 `ride_analysis_v2` 未修改。
-- 运行范围：全新 Run [AEVAL-SMOKE-20260903-015](eval/runs/AEVAL-SMOKE-20260903-015.json)，L1、L2、L3 首轮各 1 条，L3-repair 1 条；原始模型输出、完整输入和敏感凭据均未落盘。
-- 结果：4/4 Provider 调用成功并通过 L8；L1/L2/L3 首轮均一次通过，L3-repair 注入首轮 `INVALID_OUTPUT_SCHEMA_VERSION` 后经同一入口唯一一次受限修复通过。无 B0、无第三次调用。
-- 结构观察：本轮实际返回的高光均为 `target.kind=overall`；L1 响应包含 3 个按计划顺序回填的维度，`nextAction` 为对象。四槽延迟为 `12.048s / 13.279s / 12.923s / 7.797s`（L1/L2/L3/L3-repair）。
-- 阶段结论：候选高光归属简化修订达到四槽冒烟通过，任务 `AI-ADV-02C-MIG-01-HIGHLIGHT-001` 进入用户验收 `Review`；本结果不自动授权或启动新的 81 槽正式测评，历史 Run 保持不可变。
-- 验收检查：确认高光全部使用 overall 归属并在整体评价卡片展示；确认四槽均通过且一次受限修复无第三次调用；确认是否另行授权新版本正式测评。
-
-#### AI-ADV-02C-MIG-01｜v0.4.11 / v0.0.8 正式 81 槽测评结果（2026-09-03）
-
-- 用户授权：用户确认四槽冒烟结果后，授权启动新的 81 槽正式测评。本轮使用全新 Run ID，不续跑任何历史停止 Run。
-- 版本/计划：独立候选 Workflow `ride_analysis_v3 / 7680762018618359814 / v0.0.8`；Prompt `v0.4.11`；输入合同 `ride-interpretation-input-v0.4-candidate`；输出合同 `ride-interpretation-output-v0.4.2-candidate`；模型 `豆包·2.0·lite`；冻结计划 [formal-stability-plan-v0.4](eval/ride-interpretation-v0.4-candidate/formal-stability-plan-v0.4.json)，计划 SHA-256 为 `4d04c4e63fe2cb3b93fdfc6a3ed55dd61c10526110655867123a45eb41ae8714`。
-- 执行完整性：9 个冻结脱敏样例各独立执行 9 次，共 `81/81` 槽；不保存原始模型输出、完整候选输入、Token 或敏感凭据；每槽最多首轮加一次受限修复，无第三次调用。
-- 结果：`80/81` 槽最终通过 L8，`64` 槽首轮通过，`16` 槽经唯一一次受限修复通过；`1` 槽降级 B0。失败槽为 `F04:R4`，首轮和修复均未通过，错误为 `HIGHLIGHT_1_UNSUPPORTED_NUMBER`、`HIGHLIGHT_1_CLAIM_OUTSIDE_TARGET`，最终 `REPAIR_FAILED`。本轮无 Provider 错误、无调用超时、无第三次调用。
-- 性能：槽位总耗时 P50/P95 为 `12.027s / 21.612s`；性能门未触发。修复调用仍按每次 Provider 独立 25 秒上限计时。
-- 阶段结论：正式稳定性门 `FAILED`，因为未达到 `81/81` L8 通过且存在 B0。该结果定位为高光数字/证据归属规则仍有间歇性不稳定，不代表 Provider 或结束节点配置失败；Run [AEVAL-RUN-20260903-117](eval/runs/AEVAL-RUN-20260903-117.json) 保持不可变。
-- 下一步：暂不迁移生产链路；先由用户确认本轮正式结果，再决定是否修订高光 Claim/数字校验与受限修复策略并发布递增候选版本。任何修订后必须新建冻结计划并以全新 Run 重测。
-
-#### AI-ADV-02C-MIG-01-FORMAL-02-TARGET-F04｜F04 定向稳定性诊断（2026-09-03）
-
-- 目的：在不修改候选 Prompt、Workflow、合同、冻结计划或历史 Run 的前提下，复测正式 Run 中唯一失败的 `F04:R4`，判断高光数字与证据归属失败是否会在相同冻结输入上重复出现。
-- 版本/输入：独立候选 Workflow `ride_analysis_v3 / 7680762018618359814 / v0.0.8`；Prompt `v0.4.11`；输入/输出合同 `ride-interpretation-input-v0.4-candidate` / `ride-interpretation-output-v0.4.2-candidate`；复用 [formal-stability-plan-v0.4](eval/ride-interpretation-v0.4-candidate/formal-stability-plan-v0.4.json) 中 F04 的冻结输入和哈希。
-- 执行：全新 Run [AEVAL-TARGET-20260903-266](eval/runs/AEVAL-TARGET-20260903-266.json) 独立重复 F04 共 9 次；不保存原始模型输出、完整候选输入、Token 或敏感凭据；每次最多首轮加一次受限修复，无第三次调用。
-- 结果：`9/9` 最终通过 L8，`7` 次首轮通过，`2` 次经唯一一次受限修复通过；无 B0、Provider 错误或调用超时。未复现原 `F04:R4` 的 `HIGHLIGHT_1_UNSUPPORTED_NUMBER` 或 `HIGHLIGHT_1_CLAIM_OUTSIDE_TARGET`。两次首轮问题分别为 `OVERALL_DATA_COMPLETENESS_EVALUATION` 与 `DIMENSION_terrain_climb_DATA_COMPLETENESS_EVALUATION`，均经修复通过。槽位总耗时 P50/P95 为 `11.558s / 20.336s`。
-- 阶段结论：`Review`。这说明原高光失败具有间歇性，不能仅凭单一失败确定为稳定复现缺陷；但本定向诊断不能覆盖或改写正式 Run `AEVAL-RUN-20260903-117` 的 `80/81` 结果，仍不满足正式 `81/81` 稳定性门，也不放行生产迁移。
-- 用户验收：确认定向诊断只作为补充证据；确认后再决定是否进入 `AI-ADV-02C-MIG-01-FIX-003` 修订高光规则，或保留当前候选结果并停止迁移。
-
-#### AI-ADV-02C-MIG-01-FIX-003｜高光数字白名单与整体证据归属离线修订（2026-09-03）
-
-- 授权与来源：用户已授权修复正式 Run `AEVAL-RUN-20260903-117` 的唯一失败 `F04:R4`。该槽在唯一一次受限修复后同时出现 `HIGHLIGHT_1_UNSUPPORTED_NUMBER` 和 `HIGHLIGHT_1_CLAIM_OUTSIDE_TARGET`；历史 Run、冻结计划和结果均不改写。
-- 修订：候选 Prompt 递增至 `v0.4.12`。高光文字出现数字时，同一条计划内 Candidate Claim 必须同时出现在高光 `claimIds` 和整体评价 `claimIds` 中。仅当整体评价计划已开放该 Claim 时，受限修复才可先补齐整体评价再让高光复用；否则删除数字，必要时删除整条高光，禁止只删 Claim ID 而保留数字。
-- 离线证据：新增“数字无对应 Claim”拒绝 fixture、“数字 Claim 不属于整体评价”拒绝 fixture 和“数字完整证据链”接受 fixture。响应 fixture 预检 `18/18 PASS`、Prompt 预检 `3/3 PASS`、类型检查 PASS、全量测试 `330/330 PASS`；无模型调用，不记录原始模型输出、完整候选输入、Token 或敏感凭据。
-- 阶段结论：`Review`。本条仅证明离线合同、修复路径和回归覆盖已完成，不等同扣子发布、四槽冒烟或正式稳定性通过，也不放行生产。
-- 下一步：用户审核并将完整 `v0.4.12` System Prompt 同步到独立候选 Workflow，发布递增版本；之后以全新 Run ID 重跑 L1/L2/L3/L3-repair 四槽。四槽 `4/4` 通过后，另行新建冻结正式计划并决定是否授权新的 81 槽测评。
-
-#### AI-ADV-02C-MIG-01-FIX-003｜v0.4.12 / v0.0.9 四槽冒烟结果（2026-09-04）
-
-- 发布确认：用户已发布独立候选 Workflow `ride_analysis_v3 / 7680762018618359814 / v0.0.9`，使用 Prompt `v0.4.12`；生产 `ride_analysis_v2` 未修改。
-- 运行范围：全新 Run [AEVAL-SMOKE-20260904-002](eval/runs/AEVAL-SMOKE-20260904-002.json)，L1/L2/L3 首轮各 1 条，L3-repair 注入首轮 `INVALID_OUTPUT_SCHEMA_VERSION` 后验证唯一一次受限修复。仅记录结构化结果、时延与 Provider request id；不记录原始模型输出、完整候选输入、Token 或敏感凭据。
-- 结果：`4/4 PASS`。L1、L3 首轮一次通过 L8；L2 首轮触发 `OVERALL_UNSUPPORTED_NUMBER` 后，经唯一一次受限修复通过；L3-repair 经同一模型入口唯一一次修复通过。无 B0、无第三次调用；最终输出未出现 `HIGHLIGHT_*_UNSUPPORTED_NUMBER` 或 `HIGHLIGHT_*_CLAIM_OUTSIDE_TARGET`。
-- 性能：L1/L2/L3/L3-repair 槽位总时延分别为 `10.049s / 21.270s / 11.796s / 9.372s`。每个 Provider 调用仍适用独立 `25s` 上限。
-- 阶段结论：`Review`。本轮证明 v0.4.12 的四槽冒烟通过，但不覆盖此前 `81/81` 正式稳定性门，也不自动创建、授权或启动新的 81 槽正式测评。
-- 用户验收检查：确认四槽均通过且没有 B0/第三次调用；确认 L2 和 L3-repair 的单次修复路径符合预期；确认高光数字与整体证据归属错误未再出现。确认后才可另建冻结正式计划并单独授权新的 81 槽测评。
-- 用户验收：2026-09-04，用户明确“确认本轮冒烟”。`AI-ADV-02C-MIG-01-FIX-003` 关闭为 `Done`；下一项只进入新冻结正式计划的创建与预检，尚未获得新的 81 槽执行授权。
-
-#### AI-ADV-02C-MIG-01-FORMAL-03｜v0.4.12 / v0.0.9 新冻结正式计划（2026-09-04）
-
-- 状态：`Done`（正式测评已完成并按失败结论审查）。在 `FIX-003` 四槽冒烟获用户确认后，创建独立计划 [formal-stability-plan-v0.5](eval/ride-interpretation-v0.4-candidate/formal-stability-plan-v0.5.json)，不修改 `formal-stability-plan-v0.4.json` 或任何历史 Run。
-- 版本矩阵：独立候选 Workflow `ride_analysis_v3 / 7680762018618359814 / v0.0.9`；Prompt `v0.4.12`；输入/输出合同 `ride-interpretation-input-v0.4-candidate` / `ride-interpretation-output-v0.4.2-candidate`；模型为豆包 `2.0 lite`；不含历史或“相对自己”。
-- 冻结范围：沿用 9 个脱敏当次样例、每例独立执行 9 次，共 81 槽；逐槽校验输入 SHA-256。每次 Provider 调用独立 25 秒，单槽最多首轮加一次受限修复，无第三次调用；任一调用超时或修复后 L8 失败，该槽降级 B0，但批次继续执行至 `81/81`；槽位总耗时不单独触发 B0，P50/P95 仅作完成后的汇总指标。
-- 预检：`AEVAL_FORMAL_PLAN_FILE=formal-stability-plan-v0.5.json pnpm eval:interpretation:formal:preflight` 通过；冻结输入哈希全部匹配；无模型调用，不保存原始模型输出、完整候选输入、Token 或敏感凭据。
-- 验收边界：本计划仅评估固定输入上的候选链路稳定性，不代表人工自然语言质量、真实用户泛化、长期能力评估或生产发布；计划审核通过后，仍需用户单独授权才可创建新的 `AEVAL-RUN`。
-- 正式 Run：用户已授权执行，运行 [AEVAL-RUN-20260903-633](eval/runs/AEVAL-RUN-20260903-633.json)，`81/81` 槽完整执行；`79/81` 通过 L8，`2/81` 在一次受限修复后仍失败并按协议降级 B0。失败槽为 `F03:R9`（`ONE_LINE_LABEL_PERFORMANCE_SUMMARY_MISSING`、`OVERALL_ACTION_LANGUAGE_NOT_ALLOWED`）和 `F09:R5`（`OVERALL_VISUAL_MISMATCH`、`OVERALL_UNSUPPORTED_NUMBER`）；无 Provider 错误、无超时、无第三次调用；P50/P95=`13.785s/24.436s`。
-- 阶段结论：本 Run 完成但未达到 `81/81` 通过门；不能据此迁移生产，也不能将 `79/81` 视为正式稳定性通过。用户已审查结果并确认按结论修复：标签表现概括硬门由 `IMPL-012` 取消，F03 的整体评价行动措辞与 F09 的图表/数字证据由 `FIX-004` 承接；本计划与历史 Run 均不改写。
-- 完成记录：本任务以正式 Run 的完整执行和失败结论审查完成关闭；`Done` 不代表稳定性门通过或生产放行。
-
-#### AI-ADV-02C-IMPL-012｜候选 L8 规则恢复与一致性审计（2026-09-04）
-
-- 状态：`Done`（用户确认按恢复结论进入下一步）。恢复工作树切换前已确认但未完整保留的规则实现与记录：一句话标签只需概括有证据支持的本次骑行特点，不强制概括表现；整体评价可显式复用本次输入中其他已选业务项的 Candidate Claim。
-- 不变边界：标签仍需绑定 Candidate Claim，fact-only 标签不得使用无依据的评价词；整体评价使用的事实、数字和判断必须在自身 `overallAssessment.claimIds` 中显式绑定，不能从其他输出文本推断。维度卡片仍受各自计划约束。
-- 本轮仅恢复 L8、受限修复和离线 response fixture/测试的一致性；不改候选 Prompt 或扣子 Workflow，不调用模型，不重跑冒烟/正式测评，不修改生产 v0.3、历史 Run 或冻结计划。`FORMAL-03` 的行动措辞、图表匹配和数字证据失败由独立 `FIX-004` 承接。
-- 恢复结果：移除 `ONE_LINE_LABEL_PERFORMANCE_SUMMARY_MISSING` 的服务端修复和事实标签兜底；整体评价保持可显式复用任一非 limitation 当次 Claim、维度仍只用自身计划 Claim；一次受限修复可按相同边界补齐整体 Claim；响应 fixture 重新导出为 16 条，并更新 manifest SHA-256。
-- 自测：`pnpm eval:interpretation:responses:preflight` 16/16 PASS、`pnpm test` 330/330 PASS、`pnpm typecheck` PASS、`git diff --check` PASS；未调用模型或扣子。
-
-#### AI-ADV-02C-MIG-01-FIX-004｜FORMAL-03 整体评价受限修复（2026-09-04）
-
-- 状态：`Done`（用户确认按修复结论进入下一步）。
-- 范围：处理 `AEVAL-RUN-20260903-633` 的剩余真实失败。保留 L8 的行动语和图表一致性硬门；不改候选 Prompt、扣子 Workflow、生产链路、历史 Run、冻结计划或两次调用上限。
-- 修复：受限修复指令在 `OVERALL_ACTION_LANGUAGE_NOT_ALLOWED` 时要求删除建议式措辞，并只在 `nextAction` 保留建议；在 `OVERALL_VISUAL_MISMATCH` 时把 `overallAssessment.visualRefIds` 完整恢复为 `input.overallAssessment.visualRefIds` 的原顺序。`OVERALL_UNSUPPORTED_NUMBER` 延续 `IMPL-012` 的显式跨项 Claim 规则：数字可来自其他已选业务项，但映射同一数字的非 limitation Claim 必须写入 `overallAssessment.claimIds`。
-- 验证：新增两类修复指令回归；`pnpm eval:interpretation:responses:preflight` 16/16 PASS、`pnpm test` 330/330 PASS、`pnpm typecheck` PASS、`git diff --check` PASS；无模型调用。
-- 后续：开始使用当前已发布候选 Workflow 新建四槽冒烟。四槽通过后仍需另建冻结计划并授权新的 81 槽测评，不能复用或改写本次正式 Run。
-
-#### AI-ADV-02C-MIG-01-FIX-004-SMOKE｜FORMAL-03 修复后四槽冒烟（2026-09-04）
-
-- 状态：`Done`。Run [AEVAL-SMOKE-20260904-003](eval/runs/AEVAL-SMOKE-20260904-003.json) 使用已发布的 `ride_analysis_v3 v0.0.9 / Prompt v0.4.12`，验证已恢复的 L8 与整体评价受限修复路径。
-- 结果：`4/4 PASS`。L1/L2/L3 均在首轮通过 L8；L3-repair 注入 `INVALID_OUTPUT_SCHEMA_VERSION` 后，经唯一一次真实修复通过。无 B0、无 Provider 超时、无第三次调用。
-- 结论：`IMPL-012` 与 `FIX-004` 的本地修复已通过最小真实链路验证。该 Run 不覆盖新的 81 槽稳定性门，不改写 `AEVAL-RUN-20260903-633`；下一步创建独立冻结正式计划并在预检后等待用户单独授权。
-
-#### AI-ADV-02C-MIG-01-FORMAL-04｜修复后新冻结正式计划（2026-09-04）
-
-- 状态：`Ready`。计划 [formal-stability-plan-v0.6](eval/ride-interpretation-v0.4-candidate/formal-stability-plan-v0.6.json) 独立冻结 `IMPL-012` 与 `FIX-004` 后的服务端规则，`supersedesPlan` 为 `formal-stability-plan-v0.5.json`；不修改旧计划或任何历史 Run。
-- 版本矩阵：候选 Workflow `ride_analysis_v3 v0.0.9`、Prompt `v0.4.12`、输入/输出合同 `ride-interpretation-input-v0.4-candidate` / `ride-interpretation-output-v0.4.2-candidate`；同样的 Prompt/Workflow 下，本计划与 `FORMAL-03` 的区别是冻结了新的 L8 与受限修复实现。
-- 预检：`AEVAL_FORMAL_PLAN_FILE=formal-stability-plan-v0.6.json pnpm eval:interpretation:formal:preflight` 通过。9 个脱敏样例、每例 9 次、共 81 槽的输入 SHA-256，以及候选 L8/受限修复运行时文件 SHA-256 全部匹配；未调用模型。
-- 执行边界：每次 Provider 调用独立最多 25 秒，每槽最多首轮加一次受限修复且无第三次调用，批次持续至 81 槽。启动新的正式 Run 需要用户单独明确授权。
+| `AEVAL-M1-ADVANCED-INTERPRETATION` | 高阶事实接入骑后 AI 解读（旧链路） | `SUPERSEDED`：被 V04-FORMAL 体系取代，A/B/C 已确认，D `FAILED`、E 不再执行 | `12+3` 合成脱敏案例；`AEVAL-RUN-20260831-356` 完成 81 槽但仅 41/81 合同通过；目标已由 v0.4 候选链承接并通过 81 槽正式门 | [冻结资产](eval/advanced-interpretation-v0.1/manifest.json)、[正式 Run](eval/runs/AEVAL-RUN-20260831-356.json) | 无；冻结资产与 Run 保留作历史对照 |
+| `AEVAL-M1-USER-PILOT` | 5 人 AI 产品验证 | `CANCELLED`（2026-09-07 用户决策取消） | 旧材料归档不再执行；质量验证由 `AEVAL-M1-RIDE-INTERPRETATION-V04-BLIND-REVIEW` 承接 | `eval/user-testing/T017-*` | 无 |
+| `AEVAL-M1-RIDE-INTERPRETATION-V04-BLIND-REVIEW` | v0.4 候选链双人盲评（LLM 双评审） | `COMPLETE`：A–E 全流程走完，E 用户签署 `NO-GO`（2026-09-07，原话「NO-GO」）。[AEVAL-RUN-20260907-876](eval/runs/AEVAL-RUN-20260907-876.json) + [盲评结果](eval/human-review/T002-V04-blind-review-result-v0.1.md)：综合 2.75<4.2、洞察 +1.39✅、事实忠实 −2.17❌、8/9 硬门标记、kappa 0.677 基线建立——失效为可定位可修复的 Prompt/规则缺口（方差类证据不在允许 Claim 集），按 NO-GO→修复→复评处理 | F01–F09 每案例候选 1 次 + B0 确定性事实层配对，18 样本/评审；指标沿用 3.2 六维 Rubric | [执行指南](eval/human-review/T002-V04-blind-review-plan-v0.1.md)、[结果文档](eval/human-review/T002-V04-blind-review-result-v0.1.md) | 用户决策修复范围（结果文档 §7 四条方向）后另立修复任务；修复后新冻结计划、全新 Run 复评，评审指南补易懂性/语气匹配锚点示例 |
+| `AEVAL-M1-RIDE-INTERPRETATION-V04-CANDIDATE` | 单次骑后解读 v0.4.2 候选结构 | `DONE`：候选结构已确认，未调用模型 | 自然语言整体/维度、高光和下一步结构已建立；本轮只接入 6 个当次维度，高光按整体/维度归属；迁移由独立 `GATE-01` 管理 | `coze/ride-interpretation-output-v04-candidate-schema.json`、`prompts/cycling-buddy-ride-interpretation-v0.4.6-candidate.md` | 已由 `MIG-01` 迁移链路承接完成（最终版本 `v0.0.11 / Prompt v0.4.14`） |
+| `AEVAL-M1-RIDE-INTERPRETATION-V04-GATE-01` | v0.4.2 候选迁移决策门 | `DONE`：用户于 2026-09-02 确认决策包 | 不修改生产 v0.3.2/Workflow v0.0.9；不接持久历史或“相对自己”；不调用模型；不授权正式 81 槽 | `eval/ride-interpretation-v0.4-candidate/manifest.json`、`eval/ride-interpretation-v0.4-candidate/migration-gate-v0.1.md` | 已由 `MIG-01` 承接完成 |
+| `AEVAL-M1-RIDE-INTERPRETATION-V04-FORMAL` | v0.4 候选正式稳定性测评（FORMAL-01~08 系列） | `DONE`：FORMAL-08 于 2026-09-06 首次通过 81 槽正式门 | 终态 [AEVAL-RUN-20260906-955](eval/runs/AEVAL-RUN-20260906-955.json) `81/81`、零 B0、P50/P95=`10.7s/18.9s`（`v0.0.11 / v0.4.14`，计划 v0.16）；此前 FORMAL-01~07 为 78/81、80/81、74/81 等未过门（明细见下方索引与归档） | [终态 Run](eval/runs/AEVAL-RUN-20260906-955.json)、[计划 v0.16](eval/ride-interpretation-v0.4-candidate/formal-stability-plan-v0.16.json) | 候选已迁移生产入口并完成真实链路冒烟（2026-09-07）；质量盲评由 `V04-BLIND-REVIEW` 承接 |
+
+> 2026-09-03 ~ 2026-09-05 的单条 Run/任务过程记录（v0.0.2→v0.0.9 迁移冒烟、FORMAL-01~06 执行、LABEL/PROMPT/RECOVERY/CONFIG/HIGHLIGHT/FIX-001~008 修订联调等 40 余条）已整体闭环并归档：压缩前原文见 [archive/document-history-2026-09-07](archive/document-history-2026-09-07/README.md)，终态结论以下方「修复-验证循环索引」「历史批次索引」为准；Run 明细以 `eval/runs/*.json` 为准，均不可续跑或改写。
+
+### AI-ADV-02C-MIG-01 修复-验证循环索引（2026-09-06 归档）
+
+> 本节由 2026-09-06 台账卫生压缩生成：`FORMAL-07`（74/81 未过门）至 `FORMAL-08`（81/81 首过门）之间的 22 条任务记录（FIX-009~018、VALIDATION-01~08、DIAG-003、FIX-018-SMOKE 等）已整体闭环，正文按原样保留于 `开发进度.md` 第 3A 节模块摘要所指向的归档快照（[2026-09-07](archive/document-history-2026-09-07/README.md)、[2026-09-06](archive/document-history-2026-09-06/README.md)）。所有 Run 均不可续跑、补跑或改写。
+
+| 阶段 | 版本矩阵 | 机器结果 | 阶段结论 | 证据 |
+|---|---|---|---|---|
+| FORMAL-07 正式测评 | `v0.0.9 / v0.4.12` | `81/81` 完成，`74/81` 通过、`7` B0，P50/P95=`16.8s/32.6s` | 未过门；失败簇漂移，确立"确定性收口"修复路线 | [Run](eval/runs/AEVAL-RUN-20260904-821.json) |
+| FIX-009 定向诊断 | `v0.0.9 / v0.4.12` | F02 `3/3` 首轮过；F04 `2/3`，R1 行动措辞 `REPAIR_FAILED` B0 | 图表/Claim 收口生效；行动措辞超出安全范围，停止 | [F02](eval/runs/AEVAL-TARGET-20260904-860.json)、[F04](eval/runs/AEVAL-TARGET-20260904-308.json) |
+| VALIDATION-01 | `v0.0.9 / v0.4.12` | F05 `2/3` 首轮过，R2 行动措辞 B0 | FIX-010 行动子句收口不足，停止 | [Run](eval/runs/AEVAL-TARGET-20260905-102.json) |
+| VALIDATION-02 | `v0.0.9 / v0.4.12` | F05 `1/3`，R1/R2 行动措辞 B0 | 执行器首个 B0 未自停的流程缺陷暴露并随后修复 | [Run](eval/runs/AEVAL-TARGET-20260905-103.json) |
+| VALIDATION-03 | `v0.0.9 / v0.4.12` | F05 `3/3`，R3 心率行动措辞+爬坡完整度 B0 | 整体误判已降，维度偶发仍在，停止 | [Run](eval/runs/AEVAL-TARGET-20260904-340.json) |
+| VALIDATION-03 补充 | `v0.0.9 / v0.4.12` | F05:R1 首轮过；后续 Run `3/3` 中 R3 B0 | Provider 可用性确认；语义边界未稳 | [104](eval/runs/AEVAL-TARGET-20260905-104.json)、[105](eval/runs/AEVAL-TARGET-20260905-105.json) |
+| VALIDATION-04 | `v0.0.10 / v0.4.13` | F05 `4/9`，R4 多类错误 `REPAIR_FAILED` B0 | 文本/数字边界仍偶发，停止 | [Run](eval/runs/AEVAL-TARGET-20260905-354.json) |
+| FIX-015 定向诊断 | `v0.0.10 / v0.4.13` | F05 `8/9`，R8 整体/心率行动措辞 B0 | 证据组/高光收口生效；行动措辞仍偶发 → FIX-016 | [Run](eval/runs/AEVAL-TARGET-20260905-193.json) |
+| VALIDATION-05 | `v0.0.11 / v0.4.14` | F05 `2/9`，R2 `route_pacing` 行动措辞 B0 | 强负向 Prompt 不足，失败扩展至新维度 → FIX-017 | [Run](eval/runs/AEVAL-TARGET-20260906-001.json) |
+| VALIDATION-06 | `v0.0.11 / v0.4.14` | 两轮 F05/F09 均在 R1 以 17--21ms `PROVIDER_HTTP_ERROR` 结束 | 无模型输出、无语义结论 → DIAG-003 | [173](eval/runs/AEVAL-TARGET-20260906-173.json)/[707](eval/runs/AEVAL-TARGET-20260906-707.json)/[840](eval/runs/AEVAL-TARGET-20260906-840.json)/[189](eval/runs/AEVAL-TARGET-20260906-189.json) |
+| DIAG-003 连通复核 | `v0.0.11` | 允许联网环境 `12/12` HTTP 200 结构化响应 | 失败归因受限沙盒网络层，非候选 Workflow | 摘要见 `开发进度.md` 3A 归档 |
+| VALIDATION-07 | `v0.0.11 / v0.4.14` | F05 `1/9`，R1 不可定位行动措辞、唯一修复失败 B0 | 确定性收口无法安全定位 → FIX-018 兜底 | [Run](eval/runs/AEVAL-TARGET-20260906-368.json) |
+| VALIDATION-08 | `v0.0.11 / v0.4.14` | F05 `9/9`（全首轮）+ F09 `9/9`（8 首轮+1 修复），零 B0 | FIX-018 兜底生效，定向诊断首过 | [F05](eval/runs/AEVAL-TARGET-20260906-706.json)、[F09](eval/runs/AEVAL-TARGET-20260906-791.json) |
+| FIX-018-SMOKE | `v0.0.11 / v0.4.14` | 四槽 `4/4`（L1/L2/L3 首轮 + L3-repair 唯一修复），零 B0 | 最小真实链路验证通过 | [Run](eval/runs/AEVAL-SMOKE-20260906075536.json) |
+| **FORMAL-08 正式测评** | `v0.0.11 / v0.4.14` 计划 v0.16 | **`81/81` 通过、零 B0**，75 首轮 + 6 唯一修复，P50/P95=`10.7s/18.9s` | **首次通过 81 槽正式稳定性门，候选达到 M1 放行标准** | [Run](eval/runs/AEVAL-RUN-20260906-955.json) |
+| 沙盒/诊断产物 Run | — | `AEVAL-TARGET-20260904-366`（FIX-013 起因）、`AEVAL-TARGET-20260904-448`、`AEVAL-TARGET-20260904-491`、`AEVAL-TARGET-20260905-101`、`AEVAL-TARGET-20260905-824`、`AEVAL-TARGET-20260905-991` | 受限沙盒网络产物或起因观察，不作为候选链路结论；均不得续跑或改写 | 见 `eval/runs/` 对应 JSON |
 
 ### 历史批次索引
 
@@ -638,28 +362,7 @@ M2 不默认新增 Agent 能力。只有持久历史、用户资料、分享文�
 - P0-B：`Done`（用户于 2026-09-01 明确验收）；Prompt `3.1.6` 已发布到扣子 `v0.0.9`，合同 `ride-analysis-output-v0.3.2`、wire `v0.3`。首轮联网 2/4，但后续两轮均 4/4 通过；正式 Run `AEVAL-RUN-20260831-356` 已完成且 D 失败。
 - 冒烟版本：v0.0.6 为 `1/4` 通过（schema/上下文失败）；v0.0.7 为 `1/4` 通过（三类语义硬门各暴露问题）；v0.0.8 首次运行受 `code=4028` 阻断，额度恢复后的多次重跑均 4/4 Provider 成功，但完整通过数在 `2/4` 与 `3/4` 间波动，先后暴露 `UNSUPPORTED_CONTEXT_LABEL`、`DIMENSION_UNSUPPORTED_NUMBER`、`MISSING_INPUT_IMPACT`。
 - 证据：[v0.0.5](eval/runs/SMOKE-20260831134610.json)、[v0.0.6](eval/runs/SMOKE-20260831143855.json)、[v0.0.7](eval/runs/SMOKE-20260831153345.json)、[v0.0.8](eval/runs/SMOKE-20260831161350.json)、[重试1](eval/runs/SMOKE-20260831162151.json)、[重试2](eval/runs/SMOKE-20260831165854.json)、[充值后重跑1](eval/runs/SMOKE-20260831171044.json)、[充值后重跑2](eval/runs/SMOKE-20260831171936.json)。
-- 下一步：先完成并验收 `AI-ADV-02` 骑后解读规则与水平评估重构设计；设计确定后再新建迁移版本、测评集和执行授权。旧 `AEVAL-RUN-20260831-356` 结果保持不可变，不追加旧链路正式 Run。
-
-### 2026-09-01 · AI-ADV-01-FIX-001-P0-B-v0.0.9-SMOKE · Review
-
-- 范围：Workflow `ride_analysis_v2 v0.0.9`、Prompt `3.1.6`、合同 `ride-analysis-output-v0.3.2`、wire `ride-analysis-output-v0.3`；L1/L2/L3 首轮各 1 条及 L3 受限 repair 1 条，few-shot `disabled`。
-- 结果：首次联网 `SMOKE-20260831180658` 为 2/4，L2/L3 均为 `UNSUPPORTED_CONTEXT_LABEL`；随后 `SMOKE-20260831180757` 与 `SMOKE-20260831181039` 各为 4/4 Provider 成功和完整校验通过，三个语义硬门及 wire 版本硬门均为 0。原始模型输出不落盘；冒烟脚本仅在失败时记录命中的上下文词。
-- 结论：P0-B 达到用户验收前的 `Review` 条件，但首次波动仍作为风险保留。未执行 81 槽正式测评、人工盲评或 `ITEM-V017`。
-
-### 2026-09-01 · AEVAL-RUN-20260831-356｜P0-B v0.0.9 正式测评 · Review
-
-- 授权与范围：用户确认 P0-B 验收，并沿用检查点 C `RUN_APPROVED`；15 个冻结合成脱敏案例，12 个非 red-team A/B 各 3 次、3 个 red-team 仅 B 各 3 次，共 81 槽。运行前 `pnpm eval:advanced:preflight` 为 15/15 PASS，无模型调用。
-- 版本：实际运行记录为 Workflow `ride_analysis_v2` / `7676429753852018707` / `v0.0.9`，Prompt `3.1.6`，输出合同 `ride-analysis-output-v0.3.2`，wire `ride-analysis-output-v0.3`。冻结 manifest 的 `versionMatrix.workflowVersion` 仍为旧 `ride_analysis_v2-v0.0.5`，该不一致作为版本复现风险保留，不能回写 Run。
-- 运行完整性：Provider `81/81` 成功；完整合同通过 `41/81`（A `24/36`，B `17/45`）；总 P50/P95 `8031.766/11356.691ms`，候选 P95 `13154.364ms`；前 10 个候选未触发完成率、fallback 或 P95 早停；Token 成本保持 `NOT_OBSERVABLE`，直接 Provider 批次不测试服务层 B0 fallback。
-- 硬门失败聚类：`UNSUPPORTED_CONTEXT_LABEL` 23、`OVERALL_TOPIC_WITHOUT_CLAIM` 11、`DATA_COMPLETENESS_EVALUATION` 8、`UNSUPPORTED_DISTANCE_CLASSIFICATION` 5、`DIMENSION_UNSUPPORTED_NUMBER` 2、`TEXT_UNSUPPORTED_NUMBER` 2、`MISSING_INPUT_IMPACT` 1、`UNSCOPED_CONSISTENCY_CONCLUSION` 1。原始模型输出不落盘。
-- 阶段结论：D=`FAILED`；不生成盲评包，不进入人工盲评、检查点 E 或 `ITEM-V017`。下一轮需先确定修复范围，并在执行前重新导出/校验版本矩阵、通过零模型预检和受限冒烟。
-- 辅助诊断：首次受限环境尝试 `AEVAL-RUN-20260831-138` 在 22 槽、前 10 个候选完成率 0% 时因 `PROVIDER_HTTP_ERROR` 自动早停，无模型输出；该证据不计入本次功能或质量分母。
-
-### 2026-09-01 · AI-ADV-01-FIX-001-P0-B-v0.0.8-SMOKE-RETRY-4 · Blocked
-
-- 额度恢复后以新 Run ID `SMOKE-20260831171936` 重跑同一组 4 条冒烟；4/4 Provider 成功，L2 与 L3-repair 完整通过，L1 触发 `UNSUPPORTED_CONTEXT_LABEL`，L3 触发 `MISSING_INPUT_IMPACT`，整体 2/4 通过。
-- 结论：额度阻塞已解除，但 P0-B 语义硬门在同一版本下仍有随机漂移；不进入 81 槽正式 Run、人工盲评或检查点 E。单独不落盘重放曾通过，不能据此放宽硬门。证据：[SMOKE-20260831171936](eval/runs/SMOKE-20260831171936.json)。
-- 下一步：递增 Prompt 版本，收紧 limitations 安全模板与上下文标签默认禁用规则；扣子同步发布后再以新 Run ID 重跑 4 条冒烟。
+- 后续走向（2026-09-07 更新）：`AI-ADV-02` 规则重构已验收，其 v0.4 候选链已通过 FORMAL-08 正式门并迁移生产入口（见上方测评 ID 表与修复-验证循环索引）；本节 P0-A/P0-B 为旧链路历史结论，仅作对照保留，不再追加旧链路正式 Run。
 
 > 详细历史已归档：[AI_AGENT_测评计划与记录-pre-compact.md](archive/ai-agent-eval-history-2026-09-01/AI_AGENT_测评计划与记录-pre-compact.md)。
 
