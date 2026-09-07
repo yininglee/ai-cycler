@@ -124,15 +124,6 @@ M0 已继承工程基线（Done）
 
 交付文档：[骑后解读规则重构设计](骑后解读规则重构设计.md)、[骑行水平能力评估模块设计](骑行水平能力评估模块设计.md)、[骑行水平与能力评估规则研究](骑行水平与能力评估规则研究.md)。范围拆分前设计副本见 [单次解读范围调整前归档](archive/ride-analysis-rules-pre-single-ride-scope-2026-09-01/README.md)，6.1 优化前副本见 [前端可视化解读规则优化前归档](archive/ride-analysis-rules-pre-visual-rule-optimization-2026-09-01/README.md)，更早的旧解读资产见 [重构前归档](archive/ride-analysis-rules-pre-restructure-2026-09-01/README.md)。
 
-`AI-ADV-02C-GATE-01` 任务卡：
-
-- 状态：`Done`（2026-09-02，用户确认 Gate-01 决策包）。
-- 目标：在离线候选链路已完成后，冻结一次可审查的 v0.4 迁移范围、测评数据集版本、版本矩阵和后续 Run 计划。
-- 非目标：不修改 `cycling-buddy-ride-analysis-v3.1.6.md`、`ride-analysis-output-v0.3.2`、生产 Coze Workflow；不接持久历史；不调用模型、不执行冒烟或正式 Run。
-- 验收条件：候选输入/输出/Prompt/Schema/fixture 的版本和哈希可复现；数据集拆分、正反例覆盖、硬门、预算、停止条件和回滚路径写入 AI 测评文档；迁移范围明确区分“必须迁移”“暂不迁移”和“待用户确认”；Gate 通过后 `AI-ADV-02C-MIG-01` 置为 `Ready`，但未获明确授权不得启动。
-- 交付：`eval/ride-interpretation-v0.4-candidate/manifest.json`、`eval/ride-interpretation-v0.4-candidate/migration-gate-v0.1.md`，以及 `AI_AGENT_测评计划与记录.md` 中的新 AEVAL 计划条目。两份 Gate 资产已冻结并经用户确认。
-- 后续进展：`AI-ADV-02C-MIG-01` 已执行完毕并于 2026-09-06 整体闭环（FORMAL-08 首过 81 槽正式门）；生产迁移由 `MIG-PROD-01` 承接并已于 2026-09-07 验收。
-
 用户验收结果：2026-09-01，用户明确回复“当前设计验收通过”，确认单次骑后解读边界、L0-L8 分层、关系/历史 Claim、7 个业务维度、默认/展开预算、四层解读语义及三阶段前端展示。`AI-ADV-02C` 已完成离线候选切片并由用户授权继续后续工作；用户后续确认当前阶段不接持久数据，`AI-ADV-02D` 因此延期至 M2 `Backlog`。本次不覆盖独立的 `AI-CAP-01`。
 
 约束：不得因本任务树预先创建而视为规则已确认。`DATA-ADV-01A` 至 `DATA-ADV-04` 是普通开发，均由 Codex 自测后提交用户验收；只有 `AI-ADV-01` 改变 AI 行为，必须进入 `AI_AGENT_测评计划与记录.md` 协作流程。`ITEM-V017` 在相关优化任务验收前保持 `Paused`。
