@@ -120,7 +120,6 @@ M0 已继承工程基线（Done）
   - [x] `AI-ADV-02C-MIG-PROD-01` 生产解读入口迁移至 v0.4 候选链路。状态：`Done`（2026-09-07，用户验收通过）；`/api/ride-analysis` 切换至 `ride_analysis_v3 v0.0.11 / Prompt v0.4.14`（含 FIX-018 兜底），输出经 `toLegacyAiOutput` 映射保持前端零结构改动；全量测试 `363/363`、类型检查、差异检查全过；同轮完成两文档模块级压缩。详情见 `开发进度.md` 第 4 节完成记录。
   - [x] `AI-ADV-02C-MIG-PROD-02` 生产解读入口真实链路冒烟。状态：`Done`（2026-09-07 执行并经用户验收：`l3-built-in-sample` 端到端一次真实 Provider 调用，`source=b2`、`attempts=1`、零 B0、validationIssues 空、端到端 15.2s，版本矩阵 `ride_analysis_v3 v0.0.11 / Prompt v0.4.14` 正确，输出经 `toLegacyAiOutput` 映射完整可渲染）；生产链路闭环全部完成；不构成新的 AI 质量结论。完成记录见 `开发进度.md` 第 4 节。
   - [ ] `AI-ADV-02D` 接入单次解读所需的持久历史查询。状态：`Backlog`；用户确认当前阶段不接持久数据，按整体规划延期至 M2 的 `MVP-FOUNDATION-01`--`03` 与 `MVP-REPEAT-01`，不能在进程内 Demo 存储上直接实现。
-- [ ] `AI-CAP-01` 骑行水平/能力评估独立模块设计。状态：`Review`（已形成独立产品边界、纵向链路、能力维度和前端模块草案；不得随 `AI-ADV-02` 自动进入开发）。
 
 交付文档：[骑后解读规则重构设计](骑后解读规则重构设计.md)、[骑行水平能力评估模块设计](骑行水平能力评估模块设计.md)、[骑行水平与能力评估规则研究](骑行水平与能力评估规则研究.md)。范围拆分前设计副本见 [单次解读范围调整前归档](archive/ride-analysis-rules-pre-single-ride-scope-2026-09-01/README.md)，6.1 优化前副本见 [前端可视化解读规则优化前归档](archive/ride-analysis-rules-pre-visual-rule-optimization-2026-09-01/README.md)，更早的旧解读资产见 [重构前归档](archive/ride-analysis-rules-pre-restructure-2026-09-01/README.md)。
 
@@ -194,6 +193,7 @@ M0 已继承工程基线（Done）
 进入条件：M1–M3 的核心用户价值、数据归属、删除、观测和 AI 安全证据稳定；训练计划获得独立专业评审授权。
 退出条件：训练规则/安全/用户确认与回滚完整；生产隔离、备份、告警、合规、灰度和 14 天观察完成。
 
+- [ ] `AI-CAP-01` 骑行水平/能力评估独立模块（实现拆分 `AI-CAP-01A`--`01E`），`TRAIN-01` 的前置依赖：先完成设计逐节确认与能力维度、纵向相对本人画像落地，为训练计划的 RPE/心率/功率方案选择提供输入。状态：`Review`（设计初稿已完成，等待用户逐节确认；不随 `AI-ADV-02` 自动进入开发）。
 - [ ] `TRAIN-01` 将目标、时间、RPE/心率/功率能力、疲劳/不适和停止规则写成独立 PRD/Schema。`Backlog`，2–3 sessions。
 - [ ] `TRAIN-02` 实现规则引擎与可解释计划草案；LLM 只表达，不决定强度、频率、恢复或医疗结论。`Backlog`，3–4 sessions。
 - [ ] `TRAIN-03` 完成专业审核、红队评测、用户显式确认、暂停/退出/回滚和专项预览。`Backlog`，2–3 sessions。
