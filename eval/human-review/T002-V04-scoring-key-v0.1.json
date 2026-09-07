@@ -1,0 +1,300 @@
+{
+  "warning": "仅项目维护者使用，不发送给评审",
+  "runId": "AEVAL-RUN-20260907-876",
+  "reviewId": "T002-V04",
+  "reviewerSeeds": {
+    "A": 20260907,
+    "B": 955
+  },
+  "note": "v0.1 修正版（2026-09-07）：补全评审 B 映射——原生成脚本缺陷仅写入 A 映射；B 映射经输出指纹与 A 映射交叉验证离线重建（脚本缺陷已同步修复）；两份评审包本体未改动。",
+  "items": [
+    {
+      "reviewer": "A",
+      "itemId": "ITEM-001",
+      "source": "b0",
+      "caseId": "F06",
+      "fixtureId": "fit-heart-rate-dropout",
+      "tier": "L2"
+    },
+    {
+      "reviewer": "A",
+      "itemId": "ITEM-002",
+      "source": "candidate",
+      "caseId": "F05",
+      "fixtureId": "l2-fit-heart-rate",
+      "tier": "L2"
+    },
+    {
+      "reviewer": "A",
+      "itemId": "ITEM-003",
+      "source": "candidate",
+      "caseId": "F08",
+      "fixtureId": "l3-fit-power",
+      "tier": "L3"
+    },
+    {
+      "reviewer": "A",
+      "itemId": "ITEM-004",
+      "source": "candidate",
+      "caseId": "F09",
+      "fixtureId": "fit-power-dropout-with-heart-rate",
+      "tier": "L3"
+    },
+    {
+      "reviewer": "A",
+      "itemId": "ITEM-005",
+      "source": "b0",
+      "caseId": "F08",
+      "fixtureId": "l3-fit-power",
+      "tier": "L3"
+    },
+    {
+      "reviewer": "A",
+      "itemId": "ITEM-006",
+      "source": "b0",
+      "caseId": "F05",
+      "fixtureId": "l2-fit-heart-rate",
+      "tier": "L2"
+    },
+    {
+      "reviewer": "A",
+      "itemId": "ITEM-007",
+      "source": "candidate",
+      "caseId": "F01",
+      "fixtureId": "l1-built-in-sample",
+      "tier": "L1"
+    },
+    {
+      "reviewer": "A",
+      "itemId": "ITEM-008",
+      "source": "b0",
+      "caseId": "F02",
+      "fixtureId": "l1-gpx-normal",
+      "tier": "L1"
+    },
+    {
+      "reviewer": "A",
+      "itemId": "ITEM-009",
+      "source": "candidate",
+      "caseId": "F03",
+      "fixtureId": "l1-gps-spike",
+      "tier": "L1"
+    },
+    {
+      "reviewer": "A",
+      "itemId": "ITEM-010",
+      "source": "candidate",
+      "caseId": "F07",
+      "fixtureId": "l3-built-in-sample",
+      "tier": "L3"
+    },
+    {
+      "reviewer": "A",
+      "itemId": "ITEM-011",
+      "source": "b0",
+      "caseId": "F09",
+      "fixtureId": "fit-power-dropout-with-heart-rate",
+      "tier": "L3"
+    },
+    {
+      "reviewer": "A",
+      "itemId": "ITEM-012",
+      "source": "b0",
+      "caseId": "F03",
+      "fixtureId": "l1-gps-spike",
+      "tier": "L1"
+    },
+    {
+      "reviewer": "A",
+      "itemId": "ITEM-013",
+      "source": "candidate",
+      "caseId": "F04",
+      "fixtureId": "l2-built-in-sample",
+      "tier": "L2"
+    },
+    {
+      "reviewer": "A",
+      "itemId": "ITEM-014",
+      "source": "candidate",
+      "caseId": "F02",
+      "fixtureId": "l1-gpx-normal",
+      "tier": "L1"
+    },
+    {
+      "reviewer": "A",
+      "itemId": "ITEM-015",
+      "source": "b0",
+      "caseId": "F01",
+      "fixtureId": "l1-built-in-sample",
+      "tier": "L1"
+    },
+    {
+      "reviewer": "A",
+      "itemId": "ITEM-016",
+      "source": "candidate",
+      "caseId": "F06",
+      "fixtureId": "fit-heart-rate-dropout",
+      "tier": "L2"
+    },
+    {
+      "reviewer": "A",
+      "itemId": "ITEM-017",
+      "source": "b0",
+      "caseId": "F07",
+      "fixtureId": "l3-built-in-sample",
+      "tier": "L3"
+    },
+    {
+      "reviewer": "A",
+      "itemId": "ITEM-018",
+      "source": "b0",
+      "caseId": "F04",
+      "fixtureId": "l2-built-in-sample",
+      "tier": "L2"
+    },
+    {
+      "reviewer": "B",
+      "itemId": "ITEM-001",
+      "source": "b0",
+      "caseId": "F04",
+      "fixtureId": "l2-built-in-sample",
+      "tier": "L2"
+    },
+    {
+      "reviewer": "B",
+      "itemId": "ITEM-002",
+      "source": "candidate",
+      "caseId": "F08",
+      "fixtureId": "l3-fit-power",
+      "tier": "L3"
+    },
+    {
+      "reviewer": "B",
+      "itemId": "ITEM-003",
+      "source": "b0",
+      "caseId": "F08",
+      "fixtureId": "l3-fit-power",
+      "tier": "L3"
+    },
+    {
+      "reviewer": "B",
+      "itemId": "ITEM-004",
+      "source": "candidate",
+      "caseId": "F06",
+      "fixtureId": "fit-heart-rate-dropout",
+      "tier": "L2"
+    },
+    {
+      "reviewer": "B",
+      "itemId": "ITEM-005",
+      "source": "b0",
+      "caseId": "F07",
+      "fixtureId": "l3-built-in-sample",
+      "tier": "L3"
+    },
+    {
+      "reviewer": "B",
+      "itemId": "ITEM-006",
+      "source": "candidate",
+      "caseId": "F03",
+      "fixtureId": "l1-gps-spike",
+      "tier": "L1"
+    },
+    {
+      "reviewer": "B",
+      "itemId": "ITEM-007",
+      "source": "b0",
+      "caseId": "F02",
+      "fixtureId": "l1-gpx-normal",
+      "tier": "L1"
+    },
+    {
+      "reviewer": "B",
+      "itemId": "ITEM-008",
+      "source": "candidate",
+      "caseId": "F02",
+      "fixtureId": "l1-gpx-normal",
+      "tier": "L1"
+    },
+    {
+      "reviewer": "B",
+      "itemId": "ITEM-009",
+      "source": "b0",
+      "caseId": "F01",
+      "fixtureId": "l1-built-in-sample",
+      "tier": "L1"
+    },
+    {
+      "reviewer": "B",
+      "itemId": "ITEM-010",
+      "source": "b0",
+      "caseId": "F05",
+      "fixtureId": "l2-fit-heart-rate",
+      "tier": "L2"
+    },
+    {
+      "reviewer": "B",
+      "itemId": "ITEM-011",
+      "source": "b0",
+      "caseId": "F09",
+      "fixtureId": "fit-power-dropout-with-heart-rate",
+      "tier": "L3"
+    },
+    {
+      "reviewer": "B",
+      "itemId": "ITEM-012",
+      "source": "candidate",
+      "caseId": "F07",
+      "fixtureId": "l3-built-in-sample",
+      "tier": "L3"
+    },
+    {
+      "reviewer": "B",
+      "itemId": "ITEM-013",
+      "source": "candidate",
+      "caseId": "F09",
+      "fixtureId": "fit-power-dropout-with-heart-rate",
+      "tier": "L3"
+    },
+    {
+      "reviewer": "B",
+      "itemId": "ITEM-014",
+      "source": "b0",
+      "caseId": "F03",
+      "fixtureId": "l1-gps-spike",
+      "tier": "L1"
+    },
+    {
+      "reviewer": "B",
+      "itemId": "ITEM-015",
+      "source": "b0",
+      "caseId": "F06",
+      "fixtureId": "fit-heart-rate-dropout",
+      "tier": "L2"
+    },
+    {
+      "reviewer": "B",
+      "itemId": "ITEM-016",
+      "source": "candidate",
+      "caseId": "F04",
+      "fixtureId": "l2-built-in-sample",
+      "tier": "L2"
+    },
+    {
+      "reviewer": "B",
+      "itemId": "ITEM-017",
+      "source": "candidate",
+      "caseId": "F01",
+      "fixtureId": "l1-built-in-sample",
+      "tier": "L1"
+    },
+    {
+      "reviewer": "B",
+      "itemId": "ITEM-018",
+      "source": "candidate",
+      "caseId": "F05",
+      "fixtureId": "l2-fit-heart-rate",
+      "tier": "L2"
+    }
+  ]
+}

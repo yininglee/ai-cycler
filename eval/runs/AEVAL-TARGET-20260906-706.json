@@ -1,0 +1,236 @@
+{
+  "schemaVersion": "ride-interpretation-targeted-diagnostic-run-v0.1",
+  "benchmark": "AEVAL-M1-RIDE-INTERPRETATION-V04-FORMAL",
+  "runId": "AEVAL-TARGET-20260906-706",
+  "originalFormalRunId": "AEVAL-RUN-20260903-117",
+  "targetCaseId": "F05",
+  "targetFixtureId": "l2-fit-heart-rate",
+  "planFile": "formal-stability-plan-v0.15.json",
+  "planSha256": "3e9964dade6b60a3efdf60862517513a8b92801567f78576ada3347b1fc2c52b",
+  "inputSha256": "feb673d3ff3858b0646421689024976f05995a382a1270043dbca9ff28f7e6fe",
+  "workflow": {
+    "name": "ride_analysis_v3",
+    "id": "7680762018618359814",
+    "version": "v0.0.11",
+    "modelId": "豆包·2.0·lite"
+  },
+  "versionMatrix": {
+    "workflowName": "ride_analysis_v3",
+    "workflowId": "7680762018618359814",
+    "workflowVersion": "v0.0.11",
+    "modelId": "豆包·2.0·lite",
+    "promptVersion": "v0.4.14",
+    "inputContractVersion": "ride-interpretation-input-v0.4-candidate",
+    "outputContractVersion": "ride-interpretation-output-v0.4.2-candidate"
+  },
+  "rawOutputsStored": false,
+  "candidateInputsStored": false,
+  "tokenUsageStored": false,
+  "status": "complete",
+  "authorization": {
+    "repetitions": 9,
+    "scope": "F05 frozen de-identified candidate input",
+    "diagnosticOnly": true
+  },
+  "summary": {
+    "executedSlots": 9,
+    "acceptedCount": 9,
+    "failedCount": 0,
+    "firstPassCount": 9,
+    "repairedPassCount": 0,
+    "b0Count": 0,
+    "noThirdAttempt": true,
+    "issueCounts": {}
+  },
+  "results": [
+    {
+      "slot": "F05:R1",
+      "caseId": "F05",
+      "fixtureId": "l2-fit-heart-rate",
+      "tier": "L2",
+      "repetition": 1,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 9412,
+      "providerRequestIds": [
+        "202609061542078F678C668CBFA4887709"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F05:R2",
+      "caseId": "F05",
+      "fixtureId": "l2-fit-heart-rate",
+      "tier": "L2",
+      "repetition": 2,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 11304,
+      "providerRequestIds": [
+        "202609061542165C97541BAE72F5AE887C"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F05:R3",
+      "caseId": "F05",
+      "fixtureId": "l2-fit-heart-rate",
+      "tier": "L2",
+      "repetition": 3,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 11718,
+      "providerRequestIds": [
+        "202609061542282825CE93146071BF3E94"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F05:R4",
+      "caseId": "F05",
+      "fixtureId": "l2-fit-heart-rate",
+      "tier": "L2",
+      "repetition": 4,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 11039,
+      "providerRequestIds": [
+        "20260906154239F0CB7FC2D1501BD40349"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F05:R5",
+      "caseId": "F05",
+      "fixtureId": "l2-fit-heart-rate",
+      "tier": "L2",
+      "repetition": 5,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 11821,
+      "providerRequestIds": [
+        "20260906154250010712B186C81BC51BF7"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F05:R6",
+      "caseId": "F05",
+      "fixtureId": "l2-fit-heart-rate",
+      "tier": "L2",
+      "repetition": 6,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 8175,
+      "providerRequestIds": [
+        "20260906154302C81697FB8998D5F56A32"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F05:R7",
+      "caseId": "F05",
+      "fixtureId": "l2-fit-heart-rate",
+      "tier": "L2",
+      "repetition": 7,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 11298,
+      "providerRequestIds": [
+        "20260906154311030DFA8D723894ED156E"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F05:R8",
+      "caseId": "F05",
+      "fixtureId": "l2-fit-heart-rate",
+      "tier": "L2",
+      "repetition": 8,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 11435,
+      "providerRequestIds": [
+        "20260906154322685061CFA77586A9C9D5"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    },
+    {
+      "slot": "F05:R9",
+      "caseId": "F05",
+      "fixtureId": "l2-fit-heart-rate",
+      "tier": "L2",
+      "repetition": 9,
+      "outcome": "success",
+      "source": "candidate",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": false,
+      "latencyMs": 10435,
+      "providerRequestIds": [
+        "20260906154334E4DD9717BD04BFAC2346"
+      ],
+      "validation": {
+        "valid": true,
+        "issues": []
+      }
+    }
+  ]
+}

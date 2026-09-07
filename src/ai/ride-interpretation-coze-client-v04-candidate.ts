@@ -1,4 +1,4 @@
-import { CozeWorkflowError, type CozeWorkflowErrorCode, type ServerEnvironment } from "./coze-workflow-client.ts";
+import { CozeWorkflowError, type CozeWorkflowErrorCode, type ServerEnvironment } from "./coze-workflow-error.ts";
 import type { RideInterpretationInputV04Candidate } from "./ride-interpretation-input-v04-candidate.ts";
 
 export const COZE_INTERPRETATION_INPUT_VARIABLES = [

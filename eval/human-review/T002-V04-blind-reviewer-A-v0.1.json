@@ -1,0 +1,1690 @@
+{
+  "presentationVersion": "blind-review-presentation-v0.2",
+  "benchmark": "AEVAL-M1-RIDE-INTERPRETATION-V04-BLIND-REVIEW",
+  "itemCount": 18,
+  "scale": "每项1-5分；只依据输入证据和输出评分，不推断模型、批次或来源。任一维度分歧达到2分时复核。",
+  "forbiddenInference": [
+    "不猜测样本来源",
+    "不计算加权总分",
+    "不外推系统能力",
+    "不判断版本 Gate"
+  ],
+  "reviewer": "A",
+  "items": [
+    {
+      "itemId": "ITEM-001",
+      "evidence": {
+        "allowedClaims": [
+          {
+            "key": "distanceM",
+            "label": "距离",
+            "displayValue": "30",
+            "displayUnit": "km"
+          },
+          {
+            "key": "speedSeriesMeanMps",
+            "label": "速度序列均值",
+            "displayValue": "24",
+            "displayUnit": "km/h"
+          },
+          {
+            "key": "speedStdDevMps",
+            "label": "速度波动",
+            "displayValue": "2.64",
+            "displayUnit": "km/h"
+          }
+        ],
+        "allowedDimensionKeys": [
+          "route_pacing",
+          "pacing_stability"
+        ],
+        "limitations": [],
+        "profileFacts": [
+          {
+            "key": "age",
+            "value": 35,
+            "unit": "years",
+            "source": "user_provided"
+          },
+          {
+            "key": "maxHeartRateBpm",
+            "value": 188,
+            "unit": "bpm",
+            "source": "user_provided"
+          },
+          {
+            "key": "weightKg",
+            "value": 70,
+            "unit": "kg",
+            "source": "user_provided"
+          },
+          {
+            "key": "ftpWatts",
+            "value": 240,
+            "unit": "W",
+            "source": "user_provided"
+          }
+        ]
+      },
+      "output": {
+        "headline": "本次骑行事实摘要",
+        "overallAssessment": {
+          "text": "距离 30 km；速度序列均值 24 km/h。"
+        },
+        "dimensions": [
+          {
+            "key": "route_pacing",
+            "text": "距离 30 km；速度序列均值 24 km/h。"
+          },
+          {
+            "key": "pacing_stability",
+            "text": "速度波动 2.64 km/h；速度序列均值 24 km/h。"
+          }
+        ],
+        "limitations": [],
+        "nextAction": null,
+        "safetyLevel": "normal"
+      }
+    },
+    {
+      "itemId": "ITEM-002",
+      "evidence": {
+        "allowedClaims": [
+          {
+            "key": "distanceM",
+            "label": "距离",
+            "displayValue": "42",
+            "displayUnit": "km"
+          },
+          {
+            "key": "elevationGainM",
+            "label": "累计爬升",
+            "displayValue": "520",
+            "displayUnit": "m"
+          },
+          {
+            "key": "avgHeartRateBpm",
+            "label": "平均心率",
+            "displayValue": "146",
+            "displayUnit": "bpm"
+          },
+          {
+            "key": "speedSeriesMeanMps",
+            "label": "速度序列均值",
+            "displayValue": "25.2",
+            "displayUnit": "km/h"
+          },
+          {
+            "key": "heartRateSeriesMeanBpm",
+            "label": "心率序列均值",
+            "displayValue": "147.73",
+            "displayUnit": "bpm"
+          },
+          {
+            "key": "elevationPositiveGainM",
+            "label": "正向海拔增益",
+            "displayValue": "520",
+            "displayUnit": "m"
+          }
+        ],
+        "allowedDimensionKeys": [
+          "heart_rate",
+          "route_pacing",
+          "terrain_climb"
+        ],
+        "limitations": [],
+        "profileFacts": [
+          {
+            "key": "age",
+            "value": 35,
+            "unit": "years",
+            "source": "user_provided"
+          },
+          {
+            "key": "maxHeartRateBpm",
+            "value": 188,
+            "unit": "bpm",
+            "source": "user_provided"
+          },
+          {
+            "key": "weightKg",
+            "value": 70,
+            "unit": "kg",
+            "source": "user_provided"
+          },
+          {
+            "key": "ftpWatts",
+            "value": 240,
+            "unit": "W",
+            "source": "user_provided"
+          }
+        ]
+      },
+      "output": {
+        "headline": "心率稳定",
+        "overallAssessment": {
+          "text": "平均心率 146 bpm；心率序列均值 147.73 bpm；距离 42 km；速度序列均值 25.2 km/h。"
+        },
+        "dimensions": [
+          {
+            "key": "heart_rate",
+            "text": "平均心率 146 bpm；心率序列均值 147.73 bpm。"
+          },
+          {
+            "key": "route_pacing",
+            "text": "本次骑行记录距离为42km，平均速度为25.2km/h，说明本次骑行维持了稳定的平均配速推进，反映出本次骑行节奏连贯，体现出本次骑行的配速保持能力。"
+          },
+          {
+            "key": "terrain_climb",
+            "text": "本次骑行累计爬升为520m，正向爬升统计结果一致，说明本次骑行过程中爬升积累符合路线地形特征，反映出本次骑行爬升过程输出持续，体现出本次骑行对地形变化的持续推进表现。"
+          }
+        ],
+        "limitations": [],
+        "nextAction": {
+          "kind": "general",
+          "text": "骑后做好拉伸放松，注意休息恢复"
+        },
+        "safetyLevel": "normal"
+      }
+    },
+    {
+      "itemId": "ITEM-003",
+      "evidence": {
+        "allowedClaims": [
+          {
+            "key": "distanceM",
+            "label": "距离",
+            "displayValue": "50",
+            "displayUnit": "km"
+          },
+          {
+            "key": "avgHeartRateBpm",
+            "label": "平均心率",
+            "displayValue": "151",
+            "displayUnit": "bpm"
+          },
+          {
+            "key": "avgPowerW",
+            "label": "平均功率",
+            "displayValue": "205",
+            "displayUnit": "W"
+          },
+          {
+            "key": "speedSeriesMeanMps",
+            "label": "速度序列均值",
+            "displayValue": "25",
+            "displayUnit": "km/h"
+          },
+          {
+            "key": "heartRateSeriesMeanBpm",
+            "label": "心率序列均值",
+            "displayValue": "152.73",
+            "displayUnit": "bpm"
+          },
+          {
+            "key": "powerSeriesMeanW",
+            "label": "功率序列均值",
+            "displayValue": "178.19",
+            "displayUnit": "W"
+          }
+        ],
+        "allowedDimensionKeys": [
+          "power_output",
+          "heart_rate",
+          "route_pacing"
+        ],
+        "limitations": [],
+        "profileFacts": [
+          {
+            "key": "age",
+            "value": 35,
+            "unit": "years",
+            "source": "user_provided"
+          },
+          {
+            "key": "maxHeartRateBpm",
+            "value": 188,
+            "unit": "bpm",
+            "source": "user_provided"
+          },
+          {
+            "key": "weightKg",
+            "value": 70,
+            "unit": "kg",
+            "source": "user_provided"
+          },
+          {
+            "key": "ftpWatts",
+            "value": 240,
+            "unit": "W",
+            "source": "user_provided"
+          }
+        ]
+      },
+      "output": {
+        "headline": "输出稳定均衡",
+        "overallAssessment": {
+          "text": "本次骑行完成50公里骑行，全程功率输出维持在平均205瓦，功率序列整体均值稳定，反映出本次骑行功率输出连贯，体现了对功率输出的稳定把控。"
+        },
+        "dimensions": [
+          {
+            "key": "power_output",
+            "text": "本次骑行平均功率为205瓦，功率序列整体均值稳定，说明本次骑行过程中功率输出保持连贯，反映出对当前输出水平的稳定控制。"
+          },
+          {
+            "key": "heart_rate",
+            "text": "本次骑行平均心率为151bpm，心率序列整体均值稳定，说明本次骑行中心率变化平稳，反映出身体状态保持平稳。"
+          },
+          {
+            "key": "route_pacing",
+            "text": "本次骑行总距离为50公里，速度序列整体平均为25km/h，说明本次骑行全程速度保持均匀，反映出配速控制稳定。"
+          }
+        ],
+        "limitations": [],
+        "nextAction": {
+          "kind": "general",
+          "text": "骑后充分拉伸休息，记录本次骑行的体感感受"
+        },
+        "safetyLevel": "normal"
+      }
+    },
+    {
+      "itemId": "ITEM-004",
+      "evidence": {
+        "allowedClaims": [
+          {
+            "key": "distanceM",
+            "label": "距离",
+            "displayValue": "38",
+            "displayUnit": "km"
+          },
+          {
+            "key": "avgHeartRateBpm",
+            "label": "平均心率",
+            "displayValue": "149",
+            "displayUnit": "bpm"
+          },
+          {
+            "key": "speedSeriesMeanMps",
+            "label": "速度序列均值",
+            "displayValue": "25.33",
+            "displayUnit": "km/h"
+          },
+          {
+            "key": "speedStdDevMps",
+            "label": "速度波动",
+            "displayValue": "2.78",
+            "displayUnit": "km/h"
+          },
+          {
+            "key": "heartRateSeriesMeanBpm",
+            "label": "心率序列均值",
+            "displayValue": "150.73",
+            "displayUnit": "bpm"
+          }
+        ],
+        "allowedDimensionKeys": [
+          "heart_rate",
+          "route_pacing",
+          "pacing_stability"
+        ],
+        "limitations": [],
+        "profileFacts": [
+          {
+            "key": "age",
+            "value": 35,
+            "unit": "years",
+            "source": "user_provided"
+          },
+          {
+            "key": "maxHeartRateBpm",
+            "value": 188,
+            "unit": "bpm",
+            "source": "user_provided"
+          },
+          {
+            "key": "weightKg",
+            "value": 70,
+            "unit": "kg",
+            "source": "user_provided"
+          },
+          {
+            "key": "ftpWatts",
+            "value": 240,
+            "unit": "W",
+            "source": "user_provided"
+          }
+        ]
+      },
+      "output": {
+        "headline": "平均心率149bpm",
+        "overallAssessment": {
+          "text": "本次骑行平均心率为149bpm，心率全程平均在150.73bpm，说明本次骑行中心率状态平稳，反映出对当前骑行强度的把控较为稳定。本次骑行距离38公里，平均速度25.33km/h，速度的波动幅度较小，整体节奏均匀。"
+        },
+        "dimensions": [
+          {
+            "key": "heart_rate",
+            "text": "本次骑行平均心率记录为149bpm，全程心率平均为150.73bpm，说明本次骑行过程中心率整体维持在平稳区间，体现出本次骑行强度把控较为稳定。"
+          },
+          {
+            "key": "route_pacing",
+            "text": "本次骑行总距离为38km，平均速度为25.33km/h，体现出本次骑行推进较为连贯，反映出本次骑行节奏保持的整体状态稳定。"
+          },
+          {
+            "key": "pacing_stability",
+            "text": "本次骑行速度标准差为2.78km/h，波动幅度较小，说明配速变化幅度低，反映出本次骑行的节奏维持得较为稳定，体现出对配速的控制较好。"
+          }
+        ],
+        "limitations": [],
+        "nextAction": {
+          "kind": "general",
+          "text": "骑后注意充分休息，记录本次骑行的体感感受。"
+        },
+        "safetyLevel": "normal"
+      }
+    },
+    {
+      "itemId": "ITEM-005",
+      "evidence": {
+        "allowedClaims": [
+          {
+            "key": "distanceM",
+            "label": "距离",
+            "displayValue": "50",
+            "displayUnit": "km"
+          },
+          {
+            "key": "avgHeartRateBpm",
+            "label": "平均心率",
+            "displayValue": "151",
+            "displayUnit": "bpm"
+          },
+          {
+            "key": "avgPowerW",
+            "label": "平均功率",
+            "displayValue": "205",
+            "displayUnit": "W"
+          },
+          {
+            "key": "speedSeriesMeanMps",
+            "label": "速度序列均值",
+            "displayValue": "25",
+            "displayUnit": "km/h"
+          },
+          {
+            "key": "heartRateSeriesMeanBpm",
+            "label": "心率序列均值",
+            "displayValue": "152.73",
+            "displayUnit": "bpm"
+          },
+          {
+            "key": "powerSeriesMeanW",
+            "label": "功率序列均值",
+            "displayValue": "178.19",
+            "displayUnit": "W"
+          }
+        ],
+        "allowedDimensionKeys": [
+          "power_output",
+          "heart_rate",
+          "route_pacing"
+        ],
+        "limitations": [],
+        "profileFacts": [
+          {
+            "key": "age",
+            "value": 35,
+            "unit": "years",
+            "source": "user_provided"
+          },
+          {
+            "key": "maxHeartRateBpm",
+            "value": 188,
+            "unit": "bpm",
+            "source": "user_provided"
+          },
+          {
+            "key": "weightKg",
+            "value": 70,
+            "unit": "kg",
+            "source": "user_provided"
+          },
+          {
+            "key": "ftpWatts",
+            "value": 240,
+            "unit": "W",
+            "source": "user_provided"
+          }
+        ]
+      },
+      "output": {
+        "headline": "本次骑行事实摘要",
+        "overallAssessment": {
+          "text": "平均功率 205 W；功率序列均值 178.19 W。"
+        },
+        "dimensions": [
+          {
+            "key": "power_output",
+            "text": "平均功率 205 W；功率序列均值 178.19 W。"
+          },
+          {
+            "key": "heart_rate",
+            "text": "平均心率 151 bpm；心率序列均值 152.73 bpm。"
+          },
+          {
+            "key": "route_pacing",
+            "text": "距离 50 km；速度序列均值 25 km/h。"
+          }
+        ],
+        "limitations": [],
+        "nextAction": null,
+        "safetyLevel": "normal"
+      }
+    },
+    {
+      "itemId": "ITEM-006",
+      "evidence": {
+        "allowedClaims": [
+          {
+            "key": "distanceM",
+            "label": "距离",
+            "displayValue": "42",
+            "displayUnit": "km"
+          },
+          {
+            "key": "elevationGainM",
+            "label": "累计爬升",
+            "displayValue": "520",
+            "displayUnit": "m"
+          },
+          {
+            "key": "avgHeartRateBpm",
+            "label": "平均心率",
+            "displayValue": "146",
+            "displayUnit": "bpm"
+          },
+          {
+            "key": "speedSeriesMeanMps",
+            "label": "速度序列均值",
+            "displayValue": "25.2",
+            "displayUnit": "km/h"
+          },
+          {
+            "key": "heartRateSeriesMeanBpm",
+            "label": "心率序列均值",
+            "displayValue": "147.73",
+            "displayUnit": "bpm"
+          },
+          {
+            "key": "elevationPositiveGainM",
+            "label": "正向海拔增益",
+            "displayValue": "520",
+            "displayUnit": "m"
+          }
+        ],
+        "allowedDimensionKeys": [
+          "heart_rate",
+          "route_pacing",
+          "terrain_climb"
+        ],
+        "limitations": [],
+        "profileFacts": [
+          {
+            "key": "age",
+            "value": 35,
+            "unit": "years",
+            "source": "user_provided"
+          },
+          {
+            "key": "maxHeartRateBpm",
+            "value": 188,
+            "unit": "bpm",
+            "source": "user_provided"
+          },
+          {
+            "key": "weightKg",
+            "value": 70,
+            "unit": "kg",
+            "source": "user_provided"
+          },
+          {
+            "key": "ftpWatts",
+            "value": 240,
+            "unit": "W",
+            "source": "user_provided"
+          }
+        ]
+      },
+      "output": {
+        "headline": "本次骑行事实摘要",
+        "overallAssessment": {
+          "text": "平均心率 146 bpm；心率序列均值 147.73 bpm。"
+        },
+        "dimensions": [
+          {
+            "key": "heart_rate",
+            "text": "平均心率 146 bpm；心率序列均值 147.73 bpm。"
+          },
+          {
+            "key": "route_pacing",
+            "text": "距离 42 km；速度序列均值 25.2 km/h。"
+          },
+          {
+            "key": "terrain_climb",
+            "text": "累计爬升 520 m；正向海拔增益 520 m。"
+          }
+        ],
+        "limitations": [],
+        "nextAction": null,
+        "safetyLevel": "normal"
+      }
+    },
+    {
+      "itemId": "ITEM-007",
+      "evidence": {
+        "allowedClaims": [
+          {
+            "key": "distanceM",
+            "label": "距离",
+            "displayValue": "25",
+            "displayUnit": "km"
+          },
+          {
+            "key": "elevationGainM",
+            "label": "累计爬升",
+            "displayValue": "260",
+            "displayUnit": "m"
+          },
+          {
+            "key": "speedSeriesMeanMps",
+            "label": "速度序列均值",
+            "displayValue": "25",
+            "displayUnit": "km/h"
+          },
+          {
+            "key": "speedStdDevMps",
+            "label": "速度波动",
+            "displayValue": "2.75",
+            "displayUnit": "km/h"
+          },
+          {
+            "key": "elevationPositiveGainM",
+            "label": "正向海拔增益",
+            "displayValue": "260",
+            "displayUnit": "m"
+          }
+        ],
+        "allowedDimensionKeys": [
+          "route_pacing",
+          "terrain_climb",
+          "pacing_stability"
+        ],
+        "limitations": [],
+        "profileFacts": [
+          {
+            "key": "age",
+            "value": 35,
+            "unit": "years",
+            "source": "user_provided"
+          },
+          {
+            "key": "maxHeartRateBpm",
+            "value": 188,
+            "unit": "bpm",
+            "source": "user_provided"
+          },
+          {
+            "key": "weightKg",
+            "value": 70,
+            "unit": "kg",
+            "source": "user_provided"
+          },
+          {
+            "key": "ftpWatts",
+            "value": 240,
+            "unit": "W",
+            "source": "user_provided"
+          }
+        ]
+      },
+      "output": {
+        "headline": "稳定匀速骑行",
+        "overallAssessment": {
+          "text": "本次骑行完成25公里路程，平均速度保持在25km/h，速度波动较小，反映出本次骑行节奏平稳，体现出对当前骑行速度的稳定把控。"
+        },
+        "dimensions": [
+          {
+            "key": "route_pacing",
+            "text": "本次骑行路程为25公里，平均速度为25km/h，速度输出符合本次骑行规划，反映出本次推进节奏稳定，体现出对当前输出的把控。"
+          },
+          {
+            "key": "terrain_climb",
+            "text": "本次骑行累计正向爬升为260米，爬升过程完成顺畅，反映出本次骑行对爬坡路段的推进稳定，体现出过程中的爬坡输出保持连贯。"
+          },
+          {
+            "key": "pacing_stability",
+            "text": "本次骑行速度标准差为2.75km/h，波动幅度较小，说明本次骑行配速变化不大，反映出配速调节连贯，体现出对整体骑行节奏的稳定控制。"
+          }
+        ],
+        "limitations": [],
+        "nextAction": {
+          "kind": "general",
+          "text": "建议骑后充分休息，关注自身体感，做好拉伸放松。"
+        },
+        "safetyLevel": "normal"
+      }
+    },
+    {
+      "itemId": "ITEM-008",
+      "evidence": {
+        "allowedClaims": [
+          {
+            "key": "distanceM",
+            "label": "距离",
+            "displayValue": "35.2",
+            "displayUnit": "km"
+          },
+          {
+            "key": "elevationGainM",
+            "label": "累计爬升",
+            "displayValue": "386",
+            "displayUnit": "m"
+          },
+          {
+            "key": "speedSeriesMeanMps",
+            "label": "速度序列均值",
+            "displayValue": "25.76",
+            "displayUnit": "km/h"
+          },
+          {
+            "key": "speedStdDevMps",
+            "label": "速度波动",
+            "displayValue": "2.83",
+            "displayUnit": "km/h"
+          },
+          {
+            "key": "elevationPositiveGainM",
+            "label": "正向海拔增益",
+            "displayValue": "386",
+            "displayUnit": "m"
+          }
+        ],
+        "allowedDimensionKeys": [
+          "route_pacing",
+          "terrain_climb",
+          "pacing_stability"
+        ],
+        "limitations": [],
+        "profileFacts": [
+          {
+            "key": "age",
+            "value": 35,
+            "unit": "years",
+            "source": "user_provided"
+          },
+          {
+            "key": "maxHeartRateBpm",
+            "value": 188,
+            "unit": "bpm",
+            "source": "user_provided"
+          },
+          {
+            "key": "weightKg",
+            "value": 70,
+            "unit": "kg",
+            "source": "user_provided"
+          },
+          {
+            "key": "ftpWatts",
+            "value": 240,
+            "unit": "W",
+            "source": "user_provided"
+          }
+        ]
+      },
+      "output": {
+        "headline": "本次骑行事实摘要",
+        "overallAssessment": {
+          "text": "距离 35.2 km；速度序列均值 25.76 km/h。"
+        },
+        "dimensions": [
+          {
+            "key": "route_pacing",
+            "text": "距离 35.2 km；速度序列均值 25.76 km/h。"
+          },
+          {
+            "key": "terrain_climb",
+            "text": "累计爬升 386 m；正向海拔增益 386 m。"
+          },
+          {
+            "key": "pacing_stability",
+            "text": "速度波动 2.83 km/h；速度序列均值 25.76 km/h。"
+          }
+        ],
+        "limitations": [],
+        "nextAction": null,
+        "safetyLevel": "normal"
+      }
+    },
+    {
+      "itemId": "ITEM-009",
+      "evidence": {
+        "allowedClaims": [
+          {
+            "key": "distanceM",
+            "label": "距离",
+            "displayValue": "0",
+            "displayUnit": "km"
+          },
+          {
+            "key": "elevationGainM",
+            "label": "累计爬升",
+            "displayValue": "0",
+            "displayUnit": "m"
+          },
+          {
+            "key": "elevationPositiveGainM",
+            "label": "正向海拔增益",
+            "displayValue": "0",
+            "displayUnit": "m"
+          },
+          {
+            "key": "timing.elapsedAverageSpeedMps",
+            "label": "总均速",
+            "displayValue": "0.5",
+            "displayUnit": "km/h"
+          }
+        ],
+        "allowedDimensionKeys": [
+          "route_pacing",
+          "terrain_climb"
+        ],
+        "limitations": [],
+        "profileFacts": [
+          {
+            "key": "age",
+            "value": 35,
+            "unit": "years",
+            "source": "user_provided"
+          },
+          {
+            "key": "maxHeartRateBpm",
+            "value": 188,
+            "unit": "bpm",
+            "source": "user_provided"
+          },
+          {
+            "key": "weightKg",
+            "value": 70,
+            "unit": "kg",
+            "source": "user_provided"
+          },
+          {
+            "key": "ftpWatts",
+            "value": 240,
+            "unit": "W",
+            "source": "user_provided"
+          }
+        ]
+      },
+      "output": {
+        "headline": "本次短距离骑行",
+        "overallAssessment": {
+          "text": "本次骑行的记录距离较短，总均速较低，整体呈现短距离慢骑的状态，反映出本次骑行过程中推进节奏较慢，体现出本次骑行过程中偏缓慢的行进状态。"
+        },
+        "dimensions": [
+          {
+            "key": "route_pacing",
+            "text": "本次骑行记录距离较短，总均速为0.5km/h，反映出本次骑行整体行进节奏偏慢，体现出本次骑行偏向缓慢的行进状态。"
+          },
+          {
+            "key": "terrain_climb",
+            "text": "本次骑行记录的正爬升量为0米，说明本次骑行过程中没有累计正向爬升，反映出本次骑行地形相对平坦，体现出本次骑行过程中不存在持续上坡的行进表现。"
+          }
+        ],
+        "limitations": [],
+        "nextAction": {
+          "kind": "general",
+          "text": "骑后注意充分休息，整理本次骑行记录。"
+        },
+        "safetyLevel": "normal"
+      }
+    },
+    {
+      "itemId": "ITEM-010",
+      "evidence": {
+        "allowedClaims": [
+          {
+            "key": "distanceM",
+            "label": "距离",
+            "displayValue": "45",
+            "displayUnit": "km"
+          },
+          {
+            "key": "avgHeartRateBpm",
+            "label": "平均心率",
+            "displayValue": "150",
+            "displayUnit": "bpm"
+          },
+          {
+            "key": "avgPowerW",
+            "label": "平均功率",
+            "displayValue": "198",
+            "displayUnit": "W"
+          },
+          {
+            "key": "speedSeriesMeanMps",
+            "label": "速度序列均值",
+            "displayValue": "25.71",
+            "displayUnit": "km/h"
+          },
+          {
+            "key": "heartRateSeriesMeanBpm",
+            "label": "心率序列均值",
+            "displayValue": "151.73",
+            "displayUnit": "bpm"
+          },
+          {
+            "key": "powerSeriesMeanW",
+            "label": "功率序列均值",
+            "displayValue": "172.1",
+            "displayUnit": "W"
+          }
+        ],
+        "allowedDimensionKeys": [
+          "power_output",
+          "heart_rate",
+          "route_pacing"
+        ],
+        "limitations": [],
+        "profileFacts": [
+          {
+            "key": "age",
+            "value": 35,
+            "unit": "years",
+            "source": "user_provided"
+          },
+          {
+            "key": "maxHeartRateBpm",
+            "value": 188,
+            "unit": "bpm",
+            "source": "user_provided"
+          },
+          {
+            "key": "weightKg",
+            "value": 70,
+            "unit": "kg",
+            "source": "user_provided"
+          },
+          {
+            "key": "ftpWatts",
+            "value": 240,
+            "unit": "W",
+            "source": "user_provided"
+          }
+        ]
+      },
+      "output": {
+        "headline": "输出稳定连贯",
+        "overallAssessment": {
+          "text": "本次骑行平均功率为198W，功率序列均值为172.1W，整体输出波动平缓，反映出本次骑行的功率控制较好，体现出对当前输出节奏的稳定把控。"
+        },
+        "dimensions": [
+          {
+            "key": "power_output",
+            "text": "本次骑行平均功率为198W，功率输出的序列均值为172.1W，输出过程整体连贯，反映出本次骑行中功率输出节奏稳定，体现出本次骑行过程中对输出的稳定控制。"
+          },
+          {
+            "key": "heart_rate",
+            "text": "本次骑行平均心率为150bpm，心率序列均值为151.73bpm，心率变化过程稳定，反映出本次骑行中心率状态保持平稳，体现出本次骑行过程中身体状态调节稳定。"
+          },
+          {
+            "key": "route_pacing",
+            "text": "本次骑行记录距离为45km，速度序列均值为25.71km/h，速度变化连贯，反映出本次骑行的配速节奏稳定，体现出本次骑行过程中对推进节奏的较好把控。"
+          }
+        ],
+        "limitations": [],
+        "nextAction": {
+          "kind": "general",
+          "text": "骑后注意充分拉伸放松，记录本次骑行的体感感受"
+        },
+        "safetyLevel": "normal"
+      }
+    },
+    {
+      "itemId": "ITEM-011",
+      "evidence": {
+        "allowedClaims": [
+          {
+            "key": "distanceM",
+            "label": "距离",
+            "displayValue": "38",
+            "displayUnit": "km"
+          },
+          {
+            "key": "avgHeartRateBpm",
+            "label": "平均心率",
+            "displayValue": "149",
+            "displayUnit": "bpm"
+          },
+          {
+            "key": "speedSeriesMeanMps",
+            "label": "速度序列均值",
+            "displayValue": "25.33",
+            "displayUnit": "km/h"
+          },
+          {
+            "key": "speedStdDevMps",
+            "label": "速度波动",
+            "displayValue": "2.78",
+            "displayUnit": "km/h"
+          },
+          {
+            "key": "heartRateSeriesMeanBpm",
+            "label": "心率序列均值",
+            "displayValue": "150.73",
+            "displayUnit": "bpm"
+          }
+        ],
+        "allowedDimensionKeys": [
+          "heart_rate",
+          "route_pacing",
+          "pacing_stability"
+        ],
+        "limitations": [],
+        "profileFacts": [
+          {
+            "key": "age",
+            "value": 35,
+            "unit": "years",
+            "source": "user_provided"
+          },
+          {
+            "key": "maxHeartRateBpm",
+            "value": 188,
+            "unit": "bpm",
+            "source": "user_provided"
+          },
+          {
+            "key": "weightKg",
+            "value": 70,
+            "unit": "kg",
+            "source": "user_provided"
+          },
+          {
+            "key": "ftpWatts",
+            "value": 240,
+            "unit": "W",
+            "source": "user_provided"
+          }
+        ]
+      },
+      "output": {
+        "headline": "本次骑行事实摘要",
+        "overallAssessment": {
+          "text": "平均心率 149 bpm；心率序列均值 150.73 bpm。"
+        },
+        "dimensions": [
+          {
+            "key": "heart_rate",
+            "text": "平均心率 149 bpm；心率序列均值 150.73 bpm。"
+          },
+          {
+            "key": "route_pacing",
+            "text": "距离 38 km；速度序列均值 25.33 km/h。"
+          },
+          {
+            "key": "pacing_stability",
+            "text": "速度波动 2.78 km/h；速度序列均值 25.33 km/h。"
+          }
+        ],
+        "limitations": [],
+        "nextAction": null,
+        "safetyLevel": "normal"
+      }
+    },
+    {
+      "itemId": "ITEM-012",
+      "evidence": {
+        "allowedClaims": [
+          {
+            "key": "distanceM",
+            "label": "距离",
+            "displayValue": "0",
+            "displayUnit": "km"
+          },
+          {
+            "key": "elevationGainM",
+            "label": "累计爬升",
+            "displayValue": "0",
+            "displayUnit": "m"
+          },
+          {
+            "key": "elevationPositiveGainM",
+            "label": "正向海拔增益",
+            "displayValue": "0",
+            "displayUnit": "m"
+          },
+          {
+            "key": "timing.elapsedAverageSpeedMps",
+            "label": "总均速",
+            "displayValue": "0.5",
+            "displayUnit": "km/h"
+          }
+        ],
+        "allowedDimensionKeys": [
+          "route_pacing",
+          "terrain_climb"
+        ],
+        "limitations": [],
+        "profileFacts": [
+          {
+            "key": "age",
+            "value": 35,
+            "unit": "years",
+            "source": "user_provided"
+          },
+          {
+            "key": "maxHeartRateBpm",
+            "value": 188,
+            "unit": "bpm",
+            "source": "user_provided"
+          },
+          {
+            "key": "weightKg",
+            "value": 70,
+            "unit": "kg",
+            "source": "user_provided"
+          },
+          {
+            "key": "ftpWatts",
+            "value": 240,
+            "unit": "W",
+            "source": "user_provided"
+          }
+        ]
+      },
+      "output": {
+        "headline": "本次骑行事实摘要",
+        "overallAssessment": {
+          "text": "距离 0 km；总均速 0.5 km/h。"
+        },
+        "dimensions": [
+          {
+            "key": "route_pacing",
+            "text": "距离 0 km；总均速 0.5 km/h。"
+          },
+          {
+            "key": "terrain_climb",
+            "text": "累计爬升 0 m；正向海拔增益 0 m。"
+          }
+        ],
+        "limitations": [],
+        "nextAction": null,
+        "safetyLevel": "normal"
+      }
+    },
+    {
+      "itemId": "ITEM-013",
+      "evidence": {
+        "allowedClaims": [
+          {
+            "key": "distanceM",
+            "label": "距离",
+            "displayValue": "35",
+            "displayUnit": "km"
+          },
+          {
+            "key": "elevationGainM",
+            "label": "累计爬升",
+            "displayValue": "410",
+            "displayUnit": "m"
+          },
+          {
+            "key": "avgHeartRateBpm",
+            "label": "平均心率",
+            "displayValue": "145",
+            "displayUnit": "bpm"
+          },
+          {
+            "key": "speedSeriesMeanMps",
+            "label": "速度序列均值",
+            "displayValue": "26.25",
+            "displayUnit": "km/h"
+          },
+          {
+            "key": "heartRateSeriesMeanBpm",
+            "label": "心率序列均值",
+            "displayValue": "146.73",
+            "displayUnit": "bpm"
+          },
+          {
+            "key": "elevationPositiveGainM",
+            "label": "正向海拔增益",
+            "displayValue": "410",
+            "displayUnit": "m"
+          }
+        ],
+        "allowedDimensionKeys": [
+          "heart_rate",
+          "route_pacing",
+          "terrain_climb"
+        ],
+        "limitations": [],
+        "profileFacts": [
+          {
+            "key": "age",
+            "value": 35,
+            "unit": "years",
+            "source": "user_provided"
+          },
+          {
+            "key": "maxHeartRateBpm",
+            "value": 188,
+            "unit": "bpm",
+            "source": "user_provided"
+          },
+          {
+            "key": "weightKg",
+            "value": 70,
+            "unit": "kg",
+            "source": "user_provided"
+          },
+          {
+            "key": "ftpWatts",
+            "value": 240,
+            "unit": "W",
+            "source": "user_provided"
+          }
+        ]
+      },
+      "output": {
+        "headline": "节奏稳定推进",
+        "overallAssessment": {
+          "text": "本次骑行平均心率145bpm，心率整体保持平稳，配速输出连贯，完成35公里骑行与410米爬升，呈现出对当前骑行状态的稳定把控。"
+        },
+        "dimensions": [
+          {
+            "key": "heart_rate",
+            "text": "本次平均心率为145bpm，全程心率均值稳定，变化幅度平缓，说明本次骑行过程中心率状态稳定，反映出对骑行强度的把控较为平稳。"
+          },
+          {
+            "key": "route_pacing",
+            "text": "本次骑行完成35公里路程，平均速度达到26.25km/h，速度全程保持连贯均匀，反映出本次骑行的节奏控制较好，体现出稳定的推进状态。"
+          },
+          {
+            "key": "terrain_climb",
+            "text": "本次骑行累计爬升410米，爬升过程完成稳定，反映出本次骑行过程中应对地形变化的输出保持连贯，体现出持续爬坡的状态平稳。"
+          }
+        ],
+        "limitations": [],
+        "nextAction": {
+          "kind": "general",
+          "text": "骑后注意充分拉伸放松，及时补充水分和能量。"
+        },
+        "safetyLevel": "normal"
+      }
+    },
+    {
+      "itemId": "ITEM-014",
+      "evidence": {
+        "allowedClaims": [
+          {
+            "key": "distanceM",
+            "label": "距离",
+            "displayValue": "35.2",
+            "displayUnit": "km"
+          },
+          {
+            "key": "elevationGainM",
+            "label": "累计爬升",
+            "displayValue": "386",
+            "displayUnit": "m"
+          },
+          {
+            "key": "speedSeriesMeanMps",
+            "label": "速度序列均值",
+            "displayValue": "25.76",
+            "displayUnit": "km/h"
+          },
+          {
+            "key": "speedStdDevMps",
+            "label": "速度波动",
+            "displayValue": "2.83",
+            "displayUnit": "km/h"
+          },
+          {
+            "key": "elevationPositiveGainM",
+            "label": "正向海拔增益",
+            "displayValue": "386",
+            "displayUnit": "m"
+          }
+        ],
+        "allowedDimensionKeys": [
+          "route_pacing",
+          "terrain_climb",
+          "pacing_stability"
+        ],
+        "limitations": [],
+        "profileFacts": [
+          {
+            "key": "age",
+            "value": 35,
+            "unit": "years",
+            "source": "user_provided"
+          },
+          {
+            "key": "maxHeartRateBpm",
+            "value": 188,
+            "unit": "bpm",
+            "source": "user_provided"
+          },
+          {
+            "key": "weightKg",
+            "value": 70,
+            "unit": "kg",
+            "source": "user_provided"
+          },
+          {
+            "key": "ftpWatts",
+            "value": 240,
+            "unit": "W",
+            "source": "user_provided"
+          }
+        ]
+      },
+      "output": {
+        "headline": "节奏稳定推进",
+        "overallAssessment": {
+          "text": "本次骑行记录35.2公里，平均速度25.76km/h，速度波动较小，反映出本次骑行节奏把控较好，体现出对当前骑行速度的稳定控制能力。"
+        },
+        "dimensions": [
+          {
+            "key": "route_pacing",
+            "text": "本次骑行里程为35.2公里，平均速度达到25.76km/h，反映出本次骑行的推进状态连贯，体现出对当前配速的良好把控。"
+          },
+          {
+            "key": "terrain_climb",
+            "text": "本次骑行累计爬升386米，正爬升量为386米，反映出本次完成了对应爬升量的骑行过程，体现出完成当前爬升的输出能力。"
+          },
+          {
+            "key": "pacing_stability",
+            "text": "本次骑行速度标准差为2.83km/h，波动幅度较小，反映出本次骑行过程中配速变化平缓，体现出本次骑行的节奏控制较为稳定。"
+          }
+        ],
+        "limitations": [],
+        "nextAction": {
+          "kind": "general",
+          "text": "骑后注意充分拉伸休息，补充水分和能量。"
+        },
+        "safetyLevel": "normal"
+      }
+    },
+    {
+      "itemId": "ITEM-015",
+      "evidence": {
+        "allowedClaims": [
+          {
+            "key": "distanceM",
+            "label": "距离",
+            "displayValue": "25",
+            "displayUnit": "km"
+          },
+          {
+            "key": "elevationGainM",
+            "label": "累计爬升",
+            "displayValue": "260",
+            "displayUnit": "m"
+          },
+          {
+            "key": "speedSeriesMeanMps",
+            "label": "速度序列均值",
+            "displayValue": "25",
+            "displayUnit": "km/h"
+          },
+          {
+            "key": "speedStdDevMps",
+            "label": "速度波动",
+            "displayValue": "2.75",
+            "displayUnit": "km/h"
+          },
+          {
+            "key": "elevationPositiveGainM",
+            "label": "正向海拔增益",
+            "displayValue": "260",
+            "displayUnit": "m"
+          }
+        ],
+        "allowedDimensionKeys": [
+          "route_pacing",
+          "terrain_climb",
+          "pacing_stability"
+        ],
+        "limitations": [],
+        "profileFacts": [
+          {
+            "key": "age",
+            "value": 35,
+            "unit": "years",
+            "source": "user_provided"
+          },
+          {
+            "key": "maxHeartRateBpm",
+            "value": 188,
+            "unit": "bpm",
+            "source": "user_provided"
+          },
+          {
+            "key": "weightKg",
+            "value": 70,
+            "unit": "kg",
+            "source": "user_provided"
+          },
+          {
+            "key": "ftpWatts",
+            "value": 240,
+            "unit": "W",
+            "source": "user_provided"
+          }
+        ]
+      },
+      "output": {
+        "headline": "本次骑行事实摘要",
+        "overallAssessment": {
+          "text": "距离 25 km；速度序列均值 25 km/h。"
+        },
+        "dimensions": [
+          {
+            "key": "route_pacing",
+            "text": "距离 25 km；速度序列均值 25 km/h。"
+          },
+          {
+            "key": "terrain_climb",
+            "text": "累计爬升 260 m；正向海拔增益 260 m。"
+          },
+          {
+            "key": "pacing_stability",
+            "text": "速度波动 2.75 km/h；速度序列均值 25 km/h。"
+          }
+        ],
+        "limitations": [],
+        "nextAction": null,
+        "safetyLevel": "normal"
+      }
+    },
+    {
+      "itemId": "ITEM-016",
+      "evidence": {
+        "allowedClaims": [
+          {
+            "key": "distanceM",
+            "label": "距离",
+            "displayValue": "30",
+            "displayUnit": "km"
+          },
+          {
+            "key": "speedSeriesMeanMps",
+            "label": "速度序列均值",
+            "displayValue": "24",
+            "displayUnit": "km/h"
+          },
+          {
+            "key": "speedStdDevMps",
+            "label": "速度波动",
+            "displayValue": "2.64",
+            "displayUnit": "km/h"
+          }
+        ],
+        "allowedDimensionKeys": [
+          "route_pacing",
+          "pacing_stability"
+        ],
+        "limitations": [],
+        "profileFacts": [
+          {
+            "key": "age",
+            "value": 35,
+            "unit": "years",
+            "source": "user_provided"
+          },
+          {
+            "key": "maxHeartRateBpm",
+            "value": 188,
+            "unit": "bpm",
+            "source": "user_provided"
+          },
+          {
+            "key": "weightKg",
+            "value": 70,
+            "unit": "kg",
+            "source": "user_provided"
+          },
+          {
+            "key": "ftpWatts",
+            "value": 240,
+            "unit": "W",
+            "source": "user_provided"
+          }
+        ]
+      },
+      "output": {
+        "headline": "节奏稳定推进",
+        "overallAssessment": {
+          "text": "本次骑行记录距离30公里，平均速度达到24km/h，速度波动较低，整体节奏连贯顺畅，体现出对本次骑行推进节奏的稳定把控。"
+        },
+        "dimensions": [
+          {
+            "key": "route_pacing",
+            "text": "本次骑行距离为30公里，平均速度为24km/h，这个数据呈现出本次骑行推进节奏连贯，体现出对当前输出的把控较为稳定。"
+          },
+          {
+            "key": "pacing_stability",
+            "text": "本次骑行速度标准差为2.64km/h，较小的波动反映出本次骑行配速稳定性较好，体现出过程中节奏调节较为平稳。"
+          }
+        ],
+        "limitations": [],
+        "nextAction": {
+          "kind": "general",
+          "text": "骑后做好拉伸放松，留意身体恢复状态"
+        },
+        "safetyLevel": "normal"
+      }
+    },
+    {
+      "itemId": "ITEM-017",
+      "evidence": {
+        "allowedClaims": [
+          {
+            "key": "distanceM",
+            "label": "距离",
+            "displayValue": "45",
+            "displayUnit": "km"
+          },
+          {
+            "key": "avgHeartRateBpm",
+            "label": "平均心率",
+            "displayValue": "150",
+            "displayUnit": "bpm"
+          },
+          {
+            "key": "avgPowerW",
+            "label": "平均功率",
+            "displayValue": "198",
+            "displayUnit": "W"
+          },
+          {
+            "key": "speedSeriesMeanMps",
+            "label": "速度序列均值",
+            "displayValue": "25.71",
+            "displayUnit": "km/h"
+          },
+          {
+            "key": "heartRateSeriesMeanBpm",
+            "label": "心率序列均值",
+            "displayValue": "151.73",
+            "displayUnit": "bpm"
+          },
+          {
+            "key": "powerSeriesMeanW",
+            "label": "功率序列均值",
+            "displayValue": "172.1",
+            "displayUnit": "W"
+          }
+        ],
+        "allowedDimensionKeys": [
+          "power_output",
+          "heart_rate",
+          "route_pacing"
+        ],
+        "limitations": [],
+        "profileFacts": [
+          {
+            "key": "age",
+            "value": 35,
+            "unit": "years",
+            "source": "user_provided"
+          },
+          {
+            "key": "maxHeartRateBpm",
+            "value": 188,
+            "unit": "bpm",
+            "source": "user_provided"
+          },
+          {
+            "key": "weightKg",
+            "value": 70,
+            "unit": "kg",
+            "source": "user_provided"
+          },
+          {
+            "key": "ftpWatts",
+            "value": 240,
+            "unit": "W",
+            "source": "user_provided"
+          }
+        ]
+      },
+      "output": {
+        "headline": "本次骑行事实摘要",
+        "overallAssessment": {
+          "text": "平均功率 198 W；功率序列均值 172.1 W。"
+        },
+        "dimensions": [
+          {
+            "key": "power_output",
+            "text": "平均功率 198 W；功率序列均值 172.1 W。"
+          },
+          {
+            "key": "heart_rate",
+            "text": "平均心率 150 bpm；心率序列均值 151.73 bpm。"
+          },
+          {
+            "key": "route_pacing",
+            "text": "距离 45 km；速度序列均值 25.71 km/h。"
+          }
+        ],
+        "limitations": [],
+        "nextAction": null,
+        "safetyLevel": "normal"
+      }
+    },
+    {
+      "itemId": "ITEM-018",
+      "evidence": {
+        "allowedClaims": [
+          {
+            "key": "distanceM",
+            "label": "距离",
+            "displayValue": "35",
+            "displayUnit": "km"
+          },
+          {
+            "key": "elevationGainM",
+            "label": "累计爬升",
+            "displayValue": "410",
+            "displayUnit": "m"
+          },
+          {
+            "key": "avgHeartRateBpm",
+            "label": "平均心率",
+            "displayValue": "145",
+            "displayUnit": "bpm"
+          },
+          {
+            "key": "speedSeriesMeanMps",
+            "label": "速度序列均值",
+            "displayValue": "26.25",
+            "displayUnit": "km/h"
+          },
+          {
+            "key": "heartRateSeriesMeanBpm",
+            "label": "心率序列均值",
+            "displayValue": "146.73",
+            "displayUnit": "bpm"
+          },
+          {
+            "key": "elevationPositiveGainM",
+            "label": "正向海拔增益",
+            "displayValue": "410",
+            "displayUnit": "m"
+          }
+        ],
+        "allowedDimensionKeys": [
+          "heart_rate",
+          "route_pacing",
+          "terrain_climb"
+        ],
+        "limitations": [],
+        "profileFacts": [
+          {
+            "key": "age",
+            "value": 35,
+            "unit": "years",
+            "source": "user_provided"
+          },
+          {
+            "key": "maxHeartRateBpm",
+            "value": 188,
+            "unit": "bpm",
+            "source": "user_provided"
+          },
+          {
+            "key": "weightKg",
+            "value": 70,
+            "unit": "kg",
+            "source": "user_provided"
+          },
+          {
+            "key": "ftpWatts",
+            "value": 240,
+            "unit": "W",
+            "source": "user_provided"
+          }
+        ]
+      },
+      "output": {
+        "headline": "本次骑行事实摘要",
+        "overallAssessment": {
+          "text": "平均心率 145 bpm；心率序列均值 146.73 bpm。"
+        },
+        "dimensions": [
+          {
+            "key": "heart_rate",
+            "text": "平均心率 145 bpm；心率序列均值 146.73 bpm。"
+          },
+          {
+            "key": "route_pacing",
+            "text": "距离 35 km；速度序列均值 26.25 km/h。"
+          },
+          {
+            "key": "terrain_climb",
+            "text": "累计爬升 410 m；正向海拔增益 410 m。"
+          }
+        ],
+        "limitations": [],
+        "nextAction": null,
+        "safetyLevel": "normal"
+      }
+    }
+  ]
+}

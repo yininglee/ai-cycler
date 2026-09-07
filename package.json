@@ -11,12 +11,6 @@
     "typecheck": "tsc --noEmit",
     "verify": "pnpm typecheck && pnpm test",
     "benchmark:b0": "node scripts/benchmark-b0.ts",
-    "benchmark:v014:b0-path": "node scripts/run-v014-b0-path.ts",
-    "benchmark:t001:b0": "node scripts/benchmark-t001-b0.ts",
-    "benchmark:t001:b2:coze": "node scripts/run-t001-b2-coze-api.ts",
-    "benchmark:t001:b2:validate": "node scripts/validate-t001-b2-results.ts",
-    "benchmark:t001:prompt-ab:compare": "node scripts/compare-t001-prompt-ab.ts",
-    "inspect:t001:context-projection": "node scripts/inspect-t001-context-projection.ts",
     "inspect:capabilities": "node scripts/inspect-atomic-capabilities.ts",
     "inspect:features": "node scripts/inspect-ride-features.ts",
     "inspect:history": "node scripts/inspect-history.ts",
@@ -40,13 +34,11 @@
     "eval:interpretation:formal:preflight": "node scripts/run-ride-interpretation-v04-candidate-formal.ts --preflight",
     "eval:interpretation:targeted": "node scripts/run-ride-interpretation-v04-candidate-targeted.ts",
     "eval:interpretation:targeted:preflight": "node scripts/run-ride-interpretation-v04-candidate-targeted.ts --preflight",
+    "eval:interpretation:blindreview:preflight": "node scripts/run-t002-v04-blind-review-pack.ts --preflight",
+    "eval:interpretation:blindreview": "node scripts/run-t002-v04-blind-review-pack.ts",
     "eval:interpretation:provider:diagnose": "node scripts/diagnose-ride-interpretation-coze-v04-candidate.ts",
     "export:interpretation:prompt-candidate": "node scripts/export-ride-interpretation-prompt-v04-candidate.ts",
-    "eval:advanced:run": "node scripts/run-advanced-interpretation-eval.ts",
-    "eval:chat:preflight": "node scripts/preflight-ride-chat-eval.ts",
-    "export:coze-inputs": "node scripts/export-coze-inputs.ts",
-    "export:coze:v014:repair": "node scripts/export-v014-repair-input.ts",
-    "export:coze:t001": "node scripts/export-t001-coze-inputs.ts"
+    "eval:chat:preflight": "node scripts/preflight-ride-chat-eval.ts"
   },
   "engines": {
     "node": ">=22.6"

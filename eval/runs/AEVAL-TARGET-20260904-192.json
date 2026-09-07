@@ -1,0 +1,80 @@
+{
+  "schemaVersion": "ride-interpretation-targeted-diagnostic-run-v0.1",
+  "benchmark": "AEVAL-M1-RIDE-INTERPRETATION-V04-FORMAL",
+  "runId": "AEVAL-TARGET-20260904-192",
+  "originalFormalRunId": "AEVAL-RUN-20260903-117",
+  "targetCaseId": "F05",
+  "targetFixtureId": "l2-fit-heart-rate",
+  "planFile": "formal-stability-plan-v0.9.json",
+  "planSha256": "67404bcf5e5a1a56e7eae52d2ecd35b689b98f340700236796595b29fba1c1f5",
+  "inputSha256": "feb673d3ff3858b0646421689024976f05995a382a1270043dbca9ff28f7e6fe",
+  "workflow": {
+    "name": "ride_analysis_v3",
+    "id": "7680762018618359814",
+    "version": "v0.0.9",
+    "modelId": "豆包·2.0·lite"
+  },
+  "versionMatrix": {
+    "workflowName": "ride_analysis_v3",
+    "workflowId": "7680762018618359814",
+    "workflowVersion": "v0.0.9",
+    "modelId": "豆包·2.0·lite",
+    "promptVersion": "v0.4.12",
+    "inputContractVersion": "ride-interpretation-input-v0.4-candidate",
+    "outputContractVersion": "ride-interpretation-output-v0.4.2-candidate"
+  },
+  "rawOutputsStored": false,
+  "candidateInputsStored": false,
+  "tokenUsageStored": false,
+  "status": "complete",
+  "authorization": {
+    "repetitions": 3,
+    "scope": "F05 frozen de-identified candidate input",
+    "diagnosticOnly": true
+  },
+  "summary": {
+    "executedSlots": 1,
+    "acceptedCount": 0,
+    "failedCount": 1,
+    "firstPassCount": 0,
+    "repairedPassCount": 0,
+    "b0Count": 1,
+    "noThirdAttempt": true,
+    "issueCounts": {
+      "OVERALL_ACTION_LANGUAGE_NOT_ALLOWED": 1,
+      "DIMENSION_heart_rate_ACTION_LANGUAGE_NOT_ALLOWED": 1
+    }
+  },
+  "stop": {
+    "reason": "FIRST_B0_FALLBACK",
+    "stoppedAtSlot": "F05:R1"
+  },
+  "results": [
+    {
+      "slot": "F05:R1",
+      "caseId": "F05",
+      "fixtureId": "l2-fit-heart-rate",
+      "tier": "L2",
+      "repetition": 1,
+      "outcome": "failure",
+      "source": "b0",
+      "attempts": 2,
+      "repairTriggered": true,
+      "noThirdAttempt": true,
+      "b0Fallback": true,
+      "fallbackCode": "REPAIR_FAILED",
+      "latencyMs": 17900,
+      "providerRequestIds": [
+        "20260905072957089135BA6CB3B6D099E9",
+        "20260905073007555DF3C2A3C296DC46A2"
+      ],
+      "validation": {
+        "valid": false,
+        "issues": [
+          "OVERALL_ACTION_LANGUAGE_NOT_ALLOWED",
+          "DIMENSION_heart_rate_ACTION_LANGUAGE_NOT_ALLOWED"
+        ]
+      }
+    }
+  ]
+}

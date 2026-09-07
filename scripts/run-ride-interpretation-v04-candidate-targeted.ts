@@ -3,7 +3,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
-import type { ServerEnvironment } from "../src/ai/coze-workflow-client.ts";
+import type { ServerEnvironment } from "../src/ai/coze-workflow-error.ts";
 import {
   RideInterpretationCozeClientV04Candidate,
   readRideInterpretationCozeConfigV04Candidate,
@@ -11,6 +11,7 @@ import {
 import { projectRideInterpretationInputV04Candidate } from "../src/ai/ride-interpretation-input-v04-candidate.ts";
 import { buildRideInterpretationPlan } from "../src/ai/ride-interpretation-plan.ts";
 import { runRideInterpretationV04Candidate } from "../src/ai/ride-interpretation-service-v04-candidate.ts";
+import { runTargetedDiagnosticRepetitions, type TargetedDiagnosticProgress } from "../src/ai/ride-interpretation-targeted-diagnostic.ts";
 import { buildAnalysisEligibility } from "../src/domain/analysis-eligibility.ts";
 import { buildRideAnalysisContext } from "../src/domain/ride-analysis-context.ts";
 import { createUserProfile } from "../src/domain/user-profile.ts";
@@ -153,11 +154,11 @@ async function main(): Promise<void> {
   const artifact = join(RUNS_PATH, `${runId}.json`);
   if (existsSync(artifact)) throw new Error("TARGETED_RUN_ALREADY_EXISTS");
   const client = new RideInterpretationCozeClientV04Candidate(config);
-  const results: TargetedResult[] = [];
   let artifactExists = false;
-  const persist = async (status: "running" | "complete"): Promise<void> => {
-    const accepted = results.filter((result) => result.outcome === "success");
-    const issueCounts = results.flatMap((result) => result.validation.issues).reduce<Record<string, number>>((counts, issue) => {
+  const persist = async (progress: TargetedDiagnosticProgress<TargetedResult>): Promise<void> => {
+    const { status, results: persistedResults, stop } = progress;
+    const accepted = persistedResults.filter((result) => result.outcome === "success");
+    const issueCounts = persistedResults.flatMap((result) => result.validation.issues).reduce<Record<string, number>>((counts, issue) => {
       counts[issue] = (counts[issue] ?? 0) + 1;
       return counts;
     }, {});
@@ -180,21 +181,25 @@ async function main(): Promise<void> {
       status,
       authorization: { repetitions, scope: `${target.caseId} frozen de-identified candidate input`, diagnosticOnly: true },
       summary: {
-        executedSlots: results.length,
+        executedSlots: persistedResults.length,
         acceptedCount: accepted.length,
-        failedCount: results.length - accepted.length,
+        failedCount: persistedResults.length - accepted.length,
         firstPassCount: accepted.filter((result) => result.attempts === 1).length,
         repairedPassCount: accepted.filter((result) => result.attempts === 2).length,
-        b0Count: results.filter((result) => result.b0Fallback).length,
-        noThirdAttempt: results.every((result) => result.noThirdAttempt),
+        b0Count: persistedResults.filter((result) => result.b0Fallback).length,
+        noThirdAttempt: persistedResults.every((result) => result.noThirdAttempt),
         issueCounts,
       },
-      results,
+      ...(stop ? { stop } : {}),
+      results: persistedResults,
     }, null, 2)}\n`, { encoding: "utf8", flag: artifactExists ? "w" : "wx" });
     artifactExists = true;
   };
 
-  for (let repetition = 1; repetition <= repetitions; repetition += 1) {
+  const completed = await runTargetedDiagnosticRepetitions({
+    repetitions,
+    persist,
+    runSlot: async (repetition): Promise<TargetedResult> => {
     const slot = `${target.caseId}:R${repetition}`;
     const runtime = await runRideInterpretationV04Candidate(input, client, `${runId}:${slot}`, plan.slotTimeoutMs);
     const result: TargetedResult = {
@@ -215,12 +220,11 @@ async function main(): Promise<void> {
       ...(runtime.providerDiagnostics ? { providerDiagnostics: runtime.providerDiagnostics } : {}),
       validation: { valid: runtime.source === "candidate", issues: runtime.validationIssues },
     };
-    results.push(result);
-    await persist("running");
     console.log(JSON.stringify({ slot, outcome: result.outcome, attempts: result.attempts, b0: result.b0Fallback, fallbackCode: result.fallbackCode ?? null, latencyMs: result.latencyMs, issues: result.validation.issues }));
-  }
-  await persist("complete");
-  console.log(JSON.stringify({ runId, artifact, targetCaseId: target.caseId, executedSlots: results.length, acceptedCount: results.filter((result) => result.outcome === "success").length, overallPassed: results.length === repetitions && results.every((result) => result.outcome === "success") }, null, 2));
+    return result;
+    },
+  });
+  console.log(JSON.stringify({ runId, artifact, targetCaseId: target.caseId, executedSlots: completed.results.length, acceptedCount: completed.results.filter((result) => result.outcome === "success").length, overallPassed: completed.results.length === repetitions && completed.results.every((result) => result.outcome === "success"), stop: completed.stop ?? null }, null, 2));
 }
 
 await main();

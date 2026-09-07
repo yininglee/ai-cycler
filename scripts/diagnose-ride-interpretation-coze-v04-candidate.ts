@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { randomUUID } from "node:crypto";
 
-import type { ServerEnvironment } from "../src/ai/coze-workflow-client.ts";
+import type { ServerEnvironment } from "../src/ai/coze-workflow-error.ts";
 import { projectRideInterpretationInputV04Candidate } from "../src/ai/ride-interpretation-input-v04-candidate.ts";
 import { buildRideInterpretationPlan } from "../src/ai/ride-interpretation-plan.ts";
 import { buildAnalysisEligibility } from "../src/domain/analysis-eligibility.ts";
@@ -30,13 +30,14 @@ function asRecord(value: unknown): Record<string, unknown> | undefined {
 
 const environment = loadEnvLocal();
 const workflowId = environment.COZE_INTERPRETATION_WORKFLOW_ID?.trim() || "7680762018618359814";
-const workflowVersion = environment.COZE_INTERPRETATION_WORKFLOW_VERSION?.trim() || "v0.0.8";
+const workflowVersion = environment.COZE_INTERPRETATION_WORKFLOW_VERSION?.trim() || "v0.0.9";
 const apiUrl = environment.COZE_API_URL?.trim();
 const apiToken = environment.COZE_API_TOKEN?.trim();
 if (!apiUrl || !apiToken) throw new Error("COZE_INTERPRETATION_ENV_INCOMPLETE");
 
 const repetitions = Math.max(1, Math.min(5, Number(environment.AEVAL_PROVIDER_DIAG_REPETITIONS ?? "3") || 3));
-const fixtureIds = process.argv.slice(2).filter((value) => ["l1-built-in-sample", "l2-built-in-sample"].includes(value));
+const supportedFixtureIds = ["l1-built-in-sample", "l1-gps-spike", "l2-built-in-sample"] as const;
+const fixtureIds = process.argv.slice(2).filter((value): value is (typeof supportedFixtureIds)[number] => supportedFixtureIds.includes(value as (typeof supportedFixtureIds)[number]));
 const selectedFixtureIds = fixtureIds.length > 0 ? fixtureIds : ["l1-built-in-sample", "l2-built-in-sample"];
 
 function classify(httpStatus: number, envelope: Record<string, unknown> | undefined, responseJson: boolean, hasCandidateOutput: boolean): string {

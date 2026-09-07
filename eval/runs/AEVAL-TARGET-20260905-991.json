@@ -1,0 +1,78 @@
+{
+  "schemaVersion": "ride-interpretation-targeted-diagnostic-run-v0.1",
+  "benchmark": "AEVAL-M1-RIDE-INTERPRETATION-V04-FORMAL",
+  "runId": "AEVAL-TARGET-20260905-991",
+  "originalFormalRunId": "AEVAL-RUN-20260903-117",
+  "targetCaseId": "F05",
+  "targetFixtureId": "l2-fit-heart-rate",
+  "planFile": "formal-stability-plan-v0.12.json",
+  "planSha256": "a3542aef2c5e0eccc6426b66ac0bb21748bcd05f3d6e518336084dea87a68751",
+  "inputSha256": "feb673d3ff3858b0646421689024976f05995a382a1270043dbca9ff28f7e6fe",
+  "workflow": {
+    "name": "ride_analysis_v3",
+    "id": "7680762018618359814",
+    "version": "v0.0.11",
+    "modelId": "豆包·2.0·lite"
+  },
+  "versionMatrix": {
+    "workflowName": "ride_analysis_v3",
+    "workflowId": "7680762018618359814",
+    "workflowVersion": "v0.0.11",
+    "modelId": "豆包·2.0·lite",
+    "promptVersion": "v0.4.14",
+    "inputContractVersion": "ride-interpretation-input-v0.4-candidate",
+    "outputContractVersion": "ride-interpretation-output-v0.4.2-candidate"
+  },
+  "rawOutputsStored": false,
+  "candidateInputsStored": false,
+  "tokenUsageStored": false,
+  "status": "complete",
+  "authorization": {
+    "repetitions": 9,
+    "scope": "F05 frozen de-identified candidate input",
+    "diagnosticOnly": true
+  },
+  "summary": {
+    "executedSlots": 1,
+    "acceptedCount": 0,
+    "failedCount": 1,
+    "firstPassCount": 0,
+    "repairedPassCount": 0,
+    "b0Count": 1,
+    "noThirdAttempt": true,
+    "issueCounts": {}
+  },
+  "stop": {
+    "reason": "FIRST_B0_FALLBACK",
+    "stoppedAtSlot": "F05:R1"
+  },
+  "results": [
+    {
+      "slot": "F05:R1",
+      "caseId": "F05",
+      "fixtureId": "l2-fit-heart-rate",
+      "tier": "L2",
+      "repetition": 1,
+      "outcome": "failure",
+      "source": "b0",
+      "attempts": 1,
+      "repairTriggered": false,
+      "noThirdAttempt": true,
+      "b0Fallback": true,
+      "fallbackCode": "PROVIDER_ERROR",
+      "latencyMs": 21,
+      "providerRequestIds": [
+        "NOT_OBSERVABLE"
+      ],
+      "providerDiagnostics": [
+        {
+          "code": "PROVIDER_HTTP_ERROR"
+        }
+      ],
+      "validation": {
+        "valid": false,
+        "issues": []
+      }
+    }
+  ]
+}

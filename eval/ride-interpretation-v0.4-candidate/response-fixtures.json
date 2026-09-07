@@ -875,6 +875,526 @@
       }
     },
     {
+      "id": "accepted-cautious-long-term-reference",
+      "inputId": "full",
+      "output": {
+        "schemaVersion": "ride-interpretation-output-v0.4.2-candidate",
+        "oneLineLabel": {
+          "text": "本次节奏保持稳定",
+          "claimIds": [
+            "candidate:power_output:performance"
+          ]
+        },
+        "overallAssessment": {
+          "text": "本次可作为后续骑行能力观察的一次参考。",
+          "claimIds": [
+            "candidate:power_output:fact",
+            "candidate:power_output:performance",
+            "candidate:power_output:capability_evidence"
+          ],
+          "visualRefIds": [
+            "visual:series:power"
+          ]
+        },
+        "dimensions": [
+          {
+            "text": "本次记录提供了该维度的可靠证据；这些证据共同反映了本次骑行的表现，也让你可以从对应证据理解这次骑行。",
+            "claimIds": [
+              "candidate:power_output:fact",
+              "candidate:power_output:performance",
+              "candidate:power_output:capability_evidence"
+            ],
+            "visualRefIds": [
+              "visual:series:power"
+            ],
+            "dimensionId": "power_output"
+          },
+          {
+            "text": "本次记录提供了该维度的可靠证据；这些证据共同反映了本次骑行的表现，也让你可以从对应证据理解这次骑行。",
+            "claimIds": [
+              "candidate:heart_rate:fact",
+              "candidate:heart_rate:performance",
+              "candidate:heart_rate:capability_evidence"
+            ],
+            "visualRefIds": [
+              "visual:series:heart_rate"
+            ],
+            "dimensionId": "heart_rate"
+          },
+          {
+            "text": "本次记录提供了该维度的可靠证据；这些证据共同反映了本次骑行的表现，也让你可以从对应证据理解这次骑行。",
+            "claimIds": [
+              "candidate:route_pacing:fact",
+              "candidate:route_pacing:performance",
+              "candidate:route_pacing:capability_evidence"
+            ],
+            "visualRefIds": [
+              "visual:series:speed"
+            ],
+            "dimensionId": "route_pacing"
+          }
+        ],
+        "highlights": [
+          {
+            "text": "这组证据是本次骑行表现中值得回看的高光。",
+            "claimIds": [
+              "candidate:power_output:performance"
+            ],
+            "visualRefIds": [],
+            "target": {
+              "kind": "overall"
+            }
+          }
+        ],
+        "limitations": [],
+        "nextAction": {
+          "kind": "general",
+          "text": "骑行后适当补充水分并记录本次体感，便于下次继续观察。",
+          "basisClaimIds": []
+        }
+      },
+      "expected": {
+        "validationStatus": "accepted",
+        "fallbackLevel": "none",
+        "issueCodes": []
+      }
+    },
+    {
+      "id": "rejected-action-oriented-overall",
+      "inputId": "full",
+      "output": {
+        "schemaVersion": "ride-interpretation-output-v0.4.2-candidate",
+        "oneLineLabel": {
+          "text": "本次节奏保持稳定",
+          "claimIds": [
+            "candidate:power_output:performance"
+          ]
+        },
+        "overallAssessment": {
+          "text": "建议下次继续记录本次体感变化。",
+          "claimIds": [
+            "candidate:power_output:fact",
+            "candidate:power_output:performance",
+            "candidate:power_output:capability_evidence"
+          ],
+          "visualRefIds": [
+            "visual:series:power"
+          ]
+        },
+        "dimensions": [
+          {
+            "text": "本次记录提供了该维度的可靠证据；这些证据共同反映了本次骑行的表现，也让你可以从对应证据理解这次骑行。",
+            "claimIds": [
+              "candidate:power_output:fact",
+              "candidate:power_output:performance",
+              "candidate:power_output:capability_evidence"
+            ],
+            "visualRefIds": [
+              "visual:series:power"
+            ],
+            "dimensionId": "power_output"
+          },
+          {
+            "text": "本次记录提供了该维度的可靠证据；这些证据共同反映了本次骑行的表现，也让你可以从对应证据理解这次骑行。",
+            "claimIds": [
+              "candidate:heart_rate:fact",
+              "candidate:heart_rate:performance",
+              "candidate:heart_rate:capability_evidence"
+            ],
+            "visualRefIds": [
+              "visual:series:heart_rate"
+            ],
+            "dimensionId": "heart_rate"
+          },
+          {
+            "text": "本次记录提供了该维度的可靠证据；这些证据共同反映了本次骑行的表现，也让你可以从对应证据理解这次骑行。",
+            "claimIds": [
+              "candidate:route_pacing:fact",
+              "candidate:route_pacing:performance",
+              "candidate:route_pacing:capability_evidence"
+            ],
+            "visualRefIds": [
+              "visual:series:speed"
+            ],
+            "dimensionId": "route_pacing"
+          }
+        ],
+        "highlights": [
+          {
+            "text": "这组证据是本次骑行表现中值得回看的高光。",
+            "claimIds": [
+              "candidate:power_output:performance"
+            ],
+            "visualRefIds": [],
+            "target": {
+              "kind": "overall"
+            }
+          }
+        ],
+        "limitations": [],
+        "nextAction": {
+          "kind": "general",
+          "text": "骑行后适当补充水分并记录本次体感，便于下次继续观察。",
+          "basisClaimIds": []
+        }
+      },
+      "expected": {
+        "validationStatus": "rejected",
+        "fallbackLevel": "b0",
+        "issueCodes": [
+          "OVERALL_ACTION_LANGUAGE_NOT_ALLOWED"
+        ]
+      }
+    },
+    {
+      "id": "rejected-action-oriented-dimension",
+      "inputId": "full",
+      "output": {
+        "schemaVersion": "ride-interpretation-output-v0.4.2-candidate",
+        "oneLineLabel": {
+          "text": "本次节奏保持稳定",
+          "claimIds": [
+            "candidate:power_output:performance"
+          ]
+        },
+        "overallAssessment": {
+          "text": "本次记录提供了该维度的可靠证据；这些证据共同反映了本次骑行的表现，也让你可以从对应证据理解这次骑行。",
+          "claimIds": [
+            "candidate:power_output:fact",
+            "candidate:power_output:performance",
+            "candidate:power_output:capability_evidence"
+          ],
+          "visualRefIds": [
+            "visual:series:power"
+          ]
+        },
+        "dimensions": [
+          {
+            "text": "建议下次继续观察这一维度的变化。",
+            "claimIds": [
+              "candidate:power_output:fact",
+              "candidate:power_output:performance",
+              "candidate:power_output:capability_evidence"
+            ],
+            "visualRefIds": [
+              "visual:series:power"
+            ],
+            "dimensionId": "power_output"
+          },
+          {
+            "text": "本次记录提供了该维度的可靠证据；这些证据共同反映了本次骑行的表现，也让你可以从对应证据理解这次骑行。",
+            "claimIds": [
+              "candidate:heart_rate:fact",
+              "candidate:heart_rate:performance",
+              "candidate:heart_rate:capability_evidence"
+            ],
+            "visualRefIds": [
+              "visual:series:heart_rate"
+            ],
+            "dimensionId": "heart_rate"
+          },
+          {
+            "text": "本次记录提供了该维度的可靠证据；这些证据共同反映了本次骑行的表现，也让你可以从对应证据理解这次骑行。",
+            "claimIds": [
+              "candidate:route_pacing:fact",
+              "candidate:route_pacing:performance",
+              "candidate:route_pacing:capability_evidence"
+            ],
+            "visualRefIds": [
+              "visual:series:speed"
+            ],
+            "dimensionId": "route_pacing"
+          }
+        ],
+        "highlights": [
+          {
+            "text": "这组证据是本次骑行表现中值得回看的高光。",
+            "claimIds": [
+              "candidate:power_output:performance"
+            ],
+            "visualRefIds": [],
+            "target": {
+              "kind": "overall"
+            }
+          }
+        ],
+        "limitations": [],
+        "nextAction": {
+          "kind": "general",
+          "text": "骑行后适当补充水分并记录本次体感，便于下次继续观察。",
+          "basisClaimIds": []
+        }
+      },
+      "expected": {
+        "validationStatus": "rejected",
+        "fallbackLevel": "b0",
+        "issueCodes": [
+          "DIMENSION_power_output_ACTION_LANGUAGE_NOT_ALLOWED"
+        ]
+      }
+    },
+    {
+      "id": "rejected-unsafe-action-oriented-overall",
+      "inputId": "full",
+      "output": {
+        "schemaVersion": "ride-interpretation-output-v0.4.2-candidate",
+        "oneLineLabel": {
+          "text": "本次节奏保持稳定",
+          "claimIds": [
+            "candidate:power_output:performance"
+          ]
+        },
+        "overallAssessment": {
+          "text": "建议下次增加高强度训练安排。",
+          "claimIds": [
+            "candidate:power_output:fact",
+            "candidate:power_output:performance",
+            "candidate:power_output:capability_evidence"
+          ],
+          "visualRefIds": [
+            "visual:series:power"
+          ]
+        },
+        "dimensions": [
+          {
+            "text": "本次记录提供了该维度的可靠证据；这些证据共同反映了本次骑行的表现，也让你可以从对应证据理解这次骑行。",
+            "claimIds": [
+              "candidate:power_output:fact",
+              "candidate:power_output:performance",
+              "candidate:power_output:capability_evidence"
+            ],
+            "visualRefIds": [
+              "visual:series:power"
+            ],
+            "dimensionId": "power_output"
+          },
+          {
+            "text": "本次记录提供了该维度的可靠证据；这些证据共同反映了本次骑行的表现，也让你可以从对应证据理解这次骑行。",
+            "claimIds": [
+              "candidate:heart_rate:fact",
+              "candidate:heart_rate:performance",
+              "candidate:heart_rate:capability_evidence"
+            ],
+            "visualRefIds": [
+              "visual:series:heart_rate"
+            ],
+            "dimensionId": "heart_rate"
+          },
+          {
+            "text": "本次记录提供了该维度的可靠证据；这些证据共同反映了本次骑行的表现，也让你可以从对应证据理解这次骑行。",
+            "claimIds": [
+              "candidate:route_pacing:fact",
+              "candidate:route_pacing:performance",
+              "candidate:route_pacing:capability_evidence"
+            ],
+            "visualRefIds": [
+              "visual:series:speed"
+            ],
+            "dimensionId": "route_pacing"
+          }
+        ],
+        "highlights": [
+          {
+            "text": "这组证据是本次骑行表现中值得回看的高光。",
+            "claimIds": [
+              "candidate:power_output:performance"
+            ],
+            "visualRefIds": [],
+            "target": {
+              "kind": "overall"
+            }
+          }
+        ],
+        "limitations": [],
+        "nextAction": {
+          "kind": "general",
+          "text": "骑行后适当补充水分并记录本次体感，便于下次继续观察。",
+          "basisClaimIds": []
+        }
+      },
+      "expected": {
+        "validationStatus": "rejected",
+        "fallbackLevel": "b0",
+        "issueCodes": [
+          "OVERALL_ACTION_LANGUAGE_NOT_ALLOWED"
+        ]
+      }
+    },
+    {
+      "id": "rejected-implicit-unsafe-action-oriented-overall",
+      "inputId": "full",
+      "output": {
+        "schemaVersion": "ride-interpretation-output-v0.4.2-candidate",
+        "oneLineLabel": {
+          "text": "本次节奏保持稳定",
+          "claimIds": [
+            "candidate:power_output:performance"
+          ]
+        },
+        "overallAssessment": {
+          "text": "安排间歇训练以提升能力。",
+          "claimIds": [
+            "candidate:power_output:fact",
+            "candidate:power_output:performance",
+            "candidate:power_output:capability_evidence"
+          ],
+          "visualRefIds": [
+            "visual:series:power"
+          ]
+        },
+        "dimensions": [
+          {
+            "text": "本次记录提供了该维度的可靠证据；这些证据共同反映了本次骑行的表现，也让你可以从对应证据理解这次骑行。",
+            "claimIds": [
+              "candidate:power_output:fact",
+              "candidate:power_output:performance",
+              "candidate:power_output:capability_evidence"
+            ],
+            "visualRefIds": [
+              "visual:series:power"
+            ],
+            "dimensionId": "power_output"
+          },
+          {
+            "text": "本次记录提供了该维度的可靠证据；这些证据共同反映了本次骑行的表现，也让你可以从对应证据理解这次骑行。",
+            "claimIds": [
+              "candidate:heart_rate:fact",
+              "candidate:heart_rate:performance",
+              "candidate:heart_rate:capability_evidence"
+            ],
+            "visualRefIds": [
+              "visual:series:heart_rate"
+            ],
+            "dimensionId": "heart_rate"
+          },
+          {
+            "text": "本次记录提供了该维度的可靠证据；这些证据共同反映了本次骑行的表现，也让你可以从对应证据理解这次骑行。",
+            "claimIds": [
+              "candidate:route_pacing:fact",
+              "candidate:route_pacing:performance",
+              "candidate:route_pacing:capability_evidence"
+            ],
+            "visualRefIds": [
+              "visual:series:speed"
+            ],
+            "dimensionId": "route_pacing"
+          }
+        ],
+        "highlights": [
+          {
+            "text": "这组证据是本次骑行表现中值得回看的高光。",
+            "claimIds": [
+              "candidate:power_output:performance"
+            ],
+            "visualRefIds": [],
+            "target": {
+              "kind": "overall"
+            }
+          }
+        ],
+        "limitations": [],
+        "nextAction": {
+          "kind": "general",
+          "text": "骑行后适当补充水分并记录本次体感，便于下次继续观察。",
+          "basisClaimIds": []
+        }
+      },
+      "expected": {
+        "validationStatus": "rejected",
+        "fallbackLevel": "b0",
+        "issueCodes": [
+          "OVERALL_ACTION_LANGUAGE_NOT_ALLOWED"
+        ]
+      }
+    },
+    {
+      "id": "rejected-long-term-reference-in-highlight",
+      "inputId": "full",
+      "output": {
+        "schemaVersion": "ride-interpretation-output-v0.4.2-candidate",
+        "oneLineLabel": {
+          "text": "本次节奏保持稳定",
+          "claimIds": [
+            "candidate:power_output:performance"
+          ]
+        },
+        "overallAssessment": {
+          "text": "本次记录提供了该维度的可靠证据；这些证据共同反映了本次骑行的表现，也让你可以从对应证据理解这次骑行。",
+          "claimIds": [
+            "candidate:power_output:fact",
+            "candidate:power_output:performance",
+            "candidate:power_output:capability_evidence"
+          ],
+          "visualRefIds": [
+            "visual:series:power"
+          ]
+        },
+        "dimensions": [
+          {
+            "text": "本次记录提供了该维度的可靠证据；这些证据共同反映了本次骑行的表现，也让你可以从对应证据理解这次骑行。",
+            "claimIds": [
+              "candidate:power_output:fact",
+              "candidate:power_output:performance",
+              "candidate:power_output:capability_evidence"
+            ],
+            "visualRefIds": [
+              "visual:series:power"
+            ],
+            "dimensionId": "power_output"
+          },
+          {
+            "text": "本次记录提供了该维度的可靠证据；这些证据共同反映了本次骑行的表现，也让你可以从对应证据理解这次骑行。",
+            "claimIds": [
+              "candidate:heart_rate:fact",
+              "candidate:heart_rate:performance",
+              "candidate:heart_rate:capability_evidence"
+            ],
+            "visualRefIds": [
+              "visual:series:heart_rate"
+            ],
+            "dimensionId": "heart_rate"
+          },
+          {
+            "text": "本次记录提供了该维度的可靠证据；这些证据共同反映了本次骑行的表现，也让你可以从对应证据理解这次骑行。",
+            "claimIds": [
+              "candidate:route_pacing:fact",
+              "candidate:route_pacing:performance",
+              "candidate:route_pacing:capability_evidence"
+            ],
+            "visualRefIds": [
+              "visual:series:speed"
+            ],
+            "dimensionId": "route_pacing"
+          }
+        ],
+        "highlights": [
+          {
+            "text": "可作为后续骑行能力观察的一次参考。",
+            "claimIds": [
+              "candidate:power_output:fact"
+            ],
+            "visualRefIds": [],
+            "target": {
+              "kind": "overall"
+            }
+          }
+        ],
+        "limitations": [],
+        "nextAction": {
+          "kind": "general",
+          "text": "骑行后适当补充水分并记录本次体感，便于下次继续观察。",
+          "basisClaimIds": []
+        }
+      },
+      "expected": {
+        "validationStatus": "rejected",
+        "fallbackLevel": "b0",
+        "issueCodes": [
+          "HIGHLIGHT_0_LONG_TERM_CAPABILITY_LANGUAGE"
+        ]
+      }
+    },
+    {
       "id": "rejected-dimension-highlight-target",
       "inputId": "full",
       "output": {
@@ -1395,6 +1915,1145 @@
         "validationStatus": "accepted",
         "fallbackLevel": "none",
         "issueCodes": []
+      }
+    },
+    {
+      "id": "rejected-formal-f02-numeric-highlight-chain",
+      "inputId": "formal-f02",
+      "output": {
+        "schemaVersion": "ride-interpretation-output-v0.4.2-candidate",
+        "oneLineLabel": {
+          "text": "本次节奏保持稳定",
+          "claimIds": [
+            "candidate:route_pacing:performance"
+          ]
+        },
+        "overallAssessment": {
+          "text": "整体记录包含386。",
+          "claimIds": [
+            "candidate:route_pacing:fact",
+            "candidate:route_pacing:performance",
+            "candidate:route_pacing:capability_evidence"
+          ],
+          "visualRefIds": [
+            "visual:series:speed"
+          ]
+        },
+        "dimensions": [
+          {
+            "text": "本次记录提供了该维度的可靠证据；这些证据共同反映了本次骑行的表现，也让你可以从对应证据理解这次骑行。",
+            "claimIds": [
+              "candidate:route_pacing:fact",
+              "candidate:route_pacing:performance",
+              "candidate:route_pacing:capability_evidence"
+            ],
+            "visualRefIds": [
+              "visual:series:speed"
+            ],
+            "dimensionId": "route_pacing"
+          },
+          {
+            "text": "本次记录提供了该维度的可靠证据；这些证据共同反映了本次骑行的表现，也让你可以从对应证据理解这次骑行。",
+            "claimIds": [
+              "candidate:terrain_climb:fact",
+              "candidate:terrain_climb:performance",
+              "candidate:terrain_climb:capability_evidence"
+            ],
+            "visualRefIds": [
+              "visual:series:elevation"
+            ],
+            "dimensionId": "terrain_climb"
+          },
+          {
+            "text": "本次记录提供了该维度的可靠证据；这些证据共同反映了本次骑行的表现，也让你可以从对应证据理解这次骑行。",
+            "claimIds": [
+              "candidate:pacing_stability:fact",
+              "candidate:pacing_stability:performance",
+              "candidate:pacing_stability:capability_evidence"
+            ],
+            "visualRefIds": [
+              "visual:series:speed"
+            ],
+            "dimensionId": "pacing_stability"
+          }
+        ],
+        "highlights": [
+          {
+            "text": "该数值386值得回看。",
+            "claimIds": [
+              "candidate:terrain_climb:fact"
+            ],
+            "visualRefIds": [],
+            "target": {
+              "kind": "overall"
+            }
+          }
+        ],
+        "limitations": [],
+        "nextAction": {
+          "kind": "general",
+          "text": "骑行后适当补充水分并记录本次体感，便于下次继续观察。",
+          "basisClaimIds": []
+        }
+      },
+      "expected": {
+        "validationStatus": "rejected",
+        "fallbackLevel": "b0",
+        "issueCodes": [
+          "HIGHLIGHT_0_CLAIM_OUTSIDE_TARGET",
+          "OVERALL_UNSUPPORTED_NUMBER"
+        ]
+      }
+    },
+    {
+      "id": "rejected-formal-f04-overall-number-without-own-claim",
+      "inputId": "formal-f04",
+      "output": {
+        "schemaVersion": "ride-interpretation-output-v0.4.2-candidate",
+        "oneLineLabel": {
+          "text": "本次节奏保持稳定",
+          "claimIds": [
+            "candidate:heart_rate:performance"
+          ]
+        },
+        "overallAssessment": {
+          "text": "整体记录包含35。",
+          "claimIds": [
+            "candidate:heart_rate:fact",
+            "candidate:heart_rate:performance",
+            "candidate:heart_rate:capability_evidence"
+          ],
+          "visualRefIds": [
+            "visual:series:heart_rate"
+          ]
+        },
+        "dimensions": [
+          {
+            "text": "本次记录提供了该维度的可靠证据；这些证据共同反映了本次骑行的表现，也让你可以从对应证据理解这次骑行。",
+            "claimIds": [
+              "candidate:heart_rate:fact",
+              "candidate:heart_rate:performance",
+              "candidate:heart_rate:capability_evidence"
+            ],
+            "visualRefIds": [
+              "visual:series:heart_rate"
+            ],
+            "dimensionId": "heart_rate"
+          },
+          {
+            "text": "本次记录提供了该维度的可靠证据；这些证据共同反映了本次骑行的表现，也让你可以从对应证据理解这次骑行。",
+            "claimIds": [
+              "candidate:route_pacing:fact",
+              "candidate:route_pacing:performance",
+              "candidate:route_pacing:capability_evidence"
+            ],
+            "visualRefIds": [
+              "visual:series:speed"
+            ],
+            "dimensionId": "route_pacing"
+          },
+          {
+            "text": "本次记录提供了该维度的可靠证据；这些证据共同反映了本次骑行的表现，也让你可以从对应证据理解这次骑行。",
+            "claimIds": [
+              "candidate:terrain_climb:fact",
+              "candidate:terrain_climb:performance",
+              "candidate:terrain_climb:capability_evidence"
+            ],
+            "visualRefIds": [
+              "visual:series:elevation"
+            ],
+            "dimensionId": "terrain_climb"
+          }
+        ],
+        "highlights": [
+          {
+            "text": "这组证据是本次骑行表现中值得回看的高光。",
+            "claimIds": [
+              "candidate:heart_rate:performance"
+            ],
+            "visualRefIds": [],
+            "target": {
+              "kind": "overall"
+            }
+          }
+        ],
+        "limitations": [],
+        "nextAction": {
+          "kind": "general",
+          "text": "骑行后适当补充水分并记录本次体感，便于下次继续观察。",
+          "basisClaimIds": []
+        }
+      },
+      "expected": {
+        "validationStatus": "rejected",
+        "fallbackLevel": "b0",
+        "issueCodes": [
+          "OVERALL_UNSUPPORTED_NUMBER"
+        ]
+      }
+    },
+    {
+      "id": "accepted-formal-f04-overall-number-with-own-claim",
+      "inputId": "formal-f04",
+      "output": {
+        "schemaVersion": "ride-interpretation-output-v0.4.2-candidate",
+        "oneLineLabel": {
+          "text": "本次节奏保持稳定",
+          "claimIds": [
+            "candidate:heart_rate:performance"
+          ]
+        },
+        "overallAssessment": {
+          "text": "整体记录包含35。",
+          "claimIds": [
+            "candidate:heart_rate:fact",
+            "candidate:heart_rate:performance",
+            "candidate:heart_rate:capability_evidence",
+            "candidate:route_pacing:fact"
+          ],
+          "visualRefIds": [
+            "visual:series:heart_rate"
+          ]
+        },
+        "dimensions": [
+          {
+            "text": "本次记录提供了该维度的可靠证据；这些证据共同反映了本次骑行的表现，也让你可以从对应证据理解这次骑行。",
+            "claimIds": [
+              "candidate:heart_rate:fact",
+              "candidate:heart_rate:performance",
+              "candidate:heart_rate:capability_evidence"
+            ],
+            "visualRefIds": [
+              "visual:series:heart_rate"
+            ],
+            "dimensionId": "heart_rate"
+          },
+          {
+            "text": "本次记录提供了该维度的可靠证据；这些证据共同反映了本次骑行的表现，也让你可以从对应证据理解这次骑行。",
+            "claimIds": [
+              "candidate:route_pacing:fact",
+              "candidate:route_pacing:performance",
+              "candidate:route_pacing:capability_evidence"
+            ],
+            "visualRefIds": [
+              "visual:series:speed"
+            ],
+            "dimensionId": "route_pacing"
+          },
+          {
+            "text": "本次记录提供了该维度的可靠证据；这些证据共同反映了本次骑行的表现，也让你可以从对应证据理解这次骑行。",
+            "claimIds": [
+              "candidate:terrain_climb:fact",
+              "candidate:terrain_climb:performance",
+              "candidate:terrain_climb:capability_evidence"
+            ],
+            "visualRefIds": [
+              "visual:series:elevation"
+            ],
+            "dimensionId": "terrain_climb"
+          }
+        ],
+        "highlights": [
+          {
+            "text": "这组证据是本次骑行表现中值得回看的高光。",
+            "claimIds": [
+              "candidate:heart_rate:performance"
+            ],
+            "visualRefIds": [],
+            "target": {
+              "kind": "overall"
+            }
+          }
+        ],
+        "limitations": [],
+        "nextAction": {
+          "kind": "general",
+          "text": "骑行后适当补充水分并记录本次体感，便于下次继续观察。",
+          "basisClaimIds": []
+        }
+      },
+      "expected": {
+        "validationStatus": "accepted",
+        "fallbackLevel": "none",
+        "issueCodes": []
+      }
+    },
+    {
+      "id": "rejected-formal-f04-dimension-and-highlight-action",
+      "inputId": "formal-f04",
+      "output": {
+        "schemaVersion": "ride-interpretation-output-v0.4.2-candidate",
+        "oneLineLabel": {
+          "text": "本次节奏保持稳定",
+          "claimIds": [
+            "candidate:heart_rate:performance"
+          ]
+        },
+        "overallAssessment": {
+          "text": "本次记录提供了该维度的可靠证据；这些证据共同反映了本次骑行的表现，也让你可以从对应证据理解这次骑行。",
+          "claimIds": [
+            "candidate:heart_rate:fact",
+            "candidate:heart_rate:performance",
+            "candidate:heart_rate:capability_evidence"
+          ],
+          "visualRefIds": [
+            "visual:series:heart_rate"
+          ]
+        },
+        "dimensions": [
+          {
+            "text": "本次记录提供了该维度的可靠证据；这些证据共同反映了本次骑行的表现，也让你可以从对应证据理解这次骑行。建议下次增加高强度训练安排。",
+            "claimIds": [
+              "candidate:heart_rate:fact",
+              "candidate:heart_rate:performance",
+              "candidate:heart_rate:capability_evidence"
+            ],
+            "visualRefIds": [
+              "visual:series:heart_rate"
+            ],
+            "dimensionId": "heart_rate"
+          },
+          {
+            "text": "本次记录提供了该维度的可靠证据；这些证据共同反映了本次骑行的表现，也让你可以从对应证据理解这次骑行。",
+            "claimIds": [
+              "candidate:route_pacing:fact",
+              "candidate:route_pacing:performance",
+              "candidate:route_pacing:capability_evidence"
+            ],
+            "visualRefIds": [
+              "visual:series:speed"
+            ],
+            "dimensionId": "route_pacing"
+          },
+          {
+            "text": "本次记录提供了该维度的可靠证据；这些证据共同反映了本次骑行的表现，也让你可以从对应证据理解这次骑行。",
+            "claimIds": [
+              "candidate:terrain_climb:fact",
+              "candidate:terrain_climb:performance",
+              "candidate:terrain_climb:capability_evidence"
+            ],
+            "visualRefIds": [
+              "visual:series:elevation"
+            ],
+            "dimensionId": "terrain_climb"
+          }
+        ],
+        "highlights": [
+          {
+            "text": "建议下次增加高强度训练。",
+            "claimIds": [
+              "candidate:heart_rate:fact"
+            ],
+            "visualRefIds": [],
+            "target": {
+              "kind": "overall"
+            }
+          }
+        ],
+        "limitations": [],
+        "nextAction": {
+          "kind": "general",
+          "text": "骑行后适当补充水分并记录本次体感，便于下次继续观察。",
+          "basisClaimIds": []
+        }
+      },
+      "expected": {
+        "validationStatus": "rejected",
+        "fallbackLevel": "b0",
+        "issueCodes": [
+          "DIMENSION_heart_rate_ACTION_LANGUAGE_NOT_ALLOWED",
+          "HIGHLIGHT_0_ACTION_LANGUAGE_NOT_ALLOWED"
+        ]
+      }
+    },
+    {
+      "id": "rejected-formal-f05-r5-action-combination",
+      "inputId": "formal-f05",
+      "output": {
+        "schemaVersion": "ride-interpretation-output-v0.4.2-candidate",
+        "oneLineLabel": {
+          "text": "本次节奏保持稳定",
+          "claimIds": [
+            "candidate:heart_rate:performance"
+          ]
+        },
+        "overallAssessment": {
+          "text": "本次记录提供了该维度的可靠证据；这些证据共同反映了本次骑行的表现，也让你可以从对应证据理解这次骑行。建议下次增加高强度训练安排。",
+          "claimIds": [
+            "candidate:heart_rate:fact",
+            "candidate:heart_rate:performance",
+            "candidate:heart_rate:capability_evidence"
+          ],
+          "visualRefIds": [
+            "visual:series:heart_rate"
+          ]
+        },
+        "dimensions": [
+          {
+            "text": "本次记录提供了该维度的可靠证据；这些证据共同反映了本次骑行的表现，也让你可以从对应证据理解这次骑行。建议下次增加高强度训练安排。",
+            "claimIds": [
+              "candidate:heart_rate:fact",
+              "candidate:heart_rate:performance",
+              "candidate:heart_rate:capability_evidence"
+            ],
+            "visualRefIds": [
+              "visual:series:heart_rate"
+            ],
+            "dimensionId": "heart_rate"
+          },
+          {
+            "text": "本次记录提供了该维度的可靠证据；这些证据共同反映了本次骑行的表现，也让你可以从对应证据理解这次骑行。",
+            "claimIds": [
+              "candidate:route_pacing:fact",
+              "candidate:route_pacing:performance",
+              "candidate:route_pacing:capability_evidence"
+            ],
+            "visualRefIds": [
+              "visual:series:speed"
+            ],
+            "dimensionId": "route_pacing"
+          },
+          {
+            "text": "本次记录提供了该维度的可靠证据；这些证据共同反映了本次骑行的表现，也让你可以从对应证据理解这次骑行。",
+            "claimIds": [
+              "candidate:terrain_climb:fact",
+              "candidate:terrain_climb:performance",
+              "candidate:terrain_climb:capability_evidence"
+            ],
+            "visualRefIds": [
+              "visual:series:elevation"
+            ],
+            "dimensionId": "terrain_climb"
+          }
+        ],
+        "highlights": [
+          {
+            "text": "建议下次增加高强度训练。",
+            "claimIds": [
+              "candidate:heart_rate:fact"
+            ],
+            "visualRefIds": [],
+            "target": {
+              "kind": "overall"
+            }
+          }
+        ],
+        "limitations": [],
+        "nextAction": {
+          "kind": "general",
+          "text": "骑行后适当补充水分并记录本次体感，便于下次继续观察。",
+          "basisClaimIds": []
+        }
+      },
+      "expected": {
+        "validationStatus": "rejected",
+        "fallbackLevel": "b0",
+        "issueCodes": [
+          "OVERALL_ACTION_LANGUAGE_NOT_ALLOWED",
+          "DIMENSION_heart_rate_ACTION_LANGUAGE_NOT_ALLOWED",
+          "HIGHLIGHT_0_ACTION_LANGUAGE_NOT_ALLOWED"
+        ]
+      }
+    },
+    {
+      "id": "rejected-formal-f05-r6-action-combination",
+      "inputId": "formal-f05",
+      "output": {
+        "schemaVersion": "ride-interpretation-output-v0.4.2-candidate",
+        "oneLineLabel": {
+          "text": "本次节奏保持稳定",
+          "claimIds": [
+            "candidate:heart_rate:performance"
+          ]
+        },
+        "overallAssessment": {
+          "text": "本次记录提供了该维度的可靠证据；这些证据共同反映了本次骑行的表现，也让你可以从对应证据理解这次骑行。",
+          "claimIds": [
+            "candidate:heart_rate:fact",
+            "candidate:heart_rate:performance",
+            "candidate:heart_rate:capability_evidence"
+          ],
+          "visualRefIds": [
+            "visual:series:heart_rate"
+          ]
+        },
+        "dimensions": [
+          {
+            "text": "本次记录提供了该维度的可靠证据；这些证据共同反映了本次骑行的表现，也让你可以从对应证据理解这次骑行。建议下次增加高强度训练安排。",
+            "claimIds": [
+              "candidate:heart_rate:fact",
+              "candidate:heart_rate:performance",
+              "candidate:heart_rate:capability_evidence"
+            ],
+            "visualRefIds": [
+              "visual:series:heart_rate"
+            ],
+            "dimensionId": "heart_rate"
+          },
+          {
+            "text": "本次记录提供了该维度的可靠证据；这些证据共同反映了本次骑行的表现，也让你可以从对应证据理解这次骑行。",
+            "claimIds": [
+              "candidate:route_pacing:fact",
+              "candidate:route_pacing:performance",
+              "candidate:route_pacing:capability_evidence"
+            ],
+            "visualRefIds": [
+              "visual:series:speed"
+            ],
+            "dimensionId": "route_pacing"
+          },
+          {
+            "text": "本次记录提供了该维度的可靠证据；这些证据共同反映了本次骑行的表现，也让你可以从对应证据理解这次骑行。",
+            "claimIds": [
+              "candidate:terrain_climb:fact",
+              "candidate:terrain_climb:performance",
+              "candidate:terrain_climb:capability_evidence"
+            ],
+            "visualRefIds": [
+              "visual:series:elevation"
+            ],
+            "dimensionId": "terrain_climb"
+          }
+        ],
+        "highlights": [
+          {
+            "text": "建议下次增加高强度训练。",
+            "claimIds": [
+              "candidate:heart_rate:fact"
+            ],
+            "visualRefIds": [],
+            "target": {
+              "kind": "overall"
+            }
+          }
+        ],
+        "limitations": [],
+        "nextAction": {
+          "kind": "general",
+          "text": "骑行后适当补充水分并记录本次体感，便于下次继续观察。",
+          "basisClaimIds": []
+        }
+      },
+      "expected": {
+        "validationStatus": "rejected",
+        "fallbackLevel": "b0",
+        "issueCodes": [
+          "DIMENSION_heart_rate_ACTION_LANGUAGE_NOT_ALLOWED",
+          "HIGHLIGHT_0_ACTION_LANGUAGE_NOT_ALLOWED"
+        ]
+      }
+    },
+    {
+      "id": "rejected-formal-f05-r7-action-combination",
+      "inputId": "formal-f05",
+      "output": {
+        "schemaVersion": "ride-interpretation-output-v0.4.2-candidate",
+        "oneLineLabel": {
+          "text": "本次节奏保持稳定",
+          "claimIds": [
+            "candidate:heart_rate:performance"
+          ]
+        },
+        "overallAssessment": {
+          "text": "本次记录提供了该维度的可靠证据；这些证据共同反映了本次骑行的表现，也让你可以从对应证据理解这次骑行。建议下次增加高强度训练安排。",
+          "claimIds": [
+            "candidate:heart_rate:fact",
+            "candidate:heart_rate:performance",
+            "candidate:heart_rate:capability_evidence"
+          ],
+          "visualRefIds": [
+            "visual:series:heart_rate"
+          ]
+        },
+        "dimensions": [
+          {
+            "text": "本次记录提供了该维度的可靠证据；这些证据共同反映了本次骑行的表现，也让你可以从对应证据理解这次骑行。建议下次增加高强度训练安排。",
+            "claimIds": [
+              "candidate:heart_rate:fact",
+              "candidate:heart_rate:performance",
+              "candidate:heart_rate:capability_evidence"
+            ],
+            "visualRefIds": [
+              "visual:series:heart_rate"
+            ],
+            "dimensionId": "heart_rate"
+          },
+          {
+            "text": "本次记录提供了该维度的可靠证据；这些证据共同反映了本次骑行的表现，也让你可以从对应证据理解这次骑行。",
+            "claimIds": [
+              "candidate:route_pacing:fact",
+              "candidate:route_pacing:performance",
+              "candidate:route_pacing:capability_evidence"
+            ],
+            "visualRefIds": [
+              "visual:series:speed"
+            ],
+            "dimensionId": "route_pacing"
+          },
+          {
+            "text": "本次记录提供了该维度的可靠证据；这些证据共同反映了本次骑行的表现，也让你可以从对应证据理解这次骑行。",
+            "claimIds": [
+              "candidate:terrain_climb:fact",
+              "candidate:terrain_climb:performance",
+              "candidate:terrain_climb:capability_evidence"
+            ],
+            "visualRefIds": [
+              "visual:series:elevation"
+            ],
+            "dimensionId": "terrain_climb"
+          }
+        ],
+        "highlights": [
+          {
+            "text": "这组证据是本次骑行表现中值得回看的高光。",
+            "claimIds": [
+              "candidate:heart_rate:performance"
+            ],
+            "visualRefIds": [],
+            "target": {
+              "kind": "overall"
+            }
+          }
+        ],
+        "limitations": [],
+        "nextAction": {
+          "kind": "general",
+          "text": "骑行后适当补充水分并记录本次体感，便于下次继续观察。",
+          "basisClaimIds": []
+        }
+      },
+      "expected": {
+        "validationStatus": "rejected",
+        "fallbackLevel": "b0",
+        "issueCodes": [
+          "OVERALL_ACTION_LANGUAGE_NOT_ALLOWED",
+          "DIMENSION_heart_rate_ACTION_LANGUAGE_NOT_ALLOWED"
+        ]
+      }
+    },
+    {
+      "id": "rejected-formal-f05-imperative-action-tail",
+      "inputId": "formal-f05",
+      "output": {
+        "schemaVersion": "ride-interpretation-output-v0.4.2-candidate",
+        "oneLineLabel": {
+          "text": "本次节奏保持稳定",
+          "claimIds": [
+            "candidate:heart_rate:performance"
+          ]
+        },
+        "overallAssessment": {
+          "text": "本次记录提供了该维度的可靠证据；这些证据共同反映了本次骑行的表现，也让你可以从对应证据理解这次骑行，安排间歇训练以提升能力。",
+          "claimIds": [
+            "candidate:heart_rate:fact",
+            "candidate:heart_rate:performance",
+            "candidate:heart_rate:capability_evidence"
+          ],
+          "visualRefIds": [
+            "visual:series:heart_rate"
+          ]
+        },
+        "dimensions": [
+          {
+            "text": "本次记录提供了该维度的可靠证据；这些证据共同反映了本次骑行的表现，也让你可以从对应证据理解这次骑行；进行高强度训练安排。",
+            "claimIds": [
+              "candidate:heart_rate:fact",
+              "candidate:heart_rate:performance",
+              "candidate:heart_rate:capability_evidence"
+            ],
+            "visualRefIds": [
+              "visual:series:heart_rate"
+            ],
+            "dimensionId": "heart_rate"
+          },
+          {
+            "text": "本次记录提供了该维度的可靠证据；这些证据共同反映了本次骑行的表现，也让你可以从对应证据理解这次骑行。",
+            "claimIds": [
+              "candidate:route_pacing:fact",
+              "candidate:route_pacing:performance",
+              "candidate:route_pacing:capability_evidence"
+            ],
+            "visualRefIds": [
+              "visual:series:speed"
+            ],
+            "dimensionId": "route_pacing"
+          },
+          {
+            "text": "本次记录提供了该维度的可靠证据；这些证据共同反映了本次骑行的表现，也让你可以从对应证据理解这次骑行。",
+            "claimIds": [
+              "candidate:terrain_climb:fact",
+              "candidate:terrain_climb:performance",
+              "candidate:terrain_climb:capability_evidence"
+            ],
+            "visualRefIds": [
+              "visual:series:elevation"
+            ],
+            "dimensionId": "terrain_climb"
+          }
+        ],
+        "highlights": [
+          {
+            "text": "这组证据是本次骑行表现中值得回看的高光。",
+            "claimIds": [
+              "candidate:heart_rate:performance"
+            ],
+            "visualRefIds": [],
+            "target": {
+              "kind": "overall"
+            }
+          }
+        ],
+        "limitations": [],
+        "nextAction": {
+          "kind": "general",
+          "text": "骑行后适当补充水分并记录本次体感，便于下次继续观察。",
+          "basisClaimIds": []
+        }
+      },
+      "expected": {
+        "validationStatus": "rejected",
+        "fallbackLevel": "b0",
+        "issueCodes": [
+          "OVERALL_ACTION_LANGUAGE_NOT_ALLOWED",
+          "DIMENSION_heart_rate_ACTION_LANGUAGE_NOT_ALLOWED"
+        ]
+      }
+    },
+    {
+      "id": "rejected-formal-f09-highlight-claim-outside-overall",
+      "inputId": "formal-f09",
+      "output": {
+        "schemaVersion": "ride-interpretation-output-v0.4.2-candidate",
+        "oneLineLabel": {
+          "text": "本次节奏保持稳定",
+          "claimIds": [
+            "candidate:heart_rate:performance"
+          ]
+        },
+        "overallAssessment": {
+          "text": "本次记录提供了该维度的可靠证据；这些证据共同反映了本次骑行的表现，也让你可以从对应证据理解这次骑行。",
+          "claimIds": [
+            "candidate:heart_rate:fact",
+            "candidate:heart_rate:performance",
+            "candidate:heart_rate:capability_evidence"
+          ],
+          "visualRefIds": [
+            "visual:series:heart_rate"
+          ]
+        },
+        "dimensions": [
+          {
+            "text": "本次记录提供了该维度的可靠证据；这些证据共同反映了本次骑行的表现，也让你可以从对应证据理解这次骑行。",
+            "claimIds": [
+              "candidate:heart_rate:fact",
+              "candidate:heart_rate:performance",
+              "candidate:heart_rate:capability_evidence"
+            ],
+            "visualRefIds": [
+              "visual:series:heart_rate"
+            ],
+            "dimensionId": "heart_rate"
+          },
+          {
+            "text": "本次记录提供了该维度的可靠证据；这些证据共同反映了本次骑行的表现，也让你可以从对应证据理解这次骑行。",
+            "claimIds": [
+              "candidate:route_pacing:fact",
+              "candidate:route_pacing:performance",
+              "candidate:route_pacing:capability_evidence"
+            ],
+            "visualRefIds": [
+              "visual:series:speed"
+            ],
+            "dimensionId": "route_pacing"
+          },
+          {
+            "text": "本次记录提供了该维度的可靠证据；这些证据共同反映了本次骑行的表现，也让你可以从对应证据理解这次骑行。",
+            "claimIds": [
+              "candidate:pacing_stability:fact",
+              "candidate:pacing_stability:performance",
+              "candidate:pacing_stability:capability_evidence"
+            ],
+            "visualRefIds": [
+              "visual:series:speed"
+            ],
+            "dimensionId": "pacing_stability"
+          }
+        ],
+        "highlights": [
+          {
+            "text": "该数值38值得回看。",
+            "claimIds": [
+              "candidate:route_pacing:fact"
+            ],
+            "visualRefIds": [],
+            "target": {
+              "kind": "overall"
+            }
+          }
+        ],
+        "limitations": [],
+        "nextAction": {
+          "kind": "general",
+          "text": "骑行后适当补充水分并记录本次体感，便于下次继续观察。",
+          "basisClaimIds": []
+        }
+      },
+      "expected": {
+        "validationStatus": "rejected",
+        "fallbackLevel": "b0",
+        "issueCodes": [
+          "HIGHLIGHT_0_CLAIM_OUTSIDE_TARGET"
+        ]
+      }
+    },
+    {
+      "id": "rejected-formal-f09-highlight-numeric-and-visual-outside-overall",
+      "inputId": "formal-f09",
+      "output": {
+        "schemaVersion": "ride-interpretation-output-v0.4.2-candidate",
+        "oneLineLabel": {
+          "text": "本次节奏保持稳定",
+          "claimIds": [
+            "candidate:heart_rate:performance"
+          ]
+        },
+        "overallAssessment": {
+          "text": "本次记录提供了该维度的可靠证据；这些证据共同反映了本次骑行的表现，也让你可以从对应证据理解这次骑行。",
+          "claimIds": [
+            "candidate:heart_rate:fact",
+            "candidate:heart_rate:performance",
+            "candidate:heart_rate:capability_evidence"
+          ],
+          "visualRefIds": [
+            "visual:series:heart_rate"
+          ]
+        },
+        "dimensions": [
+          {
+            "text": "本次记录提供了该维度的可靠证据；这些证据共同反映了本次骑行的表现，也让你可以从对应证据理解这次骑行。",
+            "claimIds": [
+              "candidate:heart_rate:fact",
+              "candidate:heart_rate:performance",
+              "candidate:heart_rate:capability_evidence"
+            ],
+            "visualRefIds": [
+              "visual:series:heart_rate"
+            ],
+            "dimensionId": "heart_rate"
+          },
+          {
+            "text": "本次记录提供了该维度的可靠证据；这些证据共同反映了本次骑行的表现，也让你可以从对应证据理解这次骑行。",
+            "claimIds": [
+              "candidate:route_pacing:fact",
+              "candidate:route_pacing:performance",
+              "candidate:route_pacing:capability_evidence"
+            ],
+            "visualRefIds": [
+              "visual:series:speed"
+            ],
+            "dimensionId": "route_pacing"
+          },
+          {
+            "text": "本次记录提供了该维度的可靠证据；这些证据共同反映了本次骑行的表现，也让你可以从对应证据理解这次骑行。",
+            "claimIds": [
+              "candidate:pacing_stability:fact",
+              "candidate:pacing_stability:performance",
+              "candidate:pacing_stability:capability_evidence"
+            ],
+            "visualRefIds": [
+              "visual:series:speed"
+            ],
+            "dimensionId": "pacing_stability"
+          }
+        ],
+        "highlights": [
+          {
+            "text": "该数值38值得回看。",
+            "claimIds": [
+              "candidate:route_pacing:fact"
+            ],
+            "visualRefIds": [
+              "visual:series:speed"
+            ],
+            "target": {
+              "kind": "overall"
+            }
+          }
+        ],
+        "limitations": [],
+        "nextAction": {
+          "kind": "general",
+          "text": "骑行后适当补充水分并记录本次体感，便于下次继续观察。",
+          "basisClaimIds": []
+        }
+      },
+      "expected": {
+        "validationStatus": "rejected",
+        "fallbackLevel": "b0",
+        "issueCodes": [
+          "HIGHLIGHT_0_CLAIM_OUTSIDE_TARGET",
+          "HIGHLIGHT_0_VISUAL_OUTSIDE_TARGET"
+        ]
+      }
+    },
+    {
+      "id": "accepted-formal-f09-highlight-claim-in-overall",
+      "inputId": "formal-f09",
+      "output": {
+        "schemaVersion": "ride-interpretation-output-v0.4.2-candidate",
+        "oneLineLabel": {
+          "text": "本次节奏保持稳定",
+          "claimIds": [
+            "candidate:heart_rate:performance"
+          ]
+        },
+        "overallAssessment": {
+          "text": "本次记录提供了该维度的可靠证据；这些证据共同反映了本次骑行的表现，也让你可以从对应证据理解这次骑行。",
+          "claimIds": [
+            "candidate:heart_rate:fact",
+            "candidate:heart_rate:performance",
+            "candidate:heart_rate:capability_evidence",
+            "candidate:route_pacing:fact"
+          ],
+          "visualRefIds": [
+            "visual:series:heart_rate"
+          ]
+        },
+        "dimensions": [
+          {
+            "text": "本次记录提供了该维度的可靠证据；这些证据共同反映了本次骑行的表现，也让你可以从对应证据理解这次骑行。",
+            "claimIds": [
+              "candidate:heart_rate:fact",
+              "candidate:heart_rate:performance",
+              "candidate:heart_rate:capability_evidence"
+            ],
+            "visualRefIds": [
+              "visual:series:heart_rate"
+            ],
+            "dimensionId": "heart_rate"
+          },
+          {
+            "text": "本次记录提供了该维度的可靠证据；这些证据共同反映了本次骑行的表现，也让你可以从对应证据理解这次骑行。",
+            "claimIds": [
+              "candidate:route_pacing:fact",
+              "candidate:route_pacing:performance",
+              "candidate:route_pacing:capability_evidence"
+            ],
+            "visualRefIds": [
+              "visual:series:speed"
+            ],
+            "dimensionId": "route_pacing"
+          },
+          {
+            "text": "本次记录提供了该维度的可靠证据；这些证据共同反映了本次骑行的表现，也让你可以从对应证据理解这次骑行。",
+            "claimIds": [
+              "candidate:pacing_stability:fact",
+              "candidate:pacing_stability:performance",
+              "candidate:pacing_stability:capability_evidence"
+            ],
+            "visualRefIds": [
+              "visual:series:speed"
+            ],
+            "dimensionId": "pacing_stability"
+          }
+        ],
+        "highlights": [
+          {
+            "text": "该数值38值得回看。",
+            "claimIds": [
+              "candidate:route_pacing:fact"
+            ],
+            "visualRefIds": [],
+            "target": {
+              "kind": "overall"
+            }
+          }
+        ],
+        "limitations": [],
+        "nextAction": {
+          "kind": "general",
+          "text": "骑行后适当补充水分并记录本次体感，便于下次继续观察。",
+          "basisClaimIds": []
+        }
+      },
+      "expected": {
+        "validationStatus": "accepted",
+        "fallbackLevel": "none",
+        "issueCodes": []
+      }
+    },
+    {
+      "id": "rejected-formal-f09-visual-and-dimension-action",
+      "inputId": "formal-f09",
+      "output": {
+        "schemaVersion": "ride-interpretation-output-v0.4.2-candidate",
+        "oneLineLabel": {
+          "text": "本次节奏保持稳定",
+          "claimIds": [
+            "candidate:heart_rate:performance"
+          ]
+        },
+        "overallAssessment": {
+          "text": "本次记录提供了该维度的可靠证据；这些证据共同反映了本次骑行的表现，也让你可以从对应证据理解这次骑行。",
+          "claimIds": [
+            "candidate:heart_rate:fact",
+            "candidate:heart_rate:performance",
+            "candidate:heart_rate:capability_evidence"
+          ],
+          "visualRefIds": []
+        },
+        "dimensions": [
+          {
+            "text": "本次记录提供了该维度的可靠证据；这些证据共同反映了本次骑行的表现，也让你可以从对应证据理解这次骑行。建议下次增加高强度训练安排。",
+            "claimIds": [
+              "candidate:heart_rate:fact",
+              "candidate:heart_rate:performance",
+              "candidate:heart_rate:capability_evidence"
+            ],
+            "visualRefIds": [
+              "visual:series:heart_rate"
+            ],
+            "dimensionId": "heart_rate"
+          },
+          {
+            "text": "本次记录提供了该维度的可靠证据；这些证据共同反映了本次骑行的表现，也让你可以从对应证据理解这次骑行。",
+            "claimIds": [
+              "candidate:route_pacing:fact",
+              "candidate:route_pacing:performance",
+              "candidate:route_pacing:capability_evidence"
+            ],
+            "visualRefIds": [
+              "visual:series:speed"
+            ],
+            "dimensionId": "route_pacing"
+          },
+          {
+            "text": "本次记录提供了该维度的可靠证据；这些证据共同反映了本次骑行的表现，也让你可以从对应证据理解这次骑行。",
+            "claimIds": [
+              "candidate:pacing_stability:fact",
+              "candidate:pacing_stability:performance",
+              "candidate:pacing_stability:capability_evidence"
+            ],
+            "visualRefIds": [
+              "visual:series:speed"
+            ],
+            "dimensionId": "pacing_stability"
+          }
+        ],
+        "highlights": [
+          {
+            "text": "这组证据是本次骑行表现中值得回看的高光。",
+            "claimIds": [
+              "candidate:heart_rate:performance"
+            ],
+            "visualRefIds": [],
+            "target": {
+              "kind": "overall"
+            }
+          }
+        ],
+        "limitations": [],
+        "nextAction": {
+          "kind": "general",
+          "text": "骑行后适当补充水分并记录本次体感，便于下次继续观察。",
+          "basisClaimIds": []
+        }
+      },
+      "expected": {
+        "validationStatus": "rejected",
+        "fallbackLevel": "b0",
+        "issueCodes": [
+          "OVERALL_VISUAL_MISMATCH",
+          "DIMENSION_heart_rate_ACTION_LANGUAGE_NOT_ALLOWED"
+        ]
+      }
+    },
+    {
+      "id": "rejected-formal-f09-unsupported-numeric-chain",
+      "inputId": "formal-f09",
+      "output": {
+        "schemaVersion": "ride-interpretation-output-v0.4.2-candidate",
+        "oneLineLabel": {
+          "text": "本次节奏保持稳定",
+          "claimIds": [
+            "candidate:heart_rate:performance"
+          ]
+        },
+        "overallAssessment": {
+          "text": "整体记录包含999。",
+          "claimIds": [
+            "candidate:heart_rate:fact",
+            "candidate:heart_rate:performance",
+            "candidate:heart_rate:capability_evidence"
+          ],
+          "visualRefIds": [
+            "visual:series:heart_rate"
+          ]
+        },
+        "dimensions": [
+          {
+            "text": "本次记录提供了该维度的可靠证据；这些证据共同反映了本次骑行的表现，也让你可以从对应证据理解这次骑行。",
+            "claimIds": [
+              "candidate:heart_rate:fact",
+              "candidate:heart_rate:performance",
+              "candidate:heart_rate:capability_evidence"
+            ],
+            "visualRefIds": [
+              "visual:series:heart_rate"
+            ],
+            "dimensionId": "heart_rate"
+          },
+          {
+            "text": "本次记录提供了该维度的可靠证据；这些证据共同反映了本次骑行的表现，也让你可以从对应证据理解这次骑行。",
+            "claimIds": [
+              "candidate:route_pacing:fact",
+              "candidate:route_pacing:performance",
+              "candidate:route_pacing:capability_evidence"
+            ],
+            "visualRefIds": [
+              "visual:series:speed"
+            ],
+            "dimensionId": "route_pacing"
+          },
+          {
+            "text": "本次记录提供了该维度的可靠证据；这些证据共同反映了本次骑行的表现，也让你可以从对应证据理解这次骑行。",
+            "claimIds": [
+              "candidate:pacing_stability:fact",
+              "candidate:pacing_stability:performance",
+              "candidate:pacing_stability:capability_evidence"
+            ],
+            "visualRefIds": [
+              "visual:series:speed"
+            ],
+            "dimensionId": "pacing_stability"
+          }
+        ],
+        "highlights": [
+          {
+            "text": "本次值得回看的数值是999。",
+            "claimIds": [
+              "candidate:heart_rate:fact"
+            ],
+            "visualRefIds": [],
+            "target": {
+              "kind": "overall"
+            }
+          }
+        ],
+        "limitations": [],
+        "nextAction": {
+          "kind": "general",
+          "text": "骑行后适当补充水分并记录本次体感，便于下次继续观察。",
+          "basisClaimIds": []
+        }
+      },
+      "expected": {
+        "validationStatus": "rejected",
+        "fallbackLevel": "b0",
+        "issueCodes": [
+          "HIGHLIGHT_0_UNSUPPORTED_NUMBER",
+          "OVERALL_UNSUPPORTED_NUMBER"
+        ]
       }
     }
   ]

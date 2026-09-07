@@ -11,7 +11,7 @@ import { buildRideAnalysisContext } from "../src/domain/ride-analysis-context.ts
 import { createUserProfile } from "../src/domain/user-profile.ts";
 import { getRideFixture } from "../src/fixtures/rides.ts";
 
-type InputId = "full" | "partial";
+type InputId = "full" | "partial" | "formal-f02" | "formal-f04" | "formal-f05" | "formal-f09";
 type FixtureCase = {
   id: string;
   inputId: InputId;
@@ -24,10 +24,19 @@ const payload = JSON.parse(readFileSync(resolve("eval/ride-interpretation-v0.4-c
   cases: FixtureCase[];
 };
 assert.equal(payload.schemaVersion, "ride-interpretation-response-fixtures-v0.1");
-assert.equal(payload.cases.length, 16);
+assert.equal(payload.cases.length, 35);
 
 function inputFor(inputId: InputId) {
-  const fixture = getRideFixture("l3-power-preview");
+  const fixtureId = inputId === "formal-f02"
+    ? "l1-gpx-normal"
+    : inputId === "formal-f04"
+      ? "l2-built-in-sample"
+      : inputId === "formal-f05"
+        ? "l2-fit-heart-rate"
+        : inputId === "formal-f09"
+          ? "fit-power-dropout-with-heart-rate"
+          : "l3-power-preview";
+  const fixture = getRideFixture(fixtureId);
   const record = { activity: structuredClone(fixture.activity), series: structuredClone(fixture.series) };
   if (inputId === "partial") record.series.points = record.series.points.filter((_, index) => index < 100 || index >= 125);
   const context = buildRideAnalysisContext(

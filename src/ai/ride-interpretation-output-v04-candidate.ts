@@ -105,13 +105,33 @@ const LONG_TERM_CAPABILITY_PATTERNS = [
   /(?:优秀|较强|较弱|专业级|初级|中级|高级)(?:骑手|水平|能力)/,
   /(?:总分|排名|百分位)/,
 ];
+const LONG_TERM_CAPABILITY_REFERENCE_PATTERNS = [
+  /(?:可作为|可供).{0,12}(?:后续|长期).{0,8}(?:骑行)?(?:能力|水平)(?:观察|跟踪|评估).{0,12}(?:参考|依据)/,
+  /(?:后续|长期).{0,8}(?:骑行)?(?:能力|水平)(?:观察|跟踪|评估).{0,12}(?:参考|依据)/,
+];
+const LONG_TERM_CAPABILITY_MENTION_PATTERN = /(?:长期|后续).{0,12}(?:骑行)?(?:能力|水平)|(?:骑行)?(?:能力|水平).{0,12}(?:长期|后续)/;
 const UNAUTHORIZED_HISTORY_PATTERNS = [/(?:历史|过往|以往|上次|此前)\s*(?:骑行|记录|数据|表现)?/, /(?:相较|相比)\s*(?:自己|过去|上次|此前)?/];
 const UNSUPPORTED_CAUSALITY_PATTERNS = [/(?:因为|由于).{0,24}(?:导致|造成|所以)/, /(?:导致|造成).{0,24}(?:疲劳|体能|表现|能力)/];
-const ACTION_LANGUAGE_PATTERNS = [/(?:建议|应当|应该|下次|训练计划|恢复\d*天|可以尝试)/];
+// Overall and dimension text is descriptive only. Recommendations belong only
+// to nextAction, so detect both explicit imperatives and common indirect forms.
+const ACTION_LANGUAGE_PATTERNS = [
+  /(?:建议|应当|应该|下次|下回|下一次|可以尝试|可尝试|请|记得|不妨|宜)/,
+  /(?:后续|接下来|今后|之后|骑后|骑行后|运动后).{0,16}(?:记录|观察|查看|留意|关注|监测|回看|整理|补水|补充水分|放松|休息|调整|控制|保持|避免|安排|增加|减少|训练|恢复)/,
+  /(?:需要|需|要|可|可以|应|应该|应当|宜).{0,6}(?:记录|观察|查看|留意|关注|监测|回看|整理|补水|补充水分|放松|休息|调整|控制|保持|避免|安排|增加|减少|训练|恢复)/,
+  /(?:继续|注意|请|记得|不妨).{0,6}(?:记录|观察|查看|留意|关注|监测|回看|整理|补水|补充水分|放松|休息|调整|控制|保持|避免|安排|增加|减少|训练|恢复)/,
+  /(?:记录|观察|查看|留意|关注|监测|回看|整理|补水|补充水分|放松|休息|调整|控制|保持|避免|安排|增加|减少|训练|恢复).{0,8}(?:体感|节奏|强度|负荷|水分|状态|记录|数据|心率|功率|踏频|爬坡|休息|训练|恢复)(?:。|！|!|；|;|，|,|$)/,
+];
+const HIGH_RISK_ACTION_PATTERNS = [/(?:训练计划|训练安排|恢复\d*天|间歇|冲刺|阈值|高强度|加量|加练|负荷)/];
 const FACT_ONLY_LABEL_EVALUATION_PATTERNS = [/(?:表现|发挥|能力|水平|状态|强度|稳定|高效|出色|优秀|轻松|吃力|良好|不错|较好|较差|强劲|疲劳)/];
 
 function hasPattern(text: string, patterns: RegExp[]): boolean {
   return patterns.some((pattern) => pattern.test(text));
+}
+
+function isPermittedLongTermCapabilityReference(text: string, allowLongTermReference: boolean): boolean {
+  return allowLongTermReference
+    && hasPattern(text, LONG_TERM_CAPABILITY_REFERENCE_PATTERNS)
+    && !hasPattern(text, LONG_TERM_CAPABILITY_PATTERNS);
 }
 
 function numberTokens(value: string): string[] {
@@ -125,7 +145,11 @@ function addNumericVariants(target: Set<string>, value: number, rounded = false)
   for (const digits of [0, 1, 2]) target.add(Number(value.toFixed(digits)).toString());
 }
 
-function claimNumericVariants(claim: AnalysisContextClaim): Set<string> {
+/**
+ * Permitted presentation forms for one source Claim. Keep this shared with
+ * constrained repair so repair and L8 make the same numeric decision.
+ */
+export function claimNumericVariants(claim: AnalysisContextClaim): Set<string> {
   const variants = new Set<string>();
   const sourceValues: number[] = [];
   if (claim.value !== undefined && Number.isFinite(claim.value)) sourceValues.push(claim.value);
@@ -179,7 +203,7 @@ function validateNarrativeText(
   allowedClaims: Map<string, AnalysisContextClaim>,
   issues: string[],
   scope: string,
-  options: { allowAction?: boolean } = {},
+  options: { allowLongTermReference?: boolean } = {},
 ): void {
   validateText(text, issues, `${scope}_EMPTY`);
   const allowedNumbers = new Set<string>();
@@ -190,10 +214,18 @@ function validateNarrativeText(
     if (!allowedNumbers.has(token)) issues.push(`${scope}_UNSUPPORTED_NUMBER`);
   }
   if (hasPattern(text, DATA_COMPLETENESS_PATTERNS)) issues.push(`${scope}_DATA_COMPLETENESS_EVALUATION`);
-  if (hasPattern(text, LONG_TERM_CAPABILITY_PATTERNS)) issues.push(`${scope}_LONG_TERM_CAPABILITY_LANGUAGE`);
+  if (
+    (hasPattern(text, LONG_TERM_CAPABILITY_PATTERNS) || LONG_TERM_CAPABILITY_MENTION_PATTERN.test(text))
+    && !isPermittedLongTermCapabilityReference(text, options.allowLongTermReference === true)
+  ) {
+    issues.push(`${scope}_LONG_TERM_CAPABILITY_LANGUAGE`);
+  }
   if (hasPattern(text, UNAUTHORIZED_HISTORY_PATTERNS)) issues.push(`${scope}_UNAUTHORIZED_HISTORY_REFERENCE`);
   if (hasPattern(text, UNSUPPORTED_CAUSALITY_PATTERNS)) issues.push(`${scope}_UNSUPPORTED_CAUSALITY`);
-  if (!options.allowAction && hasPattern(text, ACTION_LANGUAGE_PATTERNS)) issues.push(`${scope}_ACTION_LANGUAGE_NOT_ALLOWED`);
+  const permittedLongTermReference = isPermittedLongTermCapabilityReference(text, options.allowLongTermReference === true);
+  if ((!permittedLongTermReference && hasPattern(text, ACTION_LANGUAGE_PATTERNS)) || hasPattern(text, HIGH_RISK_ACTION_PATTERNS)) {
+    issues.push(`${scope}_ACTION_LANGUAGE_NOT_ALLOWED`);
+  }
 }
 
 function validateNarrativeUnit(
@@ -204,13 +236,14 @@ function validateNarrativeUnit(
   allowedClaims: Map<string, AnalysisContextClaim>,
   issues: string[],
   scope: string,
+  options: { allowLongTermReference?: boolean } = {},
 ): void {
   if (output.claimIds.length === 0) issues.push(`${scope}_CLAIM_MISSING`);
   if (!isSubset(output.claimIds, expectedClaimIds)) issues.push(`${scope}_CLAIM_OUTSIDE_PLAN`);
   if (!sameIds(output.visualRefIds, expectedVisualRefIds)) issues.push(`${scope}_VISUAL_MISMATCH`);
   if (hasDuplicates(output.claimIds)) issues.push(`${scope}_DUPLICATE_CLAIM`);
   if (hasDuplicates(output.visualRefIds)) issues.push(`${scope}_DUPLICATE_VISUAL`);
-  validateNarrativeText(output.text, output.claimIds, candidateClaims, allowedClaims, issues, scope);
+  validateNarrativeText(output.text, output.claimIds, candidateClaims, allowedClaims, issues, scope, options);
 }
 
 export function validateRideInterpretationOutputV04Candidate(
@@ -248,7 +281,16 @@ export function validateRideInterpretationOutputV04Candidate(
   const overallClaimIds = input.candidateClaims
     .filter((claim) => claim.claimType !== "limitation")
     .map((claim) => claim.claimId);
-  validateNarrativeUnit(output.overallAssessment, overallClaimIds, input.overallAssessment.visualRefIds, inputCandidateClaims, inputAllowedClaims, issues, "OVERALL");
+  validateNarrativeUnit(
+    output.overallAssessment,
+    overallClaimIds,
+    input.overallAssessment.visualRefIds,
+    inputCandidateClaims,
+    inputAllowedClaims,
+    issues,
+    "OVERALL",
+    { allowLongTermReference: true },
+  );
   if (output.dimensions.length !== input.dimensionInterpretations.length) issues.push("DIMENSION_COUNT_MISMATCH");
   for (let index = 0; index < output.dimensions.length; index += 1) {
     const dimension = output.dimensions[index]!;
@@ -263,7 +305,16 @@ export function validateRideInterpretationOutputV04Candidate(
       ...expected.capabilityEvidenceClaimIds,
       ...expected.meaningClaimIds,
     ]);
-    validateNarrativeUnit(dimension, expectedClaimIds, expected.visualRefIds, inputCandidateClaims, inputAllowedClaims, issues, `DIMENSION_${dimension.dimensionId}`);
+    validateNarrativeUnit(
+      dimension,
+      expectedClaimIds,
+      expected.visualRefIds,
+      inputCandidateClaims,
+      inputAllowedClaims,
+      issues,
+      `DIMENSION_${dimension.dimensionId}`,
+      { allowLongTermReference: true },
+    );
   }
 
   for (let index = 0; index < highlights.length; index += 1) {

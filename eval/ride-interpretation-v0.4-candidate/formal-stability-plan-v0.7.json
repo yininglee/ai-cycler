@@ -1,0 +1,54 @@
+{
+  "schemaVersion": "ride-interpretation-formal-stability-plan-v0.1",
+  "planVersion": "v0.7",
+  "benchmark": "AEVAL-M1-RIDE-INTERPRETATION-V04-FORMAL",
+  "status": "FROZEN",
+  "purpose": "候选 v0.4 链路在固定、脱敏的当次骑行输入上的结构、安全、性能预算与受限修复稳定性测评；本计划冻结 FIX-005 后的服务端整体评价与高光证据链协调，不构成人工质量评分、真实用户泛化或长期能力结论。",
+  "supersedesPlan": "formal-stability-plan-v0.6.json",
+  "versionMatrix": {
+    "workflowName": "ride_analysis_v3",
+    "workflowId": "7680762018618359814",
+    "workflowVersion": "v0.0.9",
+    "modelId": "豆包·2.0·lite",
+    "promptVersion": "v0.4.12",
+    "inputContractVersion": "ride-interpretation-input-v0.4-candidate",
+    "outputContractVersion": "ride-interpretation-output-v0.4.2-candidate"
+  },
+  "profile": {
+    "age": 35,
+    "maxHeartRateBpm": 188,
+    "weightKg": 70,
+    "ftpWatts": 240,
+    "effectiveAt": "2026-09-01T00:00:00.000Z"
+  },
+  "repetitionsPerCase": 9,
+  "expectedSlots": 81,
+  "slotTimeoutMs": 25000,
+  "runtimeAssets": [
+    { "path": "src/ai/ride-interpretation-output-v04-candidate.ts", "sha256": "ef96e8ff74673a0eabb849223b64379dbed99c59313ad186cae18c64a497670a" },
+    { "path": "src/ai/ride-interpretation-service-v04-candidate.ts", "sha256": "69d2b572187ffab66e904b6989b34fbb2a1c45cd73b6ecc159b479b427628231" }
+  ],
+  "cases": [
+    { "caseId": "F01", "fixtureId": "l1-built-in-sample", "tier": "L1", "scenario": "基础 GPS 当次解读", "inputSha256": "d52ebaaf0e35eb0be4ae2e3a2422f311beae39516eddcefbc62d59113b9bf10a" },
+    { "caseId": "F02", "fixtureId": "l1-gpx-normal", "tier": "L1", "scenario": "正常 GPX 路线解读", "inputSha256": "e5cd9bb54b979086a44c319ae677a7e2bc09455c2555860c43d63d7d83710c71" },
+    { "caseId": "F03", "fixtureId": "l1-gps-spike", "tier": "L1", "scenario": "GPS 异常点后的受限解读", "inputSha256": "99b2db05143517c3fe7f88041d80867b1f540baab2a2e6aed4865eaaeaf13b20" },
+    { "caseId": "F04", "fixtureId": "l2-built-in-sample", "tier": "L2", "scenario": "心率与节奏当次解读", "inputSha256": "8f04e7952ee74fcb3819a1d43e491cf4fe07b716a05730b3238534d9e693a4ec" },
+    { "caseId": "F05", "fixtureId": "l2-fit-heart-rate", "tier": "L2", "scenario": "可靠心率 FIT 解读", "inputSha256": "feb673d3ff3858b0646421689024976f05995a382a1270043dbca9ff28f7e6fe" },
+    { "caseId": "F06", "fixtureId": "fit-heart-rate-dropout", "tier": "L2", "scenario": "心率缺失时的降级解读", "inputSha256": "d555ab60a207111bd1c518ba2c3e6f2c546fa0550d1c0b73bdbb3966fcaaa3f2" },
+    { "caseId": "F07", "fixtureId": "l3-built-in-sample", "tier": "L3", "scenario": "完整功率当次解读", "inputSha256": "e095a3174a76bb86bd924f57f223e94fa7b60bb9bff3fbd64800dd7305ea2aca" },
+    { "caseId": "F08", "fixtureId": "l3-fit-power", "tier": "L3", "scenario": "可靠功率 FIT 解读", "inputSha256": "a48da953335294639b5c4ea198b73c092c217142af8473855a0bf42abb1ef227" },
+    { "caseId": "F09", "fixtureId": "fit-power-dropout-with-heart-rate", "tier": "L3", "scenario": "功率缺失时的降级解读", "inputSha256": "f470f6d7d411145fd94a5213e176ad8cda46a7ecf33d6abea9c99fb006e06caf" }
+  ],
+  "passCriteria": [
+    "81/81 槽完成执行；每个槽独立判定，不因单槽 B0、Provider 错误或 L8 终态失败提前结束批次。",
+    "81/81 槽最终由候选输出通过 L8；不得 B0。",
+    "每槽最多两次模型调用；首次或一次受限修复后通过，禁止第三次调用。",
+    "每次 Provider 调用不超过 25 秒；首轮和唯一一次受限修复各自独立计时，任一调用超时该槽降级为 B0；槽位总耗时可因修复达到约 50 秒，不以槽位总耗时单独判 B0，汇总 P95 仅作为最终质量指标。",
+    "每槽均通过 Schema、计划维度完整回填、Claim/数字/视觉白名单、限制、下一步建议和安全边界校验。"
+  ],
+  "nonGoals": [
+    "不接入 history_change 或相对自己。",
+    "不保存原始模型输出、完整候选输入、Token 或敏感凭据。",
+    "不替换生产 Workflow，不构成人工盲评或真实用户体验验收。"
+  ]
+}
