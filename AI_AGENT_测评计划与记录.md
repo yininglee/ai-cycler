@@ -125,8 +125,9 @@ PRD 要求正式质量评测由两名人工评审盲评。用户可担任评审 
 | 测评集 | 当前事实 | 下一动作 |
 |---|---|---|
 | 骑后自动解读 | 历史 30 条混合集保留；已迁移 18 条 `RA-AUTO-*` 固定集，每例正式协议为 3 次；B0 已有基线 | 在新一轮 B2/B3 前由 AI 产品经理复核覆盖矩阵与 blind 范围 |
-| 对话 Agent | 已冻结 15 条固定集 `eval/ride-chat-v0.1/`（dev 2 / regression 6 / blind 4 / red-team 3），覆盖正常任务、两只读工具成功/失败、能力不足、轻量社交、安全与注入；早期 12 条草案 `eval/ride-chat-cases-v0.1.jsonl` 保留作来源追溯 | 真实 Provider 固定集 Run 待用户单独授权；RAG 案例在 RAG 未启用时单独延期 |
+| 对话 Agent | 已冻结 15 条固定集 `eval/ride-chat-v0.1/`（dev 2 / regression 6 / blind 4 / red-team 3），覆盖正常任务、两只读工具成功/失败、能力不足、轻量社交、安全与注入；早期 12 条草案 `eval/ride-chat-cases-v0.1.jsonl` 保留作来源追溯 | 真实 Provider 固定集 Run 待用户单独授权；RAG 案例在 RAG 未启用时单独延期；`CHAT-12` 拟升固定集 v0.2 增 2 条长期能力案例（用户以 AI 产品经理身份冻结后生效，哈希随版本重算） |
 | 用户产品验证 | 2026-09-07 用户决策取消 5 人测试；`eval/user-testing/T017-*` 旧脚本保留归档，不再执行 | 质量验证改由 `AEVAL-M1-RIDE-INTERPRETATION-V04-BLIND-REVIEW` 双人盲评承接（LLM 双评审，见第 8 节 M1 与 `eval/human-review/` T002-V04 系列） |
+| 骑行水平/能力评估 | 尚无可放行测评集；设计见 `骑行水平能力评估模块设计.md`（`AI-CAP-01` `Review`） | M4 `AI-CAP-01E` 专项 Gate 前冻结：维度状态/可信度/证据忠实与降级正确性固定集（开发规划 5.6） |
 | 训练计划 | 尚无可放行测评集 | M4 获专业审核授权后，由规则负责人、AI 产品经理和专业评审共同设计 |
 
 真实用户 FIT/GPX 默认只在获同意的本机受控使用，不提交原文件、文件名、精确轨迹或身份。生产失败进入回归集前必须去身份、删除精确位置/健康原文，并注明原测试集为何漏掉。
@@ -151,9 +152,14 @@ M2 不默认新增 Agent 能力。只有持久历史、用户资料、分享文�
 
 > M3 的完整专属内容（目标、冻结版本矩阵、固定集、子 Gate、执行协议、扣子 Workflow 准备、评审与放行、运行记录）见第 9 节「Agent 二」。
 
-### M4：训练计划 AI 表达层
+### M4：骑行水平评估与训练计划 AI 表达层
 
-训练强度、频次、恢复和停止规则必须由确定性规则引擎决定，LLM 只负责解释。正式测评需 AI 产品经理与合格专业评审共同参与：先冻结规则金标和危险边界，再验证模型是否忠实表达、不改写处方、不诊断、不弱化停止提示；执行红队、双人盲评、专业复核和回滚演练。任何危险建议、越界强度、错误用户数据或规则计划改写均为 `NO-GO`，不能使用条件放行。
+水平评估的能力维度状态、可信度与证据链，以及训练强度、频次、恢复和停止规则，均由确定性规则引擎决定，LLM 与对话 Agent 只负责解释。测评分两个专项（与开发规划 5.6 对齐）：
+
+1. **能力画像表达**（`AI-CAP-01` 系列）：页面与对话（`get_capability_profile`）忠实呈现规则输出的维度状态/可信度/证据——维度状态与规则输出一致 100%、证据可回溯至支撑骑行 100%、虚构维度/越合同状态/人群分层措辞 0、五道门不通过时该维度正确降级。
+2. **训练计划表达**（`TRAIN-*` 系列）：模型忠实解释规则引擎产出的计划，不改写强度/频率/恢复/停止规则——规则忠实率 100%、危险建议/越界强度/诊断/错误用户数据/规则计划改写 0；触发类工具（`TRAIN-04`）幂等、显式 UI 确认与回滚可复现。
+
+正式测评需 AI 产品经理与合格专业评审共同参与：先冻结规则金标和危险边界，再验证模型是否忠实表达、不改写处方、不诊断、不弱化停止提示；执行红队、双人盲评、专业复核和回滚演练。任何危险建议、越界强度、错误用户数据或规则计划改写均为 `NO-GO`，不能使用条件放行。
 
 ## 7. 执行与记录规范
 
@@ -445,7 +451,7 @@ M2 不默认新增 Agent 能力。只有持久历史、用户资料、分享文�
 - 输出合同：Workflow 必须通过 `chat_output` 返回 `ride-chat-output-v0.1` JSON；服务端仍执行 Schema、Claim、数字、安全、隐私和一次修复校验。
 - 隔离：只读取 `COZE_CHAT_*`，不得读取骑后 `COZE_*`、`COZE_INTERPRETATION_*`、骑后 Prompt 或 `AnalysisRun`。
 - 验证：`pnpm eval:chat:preflight` 通过（15 条、零 Provider 调用）；全量 `pnpm test` `384/384 PASS`；`pnpm typecheck`、`pnpm build` 与 `git diff --check` 通过。新增替身覆盖请求变量、去标识化投影、嵌套 `chat_output` 提取、配置隔离与错误映射。
-- 扣子侧配置：[`coze/ride_chat_v1-配置指南.md`](coze/ride_chat_v1-配置指南.md) 冻结开始/结束节点、`chat_output` 字符串返回、Prompt `ride-chat-prompt-v0.1.0`、`.env.local` 变量和真实固定集运行前提；[`prompts/ride-chat-workflow-v0.1.md`](prompts/ride-chat-workflow-v0.1.md) 是唯一的 Chat System Prompt 资产。
+- 扣子侧配置：[`coze/ride_chat_v1-配置指南.md`](coze/ride_chat_v1-配置指南.md) 冻结开始/结束节点、`chat_output` 字符串返回、Prompt `ride-chat-prompt-v0.1.1`（2026-09-08 人格对齐：自称“AI 骑行伙伴”的对话表达层，行为规则不变）、`.env.local` 变量和真实固定集运行前提；[`prompts/ride-chat-workflow-v0.1.md`](prompts/ride-chat-workflow-v0.1.md) 是唯一的 Chat System Prompt 资产。
 - 模型策略：默认候选为关闭深度思考的快速版 `ride_chat_v1`；用户已确认可另建 `ride_chat_v1_reasoning` 深度思考实验版。两者必须使用独立 Workflow ID 和 Run ID，按相同固定集比较硬门、修复率、P50/P95、调用次数与成本可观测性，不能混合得出放行结论。
 - 未发生的事项：未写入 Token、未调用真实扣子、未创建真实模型 Run；真实测试将使用新的 `AEVAL-M3-CHAT-<date>-<sequence>` Run ID，并记录 Workflow/模型版本、次数、延迟、成本可观测状态和固定集结论。
 

@@ -3,7 +3,7 @@
 > 工作项：`CHAT-11`  
 > Workflow：`ride_chat_v1`  
 > 输入合同：`ride-chat-workflow-input-v0.1`  
-> Prompt：[`prompts/ride-chat-workflow-v0.1.md`](../prompts/ride-chat-workflow-v0.1.md) `ride-chat-prompt-v0.1.0`  
+> Prompt：[`prompts/ride-chat-workflow-v0.1.md`](../prompts/ride-chat-workflow-v0.1.md) `ride-chat-prompt-v0.1.1`（2026-09-08 人格对齐：自称“AI 骑行伙伴”的对话表达层；粘贴时以 v0.1.1 为准）  
 > 输出合同：`ride-chat-output-v0.1`  
 > 状态：`Review`。用于本地 Demo 联调；不代表 `chat_enabled` 已开放。
 
@@ -19,7 +19,7 @@
 
 ```mermaid
 flowchart LR
-  S["开始：3 个字符串变量"] --> L["LLM：Chat Prompt v0.1.0"]
+  S["开始：3 个字符串变量"] --> L["LLM：Chat Prompt v0.1.1"]
   L --> E["结束：chat_output 字符串"]
   E --> V["服务端：Schema / Claim / 数字 / 安全校验"]
   V -->|"首次不通过"| L
