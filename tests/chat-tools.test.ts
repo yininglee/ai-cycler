@@ -91,6 +91,7 @@ test("chat tools never call repository write methods", async () => {
     getRide: async (ownerId: string, rideId: string) => ownerId === "owner" && rideId === "read-only-ride" ? record : null,
     getProfile: async () => null,
     listRides: async () => [],
+    findRideIdByContentHash: async () => null,
     saveRide: async () => { writes.push("saveRide"); },
     deleteRide: async () => { writes.push("deleteRide"); return true; },
     saveProfile: async () => { writes.push("saveProfile"); },

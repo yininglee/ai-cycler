@@ -154,7 +154,7 @@ M0 已继承工程基线（Done）
 
 延期：盲评期间不修 UI、不优化 Prompt、不扩模型批次；发现问题先记录，汇总阶段再分级。
 
-### M2：PRD 社交分享与可持续使用 MVP（3/8 Done，约 8–14 sessions）
+### M2：PRD 社交分享与可持续使用 MVP（4/8 Done，约 8–14 sessions）
 
 覆盖 PRD 6.4 社交分享，并补齐真实用户反复使用所需的最小数据基础。
 进入条件：Demo 优化任务完成并经用户验收；随后 M1 证明核心解读有明确价值，且决定继续维护产品。
@@ -163,11 +163,11 @@ M0 已继承工程基线（Done）
 - [x] `MVP-FOUNDATION-01` 冻结部署地域、认证、PostgreSQL、保留期与删除 ADR；不先改 UI。`Done`（2026-09-04，用户明确“验收通过”；ADR-022 与三份现行方案/进度文档一致，生产环境参数仍列为开放阻塞），1–2 sessions。
 - [x] `MVP-FOUNDATION-02` 为 Ride/Profile/Analysis 建 Repository 接口和最小持久化实现，迁移前保持领域函数不变。`Done`（2026-09-04，用户明确“验收通过”；本地服务端 session/文件持久化、归属与删除闭环已验证，生产 PostgreSQL/OIDC 仍待环境确认），2–3 sessions。
 - [ ] `MVP-FOUNDATION-03` 接入成熟 session 与用户归属，补跨用户访问、同意和删除测试。`Blocked`（2026-09-04：开发 session、服务端归属、同意与删除回归已自检；生产 OIDC 提供商/回调/服务端令牌校验及 RISK-009 治理参数未确认，不能以本地 cookie 代替），2–3 sessions。
-- [ ] `MVP-FOUNDATION-04` 将 FIT/GPX 导入改为幂等持久化，增加 MIME/文件头、点数、限流和可追踪错误，并建立支持设备/来源矩阵。`Backlog`，2–3 sessions。
-- [ ] `MVP-SHARE-01` 实现数据卡图片导出、系统分享/下载降级和起终点隐私预览。`Backlog`，2–3 sessions。
-- [ ] `MVP-SHARE-02` 让真实导入记录进入分享页；数字、文案和详情 Claim 一致。`Backlog`，1–2 sessions。
+- [x] `MVP-FOUNDATION-04` 将 FIT/GPX 导入改为幂等持久化，增加 MIME/文件头、点数、限流和可追踪错误，并建立支持设备/来源矩阵。`Done`（2026-09-08 用户明确“验收通过”；SHA-256 内容哈希幂等去重、FIT `.FIT` 文件头与 GPX 根签名校验、MIME 白名单、FIT 20 万点上限、按会话滑窗限流 10 次/60s（`IMPORT_RATE_LIMIT_*` 可配）、`import_rejected` 事件与 `requestRef` 串联、6 FIT + 6 GPX 合成样本矩阵；`356/356` 测试与 build 通过），2–3 sessions。
+- [ ] `MVP-SHARE-01` 实现数据卡图片导出、系统分享/下载降级和起终点隐私预览。`Backlog`（2026-09-08 用户决策：暂缓分享模块，先做 `MVP-REPEAT-01` 重复使用闭环；恢复时由用户指定），2–3 sessions。
+- [ ] `MVP-SHARE-02` 让真实导入记录进入分享页；数字、文案和详情 Claim 一致。`Backlog`（同上，随 `MVP-SHARE-01` 一并延后），1–2 sessions。
 - [x] `MVP-OBS-01` 建立导入、B0、AI、证据、反馈、分享和删除的最小事件字典与脱敏检查。`Done`（2026-09-04，用户明确“验收通过”；事件合同、归属/删除回归、`340/340` 测试、类型检查、生产构建和本地 `/demo-events` 预览均通过；生产 OIDC/RISK-009 仍只允许本地 Demo），1–2 sessions。
-- [ ] `MVP-REPEAT-01` 接入持久历史和 30 天/同路线/同口径比较，验证第二次闭环后再决定是否开放更多趋势。`Backlog`，2–3 sessions。
+- [x] `MVP-REPEAT-01` 接入持久历史和 30 天/同路线/同口径比较，验证第二次闭环后再决定是否开放更多趋势。`Done`（2026-09-08 用户明确“验收通过”：route-match-key-v0.1 路线签名（8×8 网格量化+连续折叠+闭环规范化旋转+500m 距离桶，环线不同起点/格内 GPS 噪声稳定）、Repository→HistoricalRide 适配、确定性比较区块接入详情页分析 Tab（全部骑行组+同路线组、冻结 2 样本门、无可比整体隐藏）；AI 解读链路不变；`368/368` 测试、typecheck、build 通过；用户以三条真实骑行验证窗口与样本门行为），2–3 sessions。
 
 验收证据：迁移/权限/删除自动测试；真实浏览器 E2E；分享图 390×844 与桌面检查；重启恢复和删除传播记录；事件审计；10–30 名邀请用户的分子/分母和原话。
 

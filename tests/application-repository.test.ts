@@ -73,3 +73,39 @@ test("ride and account deletion cascade only the requesting user's data", async 
     assert.ok(await repository.getRide("b", "b-ride"));
   } finally { await rm(root, { recursive: true, force: true }); }
 });
+
+test("content-hash lookup scopes idempotent import dedup to the owner and deletion clears it", async () => {
+  const root = await mkdtemp(join(tmpdir(), "ai-cycling-repo-"));
+  try {
+    const repository = new FileApplicationRepository(root);
+    const record = getRideFixture("l1-built-in-sample");
+    const ride = { activity: { ...record.activity, rideId: "hash-ride-1" }, series: { ...record.series, rideId: "hash-ride-1" } };
+    const unhashed = { activity: { ...record.activity, rideId: "hash-ride-2" }, series: { ...record.series, rideId: "hash-ride-2" } };
+
+    await repository.saveRide("user-a", ride, "sha-256:sample-hash");
+    // 未携带哈希的记录不参与去重索引。
+    await repository.saveRide("user-a", unhashed);
+
+    assert.equal(await repository.findRideIdByContentHash("user-a", "sha-256:sample-hash"), "hash-ride-1");
+    // 归属隔离：其他会话查不到该哈希。
+    assert.equal(await repository.findRideIdByContentHash("user-b", "sha-256:sample-hash"), null);
+    assert.equal(await repository.findRideIdByContentHash("user-a", "sha-256:other"), null);
+    assert.equal(await repository.findRideIdByContentHash("user-a", "sha-256:unhashed"), null);
+
+    // 删除记录后哈希随之移除，重新导入不再命中去重。
+    assert.equal(await repository.deleteRide("user-a", "hash-ride-1"), true);
+    assert.equal(await repository.findRideIdByContentHash("user-a", "sha-256:sample-hash"), null);
+
+    // 账户删除同样级联清除哈希索引。
+    await repository.saveRide("user-a", ride, "sha-256:sample-hash");
+    await repository.deleteAccount("user-a");
+    assert.equal(await repository.findRideIdByContentHash("user-a", "sha-256:sample-hash"), null);
+
+    // 重启（重新加载状态文件）后哈希索引仍可追溯。
+    const restarted = new FileApplicationRepository(root);
+    const persisted = { activity: { ...record.activity, rideId: "hash-ride-3" }, series: { ...record.series, rideId: "hash-ride-3" } };
+    await restarted.saveRide("user-c", persisted, "sha-256:persisted-hash");
+    const reloaded = new FileApplicationRepository(root);
+    assert.equal(await reloaded.findRideIdByContentHash("user-c", "sha-256:persisted-hash"), "hash-ride-3");
+  } finally { await rm(root, { recursive: true, force: true }); }
+});

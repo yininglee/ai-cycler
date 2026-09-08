@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 type DemoEvent = { eventId: string; type: string; occurredAt: string; requestRef?: string; rideRef?: string; attributes?: Record<string, string> };
 
 const EVENT_LABELS: Record<string, string> = {
-  import_started: "导入开始", import_completed: "导入完成", ai_requested: "AI 请求", ai_completed: "AI 完成",
+  import_started: "导入开始", import_completed: "导入完成", import_rejected: "导入拒绝", ai_requested: "AI 请求", ai_completed: "AI 完成",
   ai_degraded: "AI 降级", b0_visible: "基础摘要可见", evidence_viewed: "证据查看", feedback_submitted: "反馈",
   chat_requested: "Chat 请求", chat_completed: "Chat 完成", chat_degraded: "Chat 降级",
   share_previewed: "分享预览", share_copied: "分享文案复制", deletion_requested: "删除请求", deletion_completed: "删除完成",

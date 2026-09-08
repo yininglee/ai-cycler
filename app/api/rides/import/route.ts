@@ -1,9 +1,13 @@
+import { createHash } from "node:crypto";
+
 import { createImportedRideId, saveImportedRide } from "../../../../src/imports/demo-ride-store.ts";
-import { AuthConfigurationError, resolveOrCreateRequestSession, sessionCookieHeader } from "../../../../src/auth/session.ts";
+import { AuthConfigurationError, resolveOrCreateRequestSession, sessionCookieHeader, type RequestSession } from "../../../../src/auth/session.ts";
 import { getApplicationRepository } from "../../../../src/persistence/application-repository.ts";
 import { createDemoEvent } from "../../../../src/observability/demo-events.ts";
 import { parseRideRecord, isRideParseError } from "../../../../src/parsers/index.ts";
 import { MAX_UPLOAD_BYTES } from "../../../../src/parsers/parser-utils.ts";
+import { assertDeclaredMimeType } from "../../../../src/parsers/file-signature.ts";
+import { getImportRateLimiter } from "../../../../src/imports/import-rate-limit.ts";
 
 export const runtime = "nodejs";
 
@@ -19,34 +23,85 @@ function isSupportedFileName(fileName: string): boolean {
   return normalized.endsWith(".fit") || normalized.endsWith(".gpx");
 }
 
+/** MVP-FOUNDATION-04：拒绝路径统一记录脱敏 import_rejected 事件（稳定错误码 + requestRef）。
+ * 同时下发会话 Cookie，确保首次请求即被拒的客户端后续重试仍处于同一限流窗口。 */
+async function rejectImport(
+  session: RequestSession,
+  requestId: string,
+  code: string,
+  message: string,
+  status: number,
+  headers: Record<string, string> = {},
+): Promise<Response> {
+  await getApplicationRepository().saveDemoEvent(session.userId, createDemoEvent({
+    type: "import_rejected",
+    requestId,
+    attributes: { code },
+  }));
+  return noStoreJson({ error: code, message }, status, { ...sessionCookieHeader(session), ...headers });
+}
+
 export async function POST(request: Request): Promise<Response> {
   let session;
   try { session = resolveOrCreateRequestSession(request); } catch (error) {
     if (error instanceof AuthConfigurationError) return noStoreJson({ error: error.code }, 503);
     return noStoreJson({ error: "AUTH_UNAVAILABLE" }, 503);
   }
-  await getApplicationRepository().saveDemoEvent(session.userId, createDemoEvent({ type: "import_started" }));
+  const requestId = crypto.randomUUID();
+
+  const rateLimit = getImportRateLimiter().check(session.userId);
+  if (!rateLimit.allowed) {
+    return rejectImport(session, requestId, "IMPORT_RATE_LIMITED", "导入请求过于频繁，请稍后再试", 429, {
+      "Retry-After": String(Math.max(1, rateLimit.retryAfterSeconds)),
+    });
+  }
+
+  await getApplicationRepository().saveDemoEvent(session.userId, createDemoEvent({ type: "import_started", requestId }));
+
   const contentLength = Number(request.headers.get("content-length"));
   if (Number.isFinite(contentLength) && contentLength > MAX_UPLOAD_BYTES) {
-    return noStoreJson({ error: "FILE_TOO_LARGE", message: "上传文件超过 50 MB 限制" }, 413);
+    return rejectImport(session, requestId, "FILE_TOO_LARGE", "上传文件超过 50 MB 限制", 413);
   }
 
   let formData: FormData;
   try {
     formData = await request.formData();
   } catch {
-    return noStoreJson({ error: "INVALID_UPLOAD", message: "无法读取上传文件" }, 400);
+    return rejectImport(session, requestId, "INVALID_UPLOAD", "无法读取上传文件", 400);
   }
 
   const upload = formData.get("file");
   if (!(upload instanceof File)) {
-    return noStoreJson({ error: "MISSING_FILE", message: "请选择一个 FIT 或 GPX 文件" }, 400);
+    return rejectImport(session, requestId, "MISSING_FILE", "请选择一个 FIT 或 GPX 文件", 400);
   }
   if (!isSupportedFileName(upload.name)) {
-    return noStoreJson({ error: "UNSUPPORTED_FILE_TYPE", message: "当前只支持 .fit 和 .gpx 文件" }, 422);
+    return rejectImport(session, requestId, "UNSUPPORTED_FILE_TYPE", "当前只支持 .fit 和 .gpx 文件", 422);
   }
   if (upload.size > MAX_UPLOAD_BYTES) {
-    return noStoreJson({ error: "FILE_TOO_LARGE", message: "上传文件超过 50 MB 限制" }, 413);
+    return rejectImport(session, requestId, "FILE_TOO_LARGE", "上传文件超过 50 MB 限制", 413);
+  }
+  try {
+    assertDeclaredMimeType(upload.name, upload.type);
+  } catch (error) {
+    if (isRideParseError(error)) {
+      return rejectImport(session, requestId, error.code, error.message, 422);
+    }
+    throw error;
+  }
+
+  const bytes = new Uint8Array(await upload.arrayBuffer());
+  const contentHash = createHash("sha256").update(bytes).digest("base64url");
+
+  // 幂等去重：同一会话重复导入相同内容时返回既有记录，不再重复解析与存储。
+  const existingRideId = await getApplicationRepository().findRideIdByContentHash(session.userId, contentHash);
+  if (existingRideId) {
+    await getApplicationRepository().saveDemoEvent(session.userId, createDemoEvent({
+      type: "import_completed",
+      rideId: existingRideId,
+      requestId,
+      attributes: { deduplicated: "true" },
+    }));
+    return noStoreJson({ rideId: existingRideId, duplicate: true }, 200, sessionCookieHeader(session));
   }
 
   const rideId = createImportedRideId();
@@ -54,12 +109,13 @@ export async function POST(request: Request): Promise<Response> {
     const record = await parseRideRecord({
       rideId,
       fileName: upload.name,
-      content: new Uint8Array(await upload.arrayBuffer()),
+      content: bytes,
     });
-    await getApplicationRepository().saveRide(session.userId, record);
+    await getApplicationRepository().saveRide(session.userId, record, contentHash);
     await getApplicationRepository().saveDemoEvent(session.userId, createDemoEvent({
       type: "import_completed",
       rideId,
+      requestId,
       attributes: { source: record.activity.source.kind },
     }));
     // Keep the legacy in-memory fixture bridge for existing development tests.
@@ -68,8 +124,8 @@ export async function POST(request: Request): Promise<Response> {
   } catch (error) {
     if (isRideParseError(error)) {
       const status = error.code === "FILE_TOO_LARGE" ? 413 : 422;
-      return noStoreJson({ error: error.code, message: error.message }, status);
+      return rejectImport(session, requestId, error.code, error.message, status);
     }
-    return noStoreJson({ error: "IMPORT_FAILED", message: "文件暂时无法读取，请确认文件完整后重试" }, 422);
+    return rejectImport(session, requestId, "IMPORT_FAILED", "文件暂时无法读取，请确认文件完整后重试", 422);
   }
 }

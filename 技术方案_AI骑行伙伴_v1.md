@@ -176,7 +176,7 @@ app/
 | `UserProfile v0.1` | 年龄、身高、体重、最大心率、FTP 及来源/时间 | 当前由 Repository 按开发 session 归属；生产迁移用户归属存储 |
 | `AtomicCapabilityProfile v0.1` | 每项能力的可用性、来源、质量和原因 | 当前；替代业务 L1/L2/L3 门 |
 | `RideFeatureSnapshot v0.1` | 可复算统计和直接关系 Claim | 当前；新增分类必须单独版本化 |
-| `HistoricalComparisonSnapshot v0.1` | 固定窗口、样本、口径、可比性和变化 | 当前 Fixture；MVP 接持久历史 |
+| `HistoricalComparisonSnapshot v0.1` | 固定窗口、样本、口径、可比性和变化 | 已接本地持久历史（`MVP-REPEAT-01`：详情页确定性对比，route-match-key-v0.1 路线签名）；AI 解读输入仍排除 `history_change` |
 | `RideAnalysisContext v0.3` | LLM 最小事实白名单、Claim、禁用结论 | 当前模型输入合同 |
 | `AnalysisEligibility v0.1` | 是否调用模型、开放维度和兜底 | 当前调用前硬门 |
 | `ride-analysis-output v0.3` | 动态多维解读、证据、局限、行动与分享文案 | 当前输出合同 |
@@ -272,7 +272,7 @@ AI 解读前端采用“Claim 驱动图表”模式，并保持“骑行详情�
 
 | 接口 | 用途 | 当前边界 | 后续 |
 |---|---|---|---|
-| `POST /api/rides/import` | 单文件 FIT/GPX 导入 | 50 MB；开发 session；文件 Repository；扩展名/解析校验 | 生产补 MIME/文件头、限流、幂等和 PostgreSQL |
+| `POST /api/rides/import` | 单文件 FIT/GPX 导入 | 50 MB；开发 session；文件 Repository；扩展名/MIME/文件头校验；SHA-256 内容哈希幂等去重；按会话滑窗限流（默认 10 次/60s，`IMPORT_RATE_LIMIT_*` 可配） | 生产迁移 PostgreSQL；多实例限流改共享存储 |
 | `POST /api/ride-analysis` | 对已知 rideId 执行 B2/B0 | 由开发 session 校验 owner；AnalysisRun 可持久化 | 生产迁移 PostgreSQL；可选异步 |
 | `POST /api/chat` | `ride_chat_v1` 对话 Agent 编排（网关/路由/工具/校验/降级） | 开发 session；`chat_enabled` 关闭；`CHAT_MODEL_ENABLED` 未配置时返回受控占位回复 | 生产放行依赖 M3 Gate 与用户独立签署；M4 新增意图分支走专项准入 |
 

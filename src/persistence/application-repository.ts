@@ -7,7 +7,9 @@ import type { DemoEvent } from "../observability/demo-events.ts";
 export interface AnalysisRunRecord { rideId: string; result: unknown; storedAt: string }
 export interface ConsentRecord { policyVersion: string; acceptedAt: string }
 export interface ApplicationRepository {
-  saveRide(ownerId: string, record: RideRecord): Promise<void>;
+  saveRide(ownerId: string, record: RideRecord, contentHash?: string): Promise<void>;
+  /** 幂等导入去重：按 (ownerId, 内容哈希) 查找已导入记录；哈希随记录删除/账户删除一并移除。 */
+  findRideIdByContentHash(ownerId: string, contentHash: string): Promise<string | null>;
   getRide(ownerId: string, rideId: string): Promise<RideRecord | null>;
   listRides(ownerId: string): Promise<Array<{ record: RideRecord; storedAt: string }>>;
   deleteRide(ownerId: string, rideId: string): Promise<boolean>;
@@ -23,7 +25,7 @@ export interface ApplicationRepository {
 }
 
 type State = {
-  rides: Record<string, { ownerId: string; record: RideRecord; storedAt: string }>;
+  rides: Record<string, { ownerId: string; record: RideRecord; storedAt: string; contentHash?: string }>;
   profiles: Record<string, UserProfile>;
   analysisRuns: Record<string, { ownerId: string; run: AnalysisRunRecord }>;
   consents: Record<string, ConsentRecord>;
@@ -94,8 +96,18 @@ export class FileApplicationRepository implements ApplicationRepository {
     return this.queue;
   }
 
-  async saveRide(ownerId: string, record: RideRecord): Promise<void> {
-    await this.mutate((state) => { state.rides[record.activity.rideId] = { ownerId, record: sanitized(record), storedAt: new Date().toISOString() }; });
+  async saveRide(ownerId: string, record: RideRecord, contentHash?: string): Promise<void> {
+    await this.mutate((state) => {
+      state.rides[record.activity.rideId] = {
+        ownerId, record: sanitized(record), storedAt: new Date().toISOString(),
+        ...(contentHash !== undefined ? { contentHash } : {}),
+      };
+    });
+  }
+  async findRideIdByContentHash(ownerId: string, contentHash: string): Promise<string | null> {
+    const entry = Object.values((await this.load()).rides)
+      .find((item) => item.ownerId === ownerId && item.contentHash === contentHash);
+    return entry?.record.activity.rideId ?? null;
   }
   async getRide(ownerId: string, rideId: string): Promise<RideRecord | null> {
     const item = (await this.load()).rides[rideId];

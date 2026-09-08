@@ -9,9 +9,10 @@ import {
 } from "../domain/ride-schema.ts";
 import { buildRideSeries, type RideSeriesInputPoint } from "../domain/ride-series.ts";
 import { RideParseError } from "./parse-errors.ts";
+import { assertGpxFileSignature } from "./file-signature.ts";
 import { assertUploadSize, compactObject, metric } from "./parser-utils.ts";
 
-export const GPX_ADAPTER_VERSION = "gpx-parser-v0.3";
+export const GPX_ADAPTER_VERSION = "gpx-parser-v0.4";
 export const GPX_GPS_QUALITY_RULE_VERSION = "gpx-gps-quality-v0.1";
 export const MAX_PLAUSIBLE_CYCLING_SPEED_MPS = 200 / 3.6;
 const MAX_TRACK_POINTS = 200_000;
@@ -294,6 +295,7 @@ export function parseGpxRide(input: ParseGpxInput): RideRecord {
   if (/<!DOCTYPE|<!ENTITY/i.test(input.xml)) {
     throw new RideParseError("GPX_UNSAFE_XML", "GPX包含不允许的DOCTYPE或实体声明");
   }
+  assertGpxFileSignature(input.xml);
 
   const validation = XMLValidator.validate(input.xml);
   if (validation !== true) {
