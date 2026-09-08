@@ -1,3 +1,4 @@
+import "./helpers/route-test-env.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
 
