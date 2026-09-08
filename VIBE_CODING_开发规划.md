@@ -116,7 +116,7 @@ M0 已继承工程基线（Done）
   - [x] `AI-ADV-02C-MIG-01` 经 `GATE-01` 和用户明确授权后，递增版本并迁移 Coze，执行零模型预检、受限冒烟和新的 AI 测评批次。状态：`Done`（2026-09-06 整体闭环；生产迁移由 `MIG-PROD-01` 承接）。
     - 演进：Workflow `v0.0.2`→`v0.0.11` / Prompt `v0.4.2`→`v0.4.14`；`PERF-01`（25 秒独立计时与 81 槽连续执行策略）、`GATE-01` 决策门、`HIGHLIGHT-001`、`LABEL-01/02`、`PROMPT-01`、`RECOVERY-01`、`CONFIG-001`、`FIX-001`~`018`、`VALIDATION-01`~`08`、`DIAG-001`~`003`、`FORMAL-01`~`08`、`FIX-018-SMOKE` 等子任务全部完成或经后续任务承接闭环。
     - 终态：`FORMAL-08` 正式 Run [AEVAL-RUN-20260906-955](eval/runs/AEVAL-RUN-20260906-955.json) 首次通过 81 槽正式稳定性门（`81/81`、零 B0、P50/P95=`10.7s/18.9s`）；`FIX-018` 三层确定性兜底（安全裁剪→Claim 事实片段→安全模板）终结行动措辞“模式追赶”循环。
-    - 完整索引与证据：`开发进度.md` 第 3A 节模块摘要与修复-验证循环索引；`AI_AGENT_测评计划与记录.md` 第 7 节测评 ID 表与循环索引；过程正文见 `archive/document-history-2026-09-05/06/07/`。
+    - 完整索引与证据：`开发进度.md` 第 3A 节模块摘要与修复-验证循环索引；`AI_AGENT_测评计划与记录.md` 第 8.2 节测评 ID 表与循环索引（2026-09-08 文档按双 Agent 重构后的新节号）；过程正文见 `archive/document-history-2026-09-05/06/07/`。
   - [x] `AI-ADV-02C-MIG-PROD-01` 生产解读入口迁移至 v0.4 候选链路。状态：`Done`（2026-09-07，用户验收通过）；`/api/ride-analysis` 切换至 `ride_analysis_v3 v0.0.11 / Prompt v0.4.14`（含 FIX-018 兜底），输出经 `toLegacyAiOutput` 映射保持前端零结构改动；全量测试 `363/363`、类型检查、差异检查全过；同轮完成两文档模块级压缩。详情见 `开发进度.md` 第 4 节完成记录。
   - [x] `AI-ADV-02C-MIG-PROD-02` 生产解读入口真实链路冒烟。状态：`Done`（2026-09-07 执行并经用户验收：`l3-built-in-sample` 端到端一次真实 Provider 调用，`source=b2`、`attempts=1`、零 B0、validationIssues 空、端到端 15.2s，版本矩阵 `ride_analysis_v3 v0.0.11 / Prompt v0.4.14` 正确，输出经 `toLegacyAiOutput` 映射完整可渲染）；生产链路闭环全部完成；不构成新的 AI 质量结论。完成记录见 `开发进度.md` 第 4 节。
   - [ ] `AI-ADV-02D` 接入单次解读所需的持久历史查询。状态：`Backlog`；用户确认当前阶段不接持久数据，按整体规划延期至 M2 的 `MVP-FOUNDATION-01`--`03` 与 `MVP-REPEAT-01`，不能在进程内 Demo 存储上直接实现。
