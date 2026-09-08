@@ -1,4 +1,4 @@
-import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rename, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import type { RideRecord } from "../domain/ride-schema.ts";
 import type { UserProfile } from "../domain/user-profile.ts";
@@ -30,7 +30,18 @@ type State = {
   demoEvents: Record<string, { ownerId: string; event: DemoEvent }>;
 };
 
-const instances = new Map<string, FileApplicationRepository>();
+// Next.js dev mode compiles each route into its own bundle, so module-level
+// state is not shared between the import API and the ride pages. Keep the
+// repository singletons on globalThis (same pattern as demo-ride-store) so
+// every route reads and writes through the same cached instance.
+const INSTANCES_KEY = "__aiCyclingBuddyApplicationRepositories";
+
+function repositoryInstances(): Map<string, FileApplicationRepository> {
+  const globalState = globalThis as typeof globalThis & { [INSTANCES_KEY]?: Map<string, FileApplicationRepository> };
+  if (!globalState[INSTANCES_KEY]) globalState[INSTANCES_KEY] = new Map();
+  return globalState[INSTANCES_KEY];
+}
+
 const defaultRoot = () => process.env.LOCAL_DATA_DIR || path.join(process.cwd(), ".local-data");
 
 function emptyState(): State { return { rides: {}, profiles: {}, analysisRuns: {}, consents: {}, demoEvents: {} }; }
@@ -43,13 +54,26 @@ function sanitized(record: RideRecord): RideRecord {
 
 export class FileApplicationRepository implements ApplicationRepository {
   private state: State | null = null;
+  private stateFileMtimeMs: number | null = null;
   private queue: Promise<void> = Promise.resolve();
   readonly filePath: string;
   readonly root: string;
   constructor(root: string = defaultRoot()) { this.root = root; this.filePath = path.join(root, "application-state.json"); }
 
+  private async fileMtimeMs(): Promise<number | null> {
+    try { return (await stat(this.filePath)).mtimeMs; } catch { return null; }
+  }
+
   private async load(): Promise<State> {
-    if (this.state) return this.state;
+    // Reload when the state file changed on disk (e.g. another dev server
+    // instance or process wrote it); otherwise serve the cached state.
+    if (this.state) {
+      const currentMtime = await this.fileMtimeMs();
+      if (currentMtime === null || currentMtime === this.stateFileMtimeMs) return this.state;
+    }
+    // Stat before reading: if the file is rewritten while we read, the
+    // recorded mtime will differ from the file's and the next load reloads.
+    this.stateFileMtimeMs = await this.fileMtimeMs();
     try {
       const parsed = JSON.parse(await readFile(this.filePath, "utf8")) as State;
       this.state = { ...emptyState(), ...parsed };
@@ -65,6 +89,7 @@ export class FileApplicationRepository implements ApplicationRepository {
       const temp = `${this.filePath}.${process.pid}.${crypto.randomUUID()}.tmp`;
       await writeFile(temp, JSON.stringify(state), "utf8");
       await rename(temp, this.filePath);
+      this.stateFileMtimeMs = await this.fileMtimeMs();
     });
     return this.queue;
   }
@@ -110,4 +135,4 @@ export class FileApplicationRepository implements ApplicationRepository {
   }
 }
 
-export function getApplicationRepository(): ApplicationRepository { const root = defaultRoot(); let instance = instances.get(root); if (!instance) { instance = new FileApplicationRepository(root); instances.set(root, instance); } return instance; }
+export function getApplicationRepository(): ApplicationRepository { const root = defaultRoot(); const instances = repositoryInstances(); let instance = instances.get(root); if (!instance) { instance = new FileApplicationRepository(root); instances.set(root, instance); } return instance; }
