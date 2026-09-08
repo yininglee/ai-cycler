@@ -10,6 +10,8 @@ export interface FitSampleOptions {
   allZeroCadence?: boolean;
   includeCadenceZero?: boolean;
   includeGpsPlaceholder?: boolean;
+  /** 全部记录写入真实坐标（矩阵 FIT-1：码表完整记录）。 */
+  realGps?: boolean;
 }
 
 export function buildCyclingFitSample(options: FitSampleOptions = {}): Uint8Array {
@@ -34,7 +36,10 @@ export function buildCyclingFitSample(options: FitSampleOptions = {}): Uint8Arra
   for (let index = 0; index < distances.length; index += 1) {
     encoder.writeMessage(20, [
       { number: 253, size: 4, baseType: FitBaseType.Uint32, value: startTimestamp + index * 300 },
-      ...(includeGpsPlaceholder ? [
+      ...(options.realGps ? [
+        { number: 0, size: 4, baseType: FitBaseType.Sint32, value: Math.round((23.16 + index * 0.001) * 2 ** 31 / 180) },
+        { number: 1, size: 4, baseType: FitBaseType.Sint32, value: Math.round((113.33 + index * 0.002) * 2 ** 31 / 180) },
+      ] : includeGpsPlaceholder ? [
         { number: 0, size: 4, baseType: FitBaseType.Sint32, value: index === 0 ? 0 : Math.round(23.16 * 2 ** 31 / 180) },
         { number: 1, size: 4, baseType: FitBaseType.Sint32, value: index === 0 ? 0 : Math.round(113.33 * 2 ** 31 / 180) },
       ] : []),

@@ -9,9 +9,11 @@ import {
 } from "../domain/ride-schema.ts";
 import { buildRideSeries, type RideSeriesInputPoint } from "../domain/ride-series.ts";
 import { RideParseError } from "./parse-errors.ts";
+import { assertFitFileSignature } from "./file-signature.ts";
 import { assertUploadSize, compactObject, metric, sensorQuality } from "./parser-utils.ts";
 
-export const FIT_ADAPTER_VERSION = "fit-parser-v0.3";
+export const FIT_ADAPTER_VERSION = "fit-parser-v0.4";
+const MAX_FIT_RECORDS = 200_000;
 
 type ParsedFit = Awaited<ReturnType<FitParser["parseAsync"]>>;
 type ParsedSession = NonNullable<ParsedFit["sessions"]>[number];
@@ -238,6 +240,7 @@ export async function parseFitRide(input: ParseFitInput): Promise<RideRecord> {
   if (!input.fileName.toLowerCase().endsWith(".fit")) {
     throw new RideParseError("UNSUPPORTED_FILE_TYPE", "FIT解析器只接受.fit文件");
   }
+  assertFitFileSignature(input.bytes);
 
   const parser = new FitParser({
     mode: "list",
@@ -252,6 +255,9 @@ export async function parseFitRide(input: ParseFitInput): Promise<RideRecord> {
     parsed = await parser.parseAsync(arrayBuffer);
   } catch (error) {
     throw new RideParseError("FIT_INVALID_OR_CORRUPT", "FIT文件无效、被截断或校验失败", error);
+  }
+  if ((parsed.records ?? []).length > MAX_FIT_RECORDS) {
+    throw new RideParseError("FIT_TOO_MANY_RECORDS", "FIT记录点超过20万上限");
   }
 
   const cyclingSessions = (parsed.sessions ?? []).filter(isCyclingSession);

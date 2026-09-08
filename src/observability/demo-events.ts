@@ -3,6 +3,7 @@ import { createHmac } from "node:crypto";
 export const DEMO_EVENT_TYPES = [
   "import_started",
   "import_completed",
+  "import_rejected",
   "ai_requested",
   "ai_completed",
   "ai_degraded",

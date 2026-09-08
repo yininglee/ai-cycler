@@ -12,6 +12,8 @@ import { isDemoRideId } from "../../../src/ui/ride-view-model";
 import { getNextSessionUserId } from "../../../src/auth/next-session.ts";
 import { getApplicationRepository } from "../../../src/persistence/application-repository.ts";
 import RideDeleteButton from "../../components/ride-delete-button";
+import RideHistoryComparisonSection from "../../components/ride-history-comparison-section";
+import { buildRideHistoryComparisonForRecord } from "../../../src/ui/ride-history-comparison.ts";
 import { buildRidePageViewModelFromRecord } from "../../../src/ui/ride-view-model";
 
 export default async function RideDetailPage({
@@ -32,6 +34,13 @@ export default async function RideDetailPage({
   const rejected = snapshot.analysisMode === "rejected";
   const activeTab = query.tab === "analysis" || query.tab === "data" ? query.tab : "summary";
 
+  // MVP-REPEAT-01：仅本人导入的非拒绝记录参与历史比较；内置样例无历史。
+  let historyComparison: ReturnType<typeof buildRideHistoryComparisonForRecord>;
+  if (!isFixture && userId && !rejected) {
+    const ownedRides = await getApplicationRepository().listRides(userId);
+    historyComparison = buildRideHistoryComparisonForRecord(record, ownedRides.map((item) => item.record));
+  }
+
   return (
     <AppShell active="rides">
       <RideDetailTabs
@@ -40,6 +49,7 @@ export default async function RideDetailPage({
           {rejected ? <section className="rejected-card"><span className="error-mark">!</span><h2>记录未通过校验</h2><p>损坏或矛盾记录不展示图表，请检查原始文件后重新导入。</p></section> : <>
             <RideSeriesCharts charts={view.visuals.charts} cruiseSegments={view.timing.cruiseSegments} routeShape={view.visuals.routeShape} />
             <RideSensorAnalysisGroups record={record} charts={view.visuals.charts} />
+            {historyComparison && <RideHistoryComparisonSection view={historyComparison} />}
             <RideAiAnalysis rideId={id} title={view.rideMeta.titleLabel} dateLabel={view.rideMeta.dateLabel} />
           </>}
         </section>}
