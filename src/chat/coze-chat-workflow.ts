@@ -114,6 +114,8 @@ export class CozeChatWorkflowClient implements ChatProvider {
               route: input.route,
               text: input.text,
               ...(input.toolContext ? { toolContext: input.toolContext } : {}),
+              // CHAT-14 P1：会话白名单摘要进入 chat_request（变量合同不变，仅 Prompt v0.1.5 增使用规则）。
+              ...(input.sessionSummaries?.length ? { sessionSummaries: input.sessionSummaries } : {}),
             }),
             repair_instruction: input.repairInstruction ?? "",
             previous_output: input.previousOutput ?? "",

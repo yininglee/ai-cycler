@@ -39,6 +39,8 @@ test("Coze Chat adapter uses a dedicated workflow contract and only de-identifie
     agentVersion: "ride-chat-agent-v0.1",
     route: "current_ride",
     text: "本次骑行平均功率是多少？",
+    // CHAT-14 P1：白名单摘要进入 chat_request 投影（仅 question/route/rideAnchor）。
+    sessionSummaries: [{ question: "最近一次骑行的距离是多少？", route: "current_ride", rideAnchor: "2026-08-20" }],
     toolContext: {
       tool: "get_ride_context",
       dimensions: ["power"],
@@ -65,6 +67,7 @@ test("Coze Chat adapter uses a dedicated workflow contract and only de-identifie
   const request = JSON.parse(body.parameters.chat_request) as Record<string, unknown>;
   assert.equal(request.agent, "ride_chat_v1");
   assert.equal(request.route, "current_ride");
+  assert.deepEqual(request.sessionSummaries, [{ question: "最近一次骑行的距离是多少？", route: "current_ride", rideAnchor: "2026-08-20" }]);
   assert.doesNotMatch(JSON.stringify(request), /ownerId|rideId|latest-ride|chat-token/);
 });
 

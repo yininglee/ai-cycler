@@ -10,7 +10,7 @@ import {
   runChatAgent,
   type ChatProvider,
 } from "../src/chat/chat-agent.ts";
-import { classifyChatInput } from "../src/chat/chat-routing.ts";
+import { classifyChatInput, makeChatDecision } from "../src/chat/chat-routing.ts";
 
 class RecordingProvider implements ChatProvider {
   calls: unknown[] = [];
@@ -60,6 +60,332 @@ test("safety, privacy and out-of-scope routes use templates without invoking a p
     assert.equal(result.modelInvoked, false);
   }
   assert.equal(provider.calls.length, 0);
+});
+
+// CHAT-12 P3：unclear 意图（clarification 路由）与语义安全停止是确定性一等路径，零模型调用。
+
+test("clarification route answers with the deterministic ask-back template without invoking a provider (CHAT-12 P3)", async () => {
+  const provider = new RecordingProvider();
+  const text = "那这个呢？";
+  const decision = makeChatDecision("clarification", "none", "CLARIFICATION_NEEDED", text.length);
+  const result = await runChatAgent({ text, decision, provider, requestId: "request" });
+  assert.deepEqual({ execution: result.execution, modelInvoked: result.modelInvoked, route: result.decision.route, allowModel: result.decision.allowModel }, {
+    execution: "template",
+    modelInvoked: false,
+    route: "clarification",
+    allowModel: false,
+  });
+  assert.match(result.reply, /说得更具体一些/);
+  assert.equal(provider.calls.length, 0);
+});
+
+test("semantic safety stop answers with the safety-first template without invoking a provider (CHAT-12 P3)", async () => {
+  const provider = new RecordingProvider();
+  const text = "我觉得有点不对劲但说不清楚";
+  const decision = makeChatDecision("safety_stop", "semantic_safety", "SEMANTIC_SAFETY_STOP", text.length);
+  const result = await runChatAgent({ text, decision, provider, requestId: "request" });
+  assert.deepEqual({ execution: result.execution, modelInvoked: result.modelInvoked, route: result.decision.route, risk: result.decision.risk }, {
+    execution: "template",
+    modelInvoked: false,
+    route: "safety_stop",
+    risk: "semantic_safety",
+  });
+  assert.match(result.reply, /安全优先/);
+  assert.equal(provider.calls.length, 0);
+});
+
+// CHAT-12 P3（校验场景分化）：用户输入中的数字（给定阈值等）加入白名单——
+// 模型复述用户给定值可通过校验；用户未给出的数字仍被拒绝。
+
+test("provider may echo numbers the user supplied but not invent new ones (CHAT-12 P3)", async () => {
+  const text = "帮我记住 120 这个阈值";
+  const decision = makeChatDecision("social", "none", "SOCIAL", text.length);
+  const echoing = new RecordingProvider(JSON.stringify({
+    schemaVersion: "ride-chat-output-v0.1",
+    route: "social",
+    reply: "好的，我记住了你说的 120 这个数字。",
+    claimIds: [],
+    capabilityKeys: [],
+  }));
+  const accepted = await runChatAgent({ text, decision, provider: echoing, requestId: "request" });
+  assert.equal(accepted.execution, "validated");
+  assert.equal(accepted.outputValidation?.status, "accepted");
+  assert.equal(echoing.calls.length, 1);
+
+  const inventing = new SequenceProvider([
+    JSON.stringify({ schemaVersion: "ride-chat-output-v0.1", route: "social", reply: "好的，大概是 150 吧。", claimIds: [], capabilityKeys: [] }),
+    JSON.stringify({ schemaVersion: "ride-chat-output-v0.1", route: "social", reply: "好的，大概是 150 吧。", claimIds: [], capabilityKeys: [] }),
+  ]);
+  const rejected = await runChatAgent({ text, decision, provider: inventing, requestId: "request" });
+  assert.equal(rejected.fallbackCode, "REPAIR_FAILED");
+  assert.equal(inventing.calls.length, 2);
+});
+
+test("capability_gap questions get the in-scope-but-locked template without invoking a provider (CHAT-12 P1)", async () => {
+  const provider = new RecordingProvider();
+  const text = "我的能力水平最近有进步吗？";
+  const result = await runChatAgent({ text, decision: classifyChatInput(text), provider, requestId: "request" });
+  assert.deepEqual({ execution: result.execution, modelInvoked: result.modelInvoked, route: result.decision.route }, {
+    execution: "template", modelInvoked: false, route: "capability_gap",
+  });
+  // CHAT-13 更新口径：缺口收窄为筛选排序/水平评估，历史比较已交付并在话术中引导。
+  assert.match(result.reply, /跨骑行的筛选排序或长期能力水平评估/);
+  assert.match(result.reply, /与最近 30 天历史的比较/);
+  assert.equal(provider.calls.length, 0);
+});
+
+test("aggregate questions are answered deterministically from repository records without invoking a provider (G-AGGREGATE)", async () => {
+  const provider = new RecordingProvider();
+  const fixture = (await import("../src/fixtures/rides.ts")).getRideFixture("l3-power-preview");
+  const records = [{
+    ...fixture,
+    activity: { ...fixture.activity, rideId: "aggregate-ride", startTime: "2026-09-01T02:00:00.000Z" },
+    series: { ...fixture.series, rideId: "aggregate-ride" },
+  }];
+  const result = await runChatAgent({
+    text: "我总共骑了多少",
+    decision: classifyChatInput("我总共骑了多少"),
+    provider,
+    requestId: "request",
+    aggregateRecords: records,
+  });
+  assert.deepEqual({ execution: result.execution, modelInvoked: result.modelInvoked, route: result.decision.route }, {
+    execution: "template", modelInvoked: false, route: "aggregate",
+  });
+  assert.match(result.reply, /目前已记录 1 次骑行/);
+  assert.equal(provider.calls.length, 0);
+});
+
+test("empty ride-context claims skip the provider with a deterministic metric-gap template (G-NO-CLAIM)", async () => {
+  const provider = new RecordingProvider();
+  const text = "这次骑行的踏频数据怎么样？";
+  const toolRunner = {
+    run: async () => ({
+      context: {
+        schemaVersion: "ride-chat-tool-context-v0.1" as const,
+        question: text,
+        decision: classifyChatInput(text),
+        sessionSummaries: [] as [],
+        toolResult: {
+          schemaVersion: "chat-tools-v0.1" as const,
+          tool: "get_ride_context" as const,
+          rideId: "ride",
+          dimensions: ["cadence" as const],
+          claims: [],
+          limitations: [],
+          privacy: ["raw_track_excluded", "precise_coordinates_excluded", "source_filename_excluded"] as ["raw_track_excluded", "precise_coordinates_excluded", "source_filename_excluded"],
+        },
+      },
+      trace: { tool: "get_ride_context" as const, status: "completed" as const, dimensions: ["cadence" as const], summarySlots: 0 },
+    }),
+  };
+  const result = await runChatAgent({ text, decision: classifyChatInput(text), provider, toolRunner, requestId: "request" });
+  assert.deepEqual({ execution: result.execution, modelInvoked: result.modelInvoked, fallbackCode: result.fallbackCode }, {
+    execution: "template", modelInvoked: false, fallbackCode: "TOOLS_EMPTY_CLAIMS",
+  });
+  assert.match(result.reply, /没有包含你询问的这项指标/);
+  assert.equal(provider.calls.length, 0);
+});
+
+test("repair failure with ride-context claims falls back to a deterministic claims summary (G-REPAIR-FALLBACK)", async () => {
+  // 两次模型输出均未通过校验（含未溯源数字），修复失败后不再展示空的安全校验话术，
+  // 而是用工具 Claims 的 displayValue 给出确定性摘要（G-REPAIR-FALLBACK）。
+  const provider = new SequenceProvider(["平均踏频是68.3，最高95.2", "踏频均值约68"]);
+  const text = "最近一次的骑行踏频怎么样？";
+  const toolRunner = {
+    run: async () => ({
+      context: {
+        schemaVersion: "ride-chat-tool-context-v0.1" as const,
+        question: text,
+        decision: classifyChatInput(text),
+        sessionSummaries: [] as [],
+        toolResult: {
+          schemaVersion: "chat-tools-v0.1" as const,
+          tool: "get_ride_context" as const,
+          rideId: "ride",
+          dimensions: ["cadence" as const],
+          claims: [
+            { claimId: "claim:ride:avgCadenceRpm", kind: "metric" as const, key: "avgCadenceRpm" as const, value: 68, unit: "rpm", confidence: "high" as const, displayValue: "68", displayUnit: "rpm" },
+            { claimId: "claim:ride:maxCadenceRpm", kind: "metric" as const, key: "maxCadenceRpm" as const, value: 95, unit: "rpm", confidence: "high" as const, displayValue: "95", displayUnit: "rpm" },
+          ],
+          limitations: [],
+          privacy: ["raw_track_excluded", "precise_coordinates_excluded", "source_filename_excluded"] as ["raw_track_excluded", "precise_coordinates_excluded", "source_filename_excluded"],
+        },
+      },
+      trace: { tool: "get_ride_context" as const, status: "completed" as const, dimensions: ["cadence" as const], summarySlots: 0 },
+    }),
+  };
+  const result = await runChatAgent({ text, decision: classifyChatInput(text), provider, toolRunner, requestId: "request" });
+  assert.equal(result.fallbackCode, "REPAIR_FAILED");
+  assert.equal(result.repairAttempts, 1);
+  assert.equal(provider.calls.length, 2);
+  assert.match(result.reply, /已核实的数据/);
+  assert.match(result.reply, /平均踏频 68 rpm/);
+  assert.match(result.reply, /最大踏频 95 rpm/);
+});
+
+// CHAT-13：历史比较场景——D1 不可比确定性降级、修复兜底与可比 Claim 溯源校验。
+
+test("history_compare without comparable claims degrades to the deterministic D1 reply (CHAT-13)", async () => {
+  const provider = new RecordingProvider();
+  const text = "我最近的骑行有进步吗？";
+  const decision = classifyChatInput(text);
+  const toolRunner = {
+    run: async () => ({
+      context: {
+        schemaVersion: "ride-chat-tool-context-v0.1" as const,
+        question: text,
+        decision,
+        sessionSummaries: [] as [],
+        toolResult: {
+          schemaVersion: "chat-tools-v0.1" as const,
+          tool: "compare_rides" as const,
+          rideId: "ride",
+          windowDays: 30,
+          sampleCount: 0,
+          comparability: { status: "not_comparable" as const, reasonCodes: ["NO_CANDIDATES" as const], sampleCount: 0, minimumSampleCount: 2, allowedConclusion: "none" as const },
+          claims: [{ metricKey: "distanceM" as const, scope: "all" as const, status: "not_comparable" as const, reasonCodes: ["NO_CANDIDATES" as const] }],
+          privacy: ["raw_track_excluded", "precise_coordinates_excluded", "source_filename_excluded"] as ["raw_track_excluded", "precise_coordinates_excluded", "source_filename_excluded"],
+        },
+      },
+      trace: { tool: "compare_rides" as const, status: "completed" as const, comparisonMetrics: ["distanceM" as const], summarySlots: 0 },
+    }),
+  };
+  const result = await runChatAgent({ text, decision, provider, toolRunner, requestId: "request" });
+  assert.deepEqual({ execution: result.execution, modelInvoked: result.modelInvoked, route: result.decision.route, fallbackCode: result.fallbackCode }, {
+    execution: "template", modelInvoked: false, route: "history_compare", fallbackCode: undefined,
+  });
+  assert.match(result.reply, /暂时无法把这次骑行和最近 30 天的历史作比较/);
+  assert.match(result.reply, /窗口内没有可比的历史骑行记录/);
+  assert.match(result.reply, /不会给出进步或退步的结论/);
+  assert.equal(result.toolTrace?.tool, "compare_rides");
+  assert.equal(provider.calls.length, 0);
+});
+
+// CHAT-13：可比场景的工具上下文——30 天窗口、2 条历史基线、距离可比 claim（显示空间值）。
+
+function comparableComparisonRunner(text: string, decision: ReturnType<typeof classifyChatInput>) {
+  return {
+    run: async () => ({
+      context: {
+        schemaVersion: "ride-chat-tool-context-v0.1" as const,
+        question: text,
+        decision,
+        sessionSummaries: [] as [],
+        toolResult: {
+          schemaVersion: "chat-tools-v0.1" as const,
+          tool: "compare_rides" as const,
+          rideId: "ride",
+          windowDays: 30,
+          anchorStartTime: "2026-08-20T08:00:00.000Z",
+          sampleCount: 2,
+          comparability: { status: "comparable" as const, reasonCodes: [], sampleCount: 2, minimumSampleCount: 2, allowedConclusion: "change" as const },
+          claims: [{
+            claimId: "claim:ride:history:all:distanceM",
+            metricKey: "distanceM" as const,
+            scope: "all" as const,
+            status: "comparable" as const,
+            reasonCodes: [],
+            anchor: { value: 42_000, unit: "km", displayValue: "42.0" },
+            baseline: { value: 33_000, unit: "km", displayValue: "33.0", sampleCount: 2 },
+            change: 9,
+            relativeChangePercent: 27.3,
+          }],
+          privacy: ["raw_track_excluded", "precise_coordinates_excluded", "source_filename_excluded"] as ["raw_track_excluded", "precise_coordinates_excluded", "source_filename_excluded"],
+        },
+      },
+      trace: { tool: "compare_rides" as const, status: "completed" as const, comparisonMetrics: ["distanceM" as const], summarySlots: 0 },
+    }),
+  };
+}
+
+test("history_compare repair failure falls back to the deterministic comparison summary (CHAT-13)", async () => {
+  const provider = new SequenceProvider(["这次比上次提高了 15 km 吧", "大概进步了 20%"]);
+  const text = "这次骑行比上次骑得远吗？";
+  const decision = classifyChatInput(text);
+  const result = await runChatAgent({ text, decision, provider, toolRunner: comparableComparisonRunner(text, decision), requestId: "request" });
+  assert.equal(result.fallbackCode, "REPAIR_FAILED");
+  assert.equal(result.repairAttempts, 1);
+  assert.equal(provider.calls.length, 2);
+  assert.match(result.reply, /已核实的历史比较结果/);
+  assert.match(result.reply, /距离为 42\.0 km，比最近 30 天 2 次骑行的平均值 33\.0 km 高 9（\+27\.3%）/);
+  // 提供给模型的是脱敏投影：claimId 重映射为引用编号，不含原始标识。
+  assert.equal(provider.calls[0]?.toolContext?.tool, "compare_rides");
+  assert.doesNotMatch(JSON.stringify(provider.calls[0]?.toolContext), /claim:ride:history|rideId|owner-a/);
+});
+
+// CHAT-15：修复指令场景化——数字违规的修复指令按路由枚举白名单来源，
+// 模型能据此知道"逐字复制 displayValue / 允许 anchorStartTime 日期"。
+
+test("numeric repair instructions are scenario-specific per route (CHAT-15)", async () => {
+  const compareProvider = new SequenceProvider([
+    JSON.stringify({ schemaVersion: "ride-chat-output-v0.1", route: "history_compare", reply: "这次比上次提高了 15 km。", claimIds: ["claim:compare:1"], capabilityKeys: [] }),
+    "大概进步了 20%",
+  ]);
+  const compareText = "这次骑行比上次骑得远吗？";
+  const compareDecision = classifyChatInput(compareText);
+  await runChatAgent({ text: compareText, decision: compareDecision, provider: compareProvider, toolRunner: comparableComparisonRunner(compareText, compareDecision), requestId: "request" });
+  const compareRepair = compareProvider.calls[1]?.repairInstruction ?? "";
+  assert.equal(compareRepair.includes("OUTPUT_NUMERIC_UNSUPPORTED"), true);
+  assert.equal(compareRepair.includes("anchorStartTime"), true);
+  assert.equal(compareRepair.includes("换算"), true);
+
+  const rideContextRunner = (text: string, decision: ReturnType<typeof classifyChatInput>) => ({
+    run: async () => ({
+      context: {
+        schemaVersion: "ride-chat-tool-context-v0.1" as const,
+        question: text,
+        decision,
+        sessionSummaries: [] as [],
+        toolResult: {
+          schemaVersion: "chat-tools-v0.1" as const,
+          tool: "get_ride_context" as const,
+          rideId: "ride",
+          rideDateLabel: "2026年8月20日",
+          dimensions: ["power" as const],
+          claims: [{ claimId: "claim:ride:avgPowerW", kind: "metric" as const, key: "avgPowerW", value: 180, unit: "W", confidence: "high" as const, displayValue: "180", displayUnit: "W" }],
+          limitations: [],
+          privacy: ["raw_track_excluded", "precise_coordinates_excluded", "source_filename_excluded"] as ["raw_track_excluded", "precise_coordinates_excluded", "source_filename_excluded"],
+        },
+      },
+      trace: { tool: "get_ride_context" as const, status: "completed" as const, summarySlots: 0 },
+    }),
+  });
+  const rideProvider = new SequenceProvider([
+    JSON.stringify({ schemaVersion: "ride-chat-output-v0.1", route: "current_ride", reply: "本次平均功率约 180 W，用时 90 分钟。", claimIds: ["claim:context:1"], capabilityKeys: [] }),
+    JSON.stringify({ schemaVersion: "ride-chat-output-v0.1", route: "current_ride", reply: "本次平均功率是 180 W。", claimIds: ["claim:context:1"], capabilityKeys: [] }),
+  ]);
+  const rideText = "本次骑行平均功率是多少？";
+  const rideDecision = classifyChatInput(rideText);
+  const rideResult = await runChatAgent({ text: rideText, decision: rideDecision, provider: rideProvider, toolRunner: rideContextRunner(rideText, rideDecision), requestId: "request" });
+  const rideRepair = rideProvider.calls[1]?.repairInstruction ?? "";
+  assert.equal(rideResult.execution, "repaired");
+  assert.equal(rideRepair.includes("OUTPUT_NUMERIC_UNSUPPORTED"), true);
+  assert.equal(rideRepair.includes("displayValue"), true);
+  assert.equal(rideRepair.includes("rideDateLabel"), true);
+  assert.equal(rideRepair.includes("不得换算"), true);
+  // 投影透传：rideDateLabel 到达模型（日期标签非敏感，不参与脱敏重映射）。
+  assert.equal(JSON.stringify(rideProvider.calls[0]?.toolContext).includes("2026年8月20日"), true);
+});
+
+test("history_compare validates the provider answer against the comparison claim whitelist (CHAT-13)", async () => {
+  const provider = new RecordingProvider(JSON.stringify({
+    schemaVersion: "ride-chat-output-v0.1",
+    route: "history_compare",
+    reply: "这次骑行的距离为 42.0 km，比最近 30 天 2 次骑行的平均值 33.0 km 高 9（+27.3%）。",
+    claimIds: ["claim:compare:1"],
+    capabilityKeys: [],
+  }));
+  const text = "这次骑行比上次骑得远吗？";
+  const decision = classifyChatInput(text);
+  const result = await runChatAgent({ text, decision, provider, toolRunner: comparableComparisonRunner(text, decision), requestId: "request" });
+  assert.equal(result.execution, "validated");
+  assert.equal(result.outputValidation?.status, "accepted");
+  assert.equal(provider.calls.length, 1);
+  const invocation = provider.calls[0] as { route?: string; toolContext?: { tool: string } };
+  assert.equal(invocation.route, "history_compare");
+  assert.equal(invocation.toolContext?.tool, "compare_rides");
+  assert.equal("toolContext" in publicChatAgentResult(result), false);
 });
 
 test("current ride and capability routes wait for CHAT-05 tools before calling a provider", async () => {

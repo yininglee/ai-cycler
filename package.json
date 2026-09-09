@@ -38,7 +38,10 @@
     "eval:interpretation:blindreview": "node scripts/run-t002-v04-blind-review-pack.ts",
     "eval:interpretation:provider:diagnose": "node scripts/diagnose-ride-interpretation-coze-v04-candidate.ts",
     "export:interpretation:prompt-candidate": "node scripts/export-ride-interpretation-prompt-v04-candidate.ts",
-    "eval:chat:preflight": "node scripts/preflight-ride-chat-eval.ts"
+    "eval:chat:preflight": "node scripts/preflight-ride-chat-eval.ts",
+    "eval:classifier:preflight": "node scripts/preflight-ride-chat-classifier-eval.ts",
+    "eval:classifier:accuracy": "node scripts/eval-classifier-accuracy.ts",
+    "eval:chat15:matrix": "node scripts/eval-chat15-scenario-matrix.ts"
   },
   "engines": {
     "node": ">=22.6"

@@ -3,8 +3,10 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 
 const ROOT = "eval/ride-chat-v0.1";
-const expectedSplits = { dev: 2, regression: 6, blind: 4, "red-team": 3 } as const;
-const allowedTools = new Set(["get_ride_context", "get_capabilities"]);
+// CHAT-13（固定集 v0.3）：+3 历史比较案例（可比成功/不可比降级/跨用户锚点），compare_rides 入工具白名单。
+// CHAT-14（固定集 v0.4）：+2 锚点案例（"本次"锚点澄清 TOOLS_ANCHOR_CLARIFY / 显式日期直查），原依赖"本次"锚点的用例改写为"最近一次"。
+const expectedSplits = { dev: 2, regression: 18, blind: 4, "red-team": 3 } as const;
+const allowedTools = new Set(["get_ride_context", "get_capabilities", "compare_rides"]);
 const forbiddenKeys = new Set(["ownerId", "rideId", "coordinates", "latitude", "longitude", "prompt", "providerRawOutput", "apiToken", "token"]);
 const forbiddenCapabilities = new Set(["compare_recent_rides", "get_profile_context", "rag", "training_plan", "write_tool", "multi_agent"]);
 
@@ -24,7 +26,7 @@ const payload = JSON.parse(casesRaw) as { schemaVersion: string; datasetId: stri
 assert(manifest.datasetId === "AEVAL-M3-CHAT" && payload.datasetId === manifest.datasetId, "DATASET_ID_MISMATCH");
 assert(payload.schemaVersion === "ride-chat-eval-cases-v0.1", "CASES_SCHEMA_MISMATCH");
 assert(manifest.casesSha256 === sha256(casesRaw), "CASES_HASH_MISMATCH");
-assert(payload.cases.length === manifest.caseCount && manifest.caseCount === 15, "CASE_COUNT_MISMATCH");
+assert(payload.cases.length === manifest.caseCount && manifest.caseCount === 27, "CASE_COUNT_MISMATCH");
 assert(JSON.stringify(manifest.splitCounts) === JSON.stringify(expectedSplits), "SPLIT_MANIFEST_MISMATCH");
 assert(JSON.stringify(manifest.allowedTools) === JSON.stringify([...allowedTools]), "TOOL_SCOPE_MISMATCH");
 assert(manifest.forbiddenCapabilities.every((capability) => forbiddenCapabilities.has(capability)), "FORBIDDEN_SCOPE_MISMATCH");

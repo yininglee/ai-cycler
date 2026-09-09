@@ -4,13 +4,16 @@ import test from "node:test";
 import { buildChatHomeSnapshot } from "../src/chat/chat-home.ts";
 import {
   appendChatTurn,
+  CHAT_SESSION_STORAGE_KEY,
   CHAT_SESSION_SUMMARY_LIMIT,
   chatHomeSnapshotFingerprint,
   createChatSession,
   getActiveChatConversation,
   isChatSessionStale,
+  readStoredChatSession,
   selectChatConversation,
   startChatConversation,
+  storeChatSession,
 } from "../src/chat/chat-session.ts";
 import { getRideFixture } from "../src/fixtures/rides.ts";
 
@@ -64,4 +67,32 @@ test("a changed aggregate snapshot invalidates the in-page session without priva
   assert.equal(isChatSessionStale(state, afterDelete), true);
   assert.doesNotMatch(chatHomeSnapshotFingerprint(beforeDelete), /rideId|ownerId|private-ride/);
   assert.doesNotMatch(chatHomeSnapshotFingerprint(afterDelete), /rideId|ownerId|private-ride/);
+});
+
+test("chat session round-trips through local storage and rejects corrupt or malformed data", () => {
+  const snapshot = snapshotWithRideCount(1);
+  const store = new Map<string, string>();
+  const storageStub = {
+    getItem: (key: string) => store.get(key) ?? null,
+    setItem: (key: string, value: string) => void store.set(key, value),
+  } as unknown as Storage;
+  const holder = globalThis as { localStorage?: Storage };
+  const previous = holder.localStorage;
+  holder.localStorage = storageStub;
+  try {
+    const state = appendChatTurn(createChatSession(snapshot), "我一共骑了多少？", "目前已记录 1 次骑行。", "typed_input");
+    storeChatSession(state);
+    assert.deepEqual(readStoredChatSession(), state);
+    assert.equal(isChatSessionStale(readStoredChatSession()!, snapshot), false);
+
+    store.set(CHAT_SESSION_STORAGE_KEY, "{not json");
+    assert.equal(readStoredChatSession(), null);
+    store.set(CHAT_SESSION_STORAGE_KEY, JSON.stringify({ conversations: [], activeConversationId: "missing" }));
+    assert.equal(readStoredChatSession(), null);
+    store.set(CHAT_SESSION_STORAGE_KEY, JSON.stringify({ ...state, conversations: [{ id: "conversation-1", messages: [{ role: "guest", text: "hi" }], summarySlots: [] }] }));
+    assert.equal(readStoredChatSession(), null);
+  } finally {
+    if (previous === undefined) delete holder.localStorage;
+    else holder.localStorage = previous;
+  }
 });

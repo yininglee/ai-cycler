@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { buildChatHomeSnapshot, chatInitialMessage, chatQuickQuestions, replyToChatInput, replyToQuickQuestion } from "../src/chat/chat-home.ts";
+import { aggregateReply, buildChatHomeSnapshot, chatInitialMessage, chatQuickQuestions, classifyAggregateQuestion, replyToChatInput, replyToQuickQuestion } from "../src/chat/chat-home.ts";
 import { getRideFixture } from "../src/fixtures/rides.ts";
 
 function recordWithId(id: string, startTime: string, distanceM: number) {
@@ -46,4 +46,30 @@ test("chat home does not suggest missing data or unavailable capabilities for a 
   assert.match(chatInitialMessage(snapshot), /导入一条骑行记录后/);
   assert.doesNotMatch(chatInitialMessage(snapshot), /数据不足/);
   assert.match(replyToQuickQuestion("capabilities", snapshot), /导入骑行记录后/);
+});
+
+test("aggregate questions are classified and answered deterministically on the server side", () => {
+  const records = [recordWithId("first", "2026-09-01T02:00:00.000Z", 12_500)];
+
+  // CHAT-12 P1（G-AGGREGATE）：聚合问题服务端确定性作答，与 classifyChatInput 的 "aggregate" 路由口径一致
+  assert.equal(classifyAggregateQuestion("我总共骑了多少"), "total");
+  assert.equal(classifyAggregateQuestion("这周骑了多少？"), "week");
+  assert.equal(classifyAggregateQuestion("我最近一次骑行是什么时候？"), "latest");
+  // G-IDENTITY：骑行身份问题（“当次是哪一次”）归类为最近一次日期，与 RIDE_IDENTITY 路由口径一致
+  assert.equal(classifyAggregateQuestion("当次是哪一次？"), "latest");
+  assert.equal(classifyAggregateQuestion("单次是哪一次"), "latest");
+  assert.equal(classifyAggregateQuestion("最近一次骑行是哪一次？"), "latest");
+  assert.equal(classifyAggregateQuestion("本次是哪一次？"), "latest");
+  assert.equal(classifyAggregateQuestion("你说的是哪次？"), "latest");
+  assert.equal(classifyAggregateQuestion("   "), null);
+  // 单次骑行范围与指标类问题不归类为聚合，继续走服务端模型链路
+  assert.equal(classifyAggregateQuestion("本次骑行距离是多少公里？"), null);
+  assert.equal(classifyAggregateQuestion("本次骑行一共骑了多远"), null);
+  assert.equal(classifyAggregateQuestion("上次骑了多远？"), null);
+  assert.equal(classifyAggregateQuestion("你好"), null);
+  assert.equal(classifyAggregateQuestion("目前可以分析哪些数据？"), null);
+
+  assert.match(aggregateReply("total", records, new Date("2026-09-04T12:00:00.000Z")), /累计 12.5 km/);
+  assert.match(aggregateReply("week", records, new Date("2026-09-04T12:00:00.000Z")), /本周已记录 1 次骑行/);
+  assert.match(aggregateReply("latest", records, new Date("2026-09-04T12:00:00.000Z")), /9\/1/);
 });

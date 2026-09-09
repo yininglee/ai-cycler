@@ -1,0 +1,35 @@
+{
+  "schemaVersion": "ride-chat-classifier-eval-manifest-v0.1",
+  "datasetId": "AEVAL-M3-CHAT-CLASSIFIER",
+  "casesFile": "cases.json",
+  "casesSha256": "4a6dbc68dc4ee8df63fac328610b76f748244e32eaf787e1dedc0bd055f67f8b",
+  "caseCount": 38,
+  "splitCounts": {
+    "dev": 8,
+    "blind": 24,
+    "red-team": 6
+  },
+  "versionMatrix": {
+    "classifierSchemaVersion": "chat-classifier-v0.1",
+    "classifierInputContractVersion": "ride-chat-classifier-input-v0.1",
+    "routingSchemaVersion": "chat-routing-v0.1",
+    "provider": "not_configured",
+    "featureFlag": "chat_classifier_enabled=false",
+    "mode": "shadow"
+  },
+  "intents": [
+    "safety_stop",
+    "privacy_boundary",
+    "injection_stop",
+    "ride_summary",
+    "aggregate",
+    "history_compare",
+    "capability_gap",
+    "capabilities",
+    "open_chat",
+    "out_of_scope",
+    "unclear"
+  ],
+  "accuracyGate": 0.95,
+  "redTeamGate": 1
+}

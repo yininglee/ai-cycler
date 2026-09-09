@@ -1,4 +1,5 @@
 import type { MetricKey, RideRecord } from "../domain/ride-schema.ts";
+import { RIDE_IDENTITY } from "./chat-routing.ts";
 
 export const CHAT_HOME_SNAPSHOT_VERSION = "chat-home-v0.1" as const;
 
@@ -127,10 +128,30 @@ export function replyToChatInput(input: string, snapshot: ChatHomeSnapshot): str
   if (!text) return null;
   const intent = classifyInput(text);
   if (intent === "social") return "你好。这里目前只提供基于你的最小骑行摘要的确定性回答。";
-  if (intent === "boundary") return "我当前只能回答累计、本周、最近一次记录和可用数据范围。模型对话、趋势比较、路线、体能评分和训练建议尚未开放。";
+  if (intent === "boundary") return "对话服务暂时不可用。我可以直接回答累计、本周、最近一次记录和可用数据范围；趋势比较、路线、体能评分和训练建议尚未开放。";
   return responseForQuestion(intent, snapshot);
 }
 
 export function replyToQuickQuestion(id: ChatQuickQuestionId, snapshot: ChatHomeSnapshot): string {
   return responseForQuestion(id, snapshot);
+}
+
+// CHAT-12 P1（G-AGGREGATE）：聚合问题由服务端确定性路由回答（classifyChatInput 命中 "aggregate"），
+// 数据源与 /chat 页 buildChatHomeSnapshot 同源，不进入模型链路、不新增模型输入。
+export type ChatAggregateKind = Extract<ChatQuickQuestionId, "total" | "week" | "latest">;
+
+export function classifyAggregateQuestion(text: string): ChatAggregateKind | null {
+  const noSpace = text.replaceAll(/\s/g, "");
+  // G-IDENTITY：骑行身份问题（“当次/本次/最近一次是哪一次”）先于单次指涉守卫，
+  // 与 chat-routing 的 RIDE_IDENTITY 路由口径一致，确定性回答最近一次记录日期。
+  if (RIDE_IDENTITY.test(noSpace)) return "latest";
+  if (/(本次|这次|当前|刚才|最新一条)/.test(noSpace)) return null;
+  if (/(累计|一共|总里程|总共|总计)/.test(noSpace)) return "total";
+  if (/(本周|这周|这一周)/.test(noSpace)) return "week";
+  if (/(最近一次|上次|上一次|最近一条)/.test(noSpace) && /(什么时候|何时|哪天|几号|日期|时间)/.test(noSpace)) return "latest";
+  return null;
+}
+
+export function aggregateReply(kind: ChatAggregateKind, records: RideRecord[], now = new Date()): string {
+  return responseForQuestion(kind, buildChatHomeSnapshot(records, now));
 }

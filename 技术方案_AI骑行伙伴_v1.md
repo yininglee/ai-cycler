@@ -128,7 +128,7 @@ Browser
   ├─ /rides/[id] ─────────> ViewModel ──> B0 事实/轨迹/曲线
   ├─ 点击 AI ─────────────> POST /api/ride-analysis（ride_analysis_v1，入口即意图）
   │                           ├─ RideFeatureSnapshot
-  │                           ├─ HistoricalComparisonSnapshot（当前 Fixture/本地）
+  │                           ├─ HistoricalComparisonSnapshot（MVP-REPEAT-01 已接持久历史；AI 解读输入仍排除 history_change）
   │                           ├─ RideAnalysisContext
   │                           ├─ AnalysisEligibility
   │                           ├─ Coze Provider（可选，COZE_*）
@@ -140,6 +140,8 @@ Browser
                               ├─ 确定性意图路由（安全→社交→能力→当前骑行→域外）
                               ├─ 安全/隐私/注入/域外 → 固定模板，不调模型
                               ├─ 只读工具 get_ride_context / get_capabilities
+                              │    （CHAT-13 拟接入 compare_rides 历史比较，
+                              │     复用 MVP-REPEAT-01 持久历史与快照构建器）
                               │    └─ session+owner 校验、2s/32KB、Claim 去标识化
                               ├─ 最小上下文：当前问题 + ≤6 轮白名单摘要 + 工具投影
                               ├─ Chat Provider（可选，独立 COZE_CHAT_*）

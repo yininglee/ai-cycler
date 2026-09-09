@@ -1,0 +1,77 @@
+<svg viewBox="0 0 920 640" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC, Microsoft YaHei, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#8a93a6"/>
+    </marker>
+    <linearGradient id="gRule" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0f7b6c" stop-opacity="0.16"/><stop offset="1" stop-color="#0f7b6c" stop-opacity="0.06"/>
+    </linearGradient>
+    <linearGradient id="gLLM" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#b8860b" stop-opacity="0.16"/><stop offset="1" stop-color="#b8860b" stop-opacity="0.06"/>
+    </linearGradient>
+    <linearGradient id="gScene" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#4756c7" stop-opacity="0.16"/><stop offset="1" stop-color="#4756c7" stop-opacity="0.06"/>
+    </linearGradient>
+    <linearGradient id="gAgent" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#b3426b" stop-opacity="0.16"/><stop offset="1" stop-color="#b3426b" stop-opacity="0.06"/>
+    </linearGradient>
+  </defs>
+
+  <text x="460" y="30" text-anchor="middle" font-size="18" font-weight="700" fill="#1c2333">混合意图路由架构（规则前置 + LLM 语义分类 + 双执行态）</text>
+
+  <!-- Input -->
+  <rect x="360" y="48" width="200" height="38" rx="19" fill="#eef1f6" stroke="#c3cad8"/>
+  <text x="460" y="72" text-anchor="middle" font-size="13" fill="#3a4356">用户输入（含歧义与长尾）</text>
+  <line x1="460" y1="86" x2="460" y2="108" stroke="#8a93a6" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- L0 Rule Layer -->
+  <rect x="130" y="110" width="660" height="92" rx="10" fill="url(#gRule)" stroke="#0f7b6c" stroke-width="1.4"/>
+  <text x="150" y="134" font-size="14" font-weight="700" fill="#0f7b6c">L0 规则层（收窄后：只拦 100% 确定红线，<tspan font-weight="400">零延迟零成本</tspan>）</text>
+  <text x="150" y="156" font-size="11.5" fill="#3a4356">• 注入检测（模式化攻击，正则可靠）　• 隐私红线（"别人的记录"，无需语义）</text>
+  <text x="150" y="174" font-size="11.5" fill="#3a4356">• 高置信快捷路径：聚合问题（"总共/本周"→确定性秒答）</text>
+  <text x="150" y="192" font-size="11.5" fill="#0f7b6c">• 安全拦截仅限共现模式："正在骑车 + 看手机"（"骑行中"裸词移出）</text>
+
+  <line x1="460" y1="202" x2="460" y2="224" stroke="#8a93a6" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="560" y="218" font-size="10.5" fill="#8a93a6">未命中 → 进入语义分类</text>
+
+  <!-- L1 LLM Classifier -->
+  <rect x="130" y="226" width="660" height="100" rx="10" fill="url(#gLLM)" stroke="#b8860b" stroke-width="1.4"/>
+  <text x="150" y="250" font-size="14" font-weight="700" fill="#9a6f0a">L1 LLM 意图分类器（小模型，语义消歧主路由）</text>
+  <text x="150" y="272" font-size="11.5" fill="#3a4356">输出结构化意图而非数字置信度：{ intent, needs_clarification }</text>
+  <text x="150" y="290" font-size="11.5" fill="#3a4356">intent ∈ scene:ride_summary（单次解读） | scene:history_compare（跨次比较） | scene:aggregate（聚合）</text>
+  <text x="150" y="308" font-size="11.5" fill="#3a4356">　　　　　| scene:training_plan | open_chat（开放对话） | unclear（触发澄清话术）</text>
+
+  <!-- Branch arrows -->
+  <line x1="460" y1="326" x2="250" y2="366" stroke="#4756c7" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="460" y1="326" x2="670" y2="366" stroke="#b3426b" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="290" y="352" font-size="11" fill="#4756c7">intent = 具体场景</text>
+  <text x="540" y="352" font-size="11" fill="#b3426b">intent = open_chat / 复合问题</text>
+
+  <!-- L2a Scene Workflows -->
+  <rect x="80" y="368" width="360" height="180" rx="10" fill="url(#gScene)" stroke="#4756c7" stroke-width="1.4"/>
+  <text x="100" y="392" font-size="14" font-weight="700" fill="#3543a8">L2a 场景 Workflow（确定性执行）</text>
+  <rect x="100" y="404" width="320" height="26" rx="6" fill="#ffffff" stroke="#c3ccf0"/>
+  <text x="260" y="421" text-anchor="middle" font-size="11.5" fill="#3543a8">骑行解读（复用 M1 链路）</text>
+  <rect x="100" y="436" width="320" height="26" rx="6" fill="#ffffff" stroke="#c3ccf0"/>
+  <text x="260" y="453" text-anchor="middle" font-size="11.5" fill="#3543a8">历史比较（CHAT-13 compare_rides）</text>
+  <rect x="100" y="468" width="320" height="26" rx="6" fill="#ffffff" stroke="#c3ccf0"/>
+  <text x="260" y="485" text-anchor="middle" font-size="11.5" fill="#3543a8">聚合统计（G-AGGREGATE 服务端化）</text>
+  <rect x="100" y="500" width="320" height="26" rx="6" fill="#ffffff" stroke="#c3ccf0"/>
+  <text x="260" y="517" text-anchor="middle" font-size="11.5" fill="#3543a8">训练计划（M4 场景准入后接入）</text>
+  <text x="100" y="540" font-size="10.5" fill="#6a7690">输出合同与 Claims 溯源校验在各场景内闭环</text>
+
+  <!-- L2b Autonomous Agent -->
+  <rect x="480" y="368" width="360" height="180" rx="10" fill="url(#gAgent)" stroke="#b3426b" stroke-width="1.4"/>
+  <text x="500" y="392" font-size="14" font-weight="700" fill="#933257">L2b 自主 Agent（开放推理）</text>
+  <rect x="500" y="404" width="320" height="56" rx="6" fill="#ffffff" stroke="#e3c3d2"/>
+  <text x="660" y="425" text-anchor="middle" font-size="11.5" fill="#933257">工具调用循环：模型自行决定</text>
+  <text x="660" y="444" text-anchor="middle" font-size="11.5" fill="#933257">调 get_ride_context / compare_rides / 组合使用</text>
+  <rect x="500" y="468" width="320" height="26" rx="6" fill="#ffffff" stroke="#e3c3d2"/>
+  <text x="660" y="485" text-anchor="middle" font-size="11.5" fill="#933257">动态输出校验（溯源随工具结果走）</text>
+  <text x="500" y="528" font-size="10.5" fill="#6a7690">典型问题："我最近状态怎么样？"（需综合多次骑行）</text>
+
+  <!-- Bottom bar -->
+  <rect x="130" y="568" width="660" height="44" rx="8" fill="#eef1f6" stroke="#c3cad8"/>
+  <text x="460" y="588" text-anchor="middle" font-size="11.5" fill="#3a4356">失败路径兜底：分类器失败/超时 → 降级为当前确定性模板（保持 Demo 可用性）</text>
+  <text x="460" y="604" text-anchor="middle" font-size="11.5" fill="#3a4356">低置信 / unclear → 澄清话术（"你想看最近一次的心率，还是找出所有超 120 的骑行？"）</text>
+</svg>

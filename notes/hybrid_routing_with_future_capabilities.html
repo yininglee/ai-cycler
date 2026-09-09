@@ -1,0 +1,98 @@
+<svg viewBox="0 0 940 690" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC, Microsoft YaHei, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#8a93a6"/>
+    </marker>
+    <marker id="arrowD" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#9aa0ad"/>
+    </marker>
+    <linearGradient id="gRule" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0f7b6c" stop-opacity="0.16"/><stop offset="1" stop-color="#0f7b6c" stop-opacity="0.06"/>
+    </linearGradient>
+    <linearGradient id="gLLM" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#b8860b" stop-opacity="0.16"/><stop offset="1" stop-color="#b8860b" stop-opacity="0.06"/>
+    </linearGradient>
+    <linearGradient id="gScene" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#4756c7" stop-opacity="0.16"/><stop offset="1" stop-color="#4756c7" stop-opacity="0.06"/>
+    </linearGradient>
+    <linearGradient id="gAgent" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#b3426b" stop-opacity="0.16"/><stop offset="1" stop-color="#b3426b" stop-opacity="0.06"/>
+    </linearGradient>
+  </defs>
+
+  <text x="470" y="26" text-anchor="middle" font-size="17" font-weight="700" fill="#1c2333">混合意图路由目标架构（v0.4）：规则前置 + LLM 语义分类 + 场景分化 + 虚线后续扩展</text>
+
+  <rect x="370" y="42" width="200" height="34" rx="17" fill="#eef1f6" stroke="#c3cad8"/>
+  <text x="470" y="64" text-anchor="middle" font-size="12.5" fill="#3a4356">用户输入</text>
+  <line x1="470" y1="76" x2="470" y2="92" stroke="#8a93a6" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <rect x="90" y="96" width="760" height="86" rx="10" fill="url(#gRule)" stroke="#0f7b6c" stroke-width="1.4"/>
+  <text x="110" y="120" font-size="13.5" font-weight="700" fill="#0f7b6c">L0 规则层（收窄：只拦 100% 确定红线 · 零延迟零成本）</text>
+  <text x="110" y="142" font-size="11.5" fill="#3a4356">• 注入检测（模式化攻击）　• 隐私红线（“别人的记录”）　• 共现安全模式：“正在骑车”+“看手机”共现才拦截</text>
+  <text x="110" y="161" font-size="11.5" fill="#0f7b6c">• 高置信聚合快捷路径：“总共 / 累计 / 本周”→ 服务端仓储聚合秒答（零模型调用）</text>
+
+  <line x1="470" y1="182" x2="470" y2="200" stroke="#8a93a6" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="556" y="196" font-size="10.5" fill="#8a93a6">未命中 → 语义分类</text>
+
+  <rect x="90" y="204" width="760" height="90" rx="10" fill="url(#gLLM)" stroke="#b8860b" stroke-width="1.4"/>
+  <text x="110" y="228" font-size="13.5" font-weight="700" fill="#9a6f0a">L1 LLM 意图分类器（小模型 · 无状态表达节点 · 语义消歧主路由）</text>
+  <text x="110" y="250" font-size="11.5" fill="#3a4356">输出结构化意图 { intent, needs_clarification }，不自报数字置信度（快速模型校准不可信）</text>
+  <text x="110" y="269" font-size="11.5" fill="#3a4356">intent ∈ 单次解读 | 历史比较 | 聚合 | 能力评估*(M4) | 训练计划*(M4) | open_chat | unclear（触发澄清）</text>
+  <text x="110" y="287" font-size="10.5" fill="#6a7690">* 虚线场景：当前不路由，M4 专项准入后生效</text>
+
+  <line x1="300" y1="294" x2="215" y2="340" stroke="#4756c7" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="218" y="324" font-size="11" fill="#4756c7">intent = 具体场景</text>
+  <line x1="640" y1="294" x2="565" y2="340" stroke="#b3426b" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="600" y="318" font-size="11" fill="#b3426b">open_chat / 复合问题</text>
+  <line x1="820" y1="294" x2="846" y2="340" stroke="#9aa0ad" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#arrowD)"/>
+  <text x="810" y="318" text-anchor="end" font-size="10.5" fill="#6a7690">M4 规划场景（虚线）</text>
+
+  <rect x="40" y="344" width="340" height="158" rx="10" fill="url(#gScene)" stroke="#4756c7" stroke-width="1.4"/>
+  <text x="60" y="368" font-size="13.5" font-weight="700" fill="#3543a8">L2a 场景 Workflow（确定性执行）</text>
+  <rect x="60" y="380" width="300" height="24" rx="6" fill="#ffffff" stroke="#c3ccf0"/>
+  <text x="210" y="396" text-anchor="middle" font-size="11.5" fill="#3543a8">骑行解读（复用 M1 链路）</text>
+  <rect x="60" y="410" width="300" height="24" rx="6" fill="#ffffff" stroke="#c3ccf0"/>
+  <text x="210" y="426" text-anchor="middle" font-size="11.5" fill="#3543a8">历史比较（CHAT-13 compare_rides）</text>
+  <rect x="60" y="440" width="300" height="24" rx="6" fill="#ffffff" stroke="#c3ccf0"/>
+  <text x="210" y="456" text-anchor="middle" font-size="11.5" fill="#3543a8">聚合统计（服务端仓储聚合）</text>
+  <text x="60" y="488" font-size="10.5" fill="#6a7690">输出合同与 Claim 溯源在场景内闭环</text>
+
+  <rect x="400" y="344" width="340" height="158" rx="10" fill="url(#gAgent)" stroke="#b3426b" stroke-width="1.4"/>
+  <text x="420" y="368" font-size="13.5" font-weight="700" fill="#933257">L2b 自主工具循环（开放推理）</text>
+  <rect x="420" y="380" width="300" height="46" rx="6" fill="#ffffff" stroke="#e3c3d2"/>
+  <text x="570" y="398" text-anchor="middle" font-size="11" fill="#933257">工具调用循环：模型自行决定只读工具组合</text>
+  <text x="570" y="415" text-anchor="middle" font-size="11" fill="#933257">get_ride_context · compare_rides · …（白名单内）</text>
+  <rect x="420" y="432" width="300" height="24" rx="6" fill="#ffffff" stroke="#e3c3d2"/>
+  <text x="570" y="448" text-anchor="middle" font-size="11" fill="#933257">动态输出校验（溯源随工具结果构建）</text>
+  <text x="420" y="488" font-size="10.5" fill="#6a7690">典型：“我最近状态怎么样？”</text>
+
+  <rect x="766" y="344" width="164" height="158" rx="10" fill="#fcfcfc" stroke="#9aa0ad" stroke-width="1.4" stroke-dasharray="6 4"/>
+  <text x="786" y="366" font-size="12" font-weight="700" fill="#6a7690">后续扩展（虚线）</text>
+  <text x="786" y="380" font-size="9.5" fill="#9aa0ad">过 M4 专项准入后转实线</text>
+  <rect x="778" y="388" width="140" height="32" rx="6" fill="#fcfcfc" stroke="#9aa0ad" stroke-dasharray="5 4"/>
+  <text x="848" y="402" text-anchor="middle" font-size="11" font-weight="700" fill="#5a6578">能力评估</text>
+  <text x="848" y="414" text-anchor="middle" font-size="8.5" fill="#9aa0ad">AI-CAP-01 画像数据</text>
+  <rect x="778" y="426" width="140" height="32" rx="6" fill="#fcfcfc" stroke="#9aa0ad" stroke-dasharray="5 4"/>
+  <text x="848" y="440" text-anchor="middle" font-size="11" font-weight="700" fill="#5a6578">训练计划</text>
+  <text x="848" y="452" text-anchor="middle" font-size="8.5" fill="#9aa0ad">依赖能力评估结论</text>
+  <rect x="778" y="464" width="140" height="32" rx="6" fill="#fcfcfc" stroke="#9aa0ad" stroke-dasharray="5 4"/>
+  <text x="848" y="478" text-anchor="middle" font-size="11" font-weight="700" fill="#5a6578">RAG 知识检索</text>
+  <text x="848" y="490" text-anchor="middle" font-size="8.5" fill="#9aa0ad">只读工具 · 场景复用</text>
+
+  <line x1="740" y1="468" x2="766" y2="478" stroke="#9aa0ad" stroke-width="1.3" stroke-dasharray="5 4" marker-end="url(#arrowD)"/>
+  <text x="753" y="462" text-anchor="middle" font-size="9" fill="#9aa0ad">调用</text>
+
+  <line x1="210" y1="502" x2="210" y2="524" stroke="#8a93a6" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="570" y1="502" x2="570" y2="524" stroke="#8a93a6" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="800" y1="502" x2="714" y2="545" stroke="#9aa0ad" stroke-width="1.3" stroke-dasharray="5 4" marker-end="url(#arrowD)"/>
+  <text x="760" y="519" text-anchor="middle" font-size="9.5" fill="#6a7690">同样过校验</text>
+
+  <rect x="40" y="524" width="672" height="46" rx="8" fill="#eef1f6" stroke="#c3cad8"/>
+  <text x="376" y="544" text-anchor="middle" font-size="11.5" fill="#3a4356">场景化输出校验：各场景各自的白名单与 Claim 溯源；用户输入数字（如阈值 120）加入白名单</text>
+  <text x="376" y="561" text-anchor="middle" font-size="11" fill="#3a4356">通过 → 回答与证据 / Chat UI　·　失败 → 一次受限修复，仍失败 → 确定性模板</text>
+
+  <rect x="40" y="592" width="890" height="72" rx="8" fill="#eef1f6" stroke="#c3cad8"/>
+  <text x="485" y="614" text-anchor="middle" font-size="11.5" fill="#3a4356">失败保底：分类器失败 / 超时 / 限流 → 降级为 P1 确定性模板（任何时刻不劣于纯规则基线可用性）</text>
+  <text x="485" y="632" text-anchor="middle" font-size="11.5" fill="#3a4356">低置信 / unclear → 澄清话术（一等路径）：“你想看最近一次的心率，还是找出所有超 120 的骑行？”</text>
+  <text x="485" y="651" text-anchor="middle" font-size="11" fill="#6a7690">虚线 = 后续规划能力（能力评估 / 训练计划 / RAG）：过 M4 与知识增强专项准入后转实线，CHAT-12 POC 不实现</text>
+</svg>
