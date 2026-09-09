@@ -41,7 +41,8 @@
     "eval:chat:preflight": "node scripts/preflight-ride-chat-eval.ts",
     "eval:classifier:preflight": "node scripts/preflight-ride-chat-classifier-eval.ts",
     "eval:classifier:accuracy": "node scripts/eval-classifier-accuracy.ts",
-    "eval:chat15:matrix": "node scripts/eval-chat15-scenario-matrix.ts"
+    "eval:chat15:matrix": "node scripts/eval-chat15-scenario-matrix.ts",
+    "eval:m3:chat:fixed-set": "node scripts/run-m3-chat-fixed-set.ts"
   },
   "engines": {
     "node": ">=22.6"

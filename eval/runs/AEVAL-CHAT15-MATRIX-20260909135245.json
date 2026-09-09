@@ -1,0 +1,1322 @@
+{
+  "runId": "AEVAL-CHAT15-MATRIX-20260909135245",
+  "task": "CHAT-15",
+  "kind": "scenario-matrix-real-model",
+  "createdAt": "2026-09-09T13:52:45.255Z",
+  "environment": {
+    "classifierMode": "active",
+    "samplesPerQuestion": 10,
+    "questions": 7,
+    "ownerRideCount": 9,
+    "delayMs": 500
+  },
+  "matrix": [
+    {
+      "scenario": "social",
+      "expectedRoute": "social",
+      "question": "你好"
+    },
+    {
+      "scenario": "current_ride",
+      "expectedRoute": "current_ride",
+      "question": "这次骑行数据怎么样？"
+    },
+    {
+      "scenario": "current_ride",
+      "expectedRoute": "current_ride",
+      "question": "本次骑行的平均功率是多少？"
+    },
+    {
+      "scenario": "capabilities",
+      "expectedRoute": "capabilities",
+      "question": "目前可以分析哪些数据？"
+    },
+    {
+      "scenario": "capabilities",
+      "expectedRoute": "capability_gap",
+      "question": "我的骑行能力怎么样？"
+    },
+    {
+      "scenario": "history_compare",
+      "expectedRoute": "history_compare",
+      "question": "这次比上一次骑得远了吗？"
+    },
+    {
+      "scenario": "history_compare",
+      "expectedRoute": "history_compare",
+      "question": "我最近的骑行有进步吗？"
+    }
+  ],
+  "scenarioSummary": [
+    {
+      "scenario": "social",
+      "total": 10,
+      "routeOk": 10,
+      "validatedFirstPass": 10,
+      "repaired": 0,
+      "fallback": 0,
+      "execution": {
+        "validated": 10
+      },
+      "fallbackCode": {
+        "none": 10
+      },
+      "validationCode": {
+        "none": 10
+      },
+      "finalRoute": {
+        "social": 10
+      }
+    },
+    {
+      "scenario": "current_ride",
+      "total": 20,
+      "routeOk": 20,
+      "validatedFirstPass": 0,
+      "repaired": 0,
+      "fallback": 20,
+      "execution": {
+        "template": 20
+      },
+      "fallbackCode": {
+        "TOOLS_ANCHOR_CLARIFY": 20
+      },
+      "validationCode": {
+        "none": 20
+      },
+      "finalRoute": {
+        "current_ride": 20
+      }
+    },
+    {
+      "scenario": "capabilities",
+      "total": 20,
+      "routeOk": 20,
+      "validatedFirstPass": 10,
+      "repaired": 0,
+      "fallback": 0,
+      "execution": {
+        "validated": 10,
+        "template": 10
+      },
+      "fallbackCode": {
+        "none": 20
+      },
+      "validationCode": {
+        "none": 20
+      },
+      "finalRoute": {
+        "capabilities": 10,
+        "capability_gap": 10
+      }
+    },
+    {
+      "scenario": "history_compare",
+      "total": 20,
+      "routeOk": 20,
+      "validatedFirstPass": 10,
+      "repaired": 0,
+      "fallback": 10,
+      "execution": {
+        "template": 10,
+        "validated": 10
+      },
+      "fallbackCode": {
+        "TOOLS_ANCHOR_CLARIFY": 10,
+        "none": 10
+      },
+      "validationCode": {
+        "none": 20
+      },
+      "finalRoute": {
+        "history_compare": 20
+      }
+    }
+  ],
+  "numericFailures": [],
+  "samples": [
+    {
+      "question": "你好",
+      "expectedRoute": "social",
+      "run": 1,
+      "routedBy": "classifier",
+      "finalRoute": "social",
+      "routeOk": true,
+      "execution": "validated",
+      "modelInvoked": true,
+      "repairAttempts": 0,
+      "replyChars": 26,
+      "replyNumbers": [],
+      "durationMs": 6896
+    },
+    {
+      "question": "你好",
+      "expectedRoute": "social",
+      "run": 2,
+      "routedBy": "classifier",
+      "finalRoute": "social",
+      "routeOk": true,
+      "execution": "validated",
+      "modelInvoked": true,
+      "repairAttempts": 0,
+      "replyChars": 26,
+      "replyNumbers": [],
+      "durationMs": 6451
+    },
+    {
+      "question": "你好",
+      "expectedRoute": "social",
+      "run": 3,
+      "routedBy": "classifier",
+      "finalRoute": "social",
+      "routeOk": true,
+      "execution": "validated",
+      "modelInvoked": true,
+      "repairAttempts": 0,
+      "replyChars": 23,
+      "replyNumbers": [],
+      "durationMs": 7562
+    },
+    {
+      "question": "你好",
+      "expectedRoute": "social",
+      "run": 4,
+      "routedBy": "classifier",
+      "finalRoute": "social",
+      "routeOk": true,
+      "execution": "validated",
+      "modelInvoked": true,
+      "repairAttempts": 0,
+      "replyChars": 26,
+      "replyNumbers": [],
+      "durationMs": 5842
+    },
+    {
+      "question": "你好",
+      "expectedRoute": "social",
+      "run": 5,
+      "routedBy": "classifier",
+      "finalRoute": "social",
+      "routeOk": true,
+      "execution": "validated",
+      "modelInvoked": true,
+      "repairAttempts": 0,
+      "replyChars": 24,
+      "replyNumbers": [],
+      "durationMs": 7012
+    },
+    {
+      "question": "你好",
+      "expectedRoute": "social",
+      "run": 6,
+      "routedBy": "classifier",
+      "finalRoute": "social",
+      "routeOk": true,
+      "execution": "validated",
+      "modelInvoked": true,
+      "repairAttempts": 0,
+      "replyChars": 25,
+      "replyNumbers": [],
+      "durationMs": 7036
+    },
+    {
+      "question": "你好",
+      "expectedRoute": "social",
+      "run": 7,
+      "routedBy": "classifier",
+      "finalRoute": "social",
+      "routeOk": true,
+      "execution": "validated",
+      "modelInvoked": true,
+      "repairAttempts": 0,
+      "replyChars": 26,
+      "replyNumbers": [],
+      "durationMs": 6216
+    },
+    {
+      "question": "你好",
+      "expectedRoute": "social",
+      "run": 8,
+      "routedBy": "classifier",
+      "finalRoute": "social",
+      "routeOk": true,
+      "execution": "validated",
+      "modelInvoked": true,
+      "repairAttempts": 0,
+      "replyChars": 28,
+      "replyNumbers": [],
+      "durationMs": 7121
+    },
+    {
+      "question": "你好",
+      "expectedRoute": "social",
+      "run": 9,
+      "routedBy": "classifier",
+      "finalRoute": "social",
+      "routeOk": true,
+      "execution": "validated",
+      "modelInvoked": true,
+      "repairAttempts": 0,
+      "replyChars": 26,
+      "replyNumbers": [],
+      "durationMs": 6317
+    },
+    {
+      "question": "你好",
+      "expectedRoute": "social",
+      "run": 10,
+      "routedBy": "classifier",
+      "finalRoute": "social",
+      "routeOk": true,
+      "execution": "validated",
+      "modelInvoked": true,
+      "repairAttempts": 0,
+      "replyChars": 25,
+      "replyNumbers": [],
+      "durationMs": 5537
+    },
+    {
+      "question": "这次骑行数据怎么样？",
+      "expectedRoute": "current_ride",
+      "run": 1,
+      "routedBy": "classifier",
+      "finalRoute": "current_ride",
+      "routeOk": true,
+      "execution": "template",
+      "modelInvoked": false,
+      "repairAttempts": 0,
+      "fallbackCode": "TOOLS_ANCHOR_CLARIFY",
+      "replyChars": 42,
+      "replyNumbers": [
+        8,
+        20
+      ],
+      "durationMs": 4361
+    },
+    {
+      "question": "这次骑行数据怎么样？",
+      "expectedRoute": "current_ride",
+      "run": 2,
+      "routedBy": "classifier",
+      "finalRoute": "current_ride",
+      "routeOk": true,
+      "execution": "template",
+      "modelInvoked": false,
+      "repairAttempts": 0,
+      "fallbackCode": "TOOLS_ANCHOR_CLARIFY",
+      "replyChars": 42,
+      "replyNumbers": [
+        8,
+        20
+      ],
+      "durationMs": 4627
+    },
+    {
+      "question": "这次骑行数据怎么样？",
+      "expectedRoute": "current_ride",
+      "run": 3,
+      "routedBy": "classifier",
+      "finalRoute": "current_ride",
+      "routeOk": true,
+      "execution": "template",
+      "modelInvoked": false,
+      "repairAttempts": 0,
+      "fallbackCode": "TOOLS_ANCHOR_CLARIFY",
+      "replyChars": 42,
+      "replyNumbers": [
+        8,
+        20
+      ],
+      "durationMs": 4113
+    },
+    {
+      "question": "这次骑行数据怎么样？",
+      "expectedRoute": "current_ride",
+      "run": 4,
+      "routedBy": "classifier",
+      "finalRoute": "current_ride",
+      "routeOk": true,
+      "execution": "template",
+      "modelInvoked": false,
+      "repairAttempts": 0,
+      "fallbackCode": "TOOLS_ANCHOR_CLARIFY",
+      "replyChars": 42,
+      "replyNumbers": [
+        8,
+        20
+      ],
+      "durationMs": 5943
+    },
+    {
+      "question": "这次骑行数据怎么样？",
+      "expectedRoute": "current_ride",
+      "run": 5,
+      "routedBy": "classifier",
+      "finalRoute": "current_ride",
+      "routeOk": true,
+      "execution": "template",
+      "modelInvoked": false,
+      "repairAttempts": 0,
+      "fallbackCode": "TOOLS_ANCHOR_CLARIFY",
+      "replyChars": 42,
+      "replyNumbers": [
+        8,
+        20
+      ],
+      "durationMs": 4646
+    },
+    {
+      "question": "这次骑行数据怎么样？",
+      "expectedRoute": "current_ride",
+      "run": 6,
+      "routedBy": "classifier",
+      "finalRoute": "current_ride",
+      "routeOk": true,
+      "execution": "template",
+      "modelInvoked": false,
+      "repairAttempts": 0,
+      "fallbackCode": "TOOLS_ANCHOR_CLARIFY",
+      "replyChars": 42,
+      "replyNumbers": [
+        8,
+        20
+      ],
+      "durationMs": 3682
+    },
+    {
+      "question": "这次骑行数据怎么样？",
+      "expectedRoute": "current_ride",
+      "run": 7,
+      "routedBy": "classifier",
+      "finalRoute": "current_ride",
+      "routeOk": true,
+      "execution": "template",
+      "modelInvoked": false,
+      "repairAttempts": 0,
+      "fallbackCode": "TOOLS_ANCHOR_CLARIFY",
+      "replyChars": 42,
+      "replyNumbers": [
+        8,
+        20
+      ],
+      "durationMs": 3269
+    },
+    {
+      "question": "这次骑行数据怎么样？",
+      "expectedRoute": "current_ride",
+      "run": 8,
+      "routedBy": "classifier",
+      "finalRoute": "current_ride",
+      "routeOk": true,
+      "execution": "template",
+      "modelInvoked": false,
+      "repairAttempts": 0,
+      "fallbackCode": "TOOLS_ANCHOR_CLARIFY",
+      "replyChars": 42,
+      "replyNumbers": [
+        8,
+        20
+      ],
+      "durationMs": 4887
+    },
+    {
+      "question": "这次骑行数据怎么样？",
+      "expectedRoute": "current_ride",
+      "run": 9,
+      "routedBy": "classifier",
+      "finalRoute": "current_ride",
+      "routeOk": true,
+      "execution": "template",
+      "modelInvoked": false,
+      "repairAttempts": 0,
+      "fallbackCode": "TOOLS_ANCHOR_CLARIFY",
+      "replyChars": 42,
+      "replyNumbers": [
+        8,
+        20
+      ],
+      "durationMs": 4101
+    },
+    {
+      "question": "这次骑行数据怎么样？",
+      "expectedRoute": "current_ride",
+      "run": 10,
+      "routedBy": "classifier",
+      "finalRoute": "current_ride",
+      "routeOk": true,
+      "execution": "template",
+      "modelInvoked": false,
+      "repairAttempts": 0,
+      "fallbackCode": "TOOLS_ANCHOR_CLARIFY",
+      "replyChars": 42,
+      "replyNumbers": [
+        8,
+        20
+      ],
+      "durationMs": 4884
+    },
+    {
+      "question": "本次骑行的平均功率是多少？",
+      "expectedRoute": "current_ride",
+      "run": 1,
+      "routedBy": "classifier",
+      "finalRoute": "current_ride",
+      "routeOk": true,
+      "execution": "template",
+      "modelInvoked": false,
+      "repairAttempts": 0,
+      "fallbackCode": "TOOLS_ANCHOR_CLARIFY",
+      "replyChars": 42,
+      "replyNumbers": [
+        8,
+        20
+      ],
+      "durationMs": 4450
+    },
+    {
+      "question": "本次骑行的平均功率是多少？",
+      "expectedRoute": "current_ride",
+      "run": 2,
+      "routedBy": "classifier",
+      "finalRoute": "current_ride",
+      "routeOk": true,
+      "execution": "template",
+      "modelInvoked": false,
+      "repairAttempts": 0,
+      "fallbackCode": "TOOLS_ANCHOR_CLARIFY",
+      "replyChars": 42,
+      "replyNumbers": [
+        8,
+        20
+      ],
+      "durationMs": 3864
+    },
+    {
+      "question": "本次骑行的平均功率是多少？",
+      "expectedRoute": "current_ride",
+      "run": 3,
+      "routedBy": "classifier",
+      "finalRoute": "current_ride",
+      "routeOk": true,
+      "execution": "template",
+      "modelInvoked": false,
+      "repairAttempts": 0,
+      "fallbackCode": "TOOLS_ANCHOR_CLARIFY",
+      "replyChars": 42,
+      "replyNumbers": [
+        8,
+        20
+      ],
+      "durationMs": 4197
+    },
+    {
+      "question": "本次骑行的平均功率是多少？",
+      "expectedRoute": "current_ride",
+      "run": 4,
+      "routedBy": "classifier",
+      "finalRoute": "current_ride",
+      "routeOk": true,
+      "execution": "template",
+      "modelInvoked": false,
+      "repairAttempts": 0,
+      "fallbackCode": "TOOLS_ANCHOR_CLARIFY",
+      "replyChars": 42,
+      "replyNumbers": [
+        8,
+        20
+      ],
+      "durationMs": 2982
+    },
+    {
+      "question": "本次骑行的平均功率是多少？",
+      "expectedRoute": "current_ride",
+      "run": 5,
+      "routedBy": "classifier",
+      "finalRoute": "current_ride",
+      "routeOk": true,
+      "execution": "template",
+      "modelInvoked": false,
+      "repairAttempts": 0,
+      "fallbackCode": "TOOLS_ANCHOR_CLARIFY",
+      "replyChars": 42,
+      "replyNumbers": [
+        8,
+        20
+      ],
+      "durationMs": 4100
+    },
+    {
+      "question": "本次骑行的平均功率是多少？",
+      "expectedRoute": "current_ride",
+      "run": 6,
+      "routedBy": "classifier",
+      "finalRoute": "current_ride",
+      "routeOk": true,
+      "execution": "template",
+      "modelInvoked": false,
+      "repairAttempts": 0,
+      "fallbackCode": "TOOLS_ANCHOR_CLARIFY",
+      "replyChars": 42,
+      "replyNumbers": [
+        8,
+        20
+      ],
+      "durationMs": 4323
+    },
+    {
+      "question": "本次骑行的平均功率是多少？",
+      "expectedRoute": "current_ride",
+      "run": 7,
+      "routedBy": "classifier",
+      "finalRoute": "current_ride",
+      "routeOk": true,
+      "execution": "template",
+      "modelInvoked": false,
+      "repairAttempts": 0,
+      "fallbackCode": "TOOLS_ANCHOR_CLARIFY",
+      "replyChars": 42,
+      "replyNumbers": [
+        8,
+        20
+      ],
+      "durationMs": 4754
+    },
+    {
+      "question": "本次骑行的平均功率是多少？",
+      "expectedRoute": "current_ride",
+      "run": 8,
+      "routedBy": "classifier",
+      "finalRoute": "current_ride",
+      "routeOk": true,
+      "execution": "template",
+      "modelInvoked": false,
+      "repairAttempts": 0,
+      "fallbackCode": "TOOLS_ANCHOR_CLARIFY",
+      "replyChars": 42,
+      "replyNumbers": [
+        8,
+        20
+      ],
+      "durationMs": 3236
+    },
+    {
+      "question": "本次骑行的平均功率是多少？",
+      "expectedRoute": "current_ride",
+      "run": 9,
+      "routedBy": "classifier",
+      "finalRoute": "current_ride",
+      "routeOk": true,
+      "execution": "template",
+      "modelInvoked": false,
+      "repairAttempts": 0,
+      "fallbackCode": "TOOLS_ANCHOR_CLARIFY",
+      "replyChars": 42,
+      "replyNumbers": [
+        8,
+        20
+      ],
+      "durationMs": 4163
+    },
+    {
+      "question": "本次骑行的平均功率是多少？",
+      "expectedRoute": "current_ride",
+      "run": 10,
+      "routedBy": "classifier",
+      "finalRoute": "current_ride",
+      "routeOk": true,
+      "execution": "template",
+      "modelInvoked": false,
+      "repairAttempts": 0,
+      "fallbackCode": "TOOLS_ANCHOR_CLARIFY",
+      "replyChars": 42,
+      "replyNumbers": [
+        8,
+        20
+      ],
+      "durationMs": 4026
+    },
+    {
+      "question": "目前可以分析哪些数据？",
+      "expectedRoute": "capabilities",
+      "run": 1,
+      "routedBy": "classifier",
+      "finalRoute": "capabilities",
+      "routeOk": true,
+      "execution": "validated",
+      "modelInvoked": true,
+      "repairAttempts": 0,
+      "replyChars": 41,
+      "replyNumbers": [],
+      "durationMs": 7628
+    },
+    {
+      "question": "目前可以分析哪些数据？",
+      "expectedRoute": "capabilities",
+      "run": 2,
+      "routedBy": "classifier",
+      "finalRoute": "capabilities",
+      "routeOk": true,
+      "execution": "validated",
+      "modelInvoked": true,
+      "repairAttempts": 0,
+      "replyChars": 37,
+      "replyNumbers": [],
+      "durationMs": 7270
+    },
+    {
+      "question": "目前可以分析哪些数据？",
+      "expectedRoute": "capabilities",
+      "run": 3,
+      "routedBy": "classifier",
+      "finalRoute": "capabilities",
+      "routeOk": true,
+      "execution": "validated",
+      "modelInvoked": true,
+      "repairAttempts": 0,
+      "replyChars": 39,
+      "replyNumbers": [],
+      "durationMs": 7761
+    },
+    {
+      "question": "目前可以分析哪些数据？",
+      "expectedRoute": "capabilities",
+      "run": 4,
+      "routedBy": "classifier",
+      "finalRoute": "capabilities",
+      "routeOk": true,
+      "execution": "validated",
+      "modelInvoked": true,
+      "repairAttempts": 0,
+      "replyChars": 33,
+      "replyNumbers": [],
+      "durationMs": 7982
+    },
+    {
+      "question": "目前可以分析哪些数据？",
+      "expectedRoute": "capabilities",
+      "run": 5,
+      "routedBy": "classifier",
+      "finalRoute": "capabilities",
+      "routeOk": true,
+      "execution": "validated",
+      "modelInvoked": true,
+      "repairAttempts": 0,
+      "replyChars": 34,
+      "replyNumbers": [],
+      "durationMs": 8385
+    },
+    {
+      "question": "目前可以分析哪些数据？",
+      "expectedRoute": "capabilities",
+      "run": 6,
+      "routedBy": "classifier",
+      "finalRoute": "capabilities",
+      "routeOk": true,
+      "execution": "validated",
+      "modelInvoked": true,
+      "repairAttempts": 0,
+      "replyChars": 35,
+      "replyNumbers": [],
+      "durationMs": 7289
+    },
+    {
+      "question": "目前可以分析哪些数据？",
+      "expectedRoute": "capabilities",
+      "run": 7,
+      "routedBy": "classifier",
+      "finalRoute": "capabilities",
+      "routeOk": true,
+      "execution": "validated",
+      "modelInvoked": true,
+      "repairAttempts": 0,
+      "replyChars": 37,
+      "replyNumbers": [],
+      "durationMs": 7788
+    },
+    {
+      "question": "目前可以分析哪些数据？",
+      "expectedRoute": "capabilities",
+      "run": 8,
+      "routedBy": "classifier",
+      "finalRoute": "capabilities",
+      "routeOk": true,
+      "execution": "validated",
+      "modelInvoked": true,
+      "repairAttempts": 0,
+      "replyChars": 35,
+      "replyNumbers": [],
+      "durationMs": 7752
+    },
+    {
+      "question": "目前可以分析哪些数据？",
+      "expectedRoute": "capabilities",
+      "run": 9,
+      "routedBy": "classifier",
+      "finalRoute": "capabilities",
+      "routeOk": true,
+      "execution": "validated",
+      "modelInvoked": true,
+      "repairAttempts": 0,
+      "replyChars": 37,
+      "replyNumbers": [],
+      "durationMs": 7547
+    },
+    {
+      "question": "目前可以分析哪些数据？",
+      "expectedRoute": "capabilities",
+      "run": 10,
+      "routedBy": "classifier",
+      "finalRoute": "capabilities",
+      "routeOk": true,
+      "execution": "validated",
+      "modelInvoked": true,
+      "repairAttempts": 0,
+      "replyChars": 36,
+      "replyNumbers": [],
+      "durationMs": 7910
+    },
+    {
+      "question": "我的骑行能力怎么样？",
+      "expectedRoute": "capability_gap",
+      "run": 1,
+      "routedBy": "classifier",
+      "finalRoute": "capability_gap",
+      "routeOk": true,
+      "execution": "template",
+      "modelInvoked": false,
+      "repairAttempts": 0,
+      "replyChars": 84,
+      "replyNumbers": [
+        30
+      ],
+      "durationMs": 4195
+    },
+    {
+      "question": "我的骑行能力怎么样？",
+      "expectedRoute": "capability_gap",
+      "run": 2,
+      "routedBy": "classifier",
+      "finalRoute": "capability_gap",
+      "routeOk": true,
+      "execution": "template",
+      "modelInvoked": false,
+      "repairAttempts": 0,
+      "replyChars": 84,
+      "replyNumbers": [
+        30
+      ],
+      "durationMs": 3833
+    },
+    {
+      "question": "我的骑行能力怎么样？",
+      "expectedRoute": "capability_gap",
+      "run": 3,
+      "routedBy": "classifier",
+      "finalRoute": "capability_gap",
+      "routeOk": true,
+      "execution": "template",
+      "modelInvoked": false,
+      "repairAttempts": 0,
+      "replyChars": 84,
+      "replyNumbers": [
+        30
+      ],
+      "durationMs": 3101
+    },
+    {
+      "question": "我的骑行能力怎么样？",
+      "expectedRoute": "capability_gap",
+      "run": 4,
+      "routedBy": "classifier",
+      "finalRoute": "capability_gap",
+      "routeOk": true,
+      "execution": "template",
+      "modelInvoked": false,
+      "repairAttempts": 0,
+      "replyChars": 84,
+      "replyNumbers": [
+        30
+      ],
+      "durationMs": 4039
+    },
+    {
+      "question": "我的骑行能力怎么样？",
+      "expectedRoute": "capability_gap",
+      "run": 5,
+      "routedBy": "classifier",
+      "finalRoute": "capability_gap",
+      "routeOk": true,
+      "execution": "template",
+      "modelInvoked": false,
+      "repairAttempts": 0,
+      "replyChars": 84,
+      "replyNumbers": [
+        30
+      ],
+      "durationMs": 3153
+    },
+    {
+      "question": "我的骑行能力怎么样？",
+      "expectedRoute": "capability_gap",
+      "run": 6,
+      "routedBy": "classifier",
+      "finalRoute": "capability_gap",
+      "routeOk": true,
+      "execution": "template",
+      "modelInvoked": false,
+      "repairAttempts": 0,
+      "replyChars": 84,
+      "replyNumbers": [
+        30
+      ],
+      "durationMs": 3134
+    },
+    {
+      "question": "我的骑行能力怎么样？",
+      "expectedRoute": "capability_gap",
+      "run": 7,
+      "routedBy": "classifier",
+      "finalRoute": "capability_gap",
+      "routeOk": true,
+      "execution": "template",
+      "modelInvoked": false,
+      "repairAttempts": 0,
+      "replyChars": 84,
+      "replyNumbers": [
+        30
+      ],
+      "durationMs": 4353
+    },
+    {
+      "question": "我的骑行能力怎么样？",
+      "expectedRoute": "capability_gap",
+      "run": 8,
+      "routedBy": "classifier",
+      "finalRoute": "capability_gap",
+      "routeOk": true,
+      "execution": "template",
+      "modelInvoked": false,
+      "repairAttempts": 0,
+      "replyChars": 84,
+      "replyNumbers": [
+        30
+      ],
+      "durationMs": 4455
+    },
+    {
+      "question": "我的骑行能力怎么样？",
+      "expectedRoute": "capability_gap",
+      "run": 9,
+      "routedBy": "classifier",
+      "finalRoute": "capability_gap",
+      "routeOk": true,
+      "execution": "template",
+      "modelInvoked": false,
+      "repairAttempts": 0,
+      "replyChars": 84,
+      "replyNumbers": [
+        30
+      ],
+      "durationMs": 3846
+    },
+    {
+      "question": "我的骑行能力怎么样？",
+      "expectedRoute": "capability_gap",
+      "run": 10,
+      "routedBy": "classifier",
+      "finalRoute": "capability_gap",
+      "routeOk": true,
+      "execution": "template",
+      "modelInvoked": false,
+      "repairAttempts": 0,
+      "replyChars": 84,
+      "replyNumbers": [
+        30
+      ],
+      "durationMs": 4115
+    },
+    {
+      "question": "这次比上一次骑得远了吗？",
+      "expectedRoute": "history_compare",
+      "run": 1,
+      "routedBy": "classifier",
+      "finalRoute": "history_compare",
+      "routeOk": true,
+      "execution": "template",
+      "modelInvoked": false,
+      "repairAttempts": 0,
+      "fallbackCode": "TOOLS_ANCHOR_CLARIFY",
+      "replyChars": 42,
+      "replyNumbers": [
+        8,
+        20
+      ],
+      "durationMs": 4949
+    },
+    {
+      "question": "这次比上一次骑得远了吗？",
+      "expectedRoute": "history_compare",
+      "run": 2,
+      "routedBy": "classifier",
+      "finalRoute": "history_compare",
+      "routeOk": true,
+      "execution": "template",
+      "modelInvoked": false,
+      "repairAttempts": 0,
+      "fallbackCode": "TOOLS_ANCHOR_CLARIFY",
+      "replyChars": 42,
+      "replyNumbers": [
+        8,
+        20
+      ],
+      "durationMs": 4593
+    },
+    {
+      "question": "这次比上一次骑得远了吗？",
+      "expectedRoute": "history_compare",
+      "run": 3,
+      "routedBy": "classifier",
+      "finalRoute": "history_compare",
+      "routeOk": true,
+      "execution": "template",
+      "modelInvoked": false,
+      "repairAttempts": 0,
+      "fallbackCode": "TOOLS_ANCHOR_CLARIFY",
+      "replyChars": 42,
+      "replyNumbers": [
+        8,
+        20
+      ],
+      "durationMs": 4520
+    },
+    {
+      "question": "这次比上一次骑得远了吗？",
+      "expectedRoute": "history_compare",
+      "run": 4,
+      "routedBy": "classifier",
+      "finalRoute": "history_compare",
+      "routeOk": true,
+      "execution": "template",
+      "modelInvoked": false,
+      "repairAttempts": 0,
+      "fallbackCode": "TOOLS_ANCHOR_CLARIFY",
+      "replyChars": 42,
+      "replyNumbers": [
+        8,
+        20
+      ],
+      "durationMs": 5139
+    },
+    {
+      "question": "这次比上一次骑得远了吗？",
+      "expectedRoute": "history_compare",
+      "run": 5,
+      "routedBy": "classifier",
+      "finalRoute": "history_compare",
+      "routeOk": true,
+      "execution": "template",
+      "modelInvoked": false,
+      "repairAttempts": 0,
+      "fallbackCode": "TOOLS_ANCHOR_CLARIFY",
+      "replyChars": 42,
+      "replyNumbers": [
+        8,
+        20
+      ],
+      "durationMs": 3190
+    },
+    {
+      "question": "这次比上一次骑得远了吗？",
+      "expectedRoute": "history_compare",
+      "run": 6,
+      "routedBy": "classifier",
+      "finalRoute": "history_compare",
+      "routeOk": true,
+      "execution": "template",
+      "modelInvoked": false,
+      "repairAttempts": 0,
+      "fallbackCode": "TOOLS_ANCHOR_CLARIFY",
+      "replyChars": 42,
+      "replyNumbers": [
+        8,
+        20
+      ],
+      "durationMs": 4813
+    },
+    {
+      "question": "这次比上一次骑得远了吗？",
+      "expectedRoute": "history_compare",
+      "run": 7,
+      "routedBy": "classifier",
+      "finalRoute": "history_compare",
+      "routeOk": true,
+      "execution": "template",
+      "modelInvoked": false,
+      "repairAttempts": 0,
+      "fallbackCode": "TOOLS_ANCHOR_CLARIFY",
+      "replyChars": 42,
+      "replyNumbers": [
+        8,
+        20
+      ],
+      "durationMs": 4784
+    },
+    {
+      "question": "这次比上一次骑得远了吗？",
+      "expectedRoute": "history_compare",
+      "run": 8,
+      "routedBy": "classifier",
+      "finalRoute": "history_compare",
+      "routeOk": true,
+      "execution": "template",
+      "modelInvoked": false,
+      "repairAttempts": 0,
+      "fallbackCode": "TOOLS_ANCHOR_CLARIFY",
+      "replyChars": 42,
+      "replyNumbers": [
+        8,
+        20
+      ],
+      "durationMs": 4391
+    },
+    {
+      "question": "这次比上一次骑得远了吗？",
+      "expectedRoute": "history_compare",
+      "run": 9,
+      "routedBy": "classifier",
+      "finalRoute": "history_compare",
+      "routeOk": true,
+      "execution": "template",
+      "modelInvoked": false,
+      "repairAttempts": 0,
+      "fallbackCode": "TOOLS_ANCHOR_CLARIFY",
+      "replyChars": 42,
+      "replyNumbers": [
+        8,
+        20
+      ],
+      "durationMs": 4724
+    },
+    {
+      "question": "这次比上一次骑得远了吗？",
+      "expectedRoute": "history_compare",
+      "run": 10,
+      "routedBy": "classifier",
+      "finalRoute": "history_compare",
+      "routeOk": true,
+      "execution": "template",
+      "modelInvoked": false,
+      "repairAttempts": 0,
+      "fallbackCode": "TOOLS_ANCHOR_CLARIFY",
+      "replyChars": 42,
+      "replyNumbers": [
+        8,
+        20
+      ],
+      "durationMs": 4860
+    },
+    {
+      "question": "我最近的骑行有进步吗？",
+      "expectedRoute": "history_compare",
+      "run": 1,
+      "routedBy": "classifier",
+      "finalRoute": "history_compare",
+      "routeOk": true,
+      "execution": "validated",
+      "modelInvoked": true,
+      "repairAttempts": 0,
+      "replyChars": 74,
+      "replyNumbers": [
+        30,
+        8,
+        19,
+        31.1,
+        139.3,
+        108.2,
+        77.7
+      ],
+      "durationMs": 8214
+    },
+    {
+      "question": "我最近的骑行有进步吗？",
+      "expectedRoute": "history_compare",
+      "run": 2,
+      "routedBy": "classifier",
+      "finalRoute": "history_compare",
+      "routeOk": true,
+      "execution": "validated",
+      "modelInvoked": true,
+      "repairAttempts": 0,
+      "replyChars": 67,
+      "replyNumbers": [
+        30,
+        8,
+        19,
+        31.1,
+        108.2,
+        77.7
+      ],
+      "durationMs": 9820
+    },
+    {
+      "question": "我最近的骑行有进步吗？",
+      "expectedRoute": "history_compare",
+      "run": 3,
+      "routedBy": "classifier",
+      "finalRoute": "history_compare",
+      "routeOk": true,
+      "execution": "validated",
+      "modelInvoked": true,
+      "repairAttempts": 0,
+      "replyChars": 62,
+      "replyNumbers": [
+        30,
+        8,
+        19,
+        108.2,
+        77.7
+      ],
+      "durationMs": 8496
+    },
+    {
+      "question": "我最近的骑行有进步吗？",
+      "expectedRoute": "history_compare",
+      "run": 4,
+      "routedBy": "classifier",
+      "finalRoute": "history_compare",
+      "routeOk": true,
+      "execution": "validated",
+      "modelInvoked": true,
+      "repairAttempts": 0,
+      "replyChars": 65,
+      "replyNumbers": [
+        30,
+        8,
+        19,
+        108.2,
+        77.7
+      ],
+      "durationMs": 9187
+    },
+    {
+      "question": "我最近的骑行有进步吗？",
+      "expectedRoute": "history_compare",
+      "run": 5,
+      "routedBy": "classifier",
+      "finalRoute": "history_compare",
+      "routeOk": true,
+      "execution": "validated",
+      "modelInvoked": true,
+      "repairAttempts": 0,
+      "replyChars": 67,
+      "replyNumbers": [
+        30,
+        8,
+        19,
+        108.2,
+        77.7
+      ],
+      "durationMs": 7471
+    },
+    {
+      "question": "我最近的骑行有进步吗？",
+      "expectedRoute": "history_compare",
+      "run": 6,
+      "routedBy": "classifier",
+      "finalRoute": "history_compare",
+      "routeOk": true,
+      "execution": "validated",
+      "modelInvoked": true,
+      "repairAttempts": 0,
+      "replyChars": 61,
+      "replyNumbers": [
+        30,
+        8,
+        19,
+        108.2,
+        77.7
+      ],
+      "durationMs": 9241
+    },
+    {
+      "question": "我最近的骑行有进步吗？",
+      "expectedRoute": "history_compare",
+      "run": 7,
+      "routedBy": "classifier",
+      "finalRoute": "history_compare",
+      "routeOk": true,
+      "execution": "validated",
+      "modelInvoked": true,
+      "repairAttempts": 0,
+      "replyChars": 62,
+      "replyNumbers": [
+        30,
+        8,
+        19,
+        108.2,
+        77.7
+      ],
+      "durationMs": 7447
+    },
+    {
+      "question": "我最近的骑行有进步吗？",
+      "expectedRoute": "history_compare",
+      "run": 8,
+      "routedBy": "classifier",
+      "finalRoute": "history_compare",
+      "routeOk": true,
+      "execution": "validated",
+      "modelInvoked": true,
+      "repairAttempts": 0,
+      "replyChars": 60,
+      "replyNumbers": [
+        30,
+        8,
+        19,
+        108.2,
+        77.7
+      ],
+      "durationMs": 9124
+    },
+    {
+      "question": "我最近的骑行有进步吗？",
+      "expectedRoute": "history_compare",
+      "run": 9,
+      "routedBy": "classifier",
+      "finalRoute": "history_compare",
+      "routeOk": true,
+      "execution": "validated",
+      "modelInvoked": true,
+      "repairAttempts": 0,
+      "replyChars": 62,
+      "replyNumbers": [
+        30,
+        8,
+        19,
+        108.2,
+        77.7
+      ],
+      "durationMs": 9660
+    },
+    {
+      "question": "我最近的骑行有进步吗？",
+      "expectedRoute": "history_compare",
+      "run": 10,
+      "routedBy": "classifier",
+      "finalRoute": "history_compare",
+      "routeOk": true,
+      "execution": "validated",
+      "modelInvoked": true,
+      "repairAttempts": 0,
+      "replyChars": 62,
+      "replyNumbers": [
+        30,
+        8,
+        19,
+        108.2,
+        77.7
+      ],
+      "durationMs": 8957
+    }
+  ]
+}

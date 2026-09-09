@@ -52,7 +52,7 @@ flowchart LR
 |---|---|---|
 | `chat_output` | String 或 Object | LLM 节点完整输出（JSON 文本，或 JSON 输出模式下解析后的对象） |
 
-`chat_output` 必须承载完整的五字段输出，而不是拆分后的多个字段。两种形态服务端适配器均可归一化：String 形态值为完整 JSON 文本；Object 形态（LLM 节点 JSON 输出模式整体引用，当前已发布 `v0.0.2` 即此形态）对象本身即五字段结构、首字段为 `schemaVersion`。归一化后服务端仍执行完整 Schema 校验，扣子侧结构不改变任何校验或安全边界。可用 [`coze/ride-chat-output-v0.1-example.json`](ride-chat-output-v0.1-example.json) 检查结构。
+`chat_output` 必须承载完整的五字段输出，而不是拆分后的多个字段。两种形态服务端适配器均可归一化：String 形态值为完整 JSON 文本；Object 形态（LLM 节点 JSON 输出模式整体引用，当前已发布 `v0.0.4` 即此形态，Prompt `ride-chat-prompt-v0.1.5`）对象本身即五字段结构、首字段为 `schemaVersion`。归一化后服务端仍执行完整 Schema 校验，扣子侧结构不改变任何校验或安全边界。可用 [`coze/ride-chat-output-v0.1-example.json`](ride-chat-output-v0.1-example.json) 检查结构。
 
 ```json
 {

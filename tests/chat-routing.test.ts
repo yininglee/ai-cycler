@@ -56,12 +56,18 @@ test("ride identity questions route to the deterministic aggregate path (G-IDENT
 
 test("long-term capability questions route to capability_gap while comparison questions moved to history_compare", () => {
   // 水平评估主体是“能力/水平”（M4 冻结），先于历史比较路由。
-  for (const text of ["我的能力水平最近有进步吗？", "我最近的骑行水平和上个月相比有提升吗？"]) {
+  for (const text of ["我的能力水平最近有进步吗？"]) {
     const decision = classifyChatInput(text);
     assert.deepEqual({ route: decision.route, allowModel: decision.allowModel, action: decision.action }, {
       route: "capability_gap", allowModel: false, action: "deterministic_reply",
     }, text);
   }
+  // M3 收口（固定集 v0.5，2026-09-10）：“骑行水平 + 和上个月相比”含显式比较指涉，
+  // 与分类器标注集口径（CLS-BLIND-09）一致迁入 history_compare，由 compare_rides 工具承接。
+  const migrated = classifyChatInput("我最近的骑行水平和上个月相比有提升吗？");
+  assert.deepEqual({ route: migrated.route, allowModel: migrated.allowModel, action: migrated.action }, {
+    route: "history_compare", allowModel: true, action: "tool_then_model",
+  });
   // CHAT-13 拆分：比较问法（对比/比上次/进步）迁入 history_compare，由 compare_rides 工具承接。
   assert.equal(classifyChatInput("帮我对比一下这两次骑行").route, "history_compare");
   // 能力清单问法仍走 capabilities 工具

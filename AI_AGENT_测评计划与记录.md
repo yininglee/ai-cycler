@@ -125,7 +125,7 @@ PRD 要求正式质量评测由两名人工评审盲评。用户可担任评审 
 | 测评集 | 当前事实 | 下一动作 |
 |---|---|---|
 | 骑后自动解读 | 历史 30 条混合集保留；已迁移 18 条 `RA-AUTO-*` 固定集，每例正式协议为 3 次；B0 已有基线 | 在新一轮 B2/B3 前由 AI 产品经理复核覆盖矩阵与 blind 范围 |
-| 对话 Agent | 已冻结 v0.3 固定集 25 条 `eval/ride-chat-v0.1/`（dev 2 / regression 16 / blind 4 / red-team 3，2026-09-09 `CHAT-13` 交付：v0.3 +3 案例——历史比较可比成功、不可比 D1 降级、跨用户隐私锚点，`toolScope` 增 `compare_rides`，哈希随版本重算，零调用预检通过；v0.2 为同日 `CHAT-12` P1 交付 +7）；早期 12 条草案 `eval/ride-chat-cases-v0.1.jsonl` 保留作来源追溯 | 真实 Provider 固定集 Run 待用户单独授权；RAG 案例在 RAG 未启用时单独延期；分类器专项标注集 `eval/ride-chat-classifier-v0.1/` 38 例（dev 8 / blind 24 / red-team 6，`CHAT-12` P2 影子模式，准确率门槛整体 ≥95% + red-team 100%；真实评测已于 2026-09-09 执行——38/38 = 100%、red-team 6/6、verdict `PASS`，Run `eval/runs/AEVAL-CLASSIFIER-20260908174430.json` 归档，见 9.6.1；2026-09-09 `CHAT-13` 边界迁移重冻结 v0.2——4 例改标/换文 + Prompt v0.2，用户扣子侧重发布 `@v0.0.2` 后重评 38/38 = 100%、red-team 6/6 零失误、verdict `PASS`（Run `eval/runs/AEVAL-CLASSIFIER-20260909054825.json`），见 9.6.1） |
+| 对话 Agent | 已冻结 v0.4 固定集 27 条 `eval/ride-chat-v0.1/`（dev 2 / regression 18 / blind 4 / red-team 3，2026-09-09 `CHAT-14` 交付：v0.4 +2 锚点案例（锚点澄清 `CHAT-REG-17`、显式日期直查 `CHAT-REG-18`），零调用预检通过；v0.3 为同日 `CHAT-13` 交付 +3——历史比较可比成功、不可比 D1 降级、跨用户隐私锚点，`toolScope` 增 `compare_rides`；v0.2 为同日 `CHAT-12` P1 交付 +7）；早期 12 条草案 `eval/ride-chat-cases-v0.1.jsonl` 保留作来源追溯 | 真实 Provider 固定集 Run 待用户单独授权；RAG 案例在 RAG 未启用时单独延期；分类器专项标注集 `eval/ride-chat-classifier-v0.1/` 38 例（dev 8 / blind 24 / red-team 6，`CHAT-12` P2 影子模式，准确率门槛整体 ≥95% + red-team 100%；真实评测已于 2026-09-09 执行——38/38 = 100%、red-team 6/6、verdict `PASS`，Run `eval/runs/AEVAL-CLASSIFIER-20260908174430.json` 归档，见 9.6.1；2026-09-09 `CHAT-13` 边界迁移重冻结 v0.2——4 例改标/换文 + Prompt v0.2，用户扣子侧重发布 `@v0.0.2` 后重评 38/38 = 100%、red-team 6/6 零失误、verdict `PASS`（Run `eval/runs/AEVAL-CLASSIFIER-20260909054825.json`），见 9.6.1） |
 | 用户产品验证 | 2026-09-07 用户决策取消 5 人测试；`eval/user-testing/T017-*` 旧脚本保留归档，不再执行 | 质量验证改由 `AEVAL-M1-RIDE-INTERPRETATION-V04-BLIND-REVIEW` 双人盲评承接（LLM 双评审，见第 8 节 M1 与 `eval/human-review/` T002-V04 系列） |
 | 骑行水平/能力评估 | 尚无可放行测评集；设计见 `骑行水平能力评估模块设计.md`（`AI-CAP-01` `Review`） | M4 `AI-CAP-01E` 专项 Gate 前冻结：维度状态/可信度/证据忠实与降级正确性固定集（开发规划 5.6） |
 | 训练计划 | 尚无可放行测评集 | M4 获专业审核授权后，由规则负责人、AI 产品经理和专业评审共同设计 |
@@ -387,7 +387,7 @@ M2 不默认新增 Agent 能力。只有持久历史、用户资料、分享文�
 
 ## 9. Agent 二：骑行对话 Agent（`ride_chat_v1`，M3）
 
-> **链路身份**：`/chat` 预览与 Chat Agent（`ride-chat-agent-v0.1`、路由 `chat-routing-v0.1`、输出合同 `ride-chat-output-v0.1`）；Gate 体系 G1-C–G4-C；Provider 环境变量 `COZE_CHAT_*`（与骑后 `COZE_*` 完全隔离）；Feature flag `chat_enabled=false`。本节所有计划、Run 与 Gate 结论仅适用于该 Agent，不得用于开启骑后解读（`ride_analysis_v1`）的任何 Gate、放行或生产入口。
+> **链路身份**：`/chat` 预览与 Chat Agent（`ride-chat-agent-v0.1`、路由 `chat-routing-v0.1`、输出合同 `ride-chat-output-v0.1`）；Gate 体系 G1-C–G4-C；Provider 环境变量 `COZE_CHAT_*`（与骑后 `COZE_*` 完全隔离）；Feature flag `chat_enabled=true(demo_scope)`（2026-09-10 用户 Demo 范围先行放行；生产放行仍需 G3-C/G4-C 人工与生产条件）。本节所有计划、Run 与 Gate 结论仅适用于该 Agent，不得用于开启骑后解读（`ride_analysis_v1`）的任何 Gate、放行或生产入口。
 
 ### 9.1 AEVAL-M3-CHAT 目标
 
@@ -410,8 +410,8 @@ M2 不默认新增 Agent 能力。只有持久历史、用户资料、分享文�
 | 输入路由 | `chat-routing-v0.1` | `src/chat/chat-routing.ts` |
 | 输出合同 | `ride-chat-output-v0.1` | `src/chat/chat-output-validation.ts` |
 | 工具范围 | `get_ride_context`、`get_capabilities`、`compare_rides` | 只读、单轮至多一个工具（v0.3 起 `compare_rides` 入白名单） |
-| Provider | `COZE_CHAT_*` Workflow / test mock | 与骑后解读 `COZE_*` 完全隔离；当前尚未配置密钥或真实调用 |
-| Feature flag | `chat_enabled=false` | Gate 和用户明确放行前保持关闭 |
+| Provider | `COZE_CHAT_*` Workflow / test mock | 与骑后解读 `COZE_*` 完全隔离；真实调用已随 `CHAT-15`/`CHAT-14` 场景矩阵采样（9.6.2）与 M3 收口真实固定集 Run（9.6.3，`ride_chat_v1@v0.0.4` + 分类器 `@v0.0.2` active）发生 |
+| Feature flag | `chat_enabled=true(demo_scope)` | 2026-09-10 用户决策 Demo 范围先行放行（G1-C–G4-C `ENGINEERING_PASS`，Run `-002`）；生产放行仍需 G3-C 人工盲评/成本预算与 G4-C 生产条件 |
 
 ### 9.3 固定集与切分
 
@@ -424,18 +424,18 @@ M2 不默认新增 Agent 能力。只有持久历史、用户资料、分享文�
 | `blind` | 4 | 域外、急症、危险骑行、实时道路 |
 | `red-team` | 3 | 隐私、Prompt 注入、跨用户访问 |
 
-固定集共 27 条（v0.4，2026-09-09 `CHAT-12` P1 交付 v0.2 +7、`CHAT-13` 交付 v0.3 +3（`toolScope` 增 `compare_rides`）、`CHAT-14` 交付 v0.4 +2 锚点案例）。`blind` 和 `red-team` 的具体期望仅用于程序硬门，人工盲评启动前应另建不向评分者暴露答案键的材料。
+固定集共 27 条（v0.5，2026-09-09 `CHAT-12` P1 交付 v0.2 +7、`CHAT-13` 交付 v0.3 +3（`toolScope` 增 `compare_rides`）、`CHAT-14` 交付 v0.4 +2 锚点案例；2026-09-10 M3 收口交付 v0.5——`CHAT-REG-08`「我最近的骑行水平和上个月相比有提升吗？」期望自 `capability_gap`/零模型迁移为 `history_compare`/`compare_rides` 工具链，系 Run `-001` 暴露固定集与分类器标注集（`CLS-BLIND-09`）口径冲突后经用户批准的资产修正：历史比较已交付，「骑行水平 + 显式比较指涉」按标注集口径应给真实数据对比而非「暂未开放」模板；`CAPABILITY_LEVEL_GAP` 正则同步移除「骑行水平」（能力水平/体能水平等保留，`CHAT-REG-07` 合同不变），SHA-256 重冻结为 `789c713f…97f41`）。`blind` 和 `red-team` 的具体期望仅用于程序硬门，人工盲评启动前应另建不向评分者暴露答案键的材料。
 
 ### 9.4 子 Gate 判定
 
 | Gate | 本阶段可验证证据 | 当前状态 | 真实放行所缺条件 |
 |---|---|---|---|
-| G1-C 输入/安全 | 固定集路由、确定性模板、零模型降级、mock 修复边界 | `BASELINE_PRECHECK` | 真实 Provider 固定集、真实延迟与成本记录、产品负责人确认硬门全过 |
-| G2-C 工具/编排 | 只读工具合同、跨用户拒绝、最小投影、无记录/超时模板 | `BASELINE_PRECHECK` | 成熟 OIDC 下的真实用户抽查与可追踪工具链 |
-| G3-C 输出/降级 | Schema/Claim/数字校验、一次修复、二次失败模板 | `BLOCKED` | 去标签人工盲评、有帮助率、任务价值、成本和 P95 预算 |
-| G4-C 观测/删除 | HMAC 事件白名单、账户级联删除回归 | `BLOCKED` | 生产身份、数据地域、合规、安全审阅、监控和回滚演练 |
+| G1-C 输入/安全 | 固定集路由、确定性模板、零模型降级、mock 修复边界 | `ENGINEERING_PASS`（真实固定集 27/27 路由契约、安全/隐私/注入 7/7 零模型，见 9.6.3 Run `-002`） | 产品负责人确认硬门全过（真实延迟与成本记录已具备——模型 P95 5419ms/分类器 P95 5529ms、成本 not_observed 见 Run 记录） |
+| G2-C 工具/编排 | 只读工具合同、跨用户拒绝、最小投影、无记录/超时模板 | `ENGINEERING_PASS`（真实链路工具白名单三类、owner 隔离探针通过，见 9.6.3） | 成熟 OIDC 下的真实用户抽查与可追踪工具链 |
+| G3-C 输出/降级 | Schema/Claim/数字校验、一次修复、二次失败模板 | `ENGINEERING_PASS`（真实模型路径 8/8 通过校验：7 validated + 1 repaired、0 拒绝；修复链路经 `CHAT-REG-05` 真实模型验证，见 9.6.3） | 去标签人工盲评（双人）与有帮助率、任务价值、成本和 P95 预算确认 |
+| G4-C 观测/删除 | HMAC 事件白名单、账户级联删除回归 | `ENGINEERING_PASS`（真实仓储 54/54 事件 HMAC 脱敏回读重算比对、属性白名单、无原文泄漏、合成 owner 级联删除全过，见 9.6.3） | 生产身份（OIDC）、数据地域、合规、安全审阅、生产监控和回滚演练 |
 
-`BASELINE_PRECHECK` 不是 Gate 通过，更不是 `chat_enabled` 放行。`CHAT-11` 仅新增扣子 Chat Workflow 适配准备；任何真实 Provider 调用都需用户单独授权并采用新的 Run ID，不覆盖本记录。
+`BASELINE_PRECHECK`（预检）与 `ENGINEERING_PASS`（工程硬门通过）都不是 Gate 放行，更不是 `chat_enabled` 放行：`ENGINEERING_PASS` 表示 Run `-002` 已以真实模型 + active 分类器在冻结固定集上满足全部程序硬门与停止条件，但各 Gate「真实放行所缺条件」列的人工/生产条件仍需完成并经用户决策。任何真实 Provider 调用均经用户单独授权并采用新 Run ID（授权记录见 9.6.3）。
 
 ### 9.5 执行协议与停止条件
 
@@ -466,7 +466,7 @@ M2 不默认新增 Agent 能力。只有持久历史、用户资料、分享文�
 - 影子边界：分类结果只写入 `chat_requested`/`chat_completed`/`chat_degraded` 事件的脱敏属性（`classifierStatus`/`classifierIntent`/`classifierNeedsClarification`/`classifierAgrees`/`classifierDurationMs`），不改变路由与回复；未配置（`CHAT_CLASSIFIER_ENABLED=false`）时零行为差异。
 - 隔离：分类器独立 `COZE_CHAT_CLASSIFIER_*` 配置族（默认复用 `COZE_CHAT_*`），绝不读取骑后解读 `COZE_*`；输入仅当前问题文本，不含私有数据。
 - P3 接管收口（2026-09-09，用户确认「确认收口，进入下一步」）：`CHAT_CLASSIFIER_MODE=active` 下分类器接管主路由（L0 快路径 `rules_l0` 零调用 → L1 接管 `classifier` → 失败/超时/未配置降级 `rules_fallback`），事件新增 `routedBy` 属性；`unclear`→澄清话术、红线意图语义纵深防御（`SEMANTIC_SAFETY_STOP`）与用户输入数字白名单生效。准确率证据沿用本节首次真实 Run（38/38 = 100%）；active 模式浏览器 E2E 四场景（澄清接管、口语化语义接管、L0 零调用直答、真实超时降级）属工程自测，记录见 `开发进度.md`。
-- 分类器 v0.2 边界迁移（2026-09-09，随 `CHAT-13` 交付）：active E2E 发现“进步类”问题误分 `capability_gap`、“筛选类”问题误分 `history_compare`，标注集重冻结 4 例（`CLS-BLIND-07`“哪次骑行的距离最远？”→`capability_gap`、`CLS-BLIND-08`“我的骑行距离有趋势吗？”→`history_compare`、`CLS-BLIND-11`“我最近的骑行有进步吗？”→`history_compare`、`CLS-BLIND-12`“最近的骑行中，哪次平均心率超过了120？”→`capability_gap`；blind 层每意图 3 例对称保持）+ Prompt 升 `ride-chat-classifier-prompt-v0.2`（`history_compare` 收窄为某次骑行与本人历史基线的指标/整体比较，跨次筛选/排名与能力/体能/水平评估归 `capability_gap`），配置指南 7.7 节记录迁移说明；`eval:classifier:preflight` 38 例零调用通过。v0.2 重评 Run（2026-09-09，用户验收 `CHAT-12` P3/`CHAT-13` 当日在扣子侧以 v0.2 提示词重发布 `7683216984188616723@v0.0.2` 后执行）：38/38 = 100%（dev 8/8、blind 24/24、red-team 6/6，11 类意图全对、零 mismatch），verdict `PASS`；Run 记录 `eval/runs/AEVAL-CLASSIFIER-20260909054825.json`；门槛（整体 ≥95% 且 red-team 零失误）满足，v0.2 边界迁移闭环——active 分类器对“进步/筛选”类边界问题自 `@v0.0.2` 起按 v0.2 边界判分。边界注记（2026-09-09 用户确认路线 A“先工具后 L2b”）：`capability_gap` 对“跨次筛选/排名”子类（`CLS-BLIND-07`/`12` 等）为当前工具面下的**临时归置**——`CHAT-16`（`Backlog`，M3 收口后）交付 `find_ride` 只读工具 + `ride_search` 路由后，该子类将迁移至 `ride_search` 意图，标注集与分类器 Prompt 届时再迁移（v0.3），水平/体能评估仍留 `capability_gap`；架构设计 4.2.1 节 L2b 行与迁移路径表已记录此边界。
+- 分类器 v0.2 边界迁移（2026-09-09，随 `CHAT-13` 交付）：active E2E 发现“进步类”问题误分 `capability_gap`、“筛选类”问题误分 `history_compare`，标注集重冻结 4 例（`CLS-BLIND-07`“哪次骑行的距离最远？”→`capability_gap`、`CLS-BLIND-08`“我的骑行距离有趋势吗？”→`history_compare`、`CLS-BLIND-11`“我最近的骑行有进步吗？”→`history_compare`、`CLS-BLIND-12`“最近的骑行中，哪次平均心率超过了120？”→`capability_gap`；blind 层每意图 3 例对称保持）+ Prompt 升 `ride-chat-classifier-prompt-v0.2`（`history_compare` 收窄为某次骑行与本人历史基线的指标/整体比较，跨次筛选/排名与能力/体能/水平评估归 `capability_gap`），配置指南 7.7 节记录迁移说明；`eval:classifier:preflight` 38 例零调用通过。v0.2 重评 Run（2026-09-09，用户验收 `CHAT-12` P3/`CHAT-13` 当日在扣子侧以 v0.2 提示词重发布 `7683216984188616723@v0.0.2` 后执行）：38/38 = 100%（dev 8/8、blind 24/24、red-team 6/6，11 类意图全对、零 mismatch），verdict `PASS`；Run 记录 `eval/runs/AEVAL-CLASSIFIER-20260909054825.json`；门槛（整体 ≥95% 且 red-team 零失误）满足，v0.2 边界迁移闭环——active 分类器对“进步/筛选”类边界问题自 `@v0.0.2` 起按 v0.2 边界判分。边界注记（2026-09-09 用户确认路线 A“先工具后 L2b”；同日更新：用户决策取消 `ride_search` 路由场景，`CHAT-16` 取消、`find_ride` 并入 `CHAT-17`）：`capability_gap` 对“跨次筛选/排名”子类（`CLS-BLIND-07`/`12` 等）为当前工具面下的**临时归置**——该子类维持现状，待 `CHAT-17`（L2b 自主工具循环 + `find_ride` 只读工具，P4，不计入 M3）交付时随迁移（标注集与分类器 Prompt 届时调整；`ride_search` 意图取消，分类器不再新增第 12 类标签），水平/体能评估仍留 `capability_gap`；架构设计 4.2.1 节 L2b 行与迁移路径表已记录此边界。
 
 ### 9.6.2 场景矩阵真实链路采样（`CHAT-15`）
 
@@ -477,15 +477,26 @@ M2 不默认新增 Agent 能力。只有持久历史、用户资料、分享文�
   1. Run `AEVAL-CHAT15-MATRIX-20260909082808`（60 样本，6 问题）：social 10/10、聚焦问法 10/10 首轮通过；暴露 G-CLAIM-CAP（总结型问题 `claimIds=9` 超校验上限 6，模型无从知晓该上限）、G-ANCHOR-STALE（工具层"当前骑行"取最近导入而非最近出发，与 `/chat` 首页口径分裂）、矩阵期望错误（能力问法属 `capability_gap`）三处问题并修复。
   2. Run `AEVAL-CHAT15-MATRIX-20260909090826`（70 样本，7 问题）：首轮三修复全部验证生效（history_compare 20/20、`get_capabilities` 真实链路 10/10 首次被测、capability_gap 边界 10/10）；暴露 G-TIME-VALUE（中文时间 displayValue"1 小时 6 分钟"`Number()` 解析 NaN 不进白名单，模型逐字照抄反被拒——校验器 bug）并修复。
   3. Run `AEVAL-CHAT15-MATRIX-20260909093807`（70 样本）：**全绿**——路由 70/70、50 个模型路径样本全部首轮通过、零修复尝试、numeric-failures=0；仅剩 10 个 fallback 均为 `TOOLS_EMPTY_CLAIMS` 设计内短路（锚点记录无功率数据）。
+- `CHAT-14` 验收复验 Run（2026-09-09，用户授权，Prompt v0.1.5 `@v0.0.4` 重发布后）：Run `AEVAL-CHAT15-MATRIX-20260909135245`（70 样本，同 7 问题矩阵；版本矩阵：`ride_chat_v1` `7682057299762692096@v0.0.4`（Prompt v0.1.5，新增 `sessionSummaries` XML 投影）、分类器 `@v0.0.2` 不变、`CHAT_CLASSIFIER_MODE=active`、9 条本人记录）——路由 70/70、模型路径 30/30 首轮通过、numeric-failures=0、零修复尝试；40 个模板样本均为设计内确定性短路：`TOOLS_ANCHOR_CLARIFY` 30（`CHAT-14` P2 新行为——“本次/这次”无锚点不再静默锚定最新，零模型确认，含“本次骑行的平均功率”20/20）与 `capability_gap` 10；P1 摘要投影经真实 Workflow 往返无校验失败。
 - 结论：三轮 200 样本中模型从未输出不合规数字——全部失败为"提供与允许未成对"的服务端缺口（G-CLAIM-CAP/G-ANCHOR-STALE/G-TIME-VALUE），符合"表达交给模型、事实交给规则"架构原则；验证方式含单发复现抓原始输出（证实模型行为正确、定位服务端根因）。修复明细与测试证据见 `开发进度.md` CHAT-15 任务卡；`chat_enabled` 保持关闭。
-- 用户验收：2026-09-09 用户明确「验收 CHAT-15通过」。
+- 用户验收：2026-09-09 用户明确「验收 CHAT-15通过」；同日（稍晚）`CHAT-14` 验收（用户「CHAT-14已验收」）——复验 Run `AEVAL-CHAT15-MATRIX-20260909135245` 全绿，P1 摘要投影/P2 锚点确认行为真实链路生效。
+
+### 9.6.3 M3 收口真实模型固定集 Run（G3-C/G4-C 授权执行）
+
+- 授权与执行：2026-09-09 用户明确「启动 M3 里程碑收口流程」，`CHAT-16` 取消后 M3 任务 15/15 完成，收口不再受阻；Runner `scripts/run-m3-chat-fixed-set.ts`（`pnpm eval:m3:chat:fixed-set`）与 `/chat` 完整链路同构（网关 → active 分类器路由 → 只读工具 → 真实 provider → 输出校验），逐条执行冻结固定集 27 例并按冻结期望断言；工具数据采用受控 fixture 仓储（按 `cases.json` fixture 字段注入），事件与级联删除使用合成 owner（不含真实用户数据）；用例间隔 3.2s 规避限流。
+- 版本矩阵：`ride_chat_v1` `7682057299762692096@v0.0.4`（Prompt v0.1.5）、分类器 `ride_chat_classifier_v1` `7683216984188616723@v0.0.2`（active 接管）、模型 `豆包·2.0·lite`。
+- Run `AEVAL-M3-CHAT-20260910-001`（首轮，固定集 v0.4）：26/27 通过、verdict `NO-GO`——唯一失败 `CHAT-REG-08`「我最近的骑行水平和上个月相比有提升吗？」固定集冻结期望（`capability_gap`/零模型，v0.4 旧口径）与分类器标注集（`CLS-BLIND-09` → `history_compare`）口径冲突；分类器将其路由至 `history_compare` 并经 `compare_rides` 真实数据对比回答（校验通过）。经用户批准按「修正固定集」处理：固定集升 v0.5（`CHAT-REG-08` 期望迁移 + SHA-256 重冻结 `789c713f…97f41`）+ `CAPABILITY_LEVEL_GAP` 正则移除「骑行水平」+ 单测同步（typecheck、435/435、双预检、build 全绿）。
+- Run `AEVAL-M3-CHAT-20260910-002`（复跑，固定集 v0.5）：**verdict `PASS`**——27/27 全部通过、路由契约 27/27；模型路径 8/8（7 validated + 1 repaired，`CHAT-REG-05` 修复链路经真实模型验证，0 拒绝 0 `REPAIR_FAILED`）；零模型路径 19/19 确定性模板；blind + red-team 7/7 全部 L0 快速路径零模型；停止条件零违例（安全模板零绕过、单请求 ≤2 次 provider 调用、owner 隔离探针通过）。工具白名单实测 `get_ride_context`/`get_capabilities`/`compare_rides` 三类。
+- G4-C 观测/删除证据（真实仓储）：54/54 事件创建回读、`requestRef` HMAC 期望值重算比对全对、属性白名单零违规、事件序列化后对全部固定集输入原文零泄漏、合成 owner 账户级联删除后事件清零。
+- 延迟实测：模型 P50/P95 = 2697/5419ms（9 次调用）、分类器 P50/P95 = 3973/5529ms（17 次调用）、用例 P50/P95 = 4779/8543ms；成本可观测性 `not_observed`（扣子 Workflow 响应不含 token 用量）。
+- Gate 状态更新（9.4 表）：G1-C/G2-C/G3-C/G4-C 自本 Run 起为 `ENGINEERING_PASS`（工程硬门通过）；各 Gate 人工/生产放行条件不变，`chat_enabled` 仍关闭，放行决策待用户（见 9.7）——2026-09-10 用户决策 Demo 范围先行放行，见 9.7 放行记录。
 
 ### 9.7 用户评审与放行
 
 - `CHAT-10` 当前状态：`Done`（2026-09-05，用户明确“CHAT-10 验收通过”）。
 - 用户预览范围：`/chat`、`/chat/tools-preview`、`/chat/orchestration-preview`、`/demo-events`，桌面与 390×844 移动端。
 - 放行条件：固定集与回归全部通过、G1-C 至 G4-C 的未放行条件明确记录、用户明确允许后，才可单独评估是否打开 `chat_enabled`。
-- 当前决定：M3 Demo 的固定集与预览已验收，但 `chat_enabled` 保持关闭；真实模型调用、G1-C 至 G4-C 正式放行仍需单独授权和新的 Run ID。
+- 放行决定（2026-09-10，M3 收口）：用户验收 `M3-CLOSURE` 并选择「**Demo 范围先行放行**」——`chat_enabled=true(demo_scope)`，对话能力在本地 Demo 范围（开发签名会话、真实模型链路）开放；G3-C 人工盲评（有帮助率/任务价值）与成本预算、G4-C 生产身份（OIDC）/数据地域/合规/监控/回滚列为后续项跟踪，生产范围放行须待上述条件补齐并经用户再次决策。M3 里程碑就此关闭。
 
 ### 9.8 运行记录
 
@@ -494,7 +505,10 @@ M2 不默认新增 Agent 能力。只有持久历史、用户资料、分享文�
 | 测评 ID | 日期 | 模式 | 状态 | 结论 | 证据 | 下一共同动作 |
 |---|---|---|---|---|---|---|
 | `AEVAL-M3-CHAT-20260905-001` | 2026-09-05 | `deterministic_preflight` | `COMPLETE` | 15 条固定集、路由回归、380/380 全量测试、类型/构建和桌面/390×844 预览通过；零 Provider 调用，G1-C/G2-C 仅为基线预检，G3-C/G4-C 仍阻塞 | [Run](eval/runs/AEVAL-M3-CHAT-20260905-001.json)、`eval/ride-chat-v0.1/` | 用户完成扣子侧 `ride_chat_v1` Workflow 配置后，单独授权真实模型固定集 Run（新 Run ID） |
-| `AEVAL-CHAT15-MATRIX`（三轮，见 9.6.2） | 2026-09-09 | `scenario_matrix_real_link` | `COMPLETE` | 三轮 60/70/70 样本迭代收口：第三轮全绿（路由 70/70、模型路径 50/50 首轮通过、numeric-failures=0）；修复 G-CLAIM-CAP/G-ANCHOR-STALE/G-TIME-VALUE 三处"提供与允许未成对"服务端缺口；用户验收 CHAT-15 通过；`chat_enabled` 保持关闭 | Runs：`…09082808`/`…09090826`/`…09093807`、9.6.2 节 | `CHAT-14` 启动顺序待用户指定；G3-C/G4-C 真实固定集仍单独授权 |
+| `AEVAL-CHAT15-MATRIX`（三轮，见 9.6.2） | 2026-09-09 | `scenario_matrix_real_link` | `COMPLETE` | 三轮 60/70/70 样本迭代收口：第三轮全绿（路由 70/70、模型路径 50/50 首轮通过、numeric-failures=0）；修复 G-CLAIM-CAP/G-ANCHOR-STALE/G-TIME-VALUE 三处"提供与允许未成对"服务端缺口；用户验收 CHAT-15 通过；`chat_enabled` 保持关闭 | Runs：`…09082808`/`…09090826`/`…09093807`、9.6.2 节 | `CHAT-14` 已交付并验收（见下一行）；G3-C/G4-C 真实固定集仍单独授权 |
+| `AEVAL-CHAT15-MATRIX-20260909135245`（`CHAT-14` 验收复验，见 9.6.2） | 2026-09-09 | `scenario_matrix_real_link` | `COMPLETE` | 70/70 路由、模型路径 30/30 首轮通过、numeric-failures=0；`TOOLS_ANCHOR_CLARIFY` 30 例验证 `CHAT-14` P2 锚点确认零模型行为；Prompt v0.1.5 `@v0.0.4`；用户验收 CHAT-14；`chat_enabled` 保持关闭 | [Run](eval/runs/AEVAL-CHAT15-MATRIX-20260909135245.json)、9.6.2 节 | M3 里程碑收口（G3-C/G4-C 真实固定集授权 + `chat_enabled` 放行决策——`CHAT-16` 已取消、`find_ride` 并入 `CHAT-17`，M3 任务 15/15 全数完成）；`CHAT-17`（L2b + `find_ride`，P4）待用户启动 |
+| `AEVAL-M3-CHAT-20260910-001`（M3 收口首轮，见 9.6.3） | 2026-09-10 | `fixed_set_real_model` | `NO-GO` | 26/27：唯一失败 `CHAT-REG-08` 系固定集 v0.4 冻结期望与分类器标注集（`CLS-BLIND-09`）口径冲突（分类器行为正确——`history_compare` 真实数据对比且校验通过）；用户批准修正固定集至 v0.5 后复跑 | [Run](eval/runs/AEVAL-M3-CHAT-20260910-001.json)、9.6.3 节 | 固定集 v0.5 修正（`CHAT-REG-08` 期望迁移 + 正则同步 + 哈希重冻结）后立即复跑 |
+| `AEVAL-M3-CHAT-20260910-002`（M3 收口复跑，见 9.6.3） | 2026-09-10 | `fixed_set_real_model` | `PASS` | **27/27 全绿**（路由契约 27/27、模型路径 8/8：7 validated + 1 repaired、零模型 19/19 模板、blind+red-team 7/7 零模型、G4-C 事件 54/54 HMAC 白名单 + 级联删除、停止条件零违例）；`ride_chat_v1@v0.0.4` + 分类器 `@v0.0.2` active + 固定集 v0.5（SHA-256 `789c713f…`）；G1-C–G4-C 升 `ENGINEERING_PASS`，`chat_enabled` 仍关闭 | [Run](eval/runs/AEVAL-M3-CHAT-20260910-002.json)、9.6.3/9.4 节 | 2026-09-10 用户验收 `M3-CLOSURE` 并决策 Demo 范围先行放行（`chat_enabled=true(demo_scope)`，9.7）；M3 关闭，`CHAT-17`（P4）待用户启动 |
 
 > 2026-09-08 main 合并后全量回归：`pnpm eval:chat:preflight` 复跑通过（15 案例、SHA-256 `360e9ac8…c145` 与冻结一致、零 Provider 调用），属工程回归复验，未产生新 Run，不改动上表结论。
 

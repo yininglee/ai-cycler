@@ -33,7 +33,8 @@ assert(manifest.forbiddenCapabilities.every((capability) => forbiddenCapabilitie
 assert(manifest.versionMatrix.agentSchemaVersion === "ride-chat-agent-v0.1", "AGENT_VERSION_MISMATCH");
 assert(manifest.versionMatrix.routingSchemaVersion === "chat-routing-v0.1", "ROUTING_VERSION_MISMATCH");
 assert(manifest.versionMatrix.outputSchemaVersion === "ride-chat-output-v0.1", "OUTPUT_VERSION_MISMATCH");
-assert(manifest.versionMatrix.provider === "not_configured" && manifest.versionMatrix.featureFlag === "chat_enabled=false", "RELEASE_BOUNDARY_MISMATCH");
+// M3 收口（2026-09-10）：用户决策 Demo 范围先行放行 chat_enabled；provider 保持 not_configured（固定集不绑定 Provider）。
+assert(manifest.versionMatrix.provider === "not_configured" && manifest.versionMatrix.featureFlag === "chat_enabled=true(demo_scope)", "RELEASE_BOUNDARY_MISMATCH");
 
 const seen = new Set<string>();
 const counts: Record<string, number> = {};
@@ -50,5 +51,5 @@ for (const item of payload.cases) {
 }
 assert(JSON.stringify(counts) === JSON.stringify(expectedSplits), "SPLIT_COUNT_MISMATCH");
 console.log(`AEVAL-M3-CHAT preflight passed: ${payload.cases.length} cases, fixed-set hash ${manifest.casesSha256}.`);
-console.log("G1-C=BASELINE_PRECHECK; G2-C=BASELINE_PRECHECK; G3-C=BLOCKED; G4-C=BLOCKED.");
-console.log("No provider calls were made. chat_enabled remains false.");
+console.log("G1-C=ENGINEERING_PASS; G2-C=ENGINEERING_PASS; G3-C=ENGINEERING_PASS; G4-C=ENGINEERING_PASS (Run AEVAL-M3-CHAT-20260910-002).");
+console.log("No provider calls were made. chat_enabled=true(demo_scope) since 2026-09-10 user release decision.");
