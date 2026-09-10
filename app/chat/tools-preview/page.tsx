@@ -35,15 +35,20 @@ export default async function ChatToolsPreviewPage() {
         tool: "compare_rides",
         input: { rideId: latestRide.activity.rideId, metrics: [...chatComparisonMetricKeys], windowDays: CHAT_COMPARISON_WINDOW_DAYS },
       }),
+      // CHAT-17：find_ride——锚点记录确定 30 天检索窗口，返回距离最远的一次（含命中 Claims 与原因码）。
+      executeChatTool(repository, userId, {
+        tool: "find_ride",
+        input: { rideId: latestRide.activity.rideId, metric: "distanceM", mode: "max", metrics: [...chatComparisonMetricKeys], windowDays: CHAT_COMPARISON_WINDOW_DAYS },
+      }),
     ]);
   }
 
   return <main className="chat-tools-preview">
     <header className="topbar"><Brand /><Link className="step-pill" href="/chat">返回对话</Link></header>
     <section className="page-intro compact">
-      <p className="kicker">LOCAL DEMO · CHAT-02 · CHAT-13</p>
+      <p className="kicker">LOCAL DEMO · CHAT-02 · CHAT-13 · CHAT-17</p>
       <h1>只读工具检查</h1>
-      <p className="lead">只展示当前开发会话最新骑行的白名单投影。页面不调用模型，也不包含轨迹点、精确坐标、源文件名或完整用户资料。compare_rides 展示锚点与最近 {CHAT_COMPARISON_WINDOW_DAYS} 天历史基线的比较结果（含可比性与原因码）。</p>
+      <p className="lead">只展示当前开发会话最新骑行的白名单投影。页面不调用模型，也不包含轨迹点、精确坐标、源文件名或完整用户资料。compare_rides 展示锚点与最近 {CHAT_COMPARISON_WINDOW_DAYS} 天历史基线的比较结果（含可比性与原因码）；find_ride 展示同窗口内距离最远一次的检索结果（含命中 Claims 与原因码）。</p>
     </section>
     {results.length === 0
       ? <p className="chat-tool-empty">当前会话没有可检查的骑行记录，请先从骑行页导入。</p>
@@ -51,6 +56,7 @@ export default async function ChatToolsPreviewPage() {
           <ToolResult title="get_ride_context" result={results[0]} />
           <ToolResult title="get_capabilities" result={results[1]} />
           <ToolResult title="compare_rides" result={results[2]} />
+          <ToolResult title="find_ride" result={results[3]} />
         </div>}
   </main>;
 }

@@ -60,6 +60,15 @@ type LoadState =
 const responseCache = new Map<string, InterpretationResponse>();
 
 /**
+ * In-flight requests keyed by rideId. Dedupes concurrent `load()` calls —
+ * most importantly the double-invoke that React Strict Mode performs on the
+ * mount effect in development (mount → cleanup → mount), where both calls
+ * fire before either has resolved. Without this, each call would issue its
+ * own `/api/ride-analysis` POST, doubling Provider cost and latency.
+ */
+const inFlight = new Map<string, Promise<InterpretationResponse>>();
+
+/**
  * Default view shows the L6 plan's top 3 priority-ranked dimensions per
  * 骑后解读规则重构设计 §3.7 "默认展示三个维度，支持展开看到所有可解读的维度".
  * The LLM narrates all eligible dimensions up front; the cap is purely a UI
@@ -110,19 +119,30 @@ export function InterpretationView({
       return;
     }
     setState({ kind: "loading" });
+
+    // Reuse an in-flight request for the same rideId instead of firing a
+    // second POST. Covers React Strict Mode's double-mount effect and any
+    // other concurrent callers (e.g. the retry button during a pending load).
+    let pending = !force ? inFlight.get(rideId) : undefined;
+    if (!pending) {
+      pending = (async () => {
+        const response = await fetch("/api/ride-analysis", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ rideId }),
+          cache: "no-store",
+        });
+        if (!response.ok) {
+          const text = await response.text();
+          throw new Error(`REQUEST_FAILED:${response.status} ${text.slice(0, 120)}`);
+        }
+        return (await response.json()) as InterpretationResponse;
+      })();
+      inFlight.set(rideId, pending);
+    }
+
     try {
-      const response = await fetch("/api/ride-analysis", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ rideId }),
-        cache: "no-store",
-      });
-      if (!response.ok) {
-        const text = await response.text();
-        setState({ kind: "error", message: `REQUEST_FAILED:${response.status} ${text.slice(0, 120)}` });
-        return;
-      }
-      const data = (await response.json()) as InterpretationResponse;
+      const data = await pending;
       if (data.source === "b2" && data.v04Candidate) {
         responseCache.set(rideId, data);
       }
@@ -132,6 +152,12 @@ export function InterpretationView({
         kind: "error",
         message: cause instanceof Error ? cause.message : "UNKNOWN_NETWORK_ERROR",
       });
+    } finally {
+      // Only clear if it's still our promise; a forced refresh may have
+      // replaced it.
+      if (inFlight.get(rideId) === pending) {
+        inFlight.delete(rideId);
+      }
     }
   }, [rideId]);
 

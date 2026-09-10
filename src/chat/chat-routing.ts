@@ -17,7 +17,10 @@ export type ChatRoute =
   // CHAT-12 P3：unclear 意图触发澄清话术（一等路径，零模型调用）。
   | "clarification"
   // CHAT-13：历史比较——compare_rides 只读工具 + 30 天窗口历史基线（HistoricalComparisonSnapshot v0.1）。
-  | "history_compare";
+  | "history_compare"
+  // CHAT-17：L2b 自主工具循环——模型在只读工具白名单与既有预算内自行组合调用工具回答
+  // 开放/复合问题（find_ride 为首个场景）；同一 ride_chat_v1 编排循环的执行策略扩展。
+  | "autonomous_tools";
 
 // CHAT-14 P1：会话摘要网关合同（架构设计 v0.4 4.2.2 节）——白名单槽位仅含本轮问题、
 // 路由枚举与可选骑乘锚点日期；不含 assistant 回复、数值或 Claim 引用（历史轮数字不得
@@ -46,6 +49,7 @@ const CHAT_ROUTE_VALUES: readonly ChatRoute[] = [
   "injection_stop",
   "clarification",
   "history_compare",
+  "autonomous_tools",
 ];
 
 const CHAT_ROUTE_SET = new Set<string>(CHAT_ROUTE_VALUES);
@@ -133,7 +137,9 @@ export type ChatRoutingDecision = {
     | "SEMANTIC_SAFETY_STOP"
     | "CLARIFICATION_NEEDED"
     // CHAT-13：历史比较路由（compare_rides 工具承接）。
-    | "HISTORY_COMPARE";
+    | "HISTORY_COMPARE"
+    // CHAT-17：L2b 自主工具循环路由（find_ride 首场景，跨记录筛选/排名问法从 CAPABILITY_GAP 迁入）。
+    | "AUTONOMOUS_TOOLS";
   normalizedLength: number;
 };
 
@@ -154,9 +160,25 @@ const PROMPT_INJECTION = /(忽略(之前|上面|所有)?指令|忘记(之前|上
 const SOCIAL = /^(你好|嗨|哈喽|您好|谢谢|感谢|早上好|晚上好|在吗)[!！。,.，?？\s]*$/i;
 // CHAT-12 P1：长期能力与跨次比较/筛选问题属“域内但能力不足”（水平评估 M4、历史比较 CHAT-13），
 // 不进入本次骑行工具，按确定性模板回应；须置于 CAPABILITIES 之前。
-// CHAT-13 拆分：比较问法（比上次/进步/趋势等）迁入 HISTORY_COMPARE，由 compare_rides 工具承接；
-// 本正则仅保留跨次筛选/历史清单类问题（哪次/历史骑行/多次骑行）。
-const CAPABILITY_GAP = /(哪次|哪一次|哪些次|那次|那一次|历史骑行|骑行历史|多次骑行|几次骑行)/i;
+// CHAT-13 拆分：比较问法（比上次/进步/趋势等）迁入 HISTORY_COMPARE，由 compare_rides 工具承接。
+// CHAT-17 P2 迁移：跨次筛选问法（哪次/哪一次/哪些次）迁入 FIND_RIDE（autonomous_tools 路由，
+// find_ride 首场景承接）；本正则保留回指（那次/那一次）与历史清单类问法（历史骑行/多次骑行）。
+const CAPABILITY_GAP = /(那次|那一次|历史骑行|骑行历史|多次骑行|几次骑行)/i;
+// CHAT-17 P2：find_ride 筛选/排名问法（2026-09-10 CHAT-16 取消后并入 CHAT-17 作 L2b 首场景）。
+// 口径与 G-IDENTITY/G-SAFETY-FP 的共现原则一致：
+// - 极值 + 记录/指标指涉：「最远/最长/最快/最高/最大…的那次/的一次/骑行/距离」（距离最远的那次骑行）；
+// - 骑行动词 + 极值：「骑/跑/冲 + 得 + 最远/最快/最长」（骑得最快的一次是哪次）；
+// - 阈值筛选：「超过/大于/高于/多于（含 >/＞）+ 数字」（平均心率超过了120）；
+// - 「数字 + 以上」须与指标词共现（骑了50公里以上）；
+// - 筛选问法（哪次/哪一次/哪些次/哪几次）须与指标/极值/阈值词共现——裸「哪次」回指
+//   （如「你说的是哪次」）仍由 RIDE_IDENTITY/澄清路径处理，不进入检索；
+// - 单次指涉（本次/这次/当前/刚才/最新一条）伴随的阈值/极值仍是本次骑行问题，不迁入。
+const FIND_RIDE_EXTREME_TERMS = /(最远|最长|最快|最高|最大)/i;
+const FIND_RIDE_EXTREME_REFERENCE = /(最远|最长|最快|最高|最大)(的)?那?(一?次|骑行|记录|距离|里程|耗时|时间)|(骑|跑|冲)得最(远|快|长)/i;
+const FIND_RIDE_THRESHOLD = /(超过|大于|高于|多于|>|＞)[了\s]*\d+/i;
+const FIND_RIDE_ABOVE = /\d+\s*以上/i;
+const FIND_RIDE_WHICH = /(哪次|哪一次|哪些次|哪几次)/i;
+const FIND_RIDE_METRIC_TERMS = /(最远|最长|最快|最高|最大|远|快|长|距离|里程|速度|心率|功率|踏频|爬升|海拔|耗时|时间|公里|千米|卡路里|消耗)/i;
 // CHAT-13：水平评估类问题（能力水平/体能变化）的比较主体是“水平/能力”——
 // 属 M4 水平评估（冻结：不做水平结论/排名），即使伴随比较词也先于历史比较路由，
 // 保证“我的能力水平…有进步吗？”仍走能力缺口模板（固定集 CHAT-REG-07 合同）。
@@ -190,6 +212,17 @@ const AGGREGATE_WEEK = /(本周|这周|这一周)/;
 const AGGREGATE_LATEST = /(最近一次|上次|上一次|最近一条)/;
 const AGGREGATE_TIME = /(什么时候|何时|哪天|几号|日期|时间)/;
 
+// CHAT-17 P2：find_ride 问法判定（规则层）——极值/阈值独立命中即检索；筛选问法（哪次…）
+// 须与指标/极值词共现；单次指涉伴随的阈值/极值仍属本次骑行问题（current_ride 承接）。
+function isFindRideQuestion(normalized: string): boolean {
+  const singleRideReference = SINGLE_RIDE_REFERENCE.test(normalized);
+  if (FIND_RIDE_EXTREME_REFERENCE.test(normalized) && !singleRideReference) return true;
+  if (FIND_RIDE_THRESHOLD.test(normalized) && !singleRideReference) return true;
+  if (FIND_RIDE_WHICH.test(normalized) && (FIND_RIDE_EXTREME_TERMS.test(normalized) || FIND_RIDE_METRIC_TERMS.test(normalized) || FIND_RIDE_THRESHOLD.test(normalized))) return true;
+  if (FIND_RIDE_ABOVE.test(normalized) && FIND_RIDE_METRIC_TERMS.test(normalized) && !singleRideReference) return true;
+  return false;
+}
+
 function compact(text: string): string {
   return text.trim().replaceAll(/\s+/g, " ");
 }
@@ -209,7 +242,11 @@ export function makeChatDecision(
     allowModel: !deterministicOnly,
     // CHAT-13：history_compare 与 current_ride/capabilities 同属“先工具、后模型”场景；
     // 不可比时由编排层短路为 D1 确定性降级（不生成进步/退步结论）。
-    action: safety ? "safety_stop" : route === "current_ride" || route === "capabilities" || route === "history_compare" ? "tool_then_model" : "deterministic_reply",
+    // CHAT-17：autonomous_tools 为 L2b 自主工具循环（模型在只读工具白名单内自主组合调用）。
+    action: safety ? "safety_stop"
+      : route === "current_ride" || route === "capabilities" || route === "history_compare" || route === "autonomous_tools"
+        ? "tool_then_model"
+        : "deterministic_reply",
     reasonCode,
     normalizedLength,
   };
@@ -218,6 +255,8 @@ export function makeChatDecision(
 // CHAT-12 P3（架构设计 v0.4 4.2.1）：L0 规则层只拦 100% 确定红线与高置信聚合/身份快捷路径——
 // 命中即零延迟零成本直答（分类器 active 模式下不调用 L1）；未命中交给 L1 语义分类器，
 // 分类器失败/超时/限流再降级回 P1 全量规则（classifyChatInput）。业务意图主路由不再由 L0 承载。
+// CHAT-17 P2：行锚定纯问候（SOCIAL）加入 L0——open_chat 映射 autonomous_tools（L2b）后，
+// 问候仍保持零调用快路径，不进入工具循环。
 export function classifyChatInputL0(text: string): ChatRoutingDecision | undefined {
   const normalized = compact(text);
   const normalizedLength = normalized.length;
@@ -228,11 +267,16 @@ export function classifyChatInputL0(text: string): ChatRoutingDecision | undefin
   if (REAL_TIME_ROAD.test(normalized)) return makeChatDecision("safety_stop", "real_time_road", "REAL_TIME_ROAD", normalizedLength);
   if (PRIVACY_REQUEST.test(normalized)) return makeChatDecision("privacy_boundary", "privacy_request", "PRIVACY_REQUEST", normalizedLength);
   if (PROMPT_INJECTION.test(normalized)) return makeChatDecision("injection_stop", "prompt_injection", "PROMPT_INJECTION", normalizedLength);
+  // CHAT-17 P2：SOCIAL 快路径进入 L0——行锚定纯问候零分类器调用直答（分类器 open_chat 已
+  // 映射 autonomous_tools/L2b，问候不进入工具循环）。
+  if (SOCIAL.test(normalized)) return makeChatDecision("social", "none", "SOCIAL", normalizedLength);
   // 聚合快捷路径：身份（G-IDENTITY）与高置信聚合词（G-AGGREGATE）；空格分写不用于绕过聚合归直答。
   const noSpace = normalized.replaceAll(/\s/g, "");
   // G-IDENTITY：骑行身份问题（“当次是哪一次”）置于单次指涉守卫之前——“本次是哪一次”含“本次”
   // 会被守卫挡回单次链路，但身份问题的正确回答是最近一次记录日期（确定性）。
-  if (RIDE_IDENTITY.test(noSpace)) return makeChatDecision("aggregate", "none", "AGGREGATE", normalizedLength);
+  // CHAT-17 P2：含筛选/极值/阈值标记的问法（“骑得最快的一次是哪次？”）不是身份回指，
+  // 不被句尾“是哪次”锚定吞掉——交给业务意图链路（find_ride）承接。
+  if (RIDE_IDENTITY.test(noSpace) && !isFindRideQuestion(noSpace)) return makeChatDecision("aggregate", "none", "AGGREGATE", normalizedLength);
   if (!SINGLE_RIDE_REFERENCE.test(noSpace)) {
     if (AGGREGATE_TOTAL.test(noSpace) || AGGREGATE_WEEK.test(noSpace)) return makeChatDecision("aggregate", "none", "AGGREGATE", normalizedLength);
     if (AGGREGATE_LATEST.test(noSpace) && AGGREGATE_TIME.test(noSpace)) return makeChatDecision("aggregate", "none", "AGGREGATE", normalizedLength);
@@ -244,13 +288,14 @@ export function classifyChatInput(text: string): ChatRoutingDecision {
   const normalized = compact(text);
   const normalizedLength = normalized.length;
 
-  // L0 先行（红线 + 高置信聚合/身份快捷路径）；SOCIAL 为行锚定纯问候，与 L0 匹配域无交集。
+  // L0 先行（红线 + SOCIAL/聚合/身份快捷路径）；未命中按顺序匹配业务意图规则。
   const l0 = classifyChatInputL0(normalized);
   if (l0) return l0;
-  if (SOCIAL.test(normalized)) return makeChatDecision("social", "none", "SOCIAL", normalizedLength);
-  // CHAT-13 顺序合同：水平评估（能力水平/体能变化）＞ 跨次筛选（哪次/历史骑行）＞ 历史比较（比上次/进步/趋势）。
-  // “我的能力水平…有进步吗？”属 M4 水平评估；“最近 30 天比上次快了吗”属历史比较。
+  // CHAT-17 顺序合同：水平评估（能力水平/体能变化）＞ 跨记录筛选/排名（find_ride）＞ 回指/历史清单
+  // （capability_gap）＞ 历史比较（比上次/进步/趋势）。“我的能力水平…有进步吗？”属 M4 水平评估；
+  // “哪次骑行最远”属 find_ride 检索；“最近 30 天比上次快了吗”属历史比较。
   if (CAPABILITY_LEVEL_GAP.test(normalized)) return makeChatDecision("capability_gap", "none", "CAPABILITY_GAP", normalizedLength);
+  if (isFindRideQuestion(normalized)) return makeChatDecision("autonomous_tools", "none", "AUTONOMOUS_TOOLS", normalizedLength);
   if (CAPABILITY_GAP.test(normalized)) return makeChatDecision("capability_gap", "none", "CAPABILITY_GAP", normalizedLength);
   if (HISTORY_COMPARE.test(normalized)) return makeChatDecision("history_compare", "none", "HISTORY_COMPARE", normalizedLength);
   if (CAPABILITIES.test(normalized)) return makeChatDecision("capabilities", "none", "CAPABILITIES", normalizedLength);

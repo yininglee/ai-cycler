@@ -7,7 +7,8 @@ import { classifyChatInput, type ChatRoute, type ChatRoutingDecision, type ChatS
 // YYYY-MM-DD）存储而非“最新”指针：会话中导入新记录不偷换已建立锚点。
 // 锚点解析只做服务端 owner 范围内的记录选择，路由仍只看本轮 text。
 
-export const RIDE_ANCHOR_TOOL_ROUTES: readonly ChatRoute[] = ["current_ride", "capabilities", "history_compare"];
+// CHAT-17 P3：autonomous_tools（L2b 循环）同样走锚点解析——挂起轮确认与摘要锚点继承同规则。
+export const RIDE_ANCHOR_TOOL_ROUTES: readonly ChatRoute[] = ["current_ride", "capabilities", "history_compare", "autonomous_tools"];
 
 export type RideAnchorDate = { year?: number; month: number; day: number };
 
@@ -194,7 +195,9 @@ export function resolveRideAnchor(input: {
 // 存在时，作为对该轮确认话术的回答处理。
 const CONFIRMATION_YES = /^(是|是的|对|对的|没错|嗯|嗯嗯|好|好的|ok)$/i;
 const CONFIRMATION_LATEST = /^(最近一次|最新一次|上一次|最新一条|上次|刚刚那次)$/;
-const CONFIRMATION_ROUTES = new Set<string>(["current_ride", "capabilities", "history_compare", "out_of_scope", "clarification"]);
+// CHAT-17 P3：autonomous_tools 加入确认路由集——纯确认语经分类器可能映射 L2b（open_chat），
+// 挂起的自主循环轮同样可被“最近一次/是的/日期”完成。
+const CONFIRMATION_ROUTES = new Set<string>(["current_ride", "capabilities", "history_compare", "autonomous_tools", "out_of_scope", "clarification"]);
 
 export type AnchorConfirmationPending =
   | { type: "latest"; question: string; route: ChatRoute }

@@ -2,7 +2,7 @@
   "schemaVersion": "ride-chat-classifier-eval-manifest-v0.1",
   "datasetId": "AEVAL-M3-CHAT-CLASSIFIER",
   "casesFile": "cases.json",
-  "casesSha256": "4a6dbc68dc4ee8df63fac328610b76f748244e32eaf787e1dedc0bd055f67f8b",
+  "casesSha256": "24bcf19a4d31d2eb149658bf90b26dcd6ba3e3283fa11c97e745dd987e968d36",
   "caseCount": 38,
   "splitCounts": {
     "dev": 8,

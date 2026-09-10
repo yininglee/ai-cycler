@@ -254,8 +254,9 @@ const INTENT_ROUTE_EXPECTATIONS: Readonly<Record<ChatClassifierIntent, readonly 
   history_compare: ["history_compare"],
   capability_gap: ["capability_gap"],
   capabilities: ["capabilities"],
-  // 开放对话当前落在 social（精确问候）或 out_of_scope（其余闲聊），两者都与 P3 open_chat 方向一致。
-  open_chat: ["social", "out_of_scope"],
+  // CHAT-17 P2：open_chat 映射 autonomous_tools（L2b 自主工具循环，分类器 Prompt v0.3 重定边界）；
+  // 纯问候（L0 SOCIAL 快路径 → social）与域外闲聊（out_of_scope）同属开放方向，均计为一致。
+  open_chat: ["social", "out_of_scope", "autonomous_tools"],
   out_of_scope: ["out_of_scope"],
   // unclear 无规则层对应——澄清话术是 P3 新增的一等路径，影子阶段仅记录。
   unclear: null,
@@ -315,8 +316,10 @@ export function intentToRoutingDecision(intent: ChatClassifierIntent, normalized
       return makeChatDecision("capability_gap", "none", "CAPABILITY_GAP", normalizedLength);
     case "capabilities":
       return makeChatDecision("capabilities", "none", "CAPABILITIES", normalizedLength);
+    // CHAT-17 P2：开放/复合问题映射 L2b 自主工具循环（find_ride 首场景）——模型在只读工具
+    // 白名单与既有预算内自行组合调用工具；纯问候由 L0 SOCIAL 快路径承接（不经此映射）。
     case "open_chat":
-      return makeChatDecision("social", "none", "SOCIAL", normalizedLength);
+      return makeChatDecision("autonomous_tools", "none", "AUTONOMOUS_TOOLS", normalizedLength);
     case "out_of_scope":
       return makeChatDecision("out_of_scope", "none", "OUT_OF_SCOPE", normalizedLength);
     case "unclear":

@@ -106,3 +106,47 @@ test("Coze Chat errors map to stable chat error codes", async () => {
     (error: unknown) => error instanceof ChatProviderError && error.code === "MODEL_INVALID_RESPONSE",
   );
 });
+
+// CHAT-17 P5：L2b 循环投影与工具调用请求输出——chat_request 随行 toolCatalog/toolResults
+// （变量合同不变）；工作流输出的 ride-chat-tool-call-v0.1 是合法输出（循环首轮），不再判无效。
+test("Coze Chat carries L2b toolCatalog/toolResults and accepts tool-call request output (CHAT-17)", async () => {
+  const toolCallRequest = { schemaVersion: "ride-chat-tool-call-v0.1", calls: [{ tool: "find_ride", input: { metric: "distanceM", mode: "max" } }] };
+  const requests: RequestInit[] = [];
+  const client = new CozeChatWorkflowClient(config, async (_url, init) => {
+    requests.push(init ?? {});
+    return new Response(JSON.stringify({ code: 0, data: JSON.stringify({ chat_output: JSON.stringify(toolCallRequest) }) }), { status: 200 });
+  });
+  const result = await client.run({
+    requestId: "request",
+    agentVersion: "ride-chat-agent-v0.1",
+    route: "autonomous_tools",
+    text: "距离最远的那次骑行是哪次？",
+    toolCatalog: {
+      schemaVersion: "ride-chat-tool-catalog-v0.1",
+      anchorRideId: "anchor-ride",
+      tools: [{ tool: "find_ride", input: { metric: ["distanceM"], mode: ["max", "min", "threshold"] } }],
+    },
+    toolResults: [{
+      call: 1,
+      context: {
+        tool: "find_ride",
+        windowDays: 30,
+        metric: "distanceM",
+        mode: "max",
+        status: "matched",
+        reasonCodes: [],
+        candidateCount: 3,
+        matchedCount: 1,
+        matches: [{ rideId: "history-far", rideDateLabel: "2026年8月15日", claims: [{ claimId: "claim:loop:1:1", metricKey: "distanceM", value: 55_000, unit: "km", displayValue: "55.0" }] }],
+      },
+    }],
+  });
+  // 工具调用请求被识别为合法输出原样返回（编排层解析后执行）。
+  assert.equal(result.rawText, JSON.stringify(toolCallRequest));
+  const body = JSON.parse(String(requests[0]?.body)) as { parameters: Record<string, string> };
+  const request = JSON.parse(body.parameters.chat_request) as { toolCatalog?: { anchorRideId: string }; toolResults?: Array<{ call: number }> };
+  assert.equal(request.toolCatalog?.anchorRideId, "anchor-ride");
+  assert.equal(request.toolResults?.length, 1);
+  assert.equal(request.toolResults?.[0]?.call, 1);
+  assert.doesNotMatch(JSON.stringify(request), /ownerId|chat-token/);
+});

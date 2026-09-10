@@ -7,7 +7,8 @@ export const CHAT_OUTPUT_MAX_REPLY_CHARS = 600;
 export const CHAT_OUTPUT_MAX_REPLY_BYTES = 2 * 1_024;
 
 // CHAT-13：history_compare 加入输出路由空间（compare_rides 场景分化）。
-export type ChatOutputRoute = "social" | "current_ride" | "capabilities" | "history_compare";
+// CHAT-17 P3/P4：autonomous_tools 加入输出路由空间（L2b 循环最终回答）。
+export type ChatOutputRoute = "social" | "current_ride" | "capabilities" | "history_compare" | "autonomous_tools";
 export type ChatOutputValidationCode =
   | "OUTPUT_INVALID_JSON"
   | "OUTPUT_SCHEMA_INVALID"
@@ -47,6 +48,9 @@ export type ChatOutputValidationContext = {
   // CHAT-12 P3（校验场景分化）：用户输入中的数字（阈值“120”等用户给定值）加入白名单——
   // 模型复述用户给定值不是幻觉，只须可溯源到 Claims 或用户原句。
   userText?: string;
+  // CHAT-17 P3/P4：L2b 循环——本轮全部已完成工具调用结果（动态溯源白名单数据源）；
+  // autonomous_tools 路由的 claimIds/数字必须溯源到这些结果的 Claims 并集。
+  loopToolResults?: readonly ChatToolResult[];
 };
 
 const CONTROL_CHARACTERS = /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/;
@@ -74,7 +78,7 @@ function uniqueStrings(value: unknown, maximum: number, predicate: (item: string
 }
 
 function outputRoute(decision: ChatRoutingDecision): ChatOutputRoute | undefined {
-  return decision.route === "social" || decision.route === "current_ride" || decision.route === "capabilities" || decision.route === "history_compare" ? decision.route : undefined;
+  return decision.route === "social" || decision.route === "current_ride" || decision.route === "capabilities" || decision.route === "history_compare" || decision.route === "autonomous_tools" ? decision.route : undefined;
 }
 
 function reject(code: ChatOutputValidationCode, claimCount = 0, capabilityCount = 0): ChatOutputValidationResult {
@@ -89,7 +93,7 @@ function parseOutput(rawOutput: string): ChatOutput | ChatOutputValidationCode {
     return "OUTPUT_INVALID_JSON";
   }
   if (!isRecord(parsed) || !hasExactKeys(parsed, ["schemaVersion", "route", "reply", "claimIds", "capabilityKeys"])) return "OUTPUT_SCHEMA_INVALID";
-  if (parsed.schemaVersion !== CHAT_OUTPUT_SCHEMA_VERSION || (parsed.route !== "social" && parsed.route !== "current_ride" && parsed.route !== "capabilities" && parsed.route !== "history_compare")) return "OUTPUT_SCHEMA_INVALID";
+  if (parsed.schemaVersion !== CHAT_OUTPUT_SCHEMA_VERSION || (parsed.route !== "social" && parsed.route !== "current_ride" && parsed.route !== "capabilities" && parsed.route !== "history_compare" && parsed.route !== "autonomous_tools")) return "OUTPUT_SCHEMA_INVALID";
   if (typeof parsed.reply !== "string" || !parsed.reply.trim() || CONTROL_CHARACTERS.test(parsed.reply)) return "OUTPUT_SCHEMA_INVALID";
   // CHAT-15（真实链路采样发现）：总结型问题（“数据怎么样”）的工具上下文含 9 个 claims，
   // 模型全量引用是自然行为——claimIds 上限从 6 提高到 12（输出合同未冻结该数字，
@@ -195,6 +199,48 @@ function comparisonNumbersAreSupported(reply: string, toolResult: CompareRidesTo
   return literals.every((literal) => values.has(Number(literal)));
 }
 
+// CHAT-17 P3/P4：L2b 循环数字白名单——本轮全部已完成工具调用结果的数字并集：
+// get_ride_context（值/显示值/日期标签）、compare_rides（比较白名单全量）、find_ride
+// （阈值/窗口/计数/命中 Claims 值与显示值/命中日期标签）+ 用户原句数字。硬门不放宽：
+// 回复中每个数字仍须逐一溯源，多工具组合不引入任何新数字来源。
+function loopNumbersAreSupported(reply: string, loopToolResults: readonly ChatToolResult[], userText?: string): boolean {
+  const values = new Set<number>();
+  for (const toolResult of loopToolResults) {
+    if (toolResult.tool === "get_ride_context") {
+      for (const value of numericValues(toolResult)) values.add(value);
+    }
+    if (toolResult.tool === "compare_rides") {
+      for (const value of comparisonNumericValues(toolResult)) values.add(value);
+    }
+    if (toolResult.tool === "find_ride") {
+      values.add(toolResult.windowDays);
+      if (toolResult.threshold !== undefined) values.add(toolResult.threshold);
+      values.add(toolResult.candidateCount);
+      values.add(toolResult.matchedCount);
+      for (const match of toolResult.matches) {
+        for (const literal of match.rideDateLabel?.match(/\d+/g) ?? []) {
+          const parsed = Number(literal);
+          if (Number.isFinite(parsed)) values.add(parsed);
+        }
+        for (const claim of match.claims) {
+          values.add(claim.value);
+          values.add(Number(claim.displayValue));
+          for (const literal of claim.displayValue.match(/\d+(?:\.\d+)?/g) ?? []) {
+            const parsed = Number(literal);
+            if (Number.isFinite(parsed)) values.add(parsed);
+          }
+        }
+      }
+    }
+  }
+  for (const literal of userText?.match(NUMBERS) ?? []) {
+    const parsed = Number(literal);
+    if (Number.isFinite(parsed)) values.add(parsed);
+  }
+  const literals = reply.match(NUMBERS) ?? [];
+  return literals.every((literal) => values.has(Number(literal)));
+}
+
 export function validateChatOutput(rawOutput: string, context: ChatOutputValidationContext): ChatOutputValidationResult {
   const output = parseOutput(rawOutput);
   if (typeof output === "string") return reject(output);
@@ -233,6 +279,27 @@ export function validateChatOutput(rawOutput: string, context: ChatOutputValidat
       : output.claimIds;
     if (!output.claimIds.length || output.capabilityKeys.length || citedClaims.some((claimId) => !claimId || !allowedClaims.has(claimId))) return reject("OUTPUT_CLAIM_INVALID", output.claimIds.length, output.capabilityKeys.length);
     if (!comparisonNumbersAreSupported(output.reply, context.toolResult, context.userText)) return reject("OUTPUT_NUMERIC_UNSUPPORTED", output.claimIds.length, output.capabilityKeys.length);
+  }
+  // CHAT-17 P3/P4：L2b 自主工具循环——claimIds 非空且只能引用本轮全部已完成工具调用
+  // 的 Claims 并集（动态溯源白名单，经 claimReferences 映射校验）；不携带能力键；
+  // 数字必须溯源到各工具结果白名单的并集或用户原句。无已完成的工具调用结果即拒绝
+  // （模型不得在零工具调用下给出带数字的事实性回答）。
+  if (output.route === "autonomous_tools") {
+    const loopResults = context.loopToolResults ?? [];
+    if (loopResults.length === 0) return reject("OUTPUT_TOOL_CONTEXT_MISSING", output.claimIds.length, output.capabilityKeys.length);
+    const allowedClaims = new Set(loopResults.flatMap((toolResult) =>
+      toolResult.tool === "get_ride_context"
+        ? toolResult.claims.map((claim) => claim.claimId)
+        : toolResult.tool === "compare_rides"
+          ? toolResult.claims.flatMap((claim) => (claim.claimId ? [claim.claimId] : []))
+          : toolResult.tool === "find_ride"
+            ? toolResult.matches.flatMap((match) => match.claims.map((claim) => claim.claimId))
+            : []));
+    const citedClaims = context.claimReferences
+      ? output.claimIds.map((claimId) => context.claimReferences?.[claimId])
+      : output.claimIds;
+    if (!output.claimIds.length || output.capabilityKeys.length || citedClaims.some((claimId) => !claimId || !allowedClaims.has(claimId))) return reject("OUTPUT_CLAIM_INVALID", output.claimIds.length, output.capabilityKeys.length);
+    if (!loopNumbersAreSupported(output.reply, loopResults, context.userText)) return reject("OUTPUT_NUMERIC_UNSUPPORTED", output.claimIds.length, output.capabilityKeys.length);
   }
   return { ok: true, output, publicResult: { status: "accepted", referencedClaimCount: output.claimIds.length, referencedCapabilityCount: output.capabilityKeys.length } };
 }

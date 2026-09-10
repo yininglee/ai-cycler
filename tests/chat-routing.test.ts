@@ -49,8 +49,9 @@ test("ride identity questions route to the deterministic aggregate path (G-IDENT
   assert.equal(classifyChatInput("最近一次骑行是哪一次？").route, "aggregate");
   assert.equal(classifyChatInput("本次是哪一次？").route, "aggregate");
   assert.equal(classifyChatInput("你说的是哪次？").route, "aggregate");
-  // 跨次筛选/比较问题仍走能力缺口模板，不被身份路由吞掉
-  assert.equal(classifyChatInput("哪次骑行最远？").route, "capability_gap");
+  // CHAT-17 P2：跨次筛选问法（哪次+指标/极值）迁入 autonomous_tools（find_ride 场景），
+  // 不被身份路由吞掉；回指问法（那次，无筛选词）仍走能力缺口模板。
+  assert.equal(classifyChatInput("哪次骑行最远？").route, "autonomous_tools");
   assert.equal(classifyChatInput("最近的骑行中，那次是平均心率超多120的？").route, "capability_gap");
 });
 
@@ -85,8 +86,35 @@ test("cross-ride comparison questions route to history_compare with the tool cha
   }
   // 单次指涉不含比较词，仍走本次骑行链路。
   assert.equal(classifyChatInput("上次骑了多远？").route, "current_ride");
-  // 跨次筛选/历史清单类问题仍走能力缺口模板（由 CAPABILITY_GAP 承接）。
-  assert.equal(classifyChatInput("哪次骑行最远？").route, "capability_gap");
+  // CHAT-17 P2：跨次筛选/排名问法迁入 autonomous_tools（find_ride 工具承接）。
+  assert.equal(classifyChatInput("哪次骑行最远？").route, "autonomous_tools");
+});
+
+test("find_ride screening and ranking questions route to the autonomous tool loop (CHAT-17 P2)", () => {
+  // 从 capability_gap 迁出：极值/阈值/筛选问法由 L2b 自主工具循环（find_ride 首场景）承接。
+  for (const text of [
+    "哪次骑行最远？",
+    "最近的骑行中，哪次平均心率超过了120？",
+    "距离最远的那次骑行心率怎么样？",
+    "哪几次平均心率超过了120？",
+    "骑得最快的一次是哪次？",
+    "平均心率超过120的骑行有几次？",
+    "我骑过的最远距离是多少？",
+    "最近一次骑得最快吗？",
+  ]) {
+    const decision = classifyChatInput(text);
+    assert.deepEqual({ route: decision.route, reasonCode: decision.reasonCode, allowModel: decision.allowModel, action: decision.action }, {
+      route: "autonomous_tools", reasonCode: "AUTONOMOUS_TOOLS", allowModel: true, action: "tool_then_model",
+    }, text);
+  }
+  // 单次指涉伴随的阈值/极值仍是本次骑行问题，不迁入；裸“哪次”回指由身份路径承接。
+  assert.equal(classifyChatInput("这次心率超过120了吗？").route, "current_ride");
+  assert.equal(classifyChatInput("本次骑行的最高心率是多少？").route, "current_ride");
+  assert.equal(classifyChatInput("你说的是哪次？").route, "aggregate");
+  // 回指/历史清单/水平评估不迁入（capability_gap 承接）。
+  assert.equal(classifyChatInput("那次是平均心率超多120的？").route, "capability_gap");
+  assert.equal(classifyChatInput("我的骑行历史能导出吗？").route, "capability_gap");
+  assert.equal(classifyChatInput("我的能力水平最近有进步吗？").route, "capability_gap");
 });
 
 test("historical ride-context queries are no longer misrouted to the safety stop (G-SAFETY-FP)", () => {
@@ -142,9 +170,19 @@ test("L0 fast path agrees with the full rule layer on red lines and high-confide
   }
 });
 
+test("L0 fast path keeps pure greetings on the social fast path (CHAT-17 P2)", () => {
+  // 行锚定纯问候进入 L0——active 模式下零分类器调用直答，不因 open_chat 映射
+  // autonomous_tools（L2b）而进入工具循环。
+  for (const text of ["你好", "谢谢！", "在吗？"]) {
+    const l0 = classifyChatInputL0(text);
+    assert.ok(l0, text);
+    assert.deepEqual({ route: l0?.route, reasonCode: l0?.reasonCode }, { route: "social", reasonCode: "SOCIAL" }, text);
+    assert.deepEqual(l0, classifyChatInput(text), text);
+  }
+});
+
 test("L0 fast path leaves business intents to the semantic classifier (CHAT-12 P3)", () => {
   for (const text of [
-    "你好",
     "那这个呢？",
     "本次骑行平均功率是多少？",
     "支持哪些能力？",

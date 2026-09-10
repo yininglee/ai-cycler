@@ -46,6 +46,11 @@ function extractChatOutput(value: unknown, depth = 0): string | undefined {
   if (value.schemaVersion === "ride-chat-output-v0.1" && typeof value.reply === "string") {
     return JSON.stringify(value);
   }
+  // CHAT-17 P5：L2b 循环——工作流输出的工具调用请求（ride-chat-tool-call-v0.1）同样是
+  // 合法输出（编排层解析后执行工具并把结果回传），否则循环首轮即被判无效响应。
+  if (value.schemaVersion === "ride-chat-tool-call-v0.1" && Array.isArray(value.calls)) {
+    return JSON.stringify(value);
+  }
   for (const key of ["chat_output", "chatOutput", "output", "text", "data"]) {
     if (value[key] !== undefined) {
       const output = extractChatOutput(value[key], depth + 1);
@@ -114,6 +119,10 @@ export class CozeChatWorkflowClient implements ChatProvider {
               route: input.route,
               text: input.text,
               ...(input.toolContext ? { toolContext: input.toolContext } : {}),
+              // CHAT-17 P5：L2b 循环投影——toolCatalog（首轮，只读工具白名单与锚点）与
+              // toolResults（后续轮次，本轮已执行调用的脱敏投影）；变量合同不变。
+              ...(input.toolCatalog ? { toolCatalog: input.toolCatalog } : {}),
+              ...(input.toolResults?.length ? { toolResults: input.toolResults } : {}),
               // CHAT-14 P1：会话白名单摘要进入 chat_request（变量合同不变，仅 Prompt v0.1.5 增使用规则）。
               ...(input.sessionSummaries?.length ? { sessionSummaries: input.sessionSummaries } : {}),
             }),

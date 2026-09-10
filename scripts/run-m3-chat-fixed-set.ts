@@ -19,7 +19,13 @@ import {
   type ChatClassifierShadowOutcome,
 } from "../src/chat/chat-classifier.ts";
 import { RIDE_IDENTITY, routeChatInput } from "../src/chat/chat-routing.ts";
-import { createChatToolRunner } from "../src/chat/chat-tool-orchestration.ts";
+import {
+  CHAT_TOOL_CALL_SCHEMA_VERSION,
+  CHAT_TOOL_LOOP_MAX_PROVIDER_CALLS,
+  createChatToolLoopRunner,
+  createChatToolRunner,
+  type ChatToolLoopRunner,
+} from "../src/chat/chat-tool-orchestration.ts";
 import { createDemoEvent, demoRequestReference, type DemoEvent } from "../src/observability/demo-events.ts";
 import { getApplicationRepository, type ApplicationRepository } from "../src/persistence/application-repository.ts";
 import { getRideFixture } from "../src/fixtures/rides.ts";
@@ -27,18 +33,21 @@ import type { RideRecord } from "../src/domain/ride-schema.ts";
 import type { ServerEnvironment } from "../src/ai/coze-workflow-error.ts";
 
 // M3 里程碑收口：G3-C/G4-C 真实模型固定集 Run（需用户授权后手动执行，新 Run ID，不覆盖历史记录）。
+// CHAT-17（固定集 v0.6，27→34）：+7 L2b 自主工具循环用例——find_ride 极值检索/复合问题成功（真实
+// 模型驱动循环）、无匹配零输出降级（真实模型触发 find_ride 无命中）、预算耗尽/白名单外工具/越权
+// 锚点（脚本化 Provider 确定性注入，真实模型无法稳定触发预算边界）、Demo 无模型降级。
 //
-// 与 app/api/chat/route.ts 同构的完整链路（网关 → active 分类器路由 → 工具 → 真实 provider → 输出校验），
-// 逐条执行 eval/ride-chat-v0.1/cases.json 冻结的 27 条固定集用例并按冻结期望断言：
+// 与 app/api/chat/route.ts 同构的完整链路（网关 → active 分类器路由 → 工具/L2b 循环 → 真实 provider
+// → 输出校验），逐条执行 eval/ride-chat-v0.1/cases.json 冻结的 34 条固定集用例并按冻结期望断言：
 // - G1-C：路由/红线模板/澄清/聚合/能力缺口全部零模型直答（真实分类器接管下复核）；
-// - G2-C：只读工具范围、锚点解析（显式日期/序数/指涉澄清）、owner 隔离探针；
+// - G2-C：只读工具范围（单工具 + L2b 循环步骤）、锚点解析（显式日期/序数/指涉澄清）、owner 隔离探针；
 // - G3-C：模型路径输出必须通过 ride-chat-output-v0.1 校验（validated/repaired），一次修复边界；
 // - G4-C：chat_* 事件 HMAC 脱敏（requestRef 短引用、属性白名单、无原文）+ 合成 owner 账户级联删除回归。
 //
 // 工具数据采用受控 fixture 仓储（与固定集期望的数据状态一致——冻结期望按 cases.json 的 fixture 字段
-// 注入：no-current-ride/tool-timeout/empty-claims/no-comparable-history 等）；模型与分类器为真实扣子
-// Workflow 调用。真实开发数据集的场景采样已由 CHAT-15 矩阵 Run 覆盖（见测评记录 9.6.2），不在此重复。
-// 运行记录写入 eval/runs/AEVAL-M3-CHAT-<日期>-<序号>.json（合成 owner，不含真实用户数据）。
+// 注入：no-current-ride/tool-timeout/empty-claims/no-comparable-history/loop-* 等）；模型与分类器为
+// 真实扣子 Workflow 调用。真实开发数据集的场景采样已由 CHAT-15 矩阵 Run 覆盖（见测评记录 9.6.2），
+// 不在此重复。运行记录写入 eval/runs/AEVAL-M3-CHAT-<日期>-<序号>.json（合成 owner，不含真实用户数据）。
 
 function loadEnvLocal(): ServerEnvironment {
   const values: Record<string, string> = {};
@@ -78,6 +87,8 @@ type FixedCase = {
     execution?: string;
     degradation?: string;
     eventContract?: string;
+    // CHAT-17 P6：L2b 循环结局（loopTrace.status）。
+    loopStatus?: string;
   };
 };
 
@@ -189,6 +200,24 @@ function invalidThenValidProvider(real: ChatProvider): ChatProvider {
   };
 }
 
+// CHAT-17 P6：L2b 循环失败注入 Provider——预算耗尽/白名单外工具/越权锚点三类确定性降级
+// 无法由真实模型稳定触发（预算边界取决于模型行为），按 invalid-then-valid-provider 同一
+// 注入模式脚本化驱动；工具执行仍走受控 fixture 仓储的真实循环 runner。
+function toolCallResponse(calls: ReadonlyArray<{ tool: string; input: Record<string, unknown> }>): string {
+  return JSON.stringify({ schemaVersion: CHAT_TOOL_CALL_SCHEMA_VERSION, calls: calls.map((call) => ({ tool: call.tool, input: call.input })) });
+}
+
+function staticResponseProvider(rawText: string): ChatProvider {
+  return { async run() { return { rawText }; } };
+}
+
+// 预算耗尽注入：模型每轮都请求同一检索（合法调用），第 4 次请求超出每轮工具数上限（3）。
+const LOOP_BUDGET_EXHAUSTION_OUTPUT = toolCallResponse([{ tool: "find_ride", input: { metric: "distanceM", mode: "max" } }]);
+// 白名单外工具注入：请求 forbiddenCapabilities 清单内的 get_profile_context（个人画像上下文）。
+const LOOP_FORBIDDEN_TOOL_OUTPUT = toolCallResponse([{ tool: "get_profile_context", input: {} }]);
+// 越权锚点注入：get_ride_context 指定非本轮锚点/工具结果返回的 rideId（他人记录）。
+const LOOP_UNAUTHORIZED_RIDE_OUTPUT = toolCallResponse([{ tool: "get_ride_context", input: { rideId: "ride-other-owner-0820", dims: ["heart_rate"] } }]);
+
 function observedProvider(provider: ChatProvider, metrics: { calls: number; durations: number[] }): ChatProvider {
   return {
     async run(input: ChatProviderInvocation) {
@@ -214,6 +243,23 @@ function observedToolRunner(runner: ReturnType<typeof createChatToolRunner>, met
         metrics.durations.push(Date.now() - startedAt);
       }
     },
+  };
+}
+
+// CHAT-17 P6：L2b 循环 runner 观测（与 app/api/chat/route.ts 同构——观测 startLoop，循环步骤
+// 轨迹由 loopTrace 承载）。
+function observedToolLoopRunner(runner: ChatToolLoopRunner, metrics: { calls: number; durationMs: number }): ChatToolLoopRunner {
+  return {
+    async startLoop(input: Parameters<ChatToolLoopRunner["startLoop"]>[0]) {
+      metrics.calls += 1;
+      const startedAt = Date.now();
+      try {
+        return await runner.startLoop(input);
+      } finally {
+        metrics.durationMs += Date.now() - startedAt;
+      }
+    },
+    executeLoopCalls: (input) => runner.executeLoopCalls(input),
   };
 }
 
@@ -258,6 +304,9 @@ type CaseResult = {
   dimensions?: string[];
   claimsCount?: number;
   rideAnchor?: string;
+  // CHAT-17 P6：L2b 循环轨迹（autonomous_tools 路由）。
+  loopStatus?: string;
+  loopTools?: string[];
   reply: string;
   durationMs: number;
   checks: CaseCheck[];
@@ -281,6 +330,7 @@ for (const item of fixedSet.cases) {
   const requestId = `m3-fixed-set:${item.caseId}`;
   const modelMetrics = { calls: 0, durations: [] as number[] };
   const toolMetrics = { calls: 0, durations: [] as number[] };
+  const loopMetrics = { calls: 0, durationMs: 0 };
   const checks: CaseCheck[] = [];
 
   const gateway = routeChatInput(RUN_OWNER, item.input);
@@ -327,6 +377,9 @@ for (const item of fixedSet.cases) {
   const providerForCase =
     fixture === "provider-not-configured" ? undefined :
     fixture === "invalid-then-valid-provider" ? observedProvider(invalidThenValidProvider(realProvider), modelMetrics) :
+    fixture === "loop-budget-exhaustion-provider" ? observedProvider(staticResponseProvider(LOOP_BUDGET_EXHAUSTION_OUTPUT), modelMetrics) :
+    fixture === "loop-forbidden-tool-provider" ? observedProvider(staticResponseProvider(LOOP_FORBIDDEN_TOOL_OUTPUT), modelMetrics) :
+    fixture === "loop-unauthorized-ride-provider" ? observedProvider(staticResponseProvider(LOOP_UNAUTHORIZED_RIDE_OUTPUT), modelMetrics) :
     observedProvider(realProvider, modelMetrics);
   const aggregateRecords = decision.route === "aggregate" ? STANDARD_RECORDS.map((record) => structuredClone(record)) : undefined;
 
@@ -335,6 +388,8 @@ for (const item of fixedSet.cases) {
     decision,
     provider: providerForCase,
     toolRunner: observedToolRunner(createChatToolRunner(repository, RUN_OWNER), toolMetrics),
+    // CHAT-17 P6：L2b 循环 runner（autonomous_tools 路由；非该路由不启用）。
+    loopRunner: observedToolLoopRunner(createChatToolLoopRunner(repository, RUN_OWNER), loopMetrics),
     requestId,
     ...(aggregateRecords ? { aggregateRecords } : {}),
   });
@@ -352,6 +407,13 @@ for (const item of fixedSet.cases) {
     repairAttempts: String(result.repairAttempts ?? 0),
     toolStatus: result.toolTrace?.status ?? "not_called",
     validationStatus: result.outputValidation?.status ?? "not_run",
+    // CHAT-17 P6：L2b 循环轨迹（脱敏：状态/预算计数/步骤状态序列，与 route.ts 同构）。
+    ...(result.loopTrace ? {
+      loopStatus: result.loopTrace.status,
+      loopToolCalls: String(result.loopTrace.toolCalls),
+      loopProviderCalls: String(result.loopTrace.providerCalls),
+      loopSteps: result.loopTrace.steps.map((step) => `${step.tool}:${step.status}${step.errorCode ? `:${step.errorCode}` : ""}`).join(","),
+    } : {}),
     tokenStatus: "not_observed",
     costStatus: "not_observed",
     ...(result.fallbackCode ? { fallbackCode: result.fallbackCode } : {}),

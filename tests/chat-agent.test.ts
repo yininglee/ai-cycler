@@ -497,6 +497,51 @@ test("HTTP provider uses only Chat provider configuration and maps response fail
   );
 });
 
+// CHAT-17 P5：L2b 循环投影进入 HttpChatProvider 请求体——toolCatalog（首轮）与
+// toolResults（后续轮次）随行，供循环内模型决定工具组合与引用编号。
+test("HTTP provider carries L2b toolCatalog and toolResults in the request body (CHAT-17)", async () => {
+  const config = readChatProviderConfig({
+    CHAT_MODEL_ENABLED: "true",
+    CHAT_PROVIDER_URL: "https://chat.example.test/run",
+    CHAT_PROVIDER_API_TOKEN: "chat-token",
+  });
+  assert.ok(config);
+  const requests: RequestInit[] = [];
+  const provider = new HttpChatProvider(config, async (_url, init) => {
+    requests.push(init ?? {});
+    return new Response(JSON.stringify({ output: "provider result" }), { status: 200 });
+  });
+  await provider.run({
+    requestId: "request",
+    agentVersion: "ride-chat-agent-v0.1",
+    route: "autonomous_tools",
+    text: "距离最远的那次骑行是哪次？",
+    toolCatalog: {
+      schemaVersion: "ride-chat-tool-catalog-v0.1",
+      anchorRideId: "anchor-ride",
+      tools: [{ tool: "find_ride", input: { metric: ["distanceM"], mode: ["max", "min", "threshold"] } }],
+    },
+    toolResults: [{
+      call: 1,
+      context: {
+        tool: "find_ride",
+        windowDays: 30,
+        metric: "distanceM",
+        mode: "max",
+        status: "matched",
+        reasonCodes: [],
+        candidateCount: 3,
+        matchedCount: 1,
+        matches: [{ rideId: "history-far", rideDateLabel: "2026年8月15日", claims: [{ claimId: "claim:loop:1:1", metricKey: "distanceM", value: 55_000, unit: "km", displayValue: "55.0" }] }],
+      },
+    }],
+  });
+  const body = JSON.parse(String(requests[0]?.body)) as { toolCatalog?: { anchorRideId: string }; toolResults?: Array<{ call: number }> };
+  assert.equal(body.toolCatalog?.anchorRideId, "anchor-ride");
+  assert.equal(body.toolResults?.length, 1);
+  assert.equal(body.toolResults?.[0]?.call, 1);
+});
+
 test("Chat provider selects the dedicated Coze Workflow adapter without reading ride-analysis configuration", () => {
   const provider = createChatProvider({
     CHAT_MODEL_ENABLED: "true",

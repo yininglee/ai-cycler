@@ -263,3 +263,108 @@ test("history_compare accepts Chinese time displayValue numbers for anchor and b
   assert.equal(inventedBaseline.ok, false);
   if (!inventedBaseline.ok) assert.equal(inventedBaseline.code, "OUTPUT_NUMERIC_UNSUPPORTED");
 });
+
+// CHAT-17 P4：autonomous_tools（L2b 循环）输出校验——claimIds/数字必须溯源到本轮全部
+// 已完成工具调用结果的 Claims 并集（动态白名单，经 claimReferences 映射）；
+// 不携带能力键；零工具调用结果直接拒绝（模型不得在零工具下给出带数字的事实回答）。
+
+const loopFindRide: ChatToolResult = {
+  schemaVersion: "chat-tools-v0.1",
+  tool: "find_ride",
+  rideId: "anchor-ride",
+  windowDays: 30,
+  metric: "distanceM",
+  mode: "max",
+  status: "matched",
+  reasonCodes: [],
+  candidateCount: 3,
+  matchedCount: 1,
+  matches: [{
+    rideId: "history-far",
+    rideDateLabel: "2026年8月15日",
+    claims: [{ claimId: "claim:find:history-far:distanceM", metricKey: "distanceM", value: 55_000, unit: "km", displayValue: "55.0" }],
+  }],
+  privacy: ["raw_track_excluded", "precise_coordinates_excluded", "source_filename_excluded"],
+};
+
+const loopRideContext: ChatToolResult = {
+  schemaVersion: "chat-tools-v0.1",
+  tool: "get_ride_context",
+  rideId: "history-far",
+  dimensions: ["summary"],
+  claims: [{ claimId: "claim:history-far:avgHeartRateBpm", kind: "metric", key: "avgHeartRateBpm", value: 151, unit: "bpm", confidence: "high", displayValue: "151", displayUnit: "bpm" }],
+  limitations: [],
+  privacy: ["raw_track_excluded", "precise_coordinates_excluded", "source_filename_excluded"],
+};
+
+const loopClaimReferences: Record<string, string> = {
+  "claim:loop:1:1": "claim:find:history-far:distanceM",
+  "claim:loop:2:1": "claim:history-far:avgHeartRateBpm",
+};
+
+function loopValidation(reply: string, claimIds: string[], options: { loopToolResults?: ChatToolResult[]; claimReferences?: Record<string, string>; userText?: string } = {}) {
+  return validateChatOutput(output({ route: "autonomous_tools", reply, claimIds, capabilityKeys: [] }), {
+    decision: classifyChatInput("距离最远的那次骑行平均心率怎么样？"),
+    loopToolResults: options.loopToolResults ?? [loopFindRide, loopRideContext],
+    claimReferences: options.claimReferences ?? loopClaimReferences,
+    ...(options.userText ? { userText: options.userText } : {}),
+  });
+}
+
+test("autonomous_tools accepts claims and numbers from the union of loop tool results (CHAT-17)", () => {
+  // 跨调用组合：检索命中的日期/距离 + 第 2 次调用（get_ride_context）的心率。
+  const valid = loopValidation("8月15日那次骑行距离 55.0 公里，平均心率 151 bpm。", ["claim:loop:1:1", "claim:loop:2:1"]);
+  assert.equal(valid.ok, true);
+  assert.deepEqual(valid.ok && valid.publicResult, { status: "accepted", referencedClaimCount: 2, referencedCapabilityCount: 0 });
+
+  // 用户原句数字（阈值）同样可复述。
+  const echoed = loopValidation("8月15日那次骑行距离 55.0 公里，超过了你说的 50。", ["claim:loop:1:1"], { userText: "距离超过 50 公里的最远那次是哪次？" });
+  assert.equal(echoed.ok, true);
+});
+
+test("autonomous_tools rejects answers without loop tool results or with invented claims/numbers (CHAT-17)", () => {
+  // 零工具调用结果：模型不得在零工具下给出事实性回答。
+  const noTools = loopValidation("距离最远的一次是 8 月 15 日。", ["claim:loop:1:1"], { loopToolResults: [] });
+  assert.equal(noTools.ok, false);
+  if (!noTools.ok) assert.equal(noTools.code, "OUTPUT_TOOL_CONTEXT_MISSING");
+
+  // 引用未随行映射的编号（claimReferences 缺失该键）。
+  const unmapped = loopValidation("距离最远的一次是 8 月 15 日。", ["claim:loop:9:1"]);
+  assert.equal(unmapped.ok, false);
+  if (!unmapped.ok) assert.equal(unmapped.code, "OUTPUT_CLAIM_INVALID");
+
+  // 编造数字：60 不在任何工具结果白名单或用户原句中。
+  const inventedNumber = loopValidation("距离最远的那次骑行共 60.0 公里。", ["claim:loop:1:1"]);
+  assert.equal(inventedNumber.ok, false);
+  if (!inventedNumber.ok) assert.equal(inventedNumber.code, "OUTPUT_NUMERIC_UNSUPPORTED");
+
+  // 编造日期：8 月 19 日不在命中记录的日期标签中。
+  const inventedDate = loopValidation("8月19日那次骑行距离 55.0 公里。", ["claim:loop:1:1"]);
+  assert.equal(inventedDate.ok, false);
+  if (!inventedDate.ok) assert.equal(inventedDate.code, "OUTPUT_NUMERIC_UNSUPPORTED");
+});
+
+test("autonomous_tools accepts find_ride threshold, window and match-count numbers (CHAT-17)", () => {
+  const thresholdFindRide: ChatToolResult = {
+    schemaVersion: "chat-tools-v0.1",
+    tool: "find_ride",
+    rideId: "anchor-ride",
+    windowDays: 30,
+    metric: "avgHeartRateBpm",
+    mode: "threshold",
+    threshold: 150,
+    status: "matched",
+    reasonCodes: [],
+    candidateCount: 3,
+    matchedCount: 2,
+    matches: [{ rideId: "hr-151", rideDateLabel: "2026年8月11日", claims: [{ claimId: "claim:find:hr-151:avgHeartRateBpm", metricKey: "avgHeartRateBpm", value: 151, unit: "bpm", displayValue: "151" }] }],
+    privacy: ["raw_track_excluded", "precise_coordinates_excluded", "source_filename_excluded"],
+  };
+  const result = validateChatOutput(output({ route: "autonomous_tools", reply: "最近 30 天内平均心率超过 150 的骑行有 2 次，最近一次是8月11日，心率 151 bpm。", claimIds: ["claim:loop:1:1"], capabilityKeys: [] }), {
+    decision: classifyChatInput("最近的骑行中，哪次平均心率超过了120？"),
+    loopToolResults: [thresholdFindRide],
+    claimReferences: { "claim:loop:1:1": "claim:find:hr-151:avgHeartRateBpm" },
+    userText: "最近的骑行中，哪次平均心率超过了120？",
+  });
+  assert.equal(result.ok, true);
+});

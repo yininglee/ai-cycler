@@ -201,8 +201,11 @@ test("agreement mapping treats open_chat divergence as a known P3 improvement (C
   assert.equal(classifierAgreesWithRule("history_compare", "capability_gap"), false);
   assert.equal(classifierAgreesWithRule("history_compare", "current_ride"), false);
   assert.equal(classifierAgreesWithRule("capability_gap", "capability_gap"), true);
+  // CHAT-17 P2：open_chat 映射 autonomous_tools（L2b）；纯问候（L0 SOCIAL → social）与
+  // 域外闲聊（out_of_scope）同属开放方向，均计为一致。
   assert.equal(classifierAgreesWithRule("open_chat", "social"), true);
   assert.equal(classifierAgreesWithRule("open_chat", "out_of_scope"), true);
+  assert.equal(classifierAgreesWithRule("open_chat", "autonomous_tools"), true);
   assert.equal(classifierAgreesWithRule("out_of_scope", "out_of_scope"), true);
   assert.equal(classifierAgreesWithRule("unclear", "out_of_scope"), null);
   // 合同完整性：11 个标签全部有期望映射定义（映射返回 boolean；无对应返回 null，typeof null === "object"）。
@@ -263,7 +266,9 @@ test("intent to routing decision maps all 11 intents onto the frozen routing tab
   assert.deepEqual(snapshot("history_compare"), { route: "history_compare", risk: "none", allowModel: true, action: "tool_then_model", reasonCode: "HISTORY_COMPARE" });
   assert.deepEqual(snapshot("capability_gap"), { route: "capability_gap", risk: "none", allowModel: false, action: "deterministic_reply", reasonCode: "CAPABILITY_GAP" });
   assert.deepEqual(snapshot("capabilities"), { route: "capabilities", risk: "none", allowModel: true, action: "tool_then_model", reasonCode: "CAPABILITIES" });
-  assert.deepEqual(snapshot("open_chat"), { route: "social", risk: "none", allowModel: true, action: "deterministic_reply", reasonCode: "SOCIAL" });
+  // CHAT-17 P2：开放/复合问题映射 L2b 自主工具循环（find_ride 首场景）；
+  // 纯问候由 L0 SOCIAL 快路径承接，不经此映射。
+  assert.deepEqual(snapshot("open_chat"), { route: "autonomous_tools", risk: "none", allowModel: true, action: "tool_then_model", reasonCode: "AUTONOMOUS_TOOLS" });
   assert.deepEqual(snapshot("out_of_scope"), { route: "out_of_scope", risk: "none", allowModel: false, action: "deterministic_reply", reasonCode: "OUT_OF_SCOPE" });
   assert.deepEqual(snapshot("unclear"), { route: "clarification", risk: "none", allowModel: false, action: "deterministic_reply", reasonCode: "CLARIFICATION_NEEDED" });
 });

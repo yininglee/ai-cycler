@@ -1,14 +1,37 @@
 import { RIDE_IDENTITY, type ChatRoutingDecision, type ChatSessionSummary } from "./chat-routing.ts";
 import { rideIdentityReply, type RideAnchorOverride } from "./chat-ride-anchor.ts";
 import {
+  CHAT_TOOL_LOOP_MAX_PROVIDER_CALLS,
+  CHAT_TOOL_LOOP_MAX_TOOL_CALLS,
+  CHAT_TOOL_LOOP_TIMEOUT_MS,
   ChatToolOrchestrationError,
+  buildChatToolCatalog,
+  parseChatToolCallRequest,
+  type ChatProviderToolCatalog,
   type ChatToolContext,
+  type ChatToolLoopCallReceipt,
+  type ChatToolLoopRunner,
+  type ChatToolLoopStartResult,
+  type ChatToolLoopTrace,
   type ChatToolRunner,
   type ChatToolTrace,
 } from "./chat-tool-orchestration.ts";
 import { validateChatOutput, type ChatOutputValidationPublic } from "./chat-output-validation.ts";
 import type { ChatOutputRoute } from "./chat-output-validation.ts";
-import { CHAT_COMPARISON_WINDOW_DAYS, type CapabilityToolItem, type CompareRidesClaim, type CompareRidesToolResult, type RideContextToolResult } from "./chat-tools.ts";
+import {
+  CHAT_COMPARISON_WINDOW_DAYS,
+  formatChatMetricValue,
+  type CapabilityToolItem,
+  type ChatComparisonMetricKey,
+  type ChatFindRideMode,
+  type ChatToolResult,
+  type CompareRidesClaim,
+  type CompareRidesToolResult,
+  type FindRideClaim,
+  type FindRideReasonCode,
+  type FindRideToolResult,
+  type RideContextToolResult,
+} from "./chat-tools.ts";
 import { CozeChatWorkflowClient, readCozeChatWorkflowConfig } from "./coze-chat-workflow.ts";
 import { aggregateReply, classifyAggregateQuestion } from "./chat-home.ts";
 import type { RideRecord } from "../domain/ride-schema.ts";
@@ -41,6 +64,11 @@ export type ChatProviderInvocation = {
   route: ChatOutputRoute;
   text: string;
   toolContext?: ChatProviderToolContext;
+  // CHAT-17 P3：L2b 循环上下文——toolCatalog 声明只读工具白名单、各工具输入合同与
+  // 默认锚点记录（首轮随行，不含用户数据）；toolResults 为本轮已执行调用的脱敏投影
+  // （后续轮次随行，Claim 引用编号按调用序命名 claim:loop:<call>:<n>）。
+  toolCatalog?: ChatProviderToolCatalog;
+  toolResults?: ChatProviderLoopToolResult[];
   // CHAT-14 P1：会话白名单摘要（question/route/rideAnchor）——进入 chat_request 投影，
   // 仅用于指代消解与话题延续；Prompt 声明不得将历史问题数字当事实引用。
   sessionSummaries?: Array<{ question: string; route: string; rideAnchor?: string }>;
@@ -48,11 +76,19 @@ export type ChatProviderInvocation = {
   previousOutput?: string;
 };
 
+// CHAT-17 P3：L2b 循环单次工具调用结果投影（chat_request.toolResults 数组元素）。
+export type ChatProviderLoopToolResult = {
+  call: number;
+  context: ChatProviderToolContext;
+};
+
 export type ChatProviderToolContext =
   | { tool: "get_ride_context"; dimensions: string[]; claims: RideContextToolResult["claims"]; limitations: string[] }
   | { tool: "get_capabilities"; capabilities: CapabilityToolItem[] }
   // CHAT-13：历史比较上下文——30 天窗口基线比较投影（claims 含可比/不可比与原因码）。
-  | { tool: "compare_rides"; windowDays: number; anchorStartTime?: string; sampleCount: number; claims: CompareRidesClaim[] };
+  | { tool: "compare_rides"; windowDays: number; anchorStartTime?: string; sampleCount: number; claims: CompareRidesClaim[] }
+  // CHAT-17 P1：find_ride 检索上下文——本人记录窗口内极值/阈值命中投影（P3 L2b 循环接管前）。
+  | { tool: "find_ride"; windowDays: number; metric: string; mode: ChatFindRideMode; threshold?: number; status: "matched" | "no_match"; reasonCodes: FindRideReasonCode[]; candidateCount: number; matchedCount: number; matches: Array<{ rideId: string; rideDateLabel?: string; claims: FindRideClaim[] }> };
 
 type ChatProviderToolProjection = {
   context: ChatProviderToolContext;
@@ -79,13 +115,19 @@ export type ChatAgentResult = {
   execution: ChatAgentExecution;
   modelInvoked: boolean;
   reply: string;
-  fallbackCode?: ChatProviderErrorCode | "TOOLS_PENDING" | "TOOLS_NO_CURRENT_RIDE" | "TOOLS_TIMEOUT" | "TOOLS_UNAVAILABLE" | "TOOLS_EMPTY_CLAIMS" | "TOOLS_ANCHOR_CLARIFY" | "REPAIR_FAILED";
+  // CHAT-17 P3：L2b 循环新增降级码——TOOLS_LOOP_BUDGET_EXHAUSTED（预算耗尽）、
+  // TOOLS_LOOP_INVALID_TOOL_CALL（白名单外/参数非法/越权锚点调用被拒）、
+  // TOOLS_LOOP_NO_MATCH（检索无命中/无可用 Claims 的零模型降级）、
+  // TOOLS_LOOP_FAILED（工具执行失败）。
+  fallbackCode?: ChatProviderErrorCode | "TOOLS_PENDING" | "TOOLS_NO_CURRENT_RIDE" | "TOOLS_TIMEOUT" | "TOOLS_UNAVAILABLE" | "TOOLS_EMPTY_CLAIMS" | "TOOLS_ANCHOR_CLARIFY" | "REPAIR_FAILED" | "TOOLS_LOOP_BUDGET_EXHAUSTED" | "TOOLS_LOOP_INVALID_TOOL_CALL" | "TOOLS_LOOP_NO_MATCH" | "TOOLS_LOOP_FAILED";
   // CHAT-14 P2：本轮解析的骑乘锚点日期（YYYY-MM-DD）——前端写入摘要槽位供后续继承；
   // 锚点澄清轮/无记录轮缺省。公开结果保留（无敏感信息）。
   rideAnchor?: string;
   providerRawOutput?: string;
   toolContext?: ChatToolContext;
   toolTrace?: ChatToolTrace;
+  // CHAT-17 P3：L2b 循环轨迹（脱敏：仅工具名/状态/错误码/耗时与预算计数）。
+  loopTrace?: ChatToolLoopTrace;
   outputValidation?: ChatOutputValidationPublic;
   repairAttempts?: 0 | 1;
 };
@@ -153,6 +195,10 @@ export class HttpChatProvider implements ChatProvider {
           route: input.route,
           text: input.text,
           ...(input.toolContext ? { toolContext: input.toolContext } : {}),
+          // CHAT-17 P5：L2b 循环投影——toolCatalog（首轮，只读工具白名单与锚点）与
+          // toolResults（后续轮次，本轮已执行调用的脱敏投影）。
+          ...(input.toolCatalog ? { toolCatalog: input.toolCatalog } : {}),
+          ...(input.toolResults?.length ? { toolResults: input.toolResults } : {}),
           ...(input.sessionSummaries?.length ? { sessionSummaries: input.sessionSummaries } : {}),
           ...(input.repairInstruction ? { repairInstruction: input.repairInstruction } : {}),
           ...(input.previousOutput ? { previousOutput: input.previousOutput } : {}),
@@ -267,6 +313,9 @@ const REPAIR_NUMERIC_SOURCE: Record<ChatOutputRoute, string> = {
   current_ride: "每个阿拉伯数字必须逐字复制 toolContext.claims 中某个 claim 的 displayValue（数字与单位格式原样照抄），或来自 toolContext.rideDateLabel 的日期数字（如“8 月 17 日”）；不得换算、取整、计算百分比，不得添加时刻、次数等其他数字。",
   capabilities: "本场景回复不得出现任何阿拉伯数字。",
   history_compare: "每个阿拉伯数字必须逐字来自：claim 的 anchor.displayValue、baseline.displayValue、change 的绝对值、relativeChangePercent、windowDays、sampleCount，或 anchorStartTime 的日期数字（如 8 月 19 日）；不得换算、取整或自行计算。",
+  // CHAT-17 P3：L2b 循环——数字必须逐字来自 toolResults 内任一调用结果的 Claims displayValue、
+  // 日期标签、阈值/窗口天数/命中计数，或用户原句数字；不得换算、取整或自行计算。
+  autonomous_tools: "每个阿拉伯数字必须逐字来自 toolResults 中任一调用的：claims 的 displayValue、rideDateLabel 日期数字、threshold、windowDays、candidateCount/matchedCount，或用户原句中的数字；不得换算、取整、计算百分比，不得添加任何其他数字。",
 };
 
 const REPAIR_CLAIM_SOURCE: Record<ChatOutputRoute, string> = {
@@ -274,6 +323,8 @@ const REPAIR_CLAIM_SOURCE: Record<ChatOutputRoute, string> = {
   current_ride: "claimIds 至少一个、且只能引用 toolContext.claims 中存在的 claim:context:* 编号。",
   capabilities: "claimIds 必须是 []；capabilityKeys 至少一个、且全部来自 toolContext.capabilities 的 key。",
   history_compare: "claimIds 至少一个、且只能引用 toolContext.claims 中 status 为 comparable 的 claim:compare:* 编号；不可比 claim 不得引用。",
+  // CHAT-17 P3：L2b 循环——只能引用本轮 toolResults 实际返回的 claim:loop:<call>:<n> 编号。
+  autonomous_tools: "claimIds 至少一个、且只能引用 toolResults 中各调用结果里实际存在的 claim:loop:<调用序号>:<序号> 编号；capabilityKeys 必须是 []。",
 };
 
 function repairInstruction(code: string | undefined, route: ChatOutputRoute): string {
@@ -305,9 +356,9 @@ const METRIC_LABELS: Record<string, string> = {
   activityEnergyKcal: "运动消耗",
 };
 
-function claimsSummaryReply(toolContext: ChatToolContext): string | null {
-  const { toolResult } = toolContext;
-  if (toolResult.tool !== "get_ride_context") return null;
+// CHAT-17 P3：签名改为直接接受工具结果（单工具与 L2b 循环兜底共用）。
+function claimsSummaryReply(toolResult: ChatToolResult | undefined): string | null {
+  if (!toolResult || toolResult.tool !== "get_ride_context") return null;
   const parts = toolResult.claims
     .filter((claim) => claim.kind === "metric" && METRIC_LABELS[claim.key] && claim.displayValue)
     .map((claim) => `${METRIC_LABELS[claim.key]} ${claim.displayValue}${claim.displayUnit && claim.displayUnit !== "duration" ? ` ${claim.displayUnit}` : ""}`);
@@ -334,9 +385,8 @@ type ComparableComparisonClaim = CompareRidesClaim & {
   change: number;
 };
 
-function comparisonSummaryReply(toolContext: ChatToolContext): string | null {
-  const { toolResult } = toolContext;
-  if (toolResult.tool !== "compare_rides") return null;
+function comparisonSummaryReply(toolResult: ChatToolResult | undefined): string | null {
+  if (!toolResult || toolResult.tool !== "compare_rides") return null;
   const parts = toolResult.claims
     .filter((claim): claim is ComparableComparisonClaim =>
       claim.status === "comparable" && claim.claimId !== undefined && claim.anchor !== undefined && claim.baseline !== undefined && claim.change !== undefined)
@@ -386,15 +436,25 @@ function hasComparableClaims(result: CompareRidesToolResult): boolean {
 }
 
 function projectToolContextForProvider(context: ChatToolContext): ChatProviderToolProjection {
-  const { toolResult } = context;
+  return projectToolResultForProvider(context.toolResult, "claim:context", "claim:compare", "claim:find");
+}
+
+// CHAT-17 P3：投影参数化——单工具场景沿用 claim:context/compare/find 前缀；L2b 循环内
+// 按调用序统一命名 claim:loop:<call>:<n>（同工具多次调用不冲突），映射表随投影构建。
+function projectToolResultForProvider(
+  toolResult: ChatToolResult,
+  contextPrefix: string,
+  comparePrefix: string,
+  findPrefix: string,
+): ChatProviderToolProjection {
   if (toolResult.tool === "get_ride_context") {
-    const claimReferences = Object.fromEntries(toolResult.claims.map((claim, index) => [`claim:context:${index + 1}`, claim.claimId]));
+    const claimReferences = Object.fromEntries(toolResult.claims.map((claim, index) => [`${contextPrefix}:${index + 1}`, claim.claimId]));
     return {
       context: {
         tool: toolResult.tool,
         ...(toolResult.rideDateLabel ? { rideDateLabel: toolResult.rideDateLabel } : {}),
         dimensions: [...toolResult.dimensions],
-        claims: toolResult.claims.map((claim, index) => ({ ...claim, claimId: `claim:context:${index + 1}` })),
+        claims: toolResult.claims.map((claim, index) => ({ ...claim, claimId: `${contextPrefix}:${index + 1}` })),
         limitations: [...toolResult.limitations],
       },
       claimReferences,
@@ -406,7 +466,7 @@ function projectToolContextForProvider(context: ChatToolContext): ChatProviderTo
     const claimReferences: Record<string, string> = {};
     const claims = toolResult.claims.map((claim, index) => {
       if (!claim.claimId) return claim;
-      const reference = `claim:compare:${index + 1}`;
+      const reference = `${comparePrefix}:${index + 1}`;
       claimReferences[reference] = claim.claimId;
       return { ...claim, claimId: reference };
     });
@@ -421,12 +481,59 @@ function projectToolContextForProvider(context: ChatToolContext): ChatProviderTo
       claimReferences,
     };
   }
+  // CHAT-17 P1：find_ride 检索投影——引用编号与 matches 内 claims 展开顺序对齐
+  // （claim:find:<n> → claim:find:<rideId>:<metricKey>），no_match 时无引用。
+  if (toolResult.tool === "find_ride") {
+    const claimReferences: Record<string, string> = {};
+    let claimIndex = 0;
+    const matches = toolResult.matches.map((match) => ({
+      rideId: match.rideId,
+      ...(match.rideDateLabel ? { rideDateLabel: match.rideDateLabel } : {}),
+      claims: match.claims.map((claim) => {
+        claimIndex += 1;
+        const reference = `${findPrefix}:${claimIndex}`;
+        claimReferences[reference] = claim.claimId;
+        return { ...claim, claimId: reference };
+      }),
+    }));
+    return {
+      context: {
+        tool: toolResult.tool,
+        windowDays: toolResult.windowDays,
+        metric: toolResult.metric,
+        mode: toolResult.mode,
+        ...(toolResult.threshold !== undefined ? { threshold: toolResult.threshold } : {}),
+        status: toolResult.status,
+        reasonCodes: [...toolResult.reasonCodes],
+        candidateCount: toolResult.candidateCount,
+        matchedCount: toolResult.matchedCount,
+        matches,
+      },
+      claimReferences,
+    };
+  }
   return {
     context: {
       tool: toolResult.tool,
       capabilities: toolResult.capabilities.map((capability) => ({ ...capability, sources: [...capability.sources], dependencyKeys: [...capability.dependencyKeys] })),
     },
   };
+}
+
+// CHAT-17 P3：L2b 循环结果投影——第 N 个已完成调用的 Claims 统一命名为
+// claim:loop:N:1…（跨工具不冲突），映射表合并供输出校验动态溯源。
+function projectLoopToolResults(results: ReadonlyArray<{ tool: ChatToolResult["tool"]; result: ChatToolResult }>): {
+  toolResults: ChatProviderLoopToolResult[];
+  claimReferences: Record<string, string>;
+} {
+  const claimReferences: Record<string, string> = {};
+  const toolResults = results.map((entry, index) => {
+    const prefix = `claim:loop:${index + 1}`;
+    const projection = projectToolResultForProvider(entry.result, prefix, prefix, prefix);
+    Object.assign(claimReferences, projection.claimReferences ?? {});
+    return { call: index + 1, context: projection.context };
+  });
+  return { toolResults, claimReferences };
 }
 
 function validatedProviderResult(input: {
@@ -555,7 +662,7 @@ async function runProviderWithRepair(input: {
   // G-REPAIR-FALLBACK：修复仍失败时，若工具 Claims 可用则给出确定性数据摘要，替代空的安全校验降级话术。
   // CHAT-13：比较场景使用比较 Claims 的确定性摘要（显示值/变化量全部来自工具结果）。
   const summaryReply = input.toolContext
-    ? claimsSummaryReply(input.toolContext) ?? comparisonSummaryReply(input.toolContext)
+    ? claimsSummaryReply(input.toolContext.toolResult) ?? comparisonSummaryReply(input.toolContext.toolResult)
     : null;
   return {
     schemaVersion: CHAT_AGENT_SCHEMA_VERSION,
@@ -570,11 +677,268 @@ async function runProviderWithRepair(input: {
   };
 }
 
+// ---- CHAT-17 P3：L2b 自主工具循环（autonomous_tools 路由）----
+
+// find_ride 无命中的确定性降级话术（零模型调用，按结果原因码解释；数字取自工具结果）。
+function findRideNoMatchReply(result: FindRideToolResult): string {
+  const label = COMPARISON_METRIC_LABELS[result.metric] ?? result.metric;
+  if (result.reasonCodes.includes("ANCHOR_TIME_MISSING")) {
+    return "当前锚点记录缺少出发时间，无法确定检索窗口。可以问我最近一次骑行的解读。";
+  }
+  if (result.reasonCodes.includes("METRIC_MISSING")) {
+    return `最近 ${result.windowDays} 天内的骑行记录中，没有${label}的有效数据，暂时无法回答这个问题。`;
+  }
+  const thresholdText = result.threshold !== undefined ? `${label}超过 ${formatChatMetricValue(result.metric, result.threshold)} 的` : "满足该条件的";
+  return `最近 ${result.windowDays} 天内没有找到${thresholdText}骑行记录。`;
+}
+
+// L2b 修复失败兜底（G-REPAIR-FALLBACK 对应）——优先检索命中摘要，再复用单工具摘要；
+// 数字全部来自工具 Claims 的 displayValue。
+function loopSummaryReply(results: readonly ChatToolResult[]): string | null {
+  for (const toolResult of results) {
+    if (toolResult.tool === "find_ride" && toolResult.status === "matched" && toolResult.matches.length > 0) {
+      const match = toolResult.matches[0]!;
+      const label = COMPARISON_METRIC_LABELS[toolResult.metric] ?? toolResult.metric;
+      const claim = match.claims.find((item) => item.metricKey === toolResult.metric);
+      const value = claim ? `的${label}为 ${claim.displayValue} ${claim.unit}` : "";
+      return `这次回复暂时没能通过安全校验，先直接给你已核实的检索结果：${match.rideDateLabel ? `${match.rideDateLabel}那次骑行` : "命中的那次骑行"}${value}。`;
+    }
+    const summary = claimsSummaryReply(toolResult) ?? comparisonSummaryReply(toolResult);
+    if (summary) return summary;
+  }
+  return null;
+}
+
+function hasUsableLoopClaims(toolResult: ChatToolResult): boolean {
+  if (toolResult.tool === "get_ride_context") return toolResult.claims.length > 0;
+  if (toolResult.tool === "compare_rides") return hasComparableClaims(toolResult);
+  if (toolResult.tool === "find_ride") return toolResult.status === "matched" && toolResult.matches.length > 0;
+  // get_capabilities 无 Claims 投影；L2b 输出合同不允许 capabilityKeys，单独调用不产生可引用证据。
+  return false;
+}
+
+// L2b 循环主体：模型每轮输出 ride-chat-tool-call-v0.1 请求工具（≤3 项/轮，累计 ≤3 次），
+// 编排层校验（白名单/参数/锚点归属）并串行执行后把脱敏投影回传；模型给出
+// ride-chat-output-v0.1 最终回答时经动态溯源白名单校验（一次受限修复），预算耗尽/
+// 被拒调用/无命中/工具失败均为确定性降级（话术零模型生成）。
+async function runAutonomousToolLoop(input: {
+  text: string;
+  decision: ChatRoutingDecision;
+  provider: ChatProvider;
+  loopRunner: ChatToolLoopRunner;
+  requestId?: string;
+  summaries: readonly ChatSessionSummary[];
+  sessionSummaries: Array<{ question: string; route: string; rideAnchor?: string }>;
+  anchorOverride?: RideAnchorOverride;
+}): Promise<ChatAgentResult> {
+  const { decision } = input;
+  const tag = `[chat-trace] [${input.requestId ?? "agent"}]`;
+  const start: ChatToolLoopStartResult = await input.loopRunner.startLoop({
+    text: input.text,
+    decision,
+    summaries: [...input.summaries],
+    ...(input.anchorOverride ? { anchor: input.anchorOverride } : {}),
+  });
+  if (!start.ok) {
+    if (start.code === "TOOLS_ANCHOR_CLARIFY") {
+      console.log(`${tag} → L2b TOOLS_ANCHOR_CLARIFY deterministic (zero model)`);
+      return {
+        schemaVersion: CHAT_AGENT_SCHEMA_VERSION,
+        decision,
+        execution: "template",
+        modelInvoked: false,
+        reply: start.reply ?? "你想问的是哪一次骑行？可以直接告诉我日期。",
+        fallbackCode: "TOOLS_ANCHOR_CLARIFY",
+      };
+    }
+    console.log(`${tag} → L2b startLoop failed code=${start.code}`);
+    return toolFallback(decision, start.code);
+  }
+
+  const anchorRideId = start.anchorRideId;
+  const rideAnchor = start.resolvedAnchor.date;
+  const steps: ChatToolLoopTrace["steps"] = [];
+  const completed: Array<{ tool: ChatToolResult["tool"]; result: ChatToolResult }> = [];
+  const allowedRideIds: string[] = [anchorRideId];
+  let toolCalls = 0;
+  let providerCalls = 0;
+  const startedAt = Date.now();
+  const baseInvocation: ChatProviderInvocation = {
+    requestId: input.requestId ?? crypto.randomUUID(),
+    agentVersion: CHAT_AGENT_SCHEMA_VERSION,
+    route: "autonomous_tools",
+    text: input.text,
+    ...(input.sessionSummaries.length ? { sessionSummaries: input.sessionSummaries } : {}),
+    toolCatalog: buildChatToolCatalog(anchorRideId),
+  };
+  const withLoop = (result: ChatAgentResult, status: ChatToolLoopTrace["status"]): ChatAgentResult => ({
+    ...result,
+    loopTrace: { kind: "autonomous_tools", status, steps, toolCalls, providerCalls, summarySlots: input.summaries.length },
+    ...(rideAnchor ? { rideAnchor } : {}),
+  });
+  const budgetExhausted = (): ChatAgentResult => withLoop({
+    schemaVersion: CHAT_AGENT_SCHEMA_VERSION,
+    decision,
+    execution: "template",
+    modelInvoked: true,
+    reply: "这个问题需要的查询组合较多，超出了本轮对话的处理预算。可以换成更具体的问法，例如「距离最远的那次骑行是哪次」。",
+    fallbackCode: "TOOLS_LOOP_BUDGET_EXHAUSTED",
+  }, "budget_exhausted");
+
+  try {
+    while (true) {
+      if (providerCalls >= CHAT_TOOL_LOOP_MAX_PROVIDER_CALLS || Date.now() - startedAt >= CHAT_TOOL_LOOP_TIMEOUT_MS) {
+        console.log(`${tag} → L2b budget_exhausted | providerCalls=${providerCalls} toolCalls=${toolCalls} elapsed=${Date.now() - startedAt}ms`);
+        return budgetExhausted();
+      }
+      const projection = projectLoopToolResults(completed);
+      const invocation: ChatProviderInvocation = {
+        ...baseInvocation,
+        ...(completed.length > 0 ? { toolResults: projection.toolResults } : {}),
+      };
+      console.log(`${tag} L2b provider.run #${providerCalls + 1} | toolCalls=${toolCalls}/${CHAT_TOOL_LOOP_MAX_TOOL_CALLS} results=${completed.length}`);
+      const response = await input.provider.run(invocation);
+      providerCalls += 1;
+      const request = parseChatToolCallRequest(response.rawText);
+      if (!request) {
+        // 最终回答：动态溯源白名单校验 + 一次受限修复（不计入循环模型调用预算）。
+        const validationContext = {
+          decision,
+          loopToolResults: completed.map((entry) => entry.result),
+          claimReferences: projection.claimReferences,
+          userText: input.text,
+        };
+        const firstValidation = validateChatOutput(response.rawText, validationContext);
+        if (firstValidation.ok) {
+          console.log(`${tag} L2b final answer ACCEPTED | providerCalls=${providerCalls} toolCalls=${toolCalls}`);
+          return withLoop({
+            schemaVersion: CHAT_AGENT_SCHEMA_VERSION,
+            decision,
+            execution: "validated",
+            modelInvoked: true,
+            reply: firstValidation.output.reply,
+            outputValidation: firstValidation.publicResult,
+            repairAttempts: 0,
+          }, "completed");
+        }
+        console.log(`${tag} L2b final answer REJECTED | code=${firstValidation.publicResult.code ?? "ok"} → repair #1`);
+        const repaired = await input.provider.run({
+          ...invocation,
+          repairInstruction: repairInstruction(firstValidation.publicResult.code, "autonomous_tools"),
+          previousOutput: response.rawText,
+        });
+        const repairedValidation = validateChatOutput(repaired.rawText, validationContext);
+        if (repairedValidation.ok) {
+          console.log(`${tag} L2b repair ACCEPTED | providerCalls=${providerCalls} toolCalls=${toolCalls}`);
+          return withLoop({
+            schemaVersion: CHAT_AGENT_SCHEMA_VERSION,
+            decision,
+            execution: "repaired",
+            modelInvoked: true,
+            reply: repairedValidation.output.reply,
+            outputValidation: repairedValidation.publicResult,
+            repairAttempts: 1,
+          }, "completed");
+        }
+        console.log(`${tag} L2b repair STILL REJECTED | code=${repairedValidation.publicResult.code ?? "ok"} → REPAIR_FAILED → claims summary fallback`);
+        const summaryReply = loopSummaryReply(completed.map((entry) => entry.result));
+        return withLoop({
+          schemaVersion: CHAT_AGENT_SCHEMA_VERSION,
+          decision,
+          execution: "template",
+          modelInvoked: true,
+          reply: summaryReply ?? "对话模型输出未通过当前安全校验；已切换为受控回复。",
+          fallbackCode: "REPAIR_FAILED",
+          repairAttempts: 1,
+          outputValidation: repairedValidation.publicResult,
+        }, "completed");
+      }
+      if (toolCalls + request.calls.length > CHAT_TOOL_LOOP_MAX_TOOL_CALLS) {
+        console.log(`${tag} → L2b tool budget exceeded | toolCalls=${toolCalls} + requested=${request.calls.length}`);
+        return budgetExhausted();
+      }
+      const receipts: readonly ChatToolLoopCallReceipt[] = await input.loopRunner.executeLoopCalls({ calls: request.calls, anchorRideId, allowedRideIds });
+      for (const receipt of receipts) {
+        steps.push({
+          tool: receipt.tool,
+          status: receipt.status,
+          ...(receipt.status !== "completed" ? { errorCode: receipt.errorCode } : {}),
+          durationMs: receipt.durationMs,
+        });
+        if (receipt.status === "rejected") {
+          console.log(`${tag} → L2b invalid_tool_call | tool=${receipt.tool} code=${receipt.errorCode}`);
+          return withLoop({
+            schemaVersion: CHAT_AGENT_SCHEMA_VERSION,
+            decision,
+            execution: "template",
+            modelInvoked: true,
+            reply: "这个查询请求不在当前允许的只读工具范围内，我不能按这种方式查询。可以换成支持的问法，例如「距离最远的那次骑行是哪次」。",
+            fallbackCode: "TOOLS_LOOP_INVALID_TOOL_CALL",
+          }, "invalid_tool_call");
+        }
+        if (receipt.status === "failed") {
+          console.log(`${tag} → L2b tool failed | tool=${receipt.tool} code=${receipt.errorCode}`);
+          return withLoop({
+            schemaVersion: CHAT_AGENT_SCHEMA_VERSION,
+            decision,
+            execution: "template",
+            modelInvoked: true,
+            reply: receipt.errorCode === "TOOLS_NO_CURRENT_RIDE"
+              ? "还没有可供查看的当前骑行记录。导入一条自己的骑行记录后再试。"
+              : "当前骑行数据暂时不可用；我不会使用未经授权或不完整的数据回答。",
+            fallbackCode: receipt.errorCode,
+          }, "failed");
+        }
+        completed.push({ tool: receipt.result.tool, result: receipt.result });
+        allowedRideIds.push(receipt.result.rideId);
+        // find_ride 的命中记录（matches[].rideId）同样进入允许集合——模型可用返回的
+        // rideId 做后续追问（get_ride_context/compare_rides），仍限本人本轮工具结果范围。
+        if (receipt.result.tool === "find_ride") {
+          for (const match of receipt.result.matches) allowedRideIds.push(match.rideId);
+        }
+        toolCalls += 1;
+      }
+      // 全空 Claims 短路：所有已完成调用都无可用 Claims（检索无命中/指标缺失）→ 零模型确定性降级。
+      if (completed.length > 0 && completed.every((entry) => !hasUsableLoopClaims(entry.result))) {
+        const noMatchResult = completed
+          .map((entry) => entry.result)
+          .find((result): result is FindRideToolResult => result.tool === "find_ride" && result.status === "no_match");
+        console.log(`${tag} → L2b no_match deterministic | reason=${noMatchResult?.reasonCodes.join(",") ?? "empty_claims"}`);
+        return withLoop({
+          schemaVersion: CHAT_AGENT_SCHEMA_VERSION,
+          decision,
+          execution: "template",
+          modelInvoked: true,
+          reply: noMatchResult
+            ? findRideNoMatchReply(noMatchResult)
+            : "本轮查询没有返回可引用的数据结果，暂时无法回答这个问题。可以问得更具体一些，例如「距离最远的那次骑行是哪次」。",
+          fallbackCode: "TOOLS_LOOP_NO_MATCH",
+        }, "no_match");
+      }
+    }
+  } catch (error) {
+    if (error instanceof ChatProviderError) {
+      console.log(`${tag} L2b provider error code=${error.code}`);
+      return withLoop({
+        schemaVersion: CHAT_AGENT_SCHEMA_VERSION,
+        decision,
+        execution: "template",
+        modelInvoked: true,
+        reply: "对话服务暂时不可用；我不会使用未经验证的结果回答。",
+        fallbackCode: error.code,
+      }, "failed");
+    }
+    throw error;
+  }
+}
+
 export async function runChatAgent(input: {
   text: string;
   decision: ChatRoutingDecision;
   provider?: ChatProvider;
   toolRunner?: ChatToolRunner;
+  // CHAT-17 P3：L2b 循环 runner（autonomous_tools 路由必需——模型自主组合调用只读工具）。
+  loopRunner?: ChatToolLoopRunner;
   requestId?: string;
   aggregateRecords?: RideRecord[];
   // CHAT-14 P1/P2：会话白名单摘要（经网关校验）与锚点覆写（确认轮由 API 层解析后传入）。
@@ -608,6 +972,29 @@ export async function runChatAgent(input: {
     const reply = kind ? aggregateReply(kind, input.aggregateRecords ?? []) : templateReply(decision);
     console.log(`${tag} → AGGREGATE server-side | kind=${kind ?? "none"} records=${input.aggregateRecords?.length ?? 0} reply.len=${reply.length}`);
     return { schemaVersion: CHAT_AGENT_SCHEMA_VERSION, decision, execution: "template", modelInvoked: false, reply };
+  }
+  // CHAT-17 P3：L2b 自主工具循环——模型在只读工具白名单与既有预算内自行组合调用工具
+  // （find_ride 首场景）；无模型配置时无循环可言（Demo 状态确定性降级）。
+  if (decision.route === "autonomous_tools") {
+    if (!input.provider) {
+      console.log(`${tag} → MODEL_NOT_CONFIGURED (no provider, L2b loop)`);
+      return fallback(decision, "MODEL_NOT_CONFIGURED");
+    }
+    if (!input.loopRunner) {
+      console.log(`${tag} → TOOLS_UNAVAILABLE | loopRunner not provided`);
+      return toolFallback(decision, "TOOLS_UNAVAILABLE");
+    }
+    console.log(`${tag} → autonomous tool loop | invoking runAutonomousToolLoop...`);
+    return await runAutonomousToolLoop({
+      text: input.text,
+      decision,
+      provider: input.provider,
+      loopRunner: input.loopRunner,
+      requestId: input.requestId,
+      summaries: input.summaries ?? [],
+      sessionSummaries,
+      ...(input.anchorOverride ? { anchorOverride: input.anchorOverride } : {}),
+    });
   }
   if (decision.action === "tool_then_model") {
     if (decision.route !== "current_ride" && decision.route !== "capabilities" && decision.route !== "history_compare") {

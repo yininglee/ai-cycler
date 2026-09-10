@@ -1,10 +1,10 @@
 # `ride_chat_v1` 扣子开发环境配置指南
 
-> 工作项：`CHAT-11`（第 1–6 节）；`CHAT-12` P2（第 7 节，`ride_chat_classifier_v1` 影子模式）；`CHAT-13`（第 8 节，`history_compare` 比较场景）；`CHAT-14`（第 9 节，会话内上下文 `sessionSummaries`）  
+> 工作项：`CHAT-11`（第 1–6 节）；`CHAT-12` P2（第 7 节，`ride_chat_classifier_v1` 影子模式）；`CHAT-13`（第 8 节，`history_compare` 比较场景）；`CHAT-14`（第 9 节，会话内上下文 `sessionSummaries`）；`CHAT-17`（第 10 节，L2b 自主工具循环 `autonomous_tools`）  
 > Workflow：`ride_chat_v1`  
 > 输入合同：`ride-chat-workflow-input-v0.1`  
-> Prompt：[`prompts/ride-chat-workflow-v0.1.md`](../prompts/ride-chat-workflow-v0.1.md) `ride-chat-prompt-v0.1.5`（2026-09-09：v0.1.5 `chat_request` 新增可选 `sessionSummaries` 白名单摘要与指代消解使用规则——摘要仅用于理解指代，历史问题中的数字不是事实来源；v0.1.4 数字表达“逐字复制”强化与 `rideDateLabel` 日期标签；v0.1.3 新增 `history_compare` 表达规则；粘贴时以 v0.1.5 为准）  
-> 输出合同：`ride-chat-output-v0.1`  
+> Prompt：[`prompts/ride-chat-workflow-v0.1.md`](../prompts/ride-chat-workflow-v0.1.md) `ride-chat-prompt-v0.1.6`（2026-09-10：v0.1.6 `CHAT-17`——新增 `autonomous_tools` 路由 L2b 自主工具循环协议：`toolCatalog` 工具目录、`toolResults` 脱敏投影、`ride-chat-tool-call-v0.1` 双模式输出与 `claim:loop:N:M` 动态溯源；v0.1.5 `sessionSummaries` 白名单摘要；v0.1.4 数字“逐字复制”强化；v0.1.3 `history_compare` 表达规则；粘贴时以 v0.1.6 为准）  
+> 输出合同：`ride-chat-output-v0.1`（`autonomous_tools` 循环中间输出：`ride-chat-tool-call-v0.1`）  
 > 状态：`Review`。用于本地 Demo 联调；不代表 `chat_enabled` 已开放。
 
 ## 0. 模型版本策略
@@ -19,7 +19,7 @@
 
 ```mermaid
 flowchart LR
-  S["开始：3 个字符串变量"] --> L["LLM：Chat Prompt v0.1.5（系统 + 用户提示词）"]
+  S["开始：3 个字符串变量"] --> L["LLM：Chat Prompt v0.1.6（系统 + 用户提示词）"]
   L --> E["结束：chat_output（String/Object）"]
   E --> V["服务端：Schema / Claim / 数字 / 安全校验"]
   V -->|"首次不通过"| L
@@ -45,14 +45,14 @@ flowchart LR
    - 重试设为“不重试”，异常处理设为“中断流程”。服务端最多允许两次调用，不能在扣子侧再加重试。
    - 将 [`prompts/ride-chat-workflow-v0.1.md`](../prompts/ride-chat-workflow-v0.1.md) “系统提示词”一节的 `text` 代码块完整粘贴为 LLM 节点系统提示词。
    - 将同文件“用户输入提示词”一节的 `text` 代码块完整粘贴为用户提示词；其中 `{{chat_request}}`、`{{repair_instruction}}`、`{{previous_output}}` 引用开始节点同名变量，扣子在运行时替换为其值。
-   - 将输出设置为 JSON 或 JSON 对象文本。不要让节点额外输出思考过程、Markdown 或解释。
+   - 将输出设置为**文本**模式（不绑定 JSON 结构化 Schema）。`ride-chat-prompt-v0.1.6` 起为双模式输出——最终回答五字段 `ride-chat-output-v0.1` 与循环中间轮两字段 `ride-chat-tool-call-v0.1` 二选一，由模型按系统提示词规则决定；扣子 JSON 输出模式绑定单一字段结构无法表达二者，且平台按 Schema 填充的默认字段（如五字段输出多出 `calls: []`）会违反服务端精确键集校验导致整轮拒绝。不要让节点额外输出思考过程、Markdown 或解释。
 4. 添加结束节点，返回唯一变量：
 
 | 结束节点变量 | 类型 | 映射来源 |
 |---|---|---|
 | `chat_output` | String 或 Object | LLM 节点完整输出（JSON 文本，或 JSON 输出模式下解析后的对象） |
 
-`chat_output` 必须承载完整的五字段输出，而不是拆分后的多个字段。两种形态服务端适配器均可归一化：String 形态值为完整 JSON 文本；Object 形态（LLM 节点 JSON 输出模式整体引用，当前已发布 `v0.0.4` 即此形态，Prompt `ride-chat-prompt-v0.1.5`）对象本身即五字段结构、首字段为 `schemaVersion`。归一化后服务端仍执行完整 Schema 校验，扣子侧结构不改变任何校验或安全边界。可用 [`coze/ride-chat-output-v0.1-example.json`](ride-chat-output-v0.1-example.json) 检查结构。
+`chat_output` 必须承载完整的输出 JSON，而不是拆分后的多个字段。两种形态服务端适配器均可归一化：String 形态值为完整 JSON 文本（**v0.1.6 推荐形态**——双模式输出下结构选择由模型按 Prompt 决定、服务端按 `schemaVersion` 区分解析）；Object 形态（LLM 节点 JSON 输出模式整体引用，v0.1.5 时代的 `v0.0.4` 即此形态）对象本身即输出结构、首字段为 `schemaVersion`——但 JSON 输出模式绑定单一字段结构，v0.1.6 双结构（五字段/两字段二选一）下不适用，升级时应将 LLM 节点输出改为文本模式、`chat_output` 改为 String。归一化后服务端仍执行完整 Schema 校验（精确键集），扣子侧结构不改变任何校验或安全边界。可用 [`coze/ride-chat-output-v0.1-example.json`](ride-chat-output-v0.1-example.json) 检查结构。
 
 ```json
 {
@@ -356,3 +356,67 @@ Prompt 升级到 `v0.1.5`（[prompts/ride-chat-workflow-v0.1.md](../prompts/ride
 1. 粘贴 v0.1.5 Prompt 并发布后，用 3.1 节调试输入传入含 `sessionSummaries` 的 `chat_request`，确认输出仍为五字段 JSON 且事实全部来自 `toolContext`；
 2. 本地 `/chat` 页连续提问："最近一次骑行的距离是多少？"→"这次的心率怎么样？"：第二问继承锚点（回复基于同一记录），不出现日期混淆或摘要复述；
 3. 新会话直接问"这次骑行的平均功率是多少？"：不调用模型，返回确定性确认话术（含最近一次记录日期）；回答"是的"后重答原问题。
+
+## 10. L2b 自主工具循环 `autonomous_tools`（`CHAT-17`）
+
+`CHAT-17` 起 `autonomous_tools` 路由（`find_ride` 首场景）进入 L2b 自主工具循环：模型在只读工具白名单与既有预算内自行组合调用工具回答开放/复合问题。循环由服务端编排（`ride_chat_v1` 仍是单 LLM 节点，服务端多次调用该节点），扣子侧无需新增节点或变量。
+
+### 10.1 需要在扣子侧做的事
+
+Prompt 升级到 `v0.1.6`（[prompts/ride-chat-workflow-v0.1.md](../prompts/ride-chat-workflow-v0.1.md)）：重新完整粘贴两个 `text` 代码块并发布。Workflow 结构（开始节点 3 个变量、单 LLM 节点、结束节点 `chat_output`）与输入变量合同均不变——`toolCatalog` 与 `toolResults` 都在 `chat_request` JSON 字符串内部。**输出配置需调整**：v0.1.6 双模式输出（最终回答五字段 / 工具调用请求两字段）下，LLM 节点输出改为**文本**模式（不绑定 JSON 结构化 Schema），结束节点 `chat_output` 改为 String——此前 v0.1.5 的 JSON 输出模式（Object 形态）绑定单一字段结构，无法表达双结构，平台填充的默认字段会被服务端精确键集校验拒绝（见第 2 节）。分类器 Prompt 同步升级到 `v0.3`（[prompts/ride-chat-classifier-v0.1.md](../prompts/ride-chat-classifier-v0.1.md)）：跨记录筛选/排名问法从 `capability_gap` 迁入 `open_chat`。
+
+### 10.2 模型收到的循环请求形状
+
+首轮（无已完成调用，携带工具目录）：
+
+```json
+{
+  "agent": "ride_chat_v1",
+  "agentVersion": "ride-chat-agent-v0.1",
+  "route": "autonomous_tools",
+  "text": "最近的骑行中，哪次距离最远？",
+  "toolCatalog": {
+    "schemaVersion": "ride-chat-tool-catalog-v0.1",
+    "anchorRideId": "ride-0820",
+    "tools": [{ "tool": "find_ride", "input": { "metric": ["distanceM", "avgHeartRateBpm"], "mode": ["max", "min", "threshold"] } }]
+  }
+}
+```
+
+后续轮（携带已完成调用的脱敏投影，Claims 引用编号改写为 `claim:loop:N:M`）：
+
+```json
+{
+  "agent": "ride_chat_v1",
+  "agentVersion": "ride-chat-agent-v0.1",
+  "route": "autonomous_tools",
+  "text": "最近的骑行中，哪次距离最远？",
+  "toolCatalog": { "schemaVersion": "ride-chat-tool-catalog-v0.1", "anchorRideId": "ride-0820", "tools": [] },
+  "toolResults": [
+    {
+      "call": 1,
+      "context": {
+        "tool": "find_ride",
+        "windowDays": 30,
+        "metric": "distanceM",
+        "mode": "max",
+        "candidateCount": 3,
+        "matchedCount": 1,
+        "matches": [{ "rideId": "ride-0815", "rideDateLabel": "8月15日", "claims": [{ "claimId": "claim:loop:1:1", "displayValue": "55.0", "unit": "km" }] }]
+      }
+    }
+  ]
+}
+```
+
+### 10.3 双模式输出与循环预算
+
+- **工具调用请求**（数据不足时）：`{"schemaVersion": "ride-chat-tool-call-v0.1", "calls": [{"tool": "find_ride", "input": {...}}]}`，每轮 1-3 项、整轮累计工具调用 ≤3 次；`rideId` 缺省用 `toolCatalog.anchorRideId`，指定时只能来自 `toolResults` 返回的 `rideId`。
+- **最终回答**（数据充足时）：标准五字段 `ride-chat-output-v0.1`，`route` 为 `autonomous_tools`，`claimIds` 至少一个且全部来自 `claim:loop:N:M`，`capabilityKeys` 为 `[]`。
+- **服务端预算**：模型调用 ≤5 次、整轮总时限 30 秒、一次受限修复；白名单外工具/非法参数/越权 `rideId` 的调用被拒后整轮立即终止为受控回复；预算耗尽、检索无命中、工具失败均为确定性降级话术（零模型生成）。
+
+### 10.4 验收清单
+
+1. 粘贴 v0.1.6 Prompt 并发布后，用 10.2 节首轮形状调试：确认输出为 `ride-chat-tool-call-v0.1` 工具调用请求（如 `find_ride` + `{"metric": "distanceM", "mode": "max"}`）；
+2. 传入含 `toolResults` 的后续轮：确认输出为五字段最终回答，`claimIds` 引用 `claim:loop:1:1` 之类实际存在的编号，数字全部来自投影结果（无编造/换算/取整）；
+3. 本地 `/chat` 页问"最近的骑行中，哪次距离最远？"：走完整循环（`chat_completed` 事件 `loopStatus=completed`）；问"哪次平均心率超过了250？"：返回确定性无命中话术（`loopStatus=no_match`）。

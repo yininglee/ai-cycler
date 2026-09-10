@@ -3,7 +3,7 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 import { runChatAgent } from "../src/chat/chat-agent.ts";
-import { createChatToolRunner } from "../src/chat/chat-tool-orchestration.ts";
+import { createChatToolLoopRunner, createChatToolRunner } from "../src/chat/chat-tool-orchestration.ts";
 import { classifyChatInput } from "../src/chat/chat-routing.ts";
 import { getRideFixture } from "../src/fixtures/rides.ts";
 import type { ApplicationRepository } from "../src/persistence/application-repository.ts";
@@ -12,7 +12,7 @@ type FixedCase = {
   caseId: string;
   input: string;
   fixture?: string;
-  expected: { route: string; action?: string; provider?: string; fallbackCode?: string; tool?: string; dimensions?: string[] };
+  expected: { route: string; action?: string; provider?: string; fallbackCode?: string; tool?: string; dimensions?: string[]; loopStatus?: string };
 };
 
 const fixedSet = JSON.parse(await readFile("eval/ride-chat-v0.1/cases.json", "utf8")) as { datasetId: string; cases: FixedCase[] };
@@ -42,7 +42,7 @@ const runner = createChatToolRunner(repository, "owner-a");
 
 test("AEVAL-M3-CHAT fixed set drives the frozen routing contract", async () => {
   assert.equal(fixedSet.datasetId, "AEVAL-M3-CHAT");
-  assert.equal(fixedSet.cases.length, 27);
+  assert.equal(fixedSet.cases.length, 34);
 
   for (const item of fixedSet.cases) {
     const decision = classifyChatInput(item.input);
@@ -87,4 +87,93 @@ test("AEVAL-M3-CHAT anchor cases drive the CHAT-14 ride-anchor contract", async 
   assert.deepEqual(ordinalRun.trace.dimensions, ["power"]);
   assert.equal(ordinalRun.resolvedAnchor?.date, "2026-08-20");
   assert.equal(ordinalRun.resolvedAnchor?.source, "explicit_ordinal");
+});
+
+// CHAT-17（固定集 v0.6）：L2b 自主工具循环用例驱动循环合同——检索成功（completed）、
+// 阈值无命中（no_match）走真实编排循环；失败注入 fixture 用例（预算耗尽/白名单外/
+// 越权锚点/无 Provider）由 Runner 层 fixture 承载，此处校验 loopStatus 期望完备。
+test("AEVAL-M3-CHAT L2b cases drive the CHAT-17 autonomous tool loop contract", async () => {
+  const l2bCases = fixedSet.cases.filter((item) => item.expected.route === "autonomous_tools");
+  assert.equal(l2bCases.length, 8);
+  const knownLoopStatuses = new Set(["completed", "budget_exhausted", "no_match", "invalid_tool_call"]);
+  // 循环启动并产生轨迹的用例必须声明 loopStatus；无 Provider 用例循环不启动（无轨迹）。
+  const loopTracedCases = l2bCases.filter((item) => item.expected.provider !== "never");
+  assert.equal(loopTracedCases.length, 7);
+  for (const item of loopTracedCases) {
+    assert.ok(item.expected.loopStatus && knownLoopStatuses.has(item.expected.loopStatus), `${item.caseId} loopStatus`);
+    if (item.expected.fallbackCode?.startsWith("TOOLS_LOOP_")) {
+      assert.notEqual(item.expected.loopStatus, "completed", `${item.caseId} degraded loopStatus`);
+    }
+  }
+
+  // CHAT-REG-19（find_ride 极值成功）：模型检索后引用检索 Claims 回答（距离并列时
+  // max 模式按最新出发时间破签，仍返回唯一命中）。
+  const l2bRepository = {
+    listRides: async (ownerId: string) => ownerId === "owner-a" ? RECORDS.map((record) => ({ record })) : [],
+    getRide: async (ownerId: string, rideId: string) => ownerId === "owner-a" ? RECORDS.find((record) => record.activity.rideId === rideId) ?? null : null,
+    getProfile: async () => null,
+  } as unknown as ApplicationRepository;
+  const loopRunner = createChatToolLoopRunner(l2bRepository, "owner-a");
+  const successCase = fixedSet.cases.find((item) => item.caseId === "CHAT-REG-19");
+  assert.ok(successCase, "CHAT-REG-19 present");
+  const successResult = await runChatAgent({
+    text: successCase.input,
+    decision: classifyChatInput(successCase.input),
+    provider: {
+      async run(invocation) {
+        if (invocation.toolResults === undefined) {
+          return { rawText: JSON.stringify({ schemaVersion: "ride-chat-tool-call-v0.1", calls: [{ tool: "find_ride", input: { metric: "distanceM", mode: "max" } }] }) };
+        }
+        const match = invocation.toolResults[0]?.context.tool === "find_ride"
+          ? (invocation.toolResults[0].context as { matches: Array<{ rideDateLabel?: string; claims: Array<{ displayValue: string; unit: string; claimId: string }> }> }).matches[0]
+          : undefined;
+        const claim = match?.claims[0];
+        return {
+          rawText: JSON.stringify({
+            schemaVersion: "ride-chat-output-v0.1",
+            route: "autonomous_tools",
+            reply: `距离最远的是${match?.rideDateLabel ?? ""}那次骑行，共 ${claim?.displayValue ?? ""} ${claim?.unit ?? ""}。`,
+            claimIds: [claim?.claimId ?? ""],
+            capabilityKeys: [],
+          }),
+        };
+      },
+    },
+    loopRunner,
+  });
+  assert.equal(successResult.execution, "validated");
+  assert.equal(successResult.loopTrace?.status, "completed");
+  assert.equal(successResult.loopTrace?.toolCalls, 1);
+  assert.deepEqual(successResult.loopTrace?.steps.map((step) => [step.tool, step.status]), [["find_ride", "completed"]]);
+
+  // CHAT-REG-21（阈值无命中）：工具检索无匹配 → 确定性降级，零额外模型调用。
+  const noMatchCase = fixedSet.cases.find((item) => item.caseId === "CHAT-REG-21");
+  assert.ok(noMatchCase, "CHAT-REG-21 present");
+  let noMatchProviderCalls = 0;
+  const noMatchResult = await runChatAgent({
+    text: noMatchCase.input,
+    decision: classifyChatInput(noMatchCase.input),
+    provider: {
+      async run() {
+        noMatchProviderCalls += 1;
+        return { rawText: JSON.stringify({ schemaVersion: "ride-chat-tool-call-v0.1", calls: [{ tool: "find_ride", input: { metric: "avgHeartRateBpm", mode: "threshold", threshold: 250 } }] }) };
+      },
+    },
+    loopRunner,
+  });
+  assert.equal(noMatchResult.execution, "template");
+  assert.equal(noMatchResult.fallbackCode, "TOOLS_LOOP_NO_MATCH");
+  assert.equal(noMatchResult.loopTrace?.status, "no_match");
+  assert.equal(noMatchProviderCalls, 1);
+
+  // CHAT-REG-25（无 Provider）：autonomous_tools 无模型配置 → 确定性降级，零模型调用。
+  const noProviderCase = fixedSet.cases.find((item) => item.caseId === "CHAT-REG-25");
+  assert.ok(noProviderCase, "CHAT-REG-25 present");
+  const noProviderResult = await runChatAgent({
+    text: noProviderCase.input,
+    decision: classifyChatInput(noProviderCase.input),
+    loopRunner,
+  });
+  assert.equal(noProviderResult.modelInvoked, false);
+  assert.equal(noProviderResult.fallbackCode, "MODEL_NOT_CONFIGURED");
 });

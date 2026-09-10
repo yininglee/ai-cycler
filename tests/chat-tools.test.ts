@@ -5,6 +5,7 @@ import { join } from "node:path";
 import test from "node:test";
 
 import {
+  CHAT_FIND_RIDE_MAX_MATCHES,
   CHAT_TOOL_MAX_RESULT_BYTES,
   ChatToolError,
   executeChatTool,
@@ -120,6 +121,8 @@ test("chat tools never call repository write methods", async () => {
     deleteAccount: async () => { writes.push("deleteAccount"); },
   };
   await executeChatTool(repository, "owner", parseChatToolInvocation({ tool: "get_capabilities", input: { rideId: "read-only-ride", caps: ["distance"] } }));
+  // CHAT-17：find_ride 检索路径同样只读（stub listRides 为空 → no_match，不产生写调用）。
+  await executeChatTool(repository, "owner", parseChatToolInvocation({ tool: "find_ride", input: { rideId: "read-only-ride", metric: "distanceM", mode: "max", metrics: ["distanceM"], windowDays: 30 } }));
   assert.deepEqual(writes, []);
 });
 
@@ -193,4 +196,163 @@ test("compare_rides validates metrics against the whitelist and the window bound
   assert.throws(() => parseChatToolInvocation({ tool: "compare_rides", input: { rideId: "ride-1", metrics: ["distanceM"], windowDays: 0 } }), (error) => errorCode(error) === "INVALID_INPUT");
   assert.throws(() => parseChatToolInvocation({ tool: "compare_rides", input: { rideId: "ride-1", metrics: ["distanceM"], windowDays: 366 } }), (error) => errorCode(error) === "INVALID_INPUT");
   assert.throws(() => parseChatToolInvocation({ tool: "compare_rides", input: { rideId: "ride-1", metrics: ["distanceM"] } }), (error) => errorCode(error) === "INVALID_INPUT");
+});
+
+// CHAT-17 P1：find_ride 只读检索工具——本人记录窗口内按指标白名单做极值/阈值筛选。
+
+// 检索测试记录：按 fixture 派生并覆盖出发时间（窗口与排序控制）。
+function findRideRecord(fixtureId: string, rideId: string, startTime: string) {
+  const record = privateRecord(fixtureId, rideId);
+  record.activity.startTime = startTime;
+  return record;
+}
+
+test("find_ride validates mode, metric whitelist, threshold presence and window bounds (CHAT-17)", () => {
+  // 非白名单指标 / 非法模式
+  assert.throws(() => parseChatToolInvocation({ tool: "find_ride", input: { rideId: "ride-1", metric: "maxSpeedMps", mode: "max", metrics: ["distanceM"], windowDays: 30 } }), (error) => errorCode(error) === "INVALID_INPUT");
+  assert.throws(() => parseChatToolInvocation({ tool: "find_ride", input: { rideId: "ride-1", metric: "distanceM", mode: "average", metrics: ["distanceM"], windowDays: 30 } }), (error) => errorCode(error) === "INVALID_INPUT");
+  // threshold 模式缺 threshold / threshold 非数字；其他模式携带 threshold（多余键）
+  assert.throws(() => parseChatToolInvocation({ tool: "find_ride", input: { rideId: "ride-1", metric: "avgHeartRateBpm", mode: "threshold", metrics: ["avgHeartRateBpm"], windowDays: 30 } }), (error) => errorCode(error) === "INVALID_INPUT");
+  assert.throws(() => parseChatToolInvocation({ tool: "find_ride", input: { rideId: "ride-1", metric: "avgHeartRateBpm", mode: "threshold", threshold: "120", metrics: ["avgHeartRateBpm"], windowDays: 30 } }), (error) => errorCode(error) === "INVALID_INPUT");
+  assert.throws(() => parseChatToolInvocation({ tool: "find_ride", input: { rideId: "ride-1", metric: "distanceM", mode: "max", threshold: 120, metrics: ["distanceM"], windowDays: 30 } }), (error) => errorCode(error) === "INVALID_INPUT");
+  // 窗口上限 30 天 / 指标枚举去重与空集
+  assert.throws(() => parseChatToolInvocation({ tool: "find_ride", input: { rideId: "ride-1", metric: "distanceM", mode: "max", metrics: ["distanceM"], windowDays: 31 } }), (error) => errorCode(error) === "INVALID_INPUT");
+  assert.throws(() => parseChatToolInvocation({ tool: "find_ride", input: { rideId: "ride-1", metric: "distanceM", mode: "max", metrics: ["distanceM", "distanceM"], windowDays: 30 } }), (error) => errorCode(error) === "INVALID_INPUT");
+  assert.throws(() => parseChatToolInvocation({ tool: "find_ride", input: { rideId: "ride-1", metric: "distanceM", mode: "max", metrics: [], windowDays: 30 } }), (error) => errorCode(error) === "INVALID_INPUT");
+  assert.throws(() => parseChatToolInvocation({ tool: "find_ride", input: { rideId: "ride-1", metric: "distanceM", mode: "max", metrics: ["distanceM"], windowDays: 30, userId: "other" } }), (error) => errorCode(error) === "INVALID_INPUT");
+});
+
+test("find_ride max mode returns the farthest in-window ride with claim projection and owner isolation (CHAT-17)", async () => {
+  const root = await mkdtemp(join(tmpdir(), "chat-tools-"));
+  try {
+    const repository = new FileApplicationRepository(root);
+    // 窗口外（>30 天）与他人记录不参与；锚点本身参与候选。
+    await repository.saveRide("owner-a", comparisonRecord("l3-fit-power", "outside-window", "2026-07-01T08:00:00Z", 80));
+    await repository.saveRide("owner-b", comparisonRecord("l3-fit-power", "other-owner", "2026-08-16T08:00:00Z", 99));
+    await repository.saveRide("owner-a", comparisonRecord("l3-fit-power", "history-short", "2026-08-10T08:00:00Z", 30));
+    await repository.saveRide("owner-a", comparisonRecord("l3-fit-power", "history-far", "2026-08-15T08:00:00Z", 55));
+    await repository.saveRide("owner-a", comparisonRecord("l3-fit-power", "anchor-ride", "2026-08-20T08:00:00Z", 42));
+    const invocation = parseChatToolInvocation({ tool: "find_ride", input: { rideId: "anchor-ride", metric: "distanceM", mode: "max", metrics: ["distanceM", "avgHeartRateBpm"], windowDays: 30 } });
+    const result = await executeChatTool(repository, "owner-a", invocation);
+    assert.equal(result.tool, "find_ride");
+    if (result.tool !== "find_ride") return;
+    assert.equal(result.status, "matched");
+    assert.equal(result.matchedCount, 1);
+    assert.equal(result.candidateCount, 3);
+    assert.equal(result.matches.length, 1);
+    const match = result.matches[0];
+    assert.equal(match.rideId, "history-far");
+    assert.equal(match.rideDateLabel, "2026年8月15日");
+    const distanceClaim = match.claims.find((claim) => claim.metricKey === "distanceM");
+    assert.equal(distanceClaim?.claimId, "claim:find:history-far:distanceM");
+    assert.equal(distanceClaim?.displayValue, "55.0");
+    assert.equal(distanceClaim?.unit, "km");
+    const heartRateClaim = match.claims.find((claim) => claim.metricKey === "avgHeartRateBpm");
+    assert.equal(heartRateClaim?.displayValue, "151");
+    const serialized = JSON.stringify(result);
+    for (const forbidden of ["fileName", "points", "coordinateSpace", "owner-a", "owner-b", "sourceField"]) {
+      assert.equal(serialized.includes(forbidden), false, forbidden);
+    }
+    assert.ok(Buffer.byteLength(serialized, "utf8") <= CHAT_TOOL_MAX_RESULT_BYTES);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("find_ride threshold mode filters above threshold, orders by recency and caps matches (CHAT-17)", async () => {
+  const root = await mkdtemp(join(tmpdir(), "chat-tools-"));
+  try {
+    const repository = new FileApplicationRepository(root);
+    // 六条含有效平均心率的记录（144–151 bpm）+ 无心率锚点；阈值 140 全部命中，按时间倒序取前 5。
+    await repository.saveRide("owner-a", findRideRecord("fit-unknown-developer-field", "hr-144", "2026-08-01T08:00:00Z"));
+    await repository.saveRide("owner-a", findRideRecord("l2-built-in-sample", "hr-145", "2026-08-03T08:00:00Z"));
+    await repository.saveRide("owner-a", findRideRecord("l2-fit-heart-rate", "hr-146", "2026-08-05T08:00:00Z"));
+    await repository.saveRide("owner-a", findRideRecord("fit-power-dropout-with-heart-rate", "hr-149", "2026-08-07T08:00:00Z"));
+    await repository.saveRide("owner-a", findRideRecord("l3-built-in-sample", "hr-150", "2026-08-09T08:00:00Z"));
+    await repository.saveRide("owner-a", findRideRecord("l3-fit-power", "hr-151", "2026-08-11T08:00:00Z"));
+    await repository.saveRide("owner-a", comparisonRecord("l1-built-in-sample", "anchor-ride", "2026-08-20T08:00:00Z", 42));
+    const invocation = parseChatToolInvocation({ tool: "find_ride", input: { rideId: "anchor-ride", metric: "avgHeartRateBpm", mode: "threshold", threshold: 140, metrics: ["avgHeartRateBpm"], windowDays: 30 } });
+    const result = await executeChatTool(repository, "owner-a", invocation);
+    assert.equal(result.tool, "find_ride");
+    if (result.tool !== "find_ride") return;
+    assert.equal(result.status, "matched");
+    assert.equal(result.threshold, 140);
+    assert.equal(result.matchedCount, 6);
+    assert.equal(result.matches.length, CHAT_FIND_RIDE_MAX_MATCHES);
+    assert.deepEqual(result.matches.map((match) => match.rideId), ["hr-151", "hr-150", "hr-149", "hr-146", "hr-145"]);
+    assert.deepEqual(result.matches[0].claims.map((claim) => claim.displayValue), ["151"]);
+    assert.equal(result.matches[0].rideDateLabel, "2026年8月11日");
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("find_ride breaks extreme ties by recency and includes the anchor as candidate (CHAT-17)", async () => {
+  const root = await mkdtemp(join(tmpdir(), "chat-tools-"));
+  try {
+    const repository = new FileApplicationRepository(root);
+    await repository.saveRide("owner-a", comparisonRecord("l3-fit-power", "tie-older", "2026-08-10T08:00:00Z", 50));
+    await repository.saveRide("owner-a", comparisonRecord("l3-fit-power", "tie-newer", "2026-08-15T08:00:00Z", 50));
+    await repository.saveRide("owner-a", comparisonRecord("l3-fit-power", "anchor-ride", "2026-08-20T08:00:00Z", 42));
+    const maxResult = await executeChatTool(repository, "owner-a", parseChatToolInvocation({ tool: "find_ride", input: { rideId: "anchor-ride", metric: "distanceM", mode: "max", metrics: ["distanceM"], windowDays: 30 } }));
+    assert.equal(maxResult.tool, "find_ride");
+    if (maxResult.tool !== "find_ride") return;
+    assert.equal(maxResult.matches[0]?.rideId, "tie-newer");
+    // min 模式：锚点本身是候选且距离最短——验证与 compare_rides 不同的“含锚点”口径。
+    const minResult = await executeChatTool(repository, "owner-a", parseChatToolInvocation({ tool: "find_ride", input: { rideId: "anchor-ride", metric: "distanceM", mode: "min", metrics: ["distanceM"], windowDays: 30 } }));
+    assert.equal(minResult.tool, "find_ride");
+    if (minResult.tool !== "find_ride") return;
+    assert.equal(minResult.matches[0]?.rideId, "anchor-ride");
+    assert.equal(minResult.matches[0]?.claims[0]?.displayValue, "42.0");
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("find_ride reports deterministic no_match reason codes (CHAT-17)", async () => {
+  const root = await mkdtemp(join(tmpdir(), "chat-tools-"));
+  try {
+    const repository = new FileApplicationRepository(root);
+    // METRIC_MISSING：窗口内记录均不含该指标有效值（L1 无功率）。
+    await repository.saveRide("owner-a", comparisonRecord("l1-built-in-sample", "l1-history", "2026-08-10T08:00:00Z", 30));
+    await repository.saveRide("owner-a", comparisonRecord("l1-built-in-sample", "anchor-ride", "2026-08-20T08:00:00Z", 42));
+    const metricMissing = await executeChatTool(repository, "owner-a", parseChatToolInvocation({ tool: "find_ride", input: { rideId: "anchor-ride", metric: "avgPowerW", mode: "max", metrics: ["avgPowerW"], windowDays: 30 } }));
+    assert.equal(metricMissing.tool, "find_ride");
+    if (metricMissing.tool !== "find_ride") return;
+    assert.equal(metricMissing.status, "no_match");
+    assert.deepEqual(metricMissing.reasonCodes, ["METRIC_MISSING"]);
+    assert.equal(metricMissing.candidateCount, 2);
+    assert.equal(metricMissing.matchedCount, 0);
+    assert.deepEqual(metricMissing.matches, []);
+    // THRESHOLD_NO_MATCH：有有效值但无记录超过阈值。
+    await repository.saveRide("owner-a", findRideRecord("l3-fit-power", "hr-151", "2026-08-12T08:00:00Z"));
+    const thresholdMissed = await executeChatTool(repository, "owner-a", parseChatToolInvocation({ tool: "find_ride", input: { rideId: "anchor-ride", metric: "avgHeartRateBpm", mode: "threshold", threshold: 200, metrics: ["avgHeartRateBpm"], windowDays: 30 } }));
+    assert.equal(thresholdMissed.tool, "find_ride");
+    if (thresholdMissed.tool !== "find_ride") return;
+    assert.equal(thresholdMissed.status, "no_match");
+    assert.deepEqual(thresholdMissed.reasonCodes, ["THRESHOLD_NO_MATCH"]);
+    // ANCHOR_TIME_MISSING：锚点无有效出发时间，窗口无法确定。
+    await repository.saveRide("owner-a", privateRecord("gpx-no-timestamps", "anchor-no-time"));
+    const anchorMissing = await executeChatTool(repository, "owner-a", parseChatToolInvocation({ tool: "find_ride", input: { rideId: "anchor-no-time", metric: "distanceM", mode: "max", metrics: ["distanceM"], windowDays: 30 } }));
+    assert.equal(anchorMissing.tool, "find_ride");
+    if (anchorMissing.tool !== "find_ride") return;
+    assert.equal(anchorMissing.status, "no_match");
+    assert.deepEqual(anchorMissing.reasonCodes, ["ANCHOR_TIME_MISSING"]);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("find_ride rejects cross-owner and missing anchors with NOT_FOUND (CHAT-17)", async () => {
+  const root = await mkdtemp(join(tmpdir(), "chat-tools-"));
+  try {
+    const repository = new FileApplicationRepository(root);
+    await repository.saveRide("owner-a", privateRecord("l1-built-in-sample", "private-ride"));
+    const ownedByOther = parseChatToolInvocation({ tool: "find_ride", input: { rideId: "private-ride", metric: "distanceM", mode: "max", metrics: ["distanceM"], windowDays: 30 } });
+    const missing = parseChatToolInvocation({ tool: "find_ride", input: { rideId: "missing-ride", metric: "distanceM", mode: "max", metrics: ["distanceM"], windowDays: 30 } });
+    await assert.rejects(executeChatTool(repository, "owner-b", ownedByOther), (error) => errorCode(error) === "NOT_FOUND");
+    await assert.rejects(executeChatTool(repository, "owner-a", missing), (error) => errorCode(error) === "NOT_FOUND");
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
 });

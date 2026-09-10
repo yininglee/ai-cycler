@@ -9,7 +9,7 @@ import {
   type ChatClassifierMode,
   type ChatClassifierShadowOutcome,
 } from "../../../src/chat/chat-classifier.ts";
-import { createChatToolRunner } from "../../../src/chat/chat-tool-orchestration.ts";
+import { createChatToolLoopRunner, createChatToolRunner, type ChatToolLoopRunner } from "../../../src/chat/chat-tool-orchestration.ts";
 import { CHAT_INPUT_MAX_BYTES, CHAT_SUMMARIES_MAX_BYTES, routeChatInput, sanitizeChatSummaries, type ChatInputGatewayResult } from "../../../src/chat/chat-routing.ts";
 import { detectAnchorConfirmation, resolveAnchorConfirmation, type RideAnchorOverride } from "../../../src/chat/chat-ride-anchor.ts";
 import { createDemoEvent } from "../../../src/observability/demo-events.ts";
@@ -51,6 +51,23 @@ function observedToolRunner(runner: ReturnType<typeof createChatToolRunner>, met
   };
 }
 
+// CHAT-17 P3：L2b 循环 runner 观测包装——仅计 startLoop 次数与耗时（工具调用数由
+// loopTrace.steps 承载，不与单工具 toolCalls 计数混同）。
+function observedToolLoopRunner(runner: ChatToolLoopRunner, metrics: { calls: number; durationMs: number }): ChatToolLoopRunner {
+  return {
+    async startLoop(input: Parameters<ChatToolLoopRunner["startLoop"]>[0]) {
+      metrics.calls += 1;
+      const startedAt = Date.now();
+      try {
+        return await runner.startLoop(input);
+      } finally {
+        metrics.durationMs += elapsed(startedAt);
+      }
+    },
+    executeLoopCalls: (input) => runner.executeLoopCalls(input),
+  };
+}
+
 async function recordChatEvent(ownerId: string, type: "chat_requested" | "chat_completed" | "chat_degraded", requestId: string, attributes: Record<string, string>): Promise<void> {
   try {
     await getApplicationRepository().saveDemoEvent(ownerId, createDemoEvent({ type, requestId, attributes }));
@@ -86,6 +103,7 @@ export async function POST(request: Request): Promise<Response> {
   const tag = `[chat-trace] [${requestId}]`;
   const toolMetrics = { calls: 0, durationMs: 0 };
   const modelMetrics = { calls: 0, durationMs: 0 };
+  const loopMetrics = { calls: 0, durationMs: 0 };
   const repository = getApplicationRepository();
   // CHAT-12 P3：混合意图路由——CHAT_CLASSIFIER_MODE=active 时分类器接管主路由：
   // L0 快路径（红线 + 高置信聚合/身份）零调用直答，未命中交 L1 语义分类器，
@@ -174,6 +192,8 @@ export async function POST(request: Request): Promise<Response> {
     decision,
     provider: observedProvider(createChatProvider(), modelMetrics),
     toolRunner: observedToolRunner(createChatToolRunner(repository, session.userId), toolMetrics),
+    // CHAT-17 P3：L2b 循环 runner（autonomous_tools 路由）。
+    loopRunner: observedToolLoopRunner(createChatToolLoopRunner(repository, session.userId), loopMetrics),
     requestId,
     // CHAT-14 P1/P2：摘要传递（表达层指代消解）与锚点覆写（确认轮）。
     summaries,
@@ -198,6 +218,13 @@ export async function POST(request: Request): Promise<Response> {
     repairAttempts: String(agentResult.repairAttempts ?? 0),
     toolStatus: agentResult.toolTrace?.status ?? "not_called",
     validationStatus: agentResult.outputValidation?.status ?? "not_run",
+    // CHAT-17 P3：L2b 循环轨迹（脱敏：状态/预算计数/步骤状态序列，不含输入输出内容）。
+    ...(agentResult.loopTrace ? {
+      loopStatus: agentResult.loopTrace.status,
+      loopToolCalls: String(agentResult.loopTrace.toolCalls),
+      loopProviderCalls: String(agentResult.loopTrace.providerCalls),
+      loopSteps: agentResult.loopTrace.steps.map((step) => `${step.tool}:${step.status}${step.errorCode ? `:${step.errorCode}` : ""}`).join(","),
+    } : {}),
     tokenStatus: "not_observed",
     costStatus: "not_observed",
     ...(agentResult.fallbackCode ? { fallbackCode: agentResult.fallbackCode } : {}),
