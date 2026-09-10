@@ -3,13 +3,12 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 
 import {
-  chatQuickQuestions,
   replyToChatInput,
-  replyToQuickQuestion,
   type ChatHomeSnapshot,
   type ChatMessage,
-  type ChatQuickQuestionId,
 } from "../../src/chat/chat-home.ts";
+import { Brand } from "./app-shell";
+import { InfoIcon } from "./icons";
 import {
   appendChatTurn,
   buildChatSessionSummaries,
@@ -65,6 +64,7 @@ export function ChatHome({ snapshot }: { snapshot: ChatHomeSnapshot }) {
   const [session, setSession] = useState(() => createChatSession(snapshot));
   const [input, setInput] = useState("");
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [disclosureOpen, setDisclosureOpen] = useState(false);
   const [pendingTurn, setPendingTurn] = useState<{ userText: string } | null>(null);
   const [hydrated, setHydrated] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -123,15 +123,11 @@ export function ChatHome({ snapshot }: { snapshot: ChatHomeSnapshot }) {
     setHistoryOpen(false);
   }
 
-  function askQuickQuestion(id: ChatQuickQuestionId, label: string) {
+  const quickQuestions = ["骑行解读", "水平评估", "训练计划"];
+
+  function askQuickQuestion(label: string) {
     if (pending) return;
-    // 聚合类快捷问题（总量/本周/最近日期）本页确定性回答；capabilities 走真实模型链路。
-    // 客户端直答轮 route 记 aggregate（不携带锚点）。
-    if (id !== "capabilities") {
-      addReply(label, replyToQuickQuestion(id, snapshot), "quick_question", { route: "aggregate" });
-      return;
-    }
-    void ask(label, replyToQuickQuestion(id, snapshot), "quick_question");
+    void ask(label, null, "quick_question");
   }
 
   function submit(event: FormEvent<HTMLFormElement>) {
@@ -144,8 +140,8 @@ export function ChatHome({ snapshot }: { snapshot: ChatHomeSnapshot }) {
   }
 
   return <section className="chat-home" aria-label="AI 骑行伙伴">
-    <header className="chat-home-header">
-      <div><p className="kicker">LOCAL DEMO</p><h1>AI 骑行伙伴</h1></div>
+    <header className="topbar">
+      <Brand />
       <div className="chat-header-actions">
         <button type="button" className="chat-header-button" onClick={startConversation}>＋ 新对话</button>
         <button type="button" className="chat-header-button" onClick={() => setHistoryOpen((open) => !open)} aria-expanded={historyOpen}>对话记录</button>
@@ -174,7 +170,7 @@ export function ChatHome({ snapshot }: { snapshot: ChatHomeSnapshot }) {
       <div><dt>本周</dt><dd>{snapshot.weekRideCount} 次 · {snapshot.weekDistanceKm} km</dd></div>
     </dl>
 
-    <div className="chat-thread" aria-live="polite">
+    <div className="chat-messages" aria-live="polite">
       {messages.map((message, index) => <MessageBubble key={`${message.role}-${index}-${message.text}`} message={message} />)}
       {pendingTurn && <>
         <article className="chat-message chat-message-user"><p>{pendingTurn.userText}</p></article>
@@ -186,15 +182,16 @@ export function ChatHome({ snapshot }: { snapshot: ChatHomeSnapshot }) {
     <div className="chat-composer">
       <section className="chat-quick-questions" aria-label="常用问题">
         <div className="chat-question-list">
-          {chatQuickQuestions().map((question) => <button key={question.id} type="button" onClick={() => askQuickQuestion(question.id, question.label)}>{question.label}</button>)}
+          {quickQuestions.map((label) => <button key={label} type="button" onClick={() => askQuickQuestion(label)}>{label}</button>)}
         </div>
       </section>
 
       <form className="chat-input-form" onSubmit={submit}>
+        {disclosureOpen && <p className="chat-disclosure-popover" role="note">单次骑行与能力问题调用对话模型（扣子 Workflow，服务端校验并降级）；累计/本周类问题由服务端确定性计算；跨次比较与水平评估属后续能力；对话记录保存在本浏览器。</p>}
         <label className="sr-only" htmlFor="chat-input">输入问题</label>
         <input id="chat-input" value={input} onChange={(event) => setInput(event.target.value)} maxLength={120} placeholder="问问你的骑行伙伴" disabled={pending} />
+        <button type="button" className="chat-info-button" aria-label="能力说明" aria-expanded={disclosureOpen} onClick={() => setDisclosureOpen((open) => !open)}><InfoIcon /></button>
         <button type="submit" disabled={!input.trim() || pending}>发送</button>
-        <p className="chat-disclosure">单次骑行与能力问题调用对话模型（扣子 Workflow，服务端校验并降级）；累计/本周类问题由服务端确定性计算；跨次比较与水平评估属后续能力；对话记录保存在本浏览器。</p>
       </form>
     </div>
   </section>;

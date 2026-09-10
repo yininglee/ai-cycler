@@ -25,3 +25,7 @@ export function SparkIcon(props: IconProps) {
 export function CheckIcon(props: IconProps) {
   return <svg viewBox="0 0 24 24" aria-hidden="true" {...props}><path d="m5 12 4 4L19 6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>;
 }
+
+export function InfoIcon(props: IconProps) {
+  return <svg viewBox="0 0 24 24" aria-hidden="true" {...props}><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" strokeWidth="2" /><path d="M12 7v1.5M12 11.5V17" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>;
+}

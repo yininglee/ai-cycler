@@ -1,4 +1,4 @@
-import { AppShell, Brand } from "../components/app-shell";
+import { AppShell } from "../components/app-shell";
 import { ChatHome } from "../components/chat-home";
 import { getNextSessionUserId } from "../../src/auth/next-session.ts";
 import { buildChatHomeSnapshot } from "../../src/chat/chat-home.ts";
@@ -10,7 +10,6 @@ export default async function ChatPage() {
   const snapshot = buildChatHomeSnapshot(rides.map(({ record }) => record));
 
   return <AppShell active="partner">
-    <header className="topbar"><Brand /><span className="step-pill">Demo</span></header>
     <ChatHome snapshot={snapshot} />
   </AppShell>;
 }
