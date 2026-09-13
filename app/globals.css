@@ -130,8 +130,9 @@ h1 { margin: 0; font-size: clamp(40px, 11vw, 66px); line-height: 1.03; letter-sp
 .chat-history-note { margin: 10px 0 0; line-height: 1.45; }
 .chat-summary { flex: 0 0 auto; position: relative; z-index: 12; margin: 12px 0 10px; padding: 15px 16px; border: 1px solid var(--line); border-radius: 20px; background: rgba(255,255,255,.94); display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
 .chat-summary div { min-width: 0; }
-.chat-summary dt { color: var(--muted); font-size: 11px; font-weight: 750; }
-.chat-summary dd { margin: 3px 0 0; font-size: 14px; font-weight: 800; overflow-wrap: anywhere; }
+/* 摘要卡在任意移动端宽度都保持横向三列；窄屏用 clamp 收缩字号，而不是改版式。 */
+.chat-summary dt { color: var(--muted); font-size: clamp(10px, 2.9vw, 11px); font-weight: 750; white-space: nowrap; }
+.chat-summary dd { margin: 3px 0 0; font-size: clamp(12px, 3.7vw, 14px); font-weight: 800; overflow-wrap: anywhere; }
 .chat-messages { flex: 1; min-height: 0; overflow-y: auto; display: grid; align-content: start; gap: 14px; padding: 8px 2px 124px; }
 .chat-message { max-width: min(84%, 480px); display: grid; gap: 5px; }
 .chat-message p { margin: 0; padding: 12px 14px; border-radius: 18px; white-space: pre-line; font-size: 14px; line-height: 1.6; }
@@ -646,9 +647,8 @@ h1 { margin: 0; font-size: clamp(40px, 11vw, 66px); line-height: 1.03; letter-sp
 @media (max-width: 370px) {
   .page-content { padding-left: 14px; padding-right: 14px; }
   .hero-card { padding: 24px; }
-  .chat-summary { grid-template-columns: 1fr; gap: 8px; }
-  .chat-summary div { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
-  .chat-summary dd { text-align: right; }
+  /* 摘要卡窄屏仍为横向三列，只收紧间距以留出列宽。 */
+  .chat-summary { gap: 8px; padding: 13px 12px; }
   .feedback-row { align-items: flex-start; flex-direction: column; }
   .event-list li { align-items: flex-start; flex-direction: column; }
   .event-list code { max-width: none; text-align: left; }
