@@ -5,11 +5,21 @@ import type { NavKey } from "./route-loading";
 
 export { Brand } from "./brand";
 
-export function AppShell({ children, active = "today" }: { children: ReactNode; active?: NavKey }) {
+// showNav=false 用于骑行详情页：该页有自己的固定返回按钮 + tab 切换器，
+// 不需要底部导航，且底部会留出多余空白。
+export function AppShell({
+  children,
+  active = "today",
+  showNav = true,
+}: {
+  children: ReactNode;
+  active?: NavKey;
+  showNav?: boolean;
+}) {
   return (
-    <div className="app-viewport">
+    <div className={showNav ? "app-viewport" : "app-viewport app-viewport-no-nav"}>
       <main className="page-content">{children}</main>
-      <BottomNav active={active} />
+      {showNav && <BottomNav active={active} />}
     </div>
   );
 }

@@ -53,7 +53,7 @@ export default async function RideDetailPage({
   }
 
   return (
-    <AppShell active="rides">
+    <AppShell active="rides" showNav={false}>
       <RideDetailTabs
         rideId={id}
         analysisPanel={<section className="analysis-tab" aria-label="骑行分析">
