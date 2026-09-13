@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { AppShell, Brand } from "./components/app-shell";
 import { ArrowIcon, SparkIcon } from "./components/icons";
+import { PendingLink } from "./components/pending-link";
 import { buildRidePageViewModel } from "../src/ui/ride-view-model";
 
 export default function HomePage() {
@@ -22,16 +23,16 @@ export default function HomePage() {
           <p>一次骑行 · 一次清晰复盘</p>
           <h2>让数据说人话，<br />也知道哪里不能说。</h2>
         </div>
-        <Link className="light-button" href="/import">分析一次骑行 <ArrowIcon /></Link>
+        <PendingLink className="light-button" href="/import" transitionKey="rides">分析一次骑行 <ArrowIcon /></PendingLink>
       </section>
 
       <section className="section-block">
-        <div className="section-heading"><div><p className="kicker">继续体验</p><h2>最近一条样例</h2></div><Link href="/import">查看全部</Link></div>
-        <Link className="recent-card" href="/rides/l2-built-in-sample">
+        <div className="section-heading"><div><p className="kicker">继续体验</p><h2>最近一条样例</h2></div><PendingLink href="/import" transitionKey="rides">查看全部</PendingLink></div>
+        <PendingLink className="recent-card" href="/rides/l2-built-in-sample" transitionKey="ride-detail">
           <div className="recent-icon"><SparkIcon /></div>
           <div><span className="status-chip">骑行记录</span><h3>{recent.analysis.output.headline}</h3><p>{recent.factCards.slice(0, 3).map((fact) => fact.value).join(" · ")}</p></div>
           <ArrowIcon className="arrow" />
-        </Link>
+        </PendingLink>
       </section>
 
       <p className="privacy-note">当前页面只使用内置样例，不上传真实轨迹或调用模型。</p>

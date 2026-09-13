@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { AppShell, Brand } from "../components/app-shell";
 import { ArrowIcon, CheckIcon } from "../components/icons";
+import { PendingLink } from "../components/pending-link";
 import { RideFileUpload } from "../components/ride-file-upload";
 import { getNextSessionUserId } from "../../src/auth/next-session.ts";
 import { getRideRepository } from "../../src/persistence/demo-ride-repository.ts";
@@ -83,11 +84,11 @@ export default async function ImportPage({ searchParams }: { searchParams: Promi
           {(userId || importedRides.length > 0) && <section className="section-block imported-rides-block" aria-labelledby="imported-rides-title">
             <div className="section-heading"><div><p className="kicker">我的记录</p><h2 id="imported-rides-title">已导入记录</h2></div><span className="private-count">{importedRides.length} 条</span></div>
             {importedRides.length > 0 ? <div className="sample-list">
-              {importedRides.map(({ record }) => <Link key={record.activity.rideId} className="sample-card private-ride-card" href={`/rides/${record.activity.rideId}`}>
+              {importedRides.map(({ record }) => <PendingLink key={record.activity.rideId} className="sample-card private-ride-card" href={`/rides/${record.activity.rideId}`} transitionKey="ride-detail">
                 <span className="level-badge private-level-badge">{sourceLabel(record)}</span>
                 <div><p className="private-ride-date">{formatRideDate(record.activity.startTime) ?? "无日期"}{isDemoImportedRideId(record.activity.rideId) && <span className="demo-pill">演示</span>}</p><h3>{formatRideTitle(record.activity.startTime)}</h3><p>{privateRideSummary(record)}</p></div>
                 <ArrowIcon />
-              </Link>)}
+              </PendingLink>)}
             </div> : <div className="private-empty"><p>还没有导入记录</p><span>选择上方的 FIT 或 GPX 文件，导入后会出现在这里。</span></div>}
             {!userId && <p className="imported-rides-hint">带「演示」标记的是内置示例记录，任何人都能查看。导入你自己的 FIT / GPX 后，记录会一起出现在这里，并且只属于你。</p>}
           </section>}
@@ -95,7 +96,7 @@ export default async function ImportPage({ searchParams }: { searchParams: Promi
           <section className="section-block">
             <div className="section-heading"><div><p className="kicker">立即体验</p><h2>选择示例记录</h2></div></div>
             <div className="sample-list">
-              {samples.map((sample) => <Link key={sample.id} className="sample-card" href={`/rides/${sample.id}`}><span className="level-badge">{sample.capability}</span><div><h3>{sample.title}</h3><p>{sample.note}</p></div><ArrowIcon /></Link>)}
+              {samples.map((sample) => <PendingLink key={sample.id} className="sample-card" href={`/rides/${sample.id}`} transitionKey="ride-detail"><span className="level-badge">{sample.capability}</span><div><h3>{sample.title}</h3><p>{sample.note}</p></div><ArrowIcon /></PendingLink>)}
             </div>
           </section>
 
