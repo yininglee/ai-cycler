@@ -1,0 +1,298 @@
+{
+  "contractVersion": "ride-interpretation-input-v0.4-candidate",
+  "sourceCandidateVersion": "ride-interpretation-v0.4-candidate",
+  "planVersion": "ride-interpretation-plan-v0.1",
+  "rideId": "local-preview",
+  "mode": "default",
+  "allowedClaims": [
+    {
+      "claimId": "claim:local-preview:distanceM",
+      "kind": "metric",
+      "key": "distanceM",
+      "value": 161831.22,
+      "unit": "m",
+      "provenance": "recorded",
+      "confidence": "high",
+      "evidenceIds": [
+        "local-preview:fit:session:distance"
+      ],
+      "displayValue": "161.8",
+      "displayUnit": "km",
+      "displayFormulaVersion": "metric-display-v0.1"
+    },
+    {
+      "claimId": "claim:local-preview:elevationGainM",
+      "kind": "metric",
+      "key": "elevationGainM",
+      "value": 2924,
+      "unit": "m",
+      "provenance": "recorded",
+      "confidence": "high",
+      "evidenceIds": [
+        "local-preview:fit:session:ascent"
+      ],
+      "displayValue": "2924",
+      "displayUnit": "m",
+      "displayFormulaVersion": "metric-display-v0.1"
+    },
+    {
+      "claimId": "claim:local-preview:avgPowerW",
+      "kind": "metric",
+      "key": "avgPowerW",
+      "value": 194,
+      "unit": "W",
+      "provenance": "recorded",
+      "confidence": "high",
+      "evidenceIds": [
+        "local-preview:fit:session:avg-power"
+      ],
+      "displayValue": "194",
+      "displayUnit": "W",
+      "displayFormulaVersion": "metric-display-v0.1"
+    },
+    {
+      "claimId": "claim:local-preview:feature:speedSeriesMeanMps",
+      "kind": "feature",
+      "key": "speedSeriesMeanMps",
+      "value": 6.697193907687099,
+      "unit": "m/s",
+      "confidence": "high",
+      "evidenceIds": [
+        "evidence:local-preview:series:speed"
+      ],
+      "formulaVersion": "series-mean-v0.1",
+      "displayValue": "24.11",
+      "displayUnit": "km/h",
+      "displayFormulaVersion": "metric-display-v0.1"
+    },
+    {
+      "claimId": "claim:local-preview:feature:powerSeriesMeanW",
+      "kind": "feature",
+      "key": "powerSeriesMeanW",
+      "value": 150.16488060079317,
+      "unit": "W",
+      "confidence": "high",
+      "evidenceIds": [
+        "evidence:local-preview:series:power"
+      ],
+      "formulaVersion": "series-mean-v0.1",
+      "displayValue": "150.16",
+      "displayUnit": "W",
+      "displayFormulaVersion": "metric-display-v0.1"
+    },
+    {
+      "claimId": "claim:local-preview:feature:elevationPositiveGainM",
+      "kind": "feature",
+      "key": "elevationPositiveGainM",
+      "value": 2924,
+      "unit": "m",
+      "confidence": "high",
+      "evidenceIds": [
+        "local-preview:fit:session:ascent"
+      ],
+      "formulaVersion": "recorded-elevation-gain-v0.1",
+      "displayValue": "2924",
+      "displayUnit": "m",
+      "displayFormulaVersion": "metric-display-v0.1"
+    }
+  ],
+  "candidateClaims": [
+    {
+      "claimId": "candidate:power_output:fact",
+      "dimensionId": "power_output",
+      "claimType": "fact",
+      "sourceClaimIds": [
+        "claim:local-preview:avgPowerW"
+      ],
+      "availability": "available"
+    },
+    {
+      "claimId": "candidate:power_output:performance",
+      "dimensionId": "power_output",
+      "claimType": "performance",
+      "sourceClaimIds": [
+        "claim:local-preview:feature:powerSeriesMeanW"
+      ],
+      "availability": "available"
+    },
+    {
+      "claimId": "candidate:power_output:capability_evidence",
+      "dimensionId": "power_output",
+      "claimType": "capability_evidence",
+      "sourceClaimIds": [
+        "claim:local-preview:feature:powerSeriesMeanW"
+      ],
+      "availability": "available"
+    },
+    {
+      "claimId": "candidate:route_pacing:fact",
+      "dimensionId": "route_pacing",
+      "claimType": "fact",
+      "sourceClaimIds": [
+        "claim:local-preview:distanceM"
+      ],
+      "availability": "available"
+    },
+    {
+      "claimId": "candidate:route_pacing:performance",
+      "dimensionId": "route_pacing",
+      "claimType": "performance",
+      "sourceClaimIds": [
+        "claim:local-preview:feature:speedSeriesMeanMps"
+      ],
+      "availability": "available"
+    },
+    {
+      "claimId": "candidate:route_pacing:capability_evidence",
+      "dimensionId": "route_pacing",
+      "claimType": "capability_evidence",
+      "sourceClaimIds": [
+        "claim:local-preview:feature:speedSeriesMeanMps"
+      ],
+      "availability": "available"
+    },
+    {
+      "claimId": "candidate:terrain_climb:fact",
+      "dimensionId": "terrain_climb",
+      "claimType": "fact",
+      "sourceClaimIds": [
+        "claim:local-preview:elevationGainM"
+      ],
+      "availability": "available"
+    },
+    {
+      "claimId": "candidate:terrain_climb:performance",
+      "dimensionId": "terrain_climb",
+      "claimType": "performance",
+      "sourceClaimIds": [
+        "claim:local-preview:feature:elevationPositiveGainM"
+      ],
+      "availability": "available"
+    },
+    {
+      "claimId": "candidate:terrain_climb:capability_evidence",
+      "dimensionId": "terrain_climb",
+      "claimType": "capability_evidence",
+      "sourceClaimIds": [
+        "claim:local-preview:feature:elevationPositiveGainM"
+      ],
+      "availability": "available"
+    }
+  ],
+  "overallAssessment": {
+    "factClaimIds": [
+      "candidate:power_output:fact"
+    ],
+    "performanceClaimIds": [
+      "candidate:power_output:performance"
+    ],
+    "capabilityEvidenceClaimIds": [
+      "candidate:power_output:capability_evidence"
+    ],
+    "meaningClaimIds": [
+      "candidate:power_output:fact",
+      "candidate:power_output:performance"
+    ],
+    "visualRefIds": [
+      "visual:series:power"
+    ]
+  },
+  "dimensionInterpretations": [
+    {
+      "dimensionId": "power_output",
+      "factClaimIds": [
+        "candidate:power_output:fact"
+      ],
+      "performanceClaimIds": [
+        "candidate:power_output:performance"
+      ],
+      "capabilityEvidenceClaimIds": [
+        "candidate:power_output:capability_evidence"
+      ],
+      "meaningClaimIds": [
+        "candidate:power_output:fact",
+        "candidate:power_output:performance"
+      ],
+      "visualRefIds": [
+        "visual:series:power"
+      ]
+    },
+    {
+      "dimensionId": "route_pacing",
+      "factClaimIds": [
+        "candidate:route_pacing:fact"
+      ],
+      "performanceClaimIds": [
+        "candidate:route_pacing:performance"
+      ],
+      "capabilityEvidenceClaimIds": [
+        "candidate:route_pacing:capability_evidence"
+      ],
+      "meaningClaimIds": [
+        "candidate:route_pacing:fact",
+        "candidate:route_pacing:performance"
+      ],
+      "visualRefIds": [
+        "visual:series:speed"
+      ]
+    },
+    {
+      "dimensionId": "terrain_climb",
+      "factClaimIds": [
+        "candidate:terrain_climb:fact"
+      ],
+      "performanceClaimIds": [
+        "candidate:terrain_climb:performance"
+      ],
+      "capabilityEvidenceClaimIds": [
+        "candidate:terrain_climb:capability_evidence"
+      ],
+      "meaningClaimIds": [
+        "candidate:terrain_climb:fact",
+        "candidate:terrain_climb:performance"
+      ],
+      "visualRefIds": [
+        "visual:series:elevation"
+      ]
+    }
+  ],
+  "visualRegistry": [
+    {
+      "visualId": "visual:series:power",
+      "type": "trend",
+      "sourceClaimIds": [
+        "claim:local-preview:avgPowerW",
+        "claim:local-preview:feature:powerSeriesMeanW"
+      ],
+      "availability": "available",
+      "ruleVersion": "ride-visual-rules-v0.1"
+    },
+    {
+      "visualId": "visual:series:speed",
+      "type": "trend",
+      "sourceClaimIds": [
+        "claim:local-preview:feature:speedSeriesMeanMps"
+      ],
+      "availability": "available",
+      "ruleVersion": "ride-visual-rules-v0.1"
+    },
+    {
+      "visualId": "visual:series:elevation",
+      "type": "trend",
+      "sourceClaimIds": [
+        "claim:local-preview:elevationGainM",
+        "claim:local-preview:feature:elevationPositiveGainM"
+      ],
+      "availability": "available",
+      "ruleVersion": "ride-visual-rules-v0.1"
+    }
+  ],
+  "limitations": [],
+  "safetyFlags": [],
+  "privacyFlags": [
+    "raw_track_excluded",
+    "precise_coordinates_excluded",
+    "source_filename_excluded",
+    "untrusted_free_text_excluded"
+  ]
+}

@@ -137,6 +137,11 @@ test("resolveRideAnchor clarifies bare deixis without an anchor and keeps capabi
   assert.equal(capabilities.status, "resolved");
   if (capabilities.status === "resolved") assert.equal(capabilities.source, "default_latest");
 
+  // capabilities 带指涉词（“当前/这次”）：问的是能力范围而非某次骑行，同样不澄清。
+  const capabilitiesDeixis = resolveRideAnchor({ text: "当前可以分析哪些数据？", route: "capabilities", summaries: [], entries: ENTRIES, now: NOW });
+  assert.equal(capabilitiesDeixis.status, "resolved");
+  if (capabilitiesDeixis.status === "resolved") assert.equal(capabilitiesDeixis.source, "default_latest");
+
   // 无记录：确定性澄清。
   const empty = resolveRideAnchor({ text: "本次骑行的平均功率是多少？", route: "current_ride", summaries: [], entries: [], now: NOW });
   assert.equal(empty.status, "clarify");

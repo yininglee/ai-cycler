@@ -4,7 +4,8 @@ import { AppShell, Brand } from "../components/app-shell";
 import { ArrowIcon, CheckIcon } from "../components/icons";
 import { RideFileUpload } from "../components/ride-file-upload";
 import { getNextSessionUserId } from "../../src/auth/next-session.ts";
-import { getApplicationRepository } from "../../src/persistence/application-repository.ts";
+import { getRideRepository } from "../../src/persistence/demo-ride-repository.ts";
+import { isDemoImportedRideId } from "../../src/fixtures/demo-imported-ride-manifest.ts";
 import type { MetricKey, RideRecord } from "../../src/domain/ride-schema.ts";
 
 const samples = [
@@ -60,7 +61,9 @@ function sourceLabel(record: RideRecord): string {
 export default async function ImportPage({ searchParams }: { searchParams: Promise<{ state?: string }> }) {
   const state = (await searchParams).state ?? "empty";
   const userId = await getNextSessionUserId();
-  const privateRides = userId ? await getApplicationRepository().listRides(userId) : [];
+  // DEMO-IMPORTED-RIDES：无会话访客也传入空 ownerId（仓储里不存在该 owner，只会命中演示记录），
+  // 因此首次打开链接的人立刻能看到演示「已导入」记录，而不必先自己导入一条。
+  const importedRides = await (await getRideRepository()).listRides(userId ?? "");
 
   return (
     <AppShell active="rides">
@@ -77,15 +80,16 @@ export default async function ImportPage({ searchParams }: { searchParams: Promi
         <>
           <RideFileUpload />
 
-          {userId && <section className="section-block imported-rides-block" aria-labelledby="imported-rides-title">
-            <div className="section-heading"><div><p className="kicker">我的记录</p><h2 id="imported-rides-title">已导入记录</h2></div><span className="private-count">{privateRides.length} 条</span></div>
-            {privateRides.length > 0 ? <div className="sample-list">
-              {privateRides.map(({ record }) => <Link key={record.activity.rideId} className="sample-card private-ride-card" href={`/rides/${record.activity.rideId}`}>
+          {(userId || importedRides.length > 0) && <section className="section-block imported-rides-block" aria-labelledby="imported-rides-title">
+            <div className="section-heading"><div><p className="kicker">我的记录</p><h2 id="imported-rides-title">已导入记录</h2></div><span className="private-count">{importedRides.length} 条</span></div>
+            {importedRides.length > 0 ? <div className="sample-list">
+              {importedRides.map(({ record }) => <Link key={record.activity.rideId} className="sample-card private-ride-card" href={`/rides/${record.activity.rideId}`}>
                 <span className="level-badge private-level-badge">{sourceLabel(record)}</span>
-                <div><p className="private-ride-date">{formatRideDate(record.activity.startTime) ?? "无日期"}</p><h3>{formatRideTitle(record.activity.startTime)}</h3><p>{privateRideSummary(record)}</p></div>
+                <div><p className="private-ride-date">{formatRideDate(record.activity.startTime) ?? "无日期"}{isDemoImportedRideId(record.activity.rideId) && <span className="demo-pill">演示</span>}</p><h3>{formatRideTitle(record.activity.startTime)}</h3><p>{privateRideSummary(record)}</p></div>
                 <ArrowIcon />
               </Link>)}
             </div> : <div className="private-empty"><p>还没有导入记录</p><span>选择上方的 FIT 或 GPX 文件，导入后会出现在这里。</span></div>}
+            {!userId && <p className="imported-rides-hint">带「演示」标记的是内置示例记录，任何人都能查看。导入你自己的 FIT / GPX 后，记录会一起出现在这里，并且只属于你。</p>}
           </section>}
 
           <section className="section-block">
@@ -95,7 +99,7 @@ export default async function ImportPage({ searchParams }: { searchParams: Promi
             </div>
           </section>
 
-          <details className="state-preview"><summary>预览异常与降级状态</summary><div className="state-links"><Link href="/rides/gpx-no-timestamps"><CheckIcon />GPX 无时间戳</Link><Link href="/rides/fit-truncated-file">! FIT 文件损坏</Link><Link href="/import?state=loading">加载状态</Link><Link href="/import?state=error">错误状态</Link></div></details>
+          <details className="state-preview"><summary>预览异常与降级状态</summary><div className="state-links"><Link href="/rides/gpx-no-timestamps"><CheckIcon />GPX 无时间戳</Link><Link href="/rides/fit-truncated-file">! FIT 文件损坏</Link><Link href="/rides/l1-built-in-sample?ai=b0">! AI 降级到 B0</Link><Link href="/import?state=loading">加载状态</Link><Link href="/import?state=error">错误状态</Link></div></details>
         </>
       )}
     </AppShell>

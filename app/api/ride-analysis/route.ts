@@ -13,6 +13,7 @@ import { getRideRecord } from "../../../src/imports/demo-ride-store.ts";
 import { AuthConfigurationError, getRequestSession, resolveOrCreateRequestSession, sessionCookieHeader } from "../../../src/auth/session.ts";
 import { createDemoEvent } from "../../../src/observability/demo-events.ts";
 import { getApplicationRepository } from "../../../src/persistence/application-repository.ts";
+import { getRideRepository } from "../../../src/persistence/demo-ride-repository.ts";
 import { isDemoRideId } from "../../../src/ui/ride-view-model.ts";
 
 export const runtime = "nodejs";
@@ -76,9 +77,10 @@ export async function POST(request: Request): Promise<Response> {
       if (!(error instanceof AuthConfigurationError)) throw error;
     }
   }
+  // DEMO-IMPORTED-RIDES：演示记录对所有人可读，因此走带演示视图的仓储而不是原仓储。
   const record = isFixture
     ? getRideRecord(rideId)
-    : session ? await getApplicationRepository().getRide(session.userId, rideId) : null;
+    : await (await getRideRepository()).getRide(session?.userId ?? "", rideId);
   if (!record) return noStoreJson({ error: "UNKNOWN_RIDE" }, 400, session ? sessionCookieHeader(session) : {});
   const cookieHeaders = session ? sessionCookieHeader(session) : {};
   if (session) await getApplicationRepository().saveDemoEvent(session.userId, createDemoEvent({ type: "ai_requested", rideId }));

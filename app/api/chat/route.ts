@@ -14,6 +14,7 @@ import { CHAT_INPUT_MAX_BYTES, CHAT_SUMMARIES_MAX_BYTES, routeChatInput, sanitiz
 import { detectAnchorConfirmation, resolveAnchorConfirmation, type RideAnchorOverride } from "../../../src/chat/chat-ride-anchor.ts";
 import { createDemoEvent } from "../../../src/observability/demo-events.ts";
 import { getApplicationRepository } from "../../../src/persistence/application-repository.ts";
+import { getRideRepository } from "../../../src/persistence/demo-ride-repository.ts";
 
 export const runtime = "nodejs";
 const headers = { "Cache-Control": "no-store" };
@@ -104,7 +105,9 @@ export async function POST(request: Request): Promise<Response> {
   const toolMetrics = { calls: 0, durationMs: 0 };
   const modelMetrics = { calls: 0, durationMs: 0 };
   const loopMetrics = { calls: 0, durationMs: 0 };
-  const repository = getApplicationRepository();
+  // DEMO-IMPORTED-RIDES：聊天工具、锚点确认与聚合路由共用这一个仓储视图，
+  // 因此演示记录与用户自己导入的记录在这些链路上同等可见。
+  const repository = await getRideRepository();
   // CHAT-12 P3：混合意图路由——CHAT_CLASSIFIER_MODE=active 时分类器接管主路由：
   // L0 快路径（红线 + 高置信聚合/身份）零调用直答，未命中交 L1 语义分类器，
   // 失败/超时/限流/未配置一律降级 P1 全量规则保底；shadow（默认）保持 P2 影子行为。

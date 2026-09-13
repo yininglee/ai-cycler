@@ -1,0 +1,1189 @@
+{
+  "L0_raw_input": {
+    "rideId": "local-preview",
+    "source": {
+      "kind": "fit",
+      "fileName": "1be0d1c0-63ef-476b-9103-61c1c04efba4.fit",
+      "parserVersion": "fit-parser-v0.4",
+      "formatVersion": "32/2085",
+      "deviceManufacturer": "dabuziduo",
+      "deviceProduct": "G N12"
+    },
+    "startTime": "2026-07-22T02:10:17.000Z",
+    "recordCount": 23702,
+    "sessionMetrics": {
+      "distanceM": {
+        "value": 161831.22,
+        "unit": "m"
+      },
+      "elapsedTimeS": {
+        "value": 25297,
+        "unit": "s"
+      },
+      "movingTimeS": {
+        "value": 23997,
+        "unit": "s"
+      },
+      "elevationGainM": {
+        "value": 2924,
+        "unit": "m"
+      },
+      "elevationLossM": {
+        "value": 2808,
+        "unit": "m"
+      },
+      "avgSpeedMps": {
+        "value": 6.743810476309538,
+        "unit": "m/s"
+      },
+      "maxSpeedMps": {
+        "value": 18.14,
+        "unit": "m/s"
+      },
+      "avgPowerW": {
+        "value": 194,
+        "unit": "W"
+      },
+      "maxPowerW": {
+        "value": 632,
+        "unit": "W"
+      },
+      "avgCadenceRpm": {
+        "value": 75,
+        "unit": "rpm"
+      },
+      "maxCadenceRpm": {
+        "value": 112,
+        "unit": "rpm"
+      },
+      "activityEnergyKcal": {
+        "value": 4439,
+        "unit": "kcal"
+      }
+    }
+  },
+  "L1_series": {
+    "pointCount": 23702,
+    "meta": {}
+  },
+  "L2_deterministic_metrics": {
+    "recordedMetrics": [
+      "distanceM",
+      "elapsedTimeS",
+      "movingTimeS",
+      "elevationGainM",
+      "maxSpeedMps",
+      "avgPowerW",
+      "maxPowerW",
+      "avgCadenceRpm",
+      "maxCadenceRpm",
+      "activityEnergyKcal"
+    ],
+    "derivedMetrics": [
+      "avgSpeedMps"
+    ],
+    "estimatedMetrics": [],
+    "featureCount": 12,
+    "featureKeys": [
+      "speedSeriesMeanMps",
+      "speedStdDevMps",
+      "speedCoefficientOfVariation",
+      "speedFirstLastDeltaMps",
+      "powerSeriesMeanW",
+      "powerStdDevW",
+      "powerCoefficientOfVariation",
+      "powerFirstLastDeltaW",
+      "elevationPositiveGainM",
+      "elevationMinM",
+      "elevationMaxM",
+      "elevationRangeM"
+    ]
+  },
+  "L3_quality_and_eligibility": {
+    "eligibility": {
+      "eligible": true,
+      "status": "eligible",
+      "reasonCodes": [
+        "FEATURES_AVAILABLE",
+        "FEATURES_AVAILABLE"
+      ],
+      "allowedDimensionKeys": [
+        "pace",
+        "power",
+        "climbing",
+        "cadence"
+      ],
+      "insightSources": [
+        "feature",
+        "advanced"
+      ]
+    },
+    "contextLimitations": [
+      "heartRateSeriesMeanBpm:CAPABILITY_UNAVAILABLE",
+      "heartRateStdDevBpm:CAPABILITY_UNAVAILABLE",
+      "heartRateFirstLastDeltaBpm:CAPABILITY_UNAVAILABLE",
+      "cadenceSeriesMeanRpm:CAPABILITY_UNAVAILABLE",
+      "cadenceStdDevRpm:CAPABILITY_UNAVAILABLE",
+      "cadenceCoefficientOfVariation:CAPABILITY_UNAVAILABLE",
+      "cadenceFirstLastDeltaRpm:CAPABILITY_UNAVAILABLE",
+      "normalizedPowerRatio:METRIC_MISSING",
+      "heartRate:FIELD_MISSING",
+      "heartRateZones:DEPENDENCY_UNAVAILABLE",
+      "historyComparison:HISTORY_NOT_AVAILABLE",
+      "sameRouteComparison:HISTORY_NOT_AVAILABLE",
+      "trend:HISTORY_NOT_AVAILABLE",
+      "advanced.heartRate:sensor_quality_failed"
+    ],
+    "privacyFlags": [
+      "raw_track_excluded",
+      "precise_coordinates_excluded",
+      "source_filename_excluded",
+      "untrusted_free_text_excluded"
+    ],
+    "safetyFlags": []
+  },
+  "L4_features_and_relations": {
+    "features": [
+      {
+        "claimId": "claim:local-preview:feature:speedSeriesMeanMps",
+        "key": "speedSeriesMeanMps",
+        "value": 6.697193907687099,
+        "unit": "m/s",
+        "confidence": "high"
+      },
+      {
+        "claimId": "claim:local-preview:feature:speedStdDevMps",
+        "key": "speedStdDevMps",
+        "value": 3.304695362125366,
+        "unit": "m/s",
+        "confidence": "high"
+      },
+      {
+        "claimId": "claim:local-preview:feature:speedCoefficientOfVariation",
+        "key": "speedCoefficientOfVariation",
+        "value": 0.4934447781677946,
+        "unit": "ratio",
+        "confidence": "high"
+      },
+      {
+        "claimId": "claim:local-preview:feature:speedFirstLastDeltaMps",
+        "key": "speedFirstLastDeltaMps",
+        "value": 0.5406075949366906,
+        "unit": "m/s",
+        "confidence": "high"
+      },
+      {
+        "claimId": "claim:local-preview:feature:powerSeriesMeanW",
+        "key": "powerSeriesMeanW",
+        "value": 150.16488060079317,
+        "unit": "W",
+        "confidence": "high"
+      },
+      {
+        "claimId": "claim:local-preview:feature:powerStdDevW",
+        "key": "powerStdDevW",
+        "value": 99.53696733516507,
+        "unit": "W",
+        "confidence": "high"
+      },
+      {
+        "claimId": "claim:local-preview:feature:powerCoefficientOfVariation",
+        "key": "powerCoefficientOfVariation",
+        "value": 0.6628511735695365,
+        "unit": "ratio",
+        "confidence": "high"
+      },
+      {
+        "claimId": "claim:local-preview:feature:powerFirstLastDeltaW",
+        "key": "powerFirstLastDeltaW",
+        "value": -43.48405063291139,
+        "unit": "W",
+        "confidence": "high"
+      },
+      {
+        "claimId": "claim:local-preview:feature:elevationPositiveGainM",
+        "key": "elevationPositiveGainM",
+        "value": 2924,
+        "unit": "m",
+        "confidence": "high"
+      },
+      {
+        "claimId": "claim:local-preview:feature:elevationMinM",
+        "key": "elevationMinM",
+        "value": 486,
+        "unit": "m",
+        "confidence": "high"
+      },
+      {
+        "claimId": "claim:local-preview:feature:elevationMaxM",
+        "key": "elevationMaxM",
+        "value": 1565,
+        "unit": "m",
+        "confidence": "high"
+      },
+      {
+        "claimId": "claim:local-preview:feature:elevationRangeM",
+        "key": "elevationRangeM",
+        "value": 1079,
+        "unit": "m",
+        "confidence": "high"
+      }
+    ],
+    "unavailable": [
+      {
+        "key": "heartRateSeriesMeanBpm",
+        "dimension": "heartRate",
+        "reason": "CAPABILITY_UNAVAILABLE",
+        "requiredCapabilities": [
+          "heartRate"
+        ]
+      },
+      {
+        "key": "heartRateStdDevBpm",
+        "dimension": "heartRate",
+        "reason": "CAPABILITY_UNAVAILABLE",
+        "requiredCapabilities": [
+          "heartRate"
+        ]
+      },
+      {
+        "key": "heartRateFirstLastDeltaBpm",
+        "dimension": "heartRate",
+        "reason": "CAPABILITY_UNAVAILABLE",
+        "requiredCapabilities": [
+          "heartRate"
+        ]
+      },
+      {
+        "key": "cadenceSeriesMeanRpm",
+        "dimension": "cadence",
+        "reason": "CAPABILITY_UNAVAILABLE",
+        "requiredCapabilities": [
+          "cadence"
+        ]
+      },
+      {
+        "key": "cadenceStdDevRpm",
+        "dimension": "cadence",
+        "reason": "CAPABILITY_UNAVAILABLE",
+        "requiredCapabilities": [
+          "cadence"
+        ]
+      },
+      {
+        "key": "cadenceCoefficientOfVariation",
+        "dimension": "cadence",
+        "reason": "CAPABILITY_UNAVAILABLE",
+        "requiredCapabilities": [
+          "cadence"
+        ]
+      },
+      {
+        "key": "cadenceFirstLastDeltaRpm",
+        "dimension": "cadence",
+        "reason": "CAPABILITY_UNAVAILABLE",
+        "requiredCapabilities": [
+          "cadence"
+        ]
+      },
+      {
+        "key": "normalizedPowerRatio",
+        "dimension": "power",
+        "reason": "METRIC_MISSING",
+        "requiredCapabilities": [
+          "power",
+          "normalizedPower"
+        ]
+      }
+    ]
+  },
+  "L5_atomic_claims_source": {
+    "allowedClaimCount": 63,
+    "byKind": {
+      "metric": 11,
+      "feature": 12,
+      "advanced": 40
+    },
+    "claims": [
+      {
+        "claimId": "claim:local-preview:distanceM",
+        "kind": "metric",
+        "key": "distanceM",
+        "value": 161831.22,
+        "displayValue": "161.8",
+        "displayUnit": "km",
+        "confidence": "high"
+      },
+      {
+        "claimId": "claim:local-preview:elapsedTimeS",
+        "kind": "metric",
+        "key": "elapsedTimeS",
+        "value": 25297,
+        "displayValue": "7 小时 2 分钟",
+        "displayUnit": "duration",
+        "confidence": "high"
+      },
+      {
+        "claimId": "claim:local-preview:movingTimeS",
+        "kind": "metric",
+        "key": "movingTimeS",
+        "value": 23997,
+        "displayValue": "6 小时 40 分钟",
+        "displayUnit": "duration",
+        "confidence": "high"
+      },
+      {
+        "claimId": "claim:local-preview:elevationGainM",
+        "kind": "metric",
+        "key": "elevationGainM",
+        "value": 2924,
+        "displayValue": "2924",
+        "displayUnit": "m",
+        "confidence": "high"
+      },
+      {
+        "claimId": "claim:local-preview:avgSpeedMps",
+        "kind": "metric",
+        "key": "avgSpeedMps",
+        "value": 6.743810476309538,
+        "displayValue": "24.3",
+        "displayUnit": "km/h",
+        "confidence": "high"
+      },
+      {
+        "claimId": "claim:local-preview:maxSpeedMps",
+        "kind": "metric",
+        "key": "maxSpeedMps",
+        "value": 18.14,
+        "displayValue": "65.3",
+        "displayUnit": "km/h",
+        "confidence": "high"
+      },
+      {
+        "claimId": "claim:local-preview:avgPowerW",
+        "kind": "metric",
+        "key": "avgPowerW",
+        "value": 194,
+        "displayValue": "194",
+        "displayUnit": "W",
+        "confidence": "high"
+      },
+      {
+        "claimId": "claim:local-preview:maxPowerW",
+        "kind": "metric",
+        "key": "maxPowerW",
+        "value": 632,
+        "displayValue": "632",
+        "displayUnit": "W",
+        "confidence": "high"
+      },
+      {
+        "claimId": "claim:local-preview:avgCadenceRpm",
+        "kind": "metric",
+        "key": "avgCadenceRpm",
+        "value": 75,
+        "displayValue": "75",
+        "displayUnit": "rpm",
+        "confidence": "high"
+      },
+      {
+        "claimId": "claim:local-preview:maxCadenceRpm",
+        "kind": "metric",
+        "key": "maxCadenceRpm",
+        "value": 112,
+        "displayValue": "112",
+        "displayUnit": "rpm",
+        "confidence": "high"
+      },
+      {
+        "claimId": "claim:local-preview:activityEnergyKcal",
+        "kind": "metric",
+        "key": "activityEnergyKcal",
+        "value": 4439,
+        "displayValue": "4439",
+        "displayUnit": "kcal",
+        "confidence": "high"
+      },
+      {
+        "claimId": "claim:local-preview:feature:speedSeriesMeanMps",
+        "kind": "feature",
+        "key": "speedSeriesMeanMps",
+        "value": 6.697193907687099,
+        "displayValue": "24.11",
+        "displayUnit": "km/h",
+        "confidence": "high"
+      },
+      {
+        "claimId": "claim:local-preview:feature:speedStdDevMps",
+        "kind": "feature",
+        "key": "speedStdDevMps",
+        "value": 3.304695362125366,
+        "displayValue": "11.9",
+        "displayUnit": "km/h",
+        "confidence": "high"
+      },
+      {
+        "claimId": "claim:local-preview:feature:speedCoefficientOfVariation",
+        "kind": "feature",
+        "key": "speedCoefficientOfVariation",
+        "value": 0.4934447781677946,
+        "displayValue": "0.49",
+        "displayUnit": "ratio",
+        "confidence": "high"
+      },
+      {
+        "claimId": "claim:local-preview:feature:speedFirstLastDeltaMps",
+        "kind": "feature",
+        "key": "speedFirstLastDeltaMps",
+        "value": 0.5406075949366906,
+        "displayValue": "1.95",
+        "displayUnit": "km/h",
+        "confidence": "high"
+      },
+      {
+        "claimId": "claim:local-preview:feature:powerSeriesMeanW",
+        "kind": "feature",
+        "key": "powerSeriesMeanW",
+        "value": 150.16488060079317,
+        "displayValue": "150.16",
+        "displayUnit": "W",
+        "confidence": "high"
+      },
+      {
+        "claimId": "claim:local-preview:feature:powerStdDevW",
+        "kind": "feature",
+        "key": "powerStdDevW",
+        "value": 99.53696733516507,
+        "displayValue": "99.54",
+        "displayUnit": "W",
+        "confidence": "high"
+      },
+      {
+        "claimId": "claim:local-preview:feature:powerCoefficientOfVariation",
+        "kind": "feature",
+        "key": "powerCoefficientOfVariation",
+        "value": 0.6628511735695365,
+        "displayValue": "0.66",
+        "displayUnit": "ratio",
+        "confidence": "high"
+      },
+      {
+        "claimId": "claim:local-preview:feature:powerFirstLastDeltaW",
+        "kind": "feature",
+        "key": "powerFirstLastDeltaW",
+        "value": -43.48405063291139,
+        "displayValue": "-43.48",
+        "displayUnit": "W",
+        "confidence": "high"
+      },
+      {
+        "claimId": "claim:local-preview:feature:elevationPositiveGainM",
+        "kind": "feature",
+        "key": "elevationPositiveGainM",
+        "value": 2924,
+        "displayValue": "2924",
+        "displayUnit": "m",
+        "confidence": "high"
+      },
+      {
+        "claimId": "claim:local-preview:feature:elevationMinM",
+        "kind": "feature",
+        "key": "elevationMinM",
+        "value": 486,
+        "displayValue": "486",
+        "displayUnit": "m",
+        "confidence": "high"
+      },
+      {
+        "claimId": "claim:local-preview:feature:elevationMaxM",
+        "kind": "feature",
+        "key": "elevationMaxM",
+        "value": 1565,
+        "displayValue": "1565",
+        "displayUnit": "m",
+        "confidence": "high"
+      },
+      {
+        "claimId": "claim:local-preview:feature:elevationRangeM",
+        "kind": "feature",
+        "key": "elevationRangeM",
+        "value": 1079,
+        "displayValue": "1079",
+        "displayUnit": "m",
+        "confidence": "high"
+      },
+      {
+        "claimId": "claim:local-preview:advanced:timing.elapsedAverageSpeedMps",
+        "kind": "advanced",
+        "key": "timing.elapsedAverageSpeedMps",
+        "value": 6.397249476222477,
+        "displayValue": "23",
+        "displayUnit": "km/h",
+        "confidence": "high"
+      },
+      {
+        "claimId": "claim:local-preview:advanced:timing.movingAverageSpeedMps",
+        "kind": "advanced",
+        "key": "timing.movingAverageSpeedMps",
+        "value": 6.743810476309538,
+        "displayValue": "24.3",
+        "displayUnit": "km/h",
+        "confidence": "high"
+      },
+      {
+        "claimId": "claim:local-preview:advanced:timing.stoppedTimeS",
+        "kind": "advanced",
+        "key": "timing.stoppedTimeS",
+        "value": 1300,
+        "displayValue": "22 分钟",
+        "displayUnit": "duration",
+        "confidence": "high"
+      },
+      {
+        "claimId": "claim:local-preview:advanced:cruise.totalDurationS",
+        "kind": "advanced",
+        "key": "cruise.totalDurationS",
+        "value": 269,
+        "displayValue": "4 分钟",
+        "displayUnit": "duration",
+        "confidence": "high"
+      },
+      {
+        "claimId": "claim:local-preview:advanced:cruise.representative.1",
+        "kind": "advanced",
+        "key": "cruise.representative.1",
+        "value": 140,
+        "displayValue": "2 分钟",
+        "displayUnit": "duration",
+        "confidence": "high"
+      },
+      {
+        "claimId": "claim:local-preview:advanced:cruise.representative.2",
+        "kind": "advanced",
+        "key": "cruise.representative.2",
+        "value": 129,
+        "displayValue": "2 分钟",
+        "displayUnit": "duration",
+        "confidence": "high"
+      },
+      {
+        "claimId": "claim:local-preview:advanced:route.trendClimbDistanceM",
+        "kind": "advanced",
+        "key": "route.trendClimbDistanceM",
+        "value": 70159.58999999997,
+        "displayValue": "70.2",
+        "displayUnit": "km",
+        "confidence": "high"
+      },
+      {
+        "claimId": "claim:local-preview:advanced:route.trendFlatDistanceM",
+        "kind": "advanced",
+        "key": "route.trendFlatDistanceM",
+        "value": 16069.46000000004,
+        "displayValue": "16.1",
+        "displayUnit": "km",
+        "confidence": "high"
+      },
+      {
+        "claimId": "claim:local-preview:advanced:route.trendDescentDistanceM",
+        "kind": "advanced",
+        "key": "route.trendDescentDistanceM",
+        "value": 73297.89999999998,
+        "displayValue": "73.3",
+        "displayUnit": "km",
+        "confidence": "high"
+      },
+      {
+        "claimId": "claim:local-preview:advanced:elevation.minM",
+        "kind": "advanced",
+        "key": "elevation.minM",
+        "value": 486,
+        "displayValue": "486",
+        "displayUnit": "m",
+        "confidence": "high"
+      },
+      {
+        "claimId": "claim:local-preview:advanced:elevation.maxM",
+        "kind": "advanced",
+        "key": "elevation.maxM",
+        "value": 1565,
+        "displayValue": "1565",
+        "displayUnit": "m",
+        "confidence": "high"
+      },
+      {
+        "claimId": "claim:local-preview:advanced:elevation.rangeM",
+        "kind": "advanced",
+        "key": "elevation.rangeM",
+        "value": 1079,
+        "displayValue": "1079",
+        "displayUnit": "m",
+        "confidence": "high"
+      },
+      {
+        "claimId": "claim:local-preview:advanced:climb.representative.1",
+        "kind": "advanced",
+        "key": "climb.representative.1",
+        "value": 4160.9100000000035,
+        "displayValue": "4.2",
+        "displayUnit": "km",
+        "confidence": "high"
+      },
+      {
+        "claimId": "claim:local-preview:advanced:climb.representative.2",
+        "kind": "advanced",
+        "key": "climb.representative.2",
+        "value": 8114.439999999995,
+        "displayValue": "8.1",
+        "displayUnit": "km",
+        "confidence": "high"
+      },
+      {
+        "claimId": "claim:local-preview:advanced:climb.representative.3",
+        "kind": "advanced",
+        "key": "climb.representative.3",
+        "value": 5563.759999999995,
+        "displayValue": "5.6",
+        "displayUnit": "km",
+        "confidence": "high"
+      },
+      {
+        "claimId": "claim:local-preview:advanced:cadence.coverage",
+        "kind": "advanced",
+        "key": "cadence.coverage",
+        "value": 0.7670958869858733,
+        "displayValue": "77",
+        "displayUnit": "%",
+        "confidence": "high"
+      },
+      {
+        "claimId": "claim:local-preview:advanced:cadence.zone.zero",
+        "kind": "advanced",
+        "key": "cadence.zone.zero",
+        "value": 17,
+        "displayValue": "0 分钟",
+        "displayUnit": "duration",
+        "confidence": "high"
+      },
+      {
+        "claimId": "claim:local-preview:advanced:cadence.zone.low",
+        "kind": "advanced",
+        "key": "cadence.zone.low",
+        "value": 1344,
+        "displayValue": "22 分钟",
+        "displayUnit": "duration",
+        "confidence": "high"
+      },
+      {
+        "claimId": "claim:local-preview:advanced:cadence.zone.steady",
+        "kind": "advanced",
+        "key": "cadence.zone.steady",
+        "value": 6856,
+        "displayValue": "1 小时 54 分钟",
+        "displayUnit": "duration",
+        "confidence": "high"
+      },
+      {
+        "claimId": "claim:local-preview:advanced:cadence.zone.endurance",
+        "kind": "advanced",
+        "key": "cadence.zone.endurance",
+        "value": 8162,
+        "displayValue": "2 小时 16 分钟",
+        "displayUnit": "duration",
+        "confidence": "high"
+      },
+      {
+        "claimId": "claim:local-preview:advanced:cadence.zone.high",
+        "kind": "advanced",
+        "key": "cadence.zone.high",
+        "value": 1952,
+        "displayValue": "33 分钟",
+        "displayUnit": "duration",
+        "confidence": "high"
+      },
+      {
+        "claimId": "claim:local-preview:advanced:cadence.zone.very-high",
+        "kind": "advanced",
+        "key": "cadence.zone.very-high",
+        "value": 77,
+        "displayValue": "1 分钟",
+        "displayUnit": "duration",
+        "confidence": "high"
+      },
+      {
+        "claimId": "claim:local-preview:advanced:power.quality",
+        "kind": "advanced",
+        "key": "power.quality",
+        "confidence": "high"
+      },
+      {
+        "claimId": "claim:local-preview:advanced:power.averageW",
+        "kind": "advanced",
+        "key": "power.averageW",
+        "value": 194,
+        "displayValue": "194",
+        "displayUnit": "W",
+        "confidence": "high"
+      },
+      {
+        "claimId": "claim:local-preview:advanced:power.normalizedW",
+        "kind": "advanced",
+        "key": "power.normalizedW",
+        "value": 197.9056722489206,
+        "displayValue": "197.9",
+        "displayUnit": "W",
+        "confidence": "high"
+      },
+      {
+        "claimId": "claim:local-preview:advanced:power.intensityFactor",
+        "kind": "advanced",
+        "key": "power.intensityFactor",
+        "value": 0.9895283612446031,
+        "displayValue": "0.99",
+        "displayUnit": "ratio",
+        "confidence": "high"
+      },
+      {
+        "claimId": "claim:local-preview:advanced:power.trainingStressScore",
+        "kind": "advanced",
+        "key": "power.trainingStressScore",
+        "value": 652.6959879401442,
+        "displayValue": "652.7",
+        "displayUnit": "score",
+        "confidence": "high"
+      },
+      {
+        "claimId": "claim:local-preview:advanced:power.averageWkg",
+        "kind": "advanced",
+        "key": "power.averageWkg",
+        "value": 2.6216216216216215,
+        "displayValue": "2.6",
+        "displayUnit": "W/kg",
+        "confidence": "high"
+      },
+      {
+        "claimId": "claim:local-preview:advanced:power.normalizedWkg",
+        "kind": "advanced",
+        "key": "power.normalizedWkg",
+        "value": 2.674400976336765,
+        "displayValue": "2.7",
+        "displayUnit": "W/kg",
+        "confidence": "high"
+      },
+      {
+        "claimId": "claim:local-preview:advanced:power.coverage",
+        "kind": "advanced",
+        "key": "power.coverage",
+        "value": 0.986790015418594,
+        "displayValue": "99",
+        "displayUnit": "%",
+        "confidence": "high"
+      },
+      {
+        "claimId": "claim:local-preview:advanced:power.zone.z1",
+        "kind": "advanced",
+        "key": "power.zone.z1",
+        "value": 6427,
+        "displayValue": "1 小时 47 分钟",
+        "displayUnit": "duration",
+        "confidence": "high"
+      },
+      {
+        "claimId": "claim:local-preview:advanced:power.zone.z2",
+        "kind": "advanced",
+        "key": "power.zone.z2",
+        "value": 3336,
+        "displayValue": "56 分钟",
+        "displayUnit": "duration",
+        "confidence": "high"
+      },
+      {
+        "claimId": "claim:local-preview:advanced:power.zone.z3",
+        "kind": "advanced",
+        "key": "power.zone.z3",
+        "value": 4269,
+        "displayValue": "1 小时 11 分钟",
+        "displayUnit": "duration",
+        "confidence": "high"
+      },
+      {
+        "claimId": "claim:local-preview:advanced:power.zone.z4",
+        "kind": "advanced",
+        "key": "power.zone.z4",
+        "value": 3951,
+        "displayValue": "1 小时 6 分钟",
+        "displayUnit": "duration",
+        "confidence": "high"
+      },
+      {
+        "claimId": "claim:local-preview:advanced:power.zone.z5",
+        "kind": "advanced",
+        "key": "power.zone.z5",
+        "value": 2294,
+        "displayValue": "38 分钟",
+        "displayUnit": "duration",
+        "confidence": "high"
+      },
+      {
+        "claimId": "claim:local-preview:advanced:power.zone.z6",
+        "kind": "advanced",
+        "key": "power.zone.z6",
+        "value": 2157,
+        "displayValue": "36 分钟",
+        "displayUnit": "duration",
+        "confidence": "high"
+      },
+      {
+        "claimId": "claim:local-preview:advanced:power.zone.z7",
+        "kind": "advanced",
+        "key": "power.zone.z7",
+        "value": 1246,
+        "displayValue": "21 分钟",
+        "displayUnit": "duration",
+        "confidence": "high"
+      },
+      {
+        "claimId": "claim:local-preview:advanced:power.peakAverage.10s",
+        "kind": "advanced",
+        "key": "power.peakAverage.10s",
+        "value": 566,
+        "displayValue": "566",
+        "displayUnit": "W",
+        "confidence": "high"
+      },
+      {
+        "claimId": "claim:local-preview:advanced:power.peakAverage.20s",
+        "kind": "advanced",
+        "key": "power.peakAverage.20s",
+        "value": 537.5,
+        "displayValue": "538",
+        "displayUnit": "W",
+        "confidence": "high"
+      },
+      {
+        "claimId": "claim:local-preview:advanced:power.peakAverage.30s",
+        "kind": "advanced",
+        "key": "power.peakAverage.30s",
+        "value": 515.6333333333333,
+        "displayValue": "516",
+        "displayUnit": "W",
+        "confidence": "high"
+      }
+    ]
+  },
+  "L6_plan_and_candidate": {
+    "planVersion": "ride-interpretation-plan-v0.1",
+    "mode": "default",
+    "eligibleDimensionIds": [
+      "power_output",
+      "route_pacing",
+      "terrain_climb",
+      "pacing_stability",
+      "cadence"
+    ],
+    "focusDimensionIds": [
+      "power_output",
+      "route_pacing",
+      "terrain_climb"
+    ],
+    "priorityScores": {
+      "route_pacing": 70,
+      "terrain_climb": 65,
+      "power_output": 90,
+      "cadence": 55,
+      "pacing_stability": 60
+    },
+    "exclusions": [
+      {
+        "dimensionId": "history_change",
+        "reason": "persistent_history_deferred"
+      },
+      {
+        "dimensionId": "heart_rate",
+        "reason": "eligibility_not_open"
+      }
+    ],
+    "dimensionAvailability": {
+      "route_pacing": "available",
+      "terrain_climb": "available",
+      "heart_rate": "hidden",
+      "power_output": "available",
+      "cadence": "available",
+      "pacing_stability": "available",
+      "history_change": "hidden"
+    },
+    "candidateClaims": [
+      {
+        "claimId": "candidate:route_pacing:fact",
+        "dimensionId": "route_pacing",
+        "claimType": "fact",
+        "sourceClaimIds": [
+          "claim:local-preview:distanceM"
+        ],
+        "availability": "available"
+      },
+      {
+        "claimId": "candidate:route_pacing:performance",
+        "dimensionId": "route_pacing",
+        "claimType": "performance",
+        "sourceClaimIds": [
+          "claim:local-preview:feature:speedSeriesMeanMps"
+        ],
+        "availability": "available"
+      },
+      {
+        "claimId": "candidate:route_pacing:capability_evidence",
+        "dimensionId": "route_pacing",
+        "claimType": "capability_evidence",
+        "sourceClaimIds": [
+          "claim:local-preview:feature:speedSeriesMeanMps"
+        ],
+        "availability": "available"
+      },
+      {
+        "claimId": "candidate:terrain_climb:fact",
+        "dimensionId": "terrain_climb",
+        "claimType": "fact",
+        "sourceClaimIds": [
+          "claim:local-preview:elevationGainM"
+        ],
+        "availability": "available"
+      },
+      {
+        "claimId": "candidate:terrain_climb:performance",
+        "dimensionId": "terrain_climb",
+        "claimType": "performance",
+        "sourceClaimIds": [
+          "claim:local-preview:feature:elevationPositiveGainM"
+        ],
+        "availability": "available"
+      },
+      {
+        "claimId": "candidate:terrain_climb:capability_evidence",
+        "dimensionId": "terrain_climb",
+        "claimType": "capability_evidence",
+        "sourceClaimIds": [
+          "claim:local-preview:feature:elevationPositiveGainM"
+        ],
+        "availability": "available"
+      },
+      {
+        "claimId": "candidate:power_output:fact",
+        "dimensionId": "power_output",
+        "claimType": "fact",
+        "sourceClaimIds": [
+          "claim:local-preview:avgPowerW"
+        ],
+        "availability": "available"
+      },
+      {
+        "claimId": "candidate:power_output:performance",
+        "dimensionId": "power_output",
+        "claimType": "performance",
+        "sourceClaimIds": [
+          "claim:local-preview:feature:powerSeriesMeanW"
+        ],
+        "availability": "available"
+      },
+      {
+        "claimId": "candidate:power_output:capability_evidence",
+        "dimensionId": "power_output",
+        "claimType": "capability_evidence",
+        "sourceClaimIds": [
+          "claim:local-preview:feature:powerSeriesMeanW"
+        ],
+        "availability": "available"
+      },
+      {
+        "claimId": "candidate:cadence:fact",
+        "dimensionId": "cadence",
+        "claimType": "fact",
+        "sourceClaimIds": [
+          "claim:local-preview:avgCadenceRpm"
+        ],
+        "availability": "available"
+      },
+      {
+        "claimId": "candidate:cadence:performance",
+        "dimensionId": "cadence",
+        "claimType": "performance",
+        "sourceClaimIds": [
+          "claim:local-preview:advanced:cadence.coverage"
+        ],
+        "availability": "available"
+      },
+      {
+        "claimId": "candidate:cadence:capability_evidence",
+        "dimensionId": "cadence",
+        "claimType": "capability_evidence",
+        "sourceClaimIds": [
+          "claim:local-preview:advanced:cadence.coverage"
+        ],
+        "availability": "available"
+      },
+      {
+        "claimId": "candidate:pacing_stability:fact",
+        "dimensionId": "pacing_stability",
+        "claimType": "fact",
+        "sourceClaimIds": [
+          "claim:local-preview:feature:speedStdDevMps"
+        ],
+        "availability": "available"
+      },
+      {
+        "claimId": "candidate:pacing_stability:performance",
+        "dimensionId": "pacing_stability",
+        "claimType": "performance",
+        "sourceClaimIds": [
+          "claim:local-preview:feature:speedStdDevMps",
+          "claim:local-preview:feature:speedSeriesMeanMps"
+        ],
+        "availability": "available"
+      },
+      {
+        "claimId": "candidate:pacing_stability:capability_evidence",
+        "dimensionId": "pacing_stability",
+        "claimType": "capability_evidence",
+        "sourceClaimIds": [
+          "claim:local-preview:feature:speedStdDevMps",
+          "claim:local-preview:feature:speedSeriesMeanMps"
+        ],
+        "availability": "available"
+      }
+    ],
+    "visualRegistry": [
+      {
+        "visualId": "visual:series:speed",
+        "type": "trend",
+        "sourceClaimIds": [
+          "claim:local-preview:feature:speedSeriesMeanMps"
+        ],
+        "availability": "available",
+        "ruleVersion": "ride-visual-rules-v0.1"
+      },
+      {
+        "visualId": "visual:series:elevation",
+        "type": "trend",
+        "sourceClaimIds": [
+          "claim:local-preview:elevationGainM",
+          "claim:local-preview:feature:elevationPositiveGainM"
+        ],
+        "availability": "available",
+        "ruleVersion": "ride-visual-rules-v0.1"
+      },
+      {
+        "visualId": "visual:series:power",
+        "type": "trend",
+        "sourceClaimIds": [
+          "claim:local-preview:avgPowerW",
+          "claim:local-preview:feature:powerSeriesMeanW"
+        ],
+        "availability": "available",
+        "ruleVersion": "ride-visual-rules-v0.1"
+      },
+      {
+        "visualId": "visual:series:cadence",
+        "type": "zone_distribution",
+        "sourceClaimIds": [
+          "claim:local-preview:avgCadenceRpm",
+          "claim:local-preview:advanced:cadence.coverage"
+        ],
+        "availability": "available",
+        "ruleVersion": "ride-visual-rules-v0.1"
+      }
+    ],
+    "overallAssessment": {
+      "factClaimIds": [
+        "candidate:power_output:fact"
+      ],
+      "performanceClaimIds": [
+        "candidate:power_output:performance"
+      ],
+      "capabilityEvidenceClaimIds": [
+        "candidate:power_output:capability_evidence"
+      ],
+      "meaningClaimIds": [
+        "candidate:power_output:fact",
+        "candidate:power_output:performance"
+      ],
+      "visualRefIds": [
+        "visual:series:power"
+      ]
+    },
+    "dimensionInterpretations": [
+      {
+        "dimensionId": "power_output",
+        "factClaimIds": [
+          "candidate:power_output:fact"
+        ],
+        "performanceClaimIds": [
+          "candidate:power_output:performance"
+        ],
+        "capabilityEvidenceClaimIds": [
+          "candidate:power_output:capability_evidence"
+        ],
+        "meaningClaimIds": [
+          "candidate:power_output:fact",
+          "candidate:power_output:performance"
+        ],
+        "visualRefIds": [
+          "visual:series:power"
+        ]
+      },
+      {
+        "dimensionId": "route_pacing",
+        "factClaimIds": [
+          "candidate:route_pacing:fact"
+        ],
+        "performanceClaimIds": [
+          "candidate:route_pacing:performance"
+        ],
+        "capabilityEvidenceClaimIds": [
+          "candidate:route_pacing:capability_evidence"
+        ],
+        "meaningClaimIds": [
+          "candidate:route_pacing:fact",
+          "candidate:route_pacing:performance"
+        ],
+        "visualRefIds": [
+          "visual:series:speed"
+        ]
+      },
+      {
+        "dimensionId": "terrain_climb",
+        "factClaimIds": [
+          "candidate:terrain_climb:fact"
+        ],
+        "performanceClaimIds": [
+          "candidate:terrain_climb:performance"
+        ],
+        "capabilityEvidenceClaimIds": [
+          "candidate:terrain_climb:capability_evidence"
+        ],
+        "meaningClaimIds": [
+          "candidate:terrain_climb:fact",
+          "candidate:terrain_climb:performance"
+        ],
+        "visualRefIds": [
+          "visual:series:elevation"
+        ]
+      }
+    ],
+    "limitations": []
+  },
+  "validations": {
+    "context": {
+      "valid": true,
+      "issues": []
+    },
+    "input": {
+      "valid": true,
+      "issues": []
+    }
+  },
+  "profile": {
+    "ftpWatts": 200,
+    "maxHeartRateBpm": 200,
+    "weightKg": 74
+  }
+}

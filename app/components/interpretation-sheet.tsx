@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { createPortal } from "react-dom";
 
 import { InterpretationView } from "./interpretation-view";
 
@@ -17,11 +18,13 @@ export function InterpretationSheet({
   rideId,
   title,
   dateLabel,
+  demoFallback,
   onClose,
 }: {
   rideId: string;
   title: string;
   dateLabel?: string;
+  demoFallback?: string;
   onClose: () => void;
 }) {
   useEffect(() => {
@@ -47,7 +50,12 @@ export function InterpretationSheet({
     };
   }, []);
 
-  return (
+  // 用 portal 挂到 body：抽屉原本渲染在 .summary-sheet（z-index:2）内部，该祖先
+  // 会形成层叠上下文，把抽屉自身的 z-index 限制在局部层，因而压不住 fixed 的
+  // 顶部/底部导航。挂到 body 后与导航同处根层叠上下文，z-index:80 即可正确覆盖。
+  if (typeof document === "undefined") return null;
+
+  return createPortal(
     <div
       className="interpretation-sheet-backdrop"
       onClick={onClose}
@@ -73,9 +81,10 @@ export function InterpretationSheet({
           </button>
         </header>
         <div className="interpretation-sheet-body">
-          <InterpretationView rideId={rideId} title={title} dateLabel={dateLabel} />
+          <InterpretationView rideId={rideId} title={title} dateLabel={dateLabel} demoFallback={demoFallback} />
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

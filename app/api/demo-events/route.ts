@@ -1,6 +1,7 @@
 import { AuthConfigurationError, resolveOrCreateRequestSession, sessionCookieHeader } from "../../../src/auth/session.ts";
 import { createDemoEvent, parseDemoEventInput } from "../../../src/observability/demo-events.ts";
 import { getApplicationRepository } from "../../../src/persistence/application-repository.ts";
+import { getRideRepository } from "../../../src/persistence/demo-ride-repository.ts";
 import { isDemoRideId } from "../../../src/ui/ride-view-model.ts";
 
 export const runtime = "nodejs";
@@ -43,7 +44,8 @@ export async function POST(request: Request): Promise<Response> {
   }
   const input = parseDemoEventInput(body);
   if (!input) return noStoreJson({ error: "INVALID_EVENT" }, 400, sessionCookieHeader(session));
-  if (!isDemoRideId(input.rideId) && !await getApplicationRepository().getRide(session.userId, input.rideId)) {
+  // DEMO-IMPORTED-RIDES：演示记录不属于任何会话，用带演示视图的仓储做存在性校验。
+  if (!isDemoRideId(input.rideId) && !await (await getRideRepository()).getRide(session.userId, input.rideId)) {
     return noStoreJson({ error: "UNKNOWN_RIDE" }, 404, sessionCookieHeader(session));
   }
   const event = createDemoEvent(input);

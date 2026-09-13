@@ -8,7 +8,7 @@ import {
   type ChatMessage,
 } from "../../src/chat/chat-home.ts";
 import { Brand } from "./app-shell";
-import { InfoIcon } from "./icons";
+import { CheckIcon, InfoIcon } from "./icons";
 import {
   appendChatTurn,
   buildChatSessionSummaries,
@@ -47,6 +47,39 @@ async function requestChatReply(text: string, summaries: ChatSessionSummary[], f
   } catch {
     return { reply: fallback };
   }
+}
+
+// CHAT 等待态：服务端是一次请求（路由判定 → 工具取数 → 模型生成），拿不到细粒度进度，
+// 这里按固定节奏模拟三段状态，让等待过程可感知。最后一段保持转圈直到响应返回。
+const CHAT_PENDING_STEPS = [
+  { label: "理解你的问题", active: "正在理解你的问题…" },
+  { label: "获取本次骑行数据", active: "正在获取本次骑行数据…" },
+  { label: "生成回复", active: "生成回复中…" },
+];
+const CHAT_PENDING_STEP_DELAYS_MS = [1100, 3400];
+
+function ChatPendingReply() {
+  const [activeStep, setActiveStep] = useState(0);
+
+  useEffect(() => {
+    const timers = CHAT_PENDING_STEP_DELAYS_MS.map((delay, index) =>
+      window.setTimeout(() => setActiveStep(index + 1), delay),
+    );
+    return () => timers.forEach((timer) => window.clearTimeout(timer));
+  }, []);
+
+  return <article className="chat-message chat-message-assistant">
+    <span className="chat-message-label">AI 伙伴</span>
+    <ol className="chat-pending-list" role="status" aria-live="polite">
+      {CHAT_PENDING_STEPS.map((step, index) => {
+        const status = index < activeStep ? "done" : index === activeStep ? "active" : "pending";
+        return <li className={`chat-pending-step is-${status}`} key={step.label}>
+          <span className="chat-pending-mark" aria-hidden="true">{status === "done" && <CheckIcon />}</span>
+          <span className="chat-pending-text">{status === "active" ? step.active : step.label}</span>
+        </li>;
+      })}
+    </ol>
+  </article>;
 }
 
 function MessageBubble({ message }: { message: ChatMessage }) {
@@ -123,7 +156,7 @@ export function ChatHome({ snapshot }: { snapshot: ChatHomeSnapshot }) {
     setHistoryOpen(false);
   }
 
-  const quickQuestions = ["骑行解读", "水平评估", "训练计划"];
+  const quickQuestions = ["当前可以分析哪些数据？", "骑行解读", "水平评估", "训练计划"];
 
   function askQuickQuestion(label: string) {
     if (pending) return;
@@ -174,7 +207,7 @@ export function ChatHome({ snapshot }: { snapshot: ChatHomeSnapshot }) {
       {messages.map((message, index) => <MessageBubble key={`${message.role}-${index}-${message.text}`} message={message} />)}
       {pendingTurn && <>
         <article className="chat-message chat-message-user"><p>{pendingTurn.userText}</p></article>
-        <article className="chat-message chat-message-assistant"><span className="chat-message-label">AI 伙伴</span><p>正在查询……</p></article>
+        <ChatPendingReply />
       </>}
       <div ref={messagesEndRef} />
     </div>

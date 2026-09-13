@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-page-node-id="FHPx1DqtkEG2finh3rSVnf">
+<head data-page-node-id="7DMx7JMUtFpXzhRCNnL6Gp">
+<meta charset="UTF-8" data-page-node-id="dBw360lBhajfuxkpS6Gij8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" data-page-node-id="pGCVRCd56Dv9HpM18dvzKV">
+<title>AI 骑行伙伴 · 作品详情 - 李伊柠</title>
+<style>
+  :root{
+    --ink:#1c2333;
+    --ink-2:#3a4356;
+    --muted:#6b7280;
+    --muted-2:#9ca3af;
+    --line:#e5e7eb;
+    --line-2:#f3f4f6;
+    --bg:#ffffff;
+    --bg-soft:#fafbfc;
+    --bg-card:#f8fafc;
+    --accent:#0f7b6c;
+    --accent-soft:#e8f4f1;
+    --blue:#4756c7;
+    --blue-soft:#eef0fb;
+    --gold:#b8860b;
+    --gold-soft:#fdf6e3;
+    --rose:#b3426b;
+    --rose-soft:#fbeff3;
+    --danger:#dc2626;
+    --danger-soft:#fef2f2;
+    --warn:#d97706;
+    --warn-soft:#fffbeb;
+    --ok:#16a34a;
+    --ok-soft:#f0fdf4;
+    --shadow:0 12px 48px rgba(15,23,42,.10), 0 2px 8px rgba(15,23,42,.06);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Helvetica Neue",Arial,sans-serif;
+    background:#eef2f6;
+    color:var(--ink);
+    line-height:1.65;
+    -webkit-font-smoothing:antialiased;
+  }
+  .modal-mask{
+    position:fixed;inset:0;background:rgba(0,0,0,.18);
+    z-index:1;
+  }
+  .modal{
+    position:relative;
+    z-index:2;
+    max-width:960px;
+    margin:32px auto;
+    background:var(--bg);
+    border-radius:16px;
+    box-shadow:var(--shadow);
+    overflow:hidden;
+  }
+  .modal-header{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:18px 28px;
+    border-bottom:1px solid var(--line);
+    background:#fff;
+    position:sticky;top:0;z-index:10;
+  }
+  .modal-title{font-size:14px;color:var(--ink-2);letter-spacing:.04em}
+  .modal-close{
+    width:32px;height:32px;border-radius:50%;
+    border:1px solid transparent;background:transparent;
+    color:var(--muted);cursor:pointer;font-size:20px;line-height:1;
+    display:flex;align-items:center;justify-content:center;
+    transition:all .15s;
+  }
+  .modal-close:hover{background:var(--bg-soft);color:var(--ink);border-color:var(--line)}
+  .modal-content{padding:48px 64px 72px;max-width:100%}
+  @media (max-width:720px){
+    .modal{margin:0;border-radius:0;min-height:100vh}
+    .modal-content{padding:28px 20px 60px}
+  }
+
+  /* Hero */
+  .hero{padding:0 0 56px;border-bottom:1px solid var(--line)}
+  .hero-eyebrow{
+    font-size:12px;color:var(--muted);
+    letter-spacing:.12em;text-transform:uppercase;
+    margin-bottom:18px;
+  }
+  .hero-title{
+    font-size:42px;font-weight:700;letter-spacing:-.02em;
+    margin:0 0 22px;color:var(--ink);
+  }
+  .hero-position{
+    font-size:18px;color:var(--ink-2);
+    margin:0 0 14px;line-height:1.6;
+  }
+  .hero-position strong{color:var(--ink);font-weight:600}
+  .hero-value{
+    font-size:15px;color:var(--muted);
+    margin:0 0 26px;line-height:1.7;
+    padding:14px 18px;background:var(--bg-soft);
+    border-left:3px solid var(--accent);
+    border-radius:0 8px 8px 0;
+  }
+  .hero-tags{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:36px}
+  .tag{
+    font-size:12px;color:var(--ink-2);
+    padding:5px 12px;border-radius:999px;
+    background:#fff;border:1px solid var(--line);
+  }
+  .tag.role{background:var(--accent-soft);color:var(--accent);border-color:transparent}
+  .hero-image{
+    margin:0 -16px;border-radius:12px;overflow:hidden;
+    border:1px solid var(--line);background:#000;
+  }
+  .hero-image img{width:100%;display:block}
+  .hero-caption{
+    margin-top:10px;font-size:12px;color:var(--muted);
+    text-align:center;letter-spacing:.04em;
+  }
+
+  /* Sections */
+  section{margin-top:64px;scroll-margin-top:80px}
+  section:first-of-type{margin-top:0}
+  .sec-num{
+    display:inline-block;font-size:11px;color:var(--accent);
+    letter-spacing:.16em;text-transform:uppercase;
+    margin-bottom:8px;font-weight:600;
+  }
+  h2{
+    font-size:28px;font-weight:700;
+    margin:0 0 18px;color:var(--ink);
+    letter-spacing:-.01em;
+  }
+  h3{
+    font-size:17px;font-weight:600;
+    margin:32px 0 10px;color:var(--ink);
+  }
+  p{margin:0 0 14px;font-size:14.5px;color:var(--ink-2);line-height:1.75}
+  p strong{color:var(--ink);font-weight:600}
+  ul,ol{margin:0 0 18px;padding-left:22px;font-size:14.5px;color:var(--ink-2)}
+  li{margin-bottom:6px;line-height:1.7}
+  li strong{color:var(--ink);font-weight:600}
+  em{font-style:normal;color:var(--accent);font-weight:600}
+
+  /* Tables */
+  table{
+    width:100%;border-collapse:collapse;
+    margin:14px 0 22px;font-size:13.5px;
+    border:1px solid var(--line);border-radius:8px;overflow:hidden;
+  }
+  thead{background:var(--bg-soft)}
+  th,td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+  th{font-weight:600;color:var(--ink);font-size:13px}
+  td{color:var(--ink-2)}
+  tbody tr:last-child td{border-bottom:none}
+  tbody tr:nth-child(even){background:#fcfcfd}
+
+  /* Inline highlight */
+  mark{
+    background:var(--warn-soft);color:var(--ink);
+    padding:1px 6px;border-radius:4px;font-size:13px;
+  }
+
+  /* Inline code-like */
+  code{
+    font-family:"SF Mono",Menlo,Consolas,monospace;
+    font-size:12.5px;background:var(--bg-soft);
+    padding:1px 6px;border-radius:4px;color:var(--ink);
+  }
+
+  /* Quote / callout */
+  .callout{
+    margin:18px 0;padding:16px 20px;
+    background:var(--bg-soft);border-left:3px solid var(--accent);
+    border-radius:0 8px 8px 0;font-size:14px;color:var(--ink-2);
+  }
+  .callout.danger{border-left-color:var(--danger);background:var(--danger-soft)}
+  .callout.warn{border-left-color:var(--warn);background:var(--warn-soft)}
+  .callout.ok{border-left-color:var(--ok);background:var(--ok-soft)}
+  .callout strong{color:var(--ink)}
+
+  /* Figure */
+  figure{margin:24px 0;padding:0}
+  figure svg,figure img{width:100%;display:block;border-radius:10px;border:1px solid var(--line);background:#fff}
+  figcaption{
+    margin-top:10px;font-size:12px;color:var(--muted);
+    text-align:center;letter-spacing:.04em;
+  }
+
+  /* Screenshot grid */
+  .shot-grid{display:grid;gap:14px;margin:18px 0}
+  .shot-grid.cols-2{grid-template-columns:1fr 1fr}
+  .shot-grid.cols-3{grid-template-columns:repeat(3,1fr)}
+  @media (max-width:720px){.shot-grid.cols-2,.shot-grid.cols-3{grid-template-columns:1fr}}
+  .shot{
+    margin:0;border-radius:10px;overflow:hidden;
+    border:1px solid var(--line);background:#000;
+  }
+  .shot img{width:100%;display:block}
+  .shot figcaption{margin:8px 12px 12px;text-align:left}
+
+  /* Two-col layout */
+  .twocol{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin:18px 0}
+  @media (max-width:720px){.twocol{grid-template-columns:1fr}}
+  .card{
+    padding:18px;border-radius:10px;
+    background:var(--bg-soft);border:1px solid var(--line);
+  }
+  .card h4{margin:0 0 8px;font-size:14px;color:var(--ink);font-weight:600}
+  .card p{margin:0;font-size:13.5px}
+
+  /* Footer */
+  .appendix{
+    margin-top:72px;padding:32px 28px;
+    background:var(--bg-soft);border-radius:12px;
+    border:1px solid var(--line);
+  }
+  .appendix h2{margin-top:0}
+  .links{display:flex;flex-wrap:wrap;gap:12px;margin-top:18px}
+  .btn{
+    display:inline-flex;align-items:center;gap:6px;
+    padding:9px 18px;border-radius:999px;
+    background:var(--ink);color:#fff;
+    text-decoration:none;font-size:13.5px;font-weight:500;
+    transition:transform .15s;
+  }
+  .btn:hover{transform:translateY(-1px)}
+  .btn.ghost{background:#fff;color:var(--ink);border:1px solid var(--line)}
+  .doc-list{display:grid;grid-template-columns:1fr 1fr;gap:8px 24px;font-size:13px;color:var(--muted)}
+  @media (max-width:720px){.doc-list{grid-template-columns:1fr}}
+  .doc-list li{margin-bottom:4px}
+
+  /* Mini hr */
+  hr.rule{border:none;border-top:1px solid var(--line);margin:36px 0}
+
+  /* Status pill */
+  .pill{
+    display:inline-block;font-size:11px;padding:2px 8px;
+    border-radius:999px;font-weight:500;
+  }
+  .pill.ok{background:var(--ok-soft);color:var(--ok)}
+  .pill.plan{background:var(--warn-soft);color:var(--warn)}
+  .pill.no{background:var(--line-2);color:var(--muted)}
+</style>
+</head>
+<body data-page-node-id="nVO52l7lAc98SLbOChKL5G">
+
+<div class="modal-mask" data-page-node-id="d2AJrnt3yXpTdL3cppuiKc"></div>
+
+<div class="modal" data-page-node-id="yfOUukyKG5lx1S5GxojMfI">
+  <header class="modal-header" data-page-node-id="vnFMNRdw0EEwFtVm0W4XJn">
+    <div class="modal-title" data-page-node-id="YiHbDifmVS2lQG58mSRKEu">作品详情</div>
+    <button class="modal-close" aria-label="关闭" data-page-node-id="Ga5xzsLDHMzBPHsTBEL56m">×</button>
+  </header>
+
+  <main class="modal-content" data-page-node-id="YEAeAWLbWqBKMQLni8rijz">
+
+    <!-- =================== HERO =================== -->
+    <section class="hero" data-page-node-id="p9GUjGl9UiEVpHdEaWgOv1">
+      <div class="hero-eyebrow" data-page-node-id="UFBDvfhh97e41gQ7dnB34o">Hardware × Interaction × AI · 0→1 Vibe Coding</div>
+      <h1 class="hero-title" data-page-node-id="Y0wROcGUdtkEur8xgjImDP">AI 骑行伙伴</h1>
+      <p class="hero-position" data-page-node-id="YihYKJCEbEk6lKSp1x7kdN">让 1.3 亿业余骑友<strong data-page-node-id="pHLihJ8rSDcqCMRAZ8lOud">第一次真正看懂自己的骑行</strong>——「AI 骑行伙伴」，把数据翻译成可追溯、可验证的解读与对话。</p>
+      <div class="hero-value" data-page-node-id="xxC7eB6AFNEmrrItfQCnzn">不是给用户更多数字，而是让用户知道：这次骑得怎么样、有没有进步、下次该怎么骑。</div>
+      <div class="hero-tags" data-page-node-id="liQyh2BP1JFGc8lz12B84C">
+        <span class="tag role" data-page-node-id="vMxSRxWFpK4WzLicxy90QA">产品 + 交互 + AI 原型实现</span>
+        <span class="tag" data-page-node-id="gH6mp9dxUIsRveInODvw7F">个人独立 0→1</span>
+        <span class="tag" data-page-node-id="hDz6ipzltmvVRucZwbAjaz">vibe coding 全链路</span>
+        <span class="tag" data-page-node-id="5jnMnk8BDzaCcICUZE6Snk">Next.js · Coze · 确定性引擎</span>
+      </div>
+      <figure class="hero-image" data-page-node-id="bDJF0wMsN5BNYZHPBqSVuI">
+        <img src="./2026-09-12_效果截图/AI解读页-完成解读.jpg" alt="AI 骑行伙伴 · 骑后解读完成态" data-page-node-id="PPHo13rAh0v2FcTIeQZGvI">
+      </figure>
+      <div class="hero-caption" data-page-node-id="bhxeZmLXuPRO8C71Gq7iW0">图：骑后 AI 解读完成态——确定性事实（Power 曲线）+ AI 表达的受约束呈现</div>
+    </section>
+
+    <!-- =================== 01 背景与洞察 =================== -->
+    <section id="sec-01" data-page-node-id="fpINxM38w8QJNcvT9qRkW2">
+      <span class="sec-num" data-page-node-id="Ls2cWT9IBX3MsVgFekysHB">Chapter 01</span>
+      <h2 data-page-node-id="PwPNuttaTjiUETAiZMw0TN">背景与洞察</h2>
+
+      <h3 data-page-node-id="vgYFallA6nC68jNzs4UKSZ">1.1 痛点：骑了，但不知道骑得怎么样</h3>
+      <p data-page-node-id="5R8c3E30EhUfCotnDI1G6R">全国骑行用户超 1.3 亿，绝大多数是业余爱好者，每周骑 2–4 次，用行者 / 黑鸟 / 码表记录轨迹。但面对一堆数字——均速、里程、爬升、心率、功率——他们不知道这些数字意味着什么、彼此什么关系、反映自己什么水平。</p>
+      <p data-page-node-id="BQnw6OLJqP7xrLGpbketBc">三个最常见的困惑，对应三种不同距离的认知：</p>
+      <ul data-page-node-id="goPwCtIoDW6dRxpM5prd8q">
+        <li data-page-node-id="9MRqpplCTy6ObP2EEm8mtt"><strong data-page-node-id="Nf6z8uFNeg4hro8KtNRmb4">「我这次骑得怎么样？」</strong>——这一次的数字是什么含义？</li>
+        <li data-page-node-id="taxs4jEmxv0kjENGJ2dlyg"><strong data-page-node-id="pwbEI456De1HRqMCachWGM">「我骑了三个月，到底有没有进步？」</strong>——历史数字之间能不能比、怎么比？</li>
+        <li data-page-node-id="cdmp6DNufAeOGVYhdaVBZp"><strong data-page-node-id="OVHAjhWHTeF5tfdAXBqVDR">「我的水平算什么水平？」</strong>——我在同伴里处于什么位置？</li>
+      </ul>
+
+      <h3 data-page-node-id="ssQFqDoBiwP74SiP0bLQcv">1.2 市场窗口</h3>
+      <p data-page-node-id="Ef8mTb7G3XKV8CmY9jyX1k">骑行人口持续爆发、社交驱动超越训练驱动、AI 运动教练心智在 Keep 等头部产品上已跑通——但<strong data-page-node-id="oP3tRvGsVnHHsxJYyWm0AF">骑行垂类 AI 仍是空白</strong>。大众点评 × 小红书相关骑行话题内容已超 <strong data-page-node-id="PBP7KTdzBiVJyKYMKf1Arb">40 亿次曝光</strong>，存量用户每天都在用"骑了 X 公里、平均 X 速度"这类数据社交，但没人替他们把数据讲成故事。</p>
+
+      <h3 data-page-node-id="pwiBaox5rCjtrvFASFioGe">1.3 竞品对比</h3>
+      <table data-page-node-id="ZLC5lYzgl0ao002AJwtGWP">
+        <thead data-page-node-id="t4JLfqTb7kocCsJOEM7pO0"><tr data-page-node-id="iX78XCf4gBceYgfdqOxiU9"><th data-page-node-id="b6nPXK0zqrTUYqqhAktv75">维度</th><th data-page-node-id="d8unTGfc2z4qkq04pEzAc8">行者 / 黑鸟</th><th data-page-node-id="qjknWYvAqLtF1KuLFj8wkh">Strava</th><th data-page-node-id="3uIiFa3wCy04BGRNiA16lh">Keep 健身</th><th data-page-node-id="v0BKce4hg3boIbVm7DJCDk">本项目</th></tr></thead>
+        <tbody data-page-node-id="9CBkHjJfSzheIpxrEPKrCP">
+          <tr data-page-node-id="FQT91jMJH6I2pCLbfy6ZHQ"><td data-page-node-id="iEPJS3hCWbP0tG7HqTvzDP">数据采集</td><td data-page-node-id="httF65S0BWOYHx22mHeFP4">✅ 拉取 / 聚合码表记录</td><td data-page-node-id="inzNANCfweBXWTSYf4RKVa">✅</td><td data-page-node-id="SsbNo1gouB4E1Jmj9B7O7n">✅</td><td data-page-node-id="rJjVnh5VRsF1ZutAqCoVb1">✅ 拉取 / 聚合码表记录</td></tr>
+          <tr data-page-node-id="rdkH2BRiDYyatlFmsXAD0f"><td data-page-node-id="l7dnPlzyC9tDbUNipYjlZf">中文支持</td><td data-page-node-id="CVl7b0dkGigYP9F02wEwRk">✅</td><td data-page-node-id="TD7lAzEpRZAVNojXBfAiHp">❌</td><td data-page-node-id="OLExegDr5eQId06d74DPoE">✅</td><td data-page-node-id="ET9Ff3lKgSZatSlHAA6M0Y">✅ 原生</td></tr>
+          <tr data-page-node-id="hc7FYmsHJaD9CbOgazsbNU"><td data-page-node-id="kv1ULw2mdo7qMSDCUfDqLh">数据解读</td><td data-page-node-id="vNz0qI2dwIdhrH56ql7GDW">❌ 只有图表</td><td data-page-node-id="ctegD5f25Fs1MUKUgBrqgG">❌ 只有图表</td><td data-page-node-id="Vj9dGtTIgxyndrp4c5TLb6">❌ 泛化运动</td><td data-page-node-id="dgBMOTfgBriL7J4eGwqkhn">✅ 受约束 AI 解读</td></tr>
+          <tr data-page-node-id="t73RmP30x5Ts7F3UZljsF2"><td data-page-node-id="CNxmKYSSPTkrUt8QTAl5Pl">可信度</td><td data-page-node-id="kXsnlDj4nEZN86UvVQzfAy">—</td><td data-page-node-id="gzxfAKKXCPhUW1KpqSAzZz">—</td><td data-page-node-id="5njg7T74g3iiXwANtvCntE">—</td><td data-page-node-id="JuiHASzvZuO9BkSWFCRksO">✅ 每句可追溯到 Claim</td></tr>
+          <tr data-page-node-id="pVplRkvyMhGouJBEkRDkq9"><td data-page-node-id="PN7chFCq1LCQlGHTLdzsj5">对话式提问</td><td data-page-node-id="YvDZCx9S1rjHg1EWEtZczI">❌</td><td data-page-node-id="BMMSZDxlxvpGGFdZWz4jFS">❌</td><td data-page-node-id="avVFD2R9rgcXiJN36e5STK">❌</td><td data-page-node-id="IpyDiyQekBYB9AmKchID8l">✅ 对话 Agent</td></tr>
+        </tbody>
+      </table>
+
+      <h3 data-page-node-id="hG7ziPNs42DplS6ZFeldZR">1.4 核心洞察：受约束 AI</h3>
+      <p data-page-node-id="9WvKBEATsR6WzwrbLwR9Ut">让 LLM 直接读原始骑行数据，会带来三个不可接受的问题：数字不可验证、结论不可追溯、失败时无退路。所以我的解法是 <em data-page-node-id="0hWRZIozHxxJQZmNszvrAS">受约束 AI</em>——<strong data-page-node-id="TcQHV6Dvt6HIJ6ONXyL0N3">确定性规则引擎是唯一事实源，LLM 只做语言表达</strong>。这一洞察决定了下文所有架构选择。</p>
+
+      <figure data-page-node-id="ndXgeSV44Cnvq5VV7ZFHcg">
+        <svg viewBox="0 0 880 320" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC, Microsoft YaHei, sans-serif" data-page-node-id="JnS2nrApRKc0bJe7HxFMQI">
+          <text x="440" y="28" text-anchor="middle" font-size="15" font-weight="700" fill="#1c2333" data-page-node-id="EaCY8KYI3FfV4LPR0nV5Uy">受约束 AI：两条路径的本质区别</text>
+          <rect x="40" y="50" width="380" height="240" rx="10" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5" data-page-node-id="9Ez3wSxytgDggeHmuC2gZb"/>
+          <text x="230" y="80" text-anchor="middle" font-size="14" font-weight="700" fill="#991b1b" data-page-node-id="87JZWqxxyYjMiYCePQBP2m">直接让 AI 分析数据</text>
+          <g transform="translate(70,110)" data-page-node-id="3CeNZP5wccJ4oFZ26ANMII">
+            <rect x="0" y="0" width="100" height="36" rx="6" fill="#fff" stroke="#dc2626" data-page-node-id="usACyLQK17eb4BCrBVVqNF"/>
+            <text x="50" y="22" text-anchor="middle" font-size="11" fill="#991b1b" data-page-node-id="ftEvMgkg2CKOrEMcLGN8J8">原始 FIT/GPX</text>
+            <line x1="105" y1="18" x2="155" y2="18" stroke="#dc2626" stroke-width="1.5" marker-end="url(#ar1)" data-page-node-id="Os0tNB3sx7KjdiE4PRQSit"/>
+            <rect x="160" y="0" width="100" height="36" rx="6" fill="#fee2e2" stroke="#dc2626" data-page-node-id="lx36QhK38sgYdb9SpBcU7q"/>
+            <text x="210" y="22" text-anchor="middle" font-size="11" fill="#991b1b" data-page-node-id="DsfuGfOyk4z0ddk5uNAA8b">LLM 自由生成</text>
+          </g>
+          <defs data-page-node-id="mjvbE96N4msVkqtnCPo9VC"><marker id="ar1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto" data-page-node-id="6snwGafX24vFHfpuZVN9Eh"><path d="M 0 0 L 10 5 L 0 10 z" fill="#dc2626" data-page-node-id="heibqhCFnZYr5zkNeeluhv"/></marker></defs>
+          <text x="60" y="180" font-size="12" fill="#7f1d1d" data-page-node-id="XmKFgFprRy8JYR50WoLT7l">✗ 数字不可验证</text>
+          <text x="60" y="200" font-size="12" fill="#7f1d1d" data-page-node-id="3XBHLOOOPES4AloDcVEC2C">✗ 结论不可追溯</text>
+          <text x="60" y="220" font-size="12" fill="#7f1d1d" data-page-node-id="HqYXmQfhzVO8CPbbV41VDA">✗ 失败时无退路</text>
+          <text x="60" y="240" font-size="12" fill="#7f1d1d" data-page-node-id="BpCM9jdtJ22qaGHQYmyL65">✗ 可能胡说</text>
+          <text x="60" y="270" font-size="11" fill="#9ca3af" data-page-node-id="h9a1JkyhSJp2o4XQrF8HZ3">AI 是核心 → 可信度不可控</text>
+
+          <rect x="460" y="50" width="380" height="240" rx="10" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.5" data-page-node-id="VCrPH4POE3REizzmdaZQP2"/>
+          <text x="650" y="80" text-anchor="middle" font-size="14" font-weight="700" fill="#166534" data-page-node-id="For4kesaUnwQECweXtMDgx">受约束 AI（本项目）</text>
+          <g transform="translate(480,110)" data-page-node-id="gXyS06U4tS35Z90zW0S8bP">
+            <rect x="0" y="0" width="86" height="36" rx="6" fill="#fff" stroke="#16a34a" data-page-node-id="NrXtAsgCCJVtjCdfCLGGXV"/>
+            <text x="43" y="22" text-anchor="middle" font-size="11" fill="#166534" data-page-node-id="xEVbgNT9PyJFAEL2iZXhod">原始数据</text>
+            <line x1="90" y1="18" x2="120" y2="18" stroke="#16a34a" stroke-width="1.5" marker-end="url(#ar2)" data-page-node-id="noi5OmfZUAN93AwOg7W5L0"/>
+            <rect x="125" y="0" width="86" height="36" rx="6" fill="#dcfce7" stroke="#16a34a" data-page-node-id="IMVxEiSoJf8qEcJFEclW7U"/>
+            <text x="168" y="22" text-anchor="middle" font-size="10" fill="#166534" data-page-node-id="crryJik7vdTjA56Z3uo08f">确定性规则引擎</text>
+            <line x1="215" y1="18" x2="245" y2="18" stroke="#16a34a" stroke-width="1.5" marker-end="url(#ar2)" data-page-node-id="AywVTQ55patmE4h86OvHhi"/>
+            <rect x="250" y="0" width="100" height="36" rx="6" fill="#bbf7d0" stroke="#16a34a" data-page-node-id="E4ZJIhD7aVriIDaAhMucHn"/>
+            <text x="300" y="22" text-anchor="middle" font-size="11" fill="#166534" data-page-node-id="k2u21vLFAXUwaEmtpyvUPd">LLM 表达</text>
+          </g>
+          <defs data-page-node-id="0i5UmiQ3r7wqsB1Uv8YFkw"><marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto" data-page-node-id="yKrMGojkI5kkLnkAl2SN5O"><path d="M 0 0 L 10 5 L 0 10 z" fill="#16a34a" data-page-node-id="zaRetaGMCJNtCLqzyEZHyt"/></marker></defs>
+          <text x="480" y="180" font-size="12" fill="#15803d" data-page-node-id="LckhTa6irgEnbzv1FOQheX">✓ 数字逐字来自 Claim</text>
+          <text x="480" y="200" font-size="12" fill="#15803d" data-page-node-id="JLQb4GqCp4InS99pwblA06">✓ 结论引用证据</text>
+          <text x="480" y="220" font-size="12" fill="#15803d" data-page-node-id="B8p3nXIZlQ6ypOuiRzAkOp">✓ B0 兜底永不空话</text>
+          <text x="480" y="240" font-size="12" fill="#15803d" data-page-node-id="KBYXaM36QRPeGpWjhM80Dm">✓ AI 失败自动降级</text>
+          <text x="480" y="270" font-size="11" fill="#9ca3af" data-page-node-id="H3Dfd6O52xn6OGCn5cqvNB">确定性代码 + LLM 表达 → 可信度可控</text>
+        </svg>
+        <figcaption data-page-node-id="szQVSE6yBICdm2KUKVk6Tl">图：受约束 AI vs 直接让 AI 分析数据——前者把"信不信"的责任交给了规则引擎</figcaption>
+      </figure>
+    </section>
+
+    <!-- =================== 02 产品定位与范围 =================== -->
+    <section id="sec-02" data-page-node-id="BxS2NjWC5ZmA1ygFQxmDGa">
+      <span class="sec-num" data-page-node-id="UTwlwGm4g9mQPuMvalwz93">Chapter 02</span>
+      <h2 data-page-node-id="5AQ9mnTCO22aomFhkiXJyF">产品定位与范围</h2>
+
+      <h3 data-page-node-id="sWUmHFABEYxfWeu8fmAib9">2.1 定位：三位一体的「骑行数据翻译官 + AI 骑行伙伴 + 社交催化剂」</h3>
+      <ul data-page-node-id="yNf9XrC5lVf8fEsjwAvE0F">
+        <li data-page-node-id="ZUVezs3PylYxYOTwYnNUoa"><strong data-page-node-id="EIaLF6EuS2gBO5eXu9mzho">骑行数据翻译官</strong>——把 FIT/GPX 翻译成用户能理解的解读。</li>
+        <li data-page-node-id="A4JU4zp3k43BZAz65zJxgK"><strong data-page-node-id="uAyWuDsrSjFeKu6SeX2A4p">AI 骑行伙伴</strong>——随时回答用户关于自己骑行数据的问题；并规划骑行水平评估、训练计划定制的确定性场景工作流。</li>
+        <li data-page-node-id="EiZ4Ec0qRYvm1eM7VGnwYC"><strong data-page-node-id="4yW2UM9igkbzbNIT5hXWbS">社交催化剂</strong>——让分享的内容自带故事性，而不是赤裸的数字。</li>
+      </ul>
+      <p data-page-node-id="Gm7jjLpy0g9JKpDfMKPEBA">它不是冰冷的训练教练，而是懂你、鼓励你、把数据变成故事的朋友。</p>
+
+      <h3 data-page-node-id="UA0AG46jKTuIT5EryrKOSy">2.2 六模块全景与实际交付</h3>
+      <figure data-page-node-id="q41GBnCRJHHyx56scR3Ast">
+        <svg viewBox="0 0 880 360" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC, Microsoft YaHei, sans-serif" data-page-node-id="izcOBnf8jjfeQKOofPOctj">
+          <text x="440" y="28" text-anchor="middle" font-size="15" font-weight="700" fill="#1c2333" data-page-node-id="Y6ykmHuOkhpLIvDGQFdvge">六模块能力覆盖矩阵</text>
+          <g transform="translate(40,60)" data-page-node-id="X5cjcomFUDK2lZrBm3ZVjw">
+            <!-- 1 数据接入 -->
+            <rect x="0" y="0" width="240" height="78" rx="8" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.4" data-page-node-id="leNmOpCjAdPx5MriECgIhP"/>
+            <text x="20" y="22" font-size="13" font-weight="700" fill="#166534" data-page-node-id="GmeVlJqOYH3uGwIeMnfs2a">数据接入</text>
+            <text x="20" y="42" font-size="11" fill="#3a4356" data-page-node-id="CCdZrHHjCWvnM6PAyHsGlK">FIT/GPX 单文件本机导入</text>
+            <text x="20" y="60" font-size="11" fill="#3a4356" data-page-node-id="L3za4AT9vq5un6ABBgbpLJ">码表数据自动拉取（规划）</text>
+            <rect x="180" y="50" width="50" height="20" rx="10" fill="#dcfce7" data-page-node-id="bbNsgXYICFyeixJXUSAyUk"/>
+            <text x="205" y="64" text-anchor="middle" font-size="10" fill="#166534" data-page-node-id="obq7Apu0jrzM5RFWfoLW3C">已交付</text>
+            <!-- 2 数据看板 -->
+            <rect x="260" y="0" width="240" height="78" rx="8" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.4" data-page-node-id="1PpUO8ZDNDLkm2NuuDG7v4"/>
+            <text x="280" y="22" font-size="13" font-weight="700" fill="#166534" data-page-node-id="5CYt1hOgmZ6PVwIwvCUMFP">数据看板</text>
+            <text x="280" y="42" font-size="11" fill="#3a4356" data-page-node-id="IEJVrcxD3vIYkcLDiO2s5H">三 Tab（摘要/分析/数据）</text>
+            <text x="280" y="60" font-size="11" fill="#3a4356" data-page-node-id="hsSsWZ1BgMHflJCEgVXjYi">高阶指标全部完成</text>
+            <rect x="440" y="50" width="50" height="20" rx="10" fill="#dcfce7" data-page-node-id="DaBlDtDlX1zhStEm7KtqNH"/>
+            <text x="465" y="64" text-anchor="middle" font-size="10" fill="#166534" data-page-node-id="efFIL4HwL5CpPsqv6BCAWa">已交付</text>
+            <!-- 3 骑后 AI 解读 -->
+            <rect x="520" y="0" width="240" height="78" rx="8" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.4" data-page-node-id="ovvEb12jSkeGZN0alexLi8"/>
+            <text x="540" y="22" font-size="13" font-weight="700" fill="#166534" data-page-node-id="YXHNFoZ2x7tPJ2fu4btoBC">骑后 AI 解读</text>
+            <text x="540" y="42" font-size="11" fill="#3a4356" data-page-node-id="EFLncp5SPwwLIi7DFL4kTi">受约束 AI · L0–L8 管线</text>
+            <text x="540" y="60" font-size="11" fill="#3a4356" data-page-node-id="9FFiiEx2uI3zRrJRoYGqF3">B0-first 兜底</text>
+            <rect x="700" y="50" width="50" height="20" rx="10" fill="#dcfce7" data-page-node-id="FTANtCVaAfNuWkcf1trgvy"/>
+            <text x="725" y="64" text-anchor="middle" font-size="10" fill="#166534" data-page-node-id="NBsiBJDMz13fcyyJOAsKGh">已交付</text>
+            <!-- 4 社交分享 -->
+            <rect x="0" y="100" width="240" height="78" rx="8" fill="#fffbeb" stroke="#d97706" stroke-width="1.4" data-page-node-id="dyHBlrlN8ru3lAd2y7q3FH"/>
+            <text x="20" y="122" font-size="13" font-weight="700" fill="#92400e" data-page-node-id="fc2QOoiAUCisL08yKuy0Zn">社交分享</text>
+            <text x="20" y="142" font-size="11" fill="#3a4356" data-page-node-id="ZOY3ipiQ3BaNwppgZAUnNA">预览 + 复制文案（已交付）</text>
+            <text x="20" y="160" font-size="11" fill="#3a4356" data-page-node-id="yr4Av888R3CREdQoLnOsGv">导出图片 / 系统分享（M2）</text>
+            <rect x="180" y="150" width="50" height="20" rx="10" fill="#fef3c7" data-page-node-id="jGopi6NrF7R8j2Ua4UsWAG"/>
+            <text x="205" y="164" text-anchor="middle" font-size="10" fill="#92400e" data-page-node-id="13a8Bec6lHCRFik9tpGbcc">部分交付</text>
+            <!-- 5 AI 骑行伙伴 -->
+            <rect x="260" y="100" width="240" height="78" rx="8" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.4" data-page-node-id="VvQITCcWPEC41ZE3YPpiZD"/>
+            <text x="280" y="122" font-size="13" font-weight="700" fill="#166534" data-page-node-id="Z6tYL5NT0YCypBHa9ty4cl">AI 骑行伙伴</text>
+            <text x="280" y="142" font-size="11" fill="#3a4356" data-page-node-id="SCYGmIwdvGgQ64kATC7oxv">对话 Agent M3 里程碑收口</text>
+            <text x="280" y="160" font-size="11" fill="#3a4356" data-page-node-id="C8DCfPouKeMLXv1CCGTaOZ">当前完成：数据解读 + 简单问答</text>
+            <rect x="440" y="150" width="50" height="20" rx="10" fill="#dcfce7" data-page-node-id="6APtMvv1mxKCuQhGel2LHY"/>
+            <text x="465" y="164" text-anchor="middle" font-size="10" fill="#166534" data-page-node-id="cnnFzlNWoIUq4mbspvBVk7">已交付</text>
+            <!-- 6 训练计划 -->
+            <rect x="520" y="100" width="240" height="78" rx="8" fill="#f9fafb" stroke="#9ca3af" stroke-width="1.4" stroke-dasharray="5 4" data-page-node-id="of7az7nVtP1qxvAI6I1dcK"/>
+            <text x="540" y="122" font-size="13" font-weight="700" fill="#6b7280" data-page-node-id="yTmeauYUAzuWxomNFJhaaP">入门训练计划</text>
+            <text x="540" y="142" font-size="11" fill="#3a4356" data-page-node-id="sckXJzIInPdFiCBO7UYXow">个性化处方（未实现）</text>
+            <text x="540" y="160" font-size="11" fill="#3a4356" data-page-node-id="WuehWEnwwFYEHnVFl5DoQZ">依赖能力评估结论</text>
+            <rect x="700" y="150" width="50" height="20" rx="10" fill="#f3f4f6" data-page-node-id="VRPBcpNcgyzQLAXt8BbiSP"/>
+            <text x="725" y="164" text-anchor="middle" font-size="10" fill="#6b7280" data-page-node-id="0rtxZg02yDsxxMnrhFJFI7">未实现</text>
+          </g>
+          <text x="40" y="320" font-size="11" fill="#9ca3af" data-page-node-id="g8XOTylSrKd3EKHR5t2yoR">图例：<tspan fill="#16a34a" data-page-node-id="gcXXO7rvNQFLGQbSA4kzAK">■</tspan> 已交付　<tspan fill="#d97706" data-page-node-id="TCcnHnTuLdlPvH5oleEqdJ">■</tspan> 部分交付　<tspan fill="#9ca3af" data-page-node-id="XpfwTn1NWkRLMHAaqsvYjR">▢</tspan> 未实现 / 规划</text>
+        </svg>
+        <figcaption data-page-node-id="859aK4AAAKFmAZsj86vuRN">图：六模块能力覆盖矩阵——只标事实，不夸大；未实现能力明确标注</figcaption>
+      </figure>
+
+      <h3 data-page-node-id="DPAeiNfXNTemv5kRNl1tzf">2.3 MVP 取舍原则</h3>
+      <ul data-page-node-id="E6Gdu6tOZO0Ue2LRSwRITV">
+        <li data-page-node-id="7z6U3xcsMCkSFTZgP44scE"><strong data-page-node-id="EMOkFAayrAOayG4aFpuJ3I">不建骑行记录器</strong>——用户继续用行者 / 黑鸟 / 码表，本项目只导入数据。</li>
+        <li data-page-node-id="K6JQdkpmA6DBzLdva3YW90"><strong data-page-node-id="8zG2IDOiRX6Y6qFzYLLQ4y">不承诺训练处方 / 恢复天数 / 医疗结论</strong>——属于专业审核领域，设硬性安全红线。</li>
+        <li data-page-node-id="CBvqXtOsguWfixLbGFZ3qs"><strong data-page-node-id="ASoGqTcHGsaqFLFFVWOPUj">只做单次骑行数据解读，不做「骑行水平评分」</strong>——单次均速 / 里程 / 爬升受路线、风、体重等强干扰，会误导用户。详见 07 章决策复盘。</li>
+      </ul>
+    </section>
+
+    <!-- =================== 03 骑后 AI 解读 =================== -->
+    <section id="sec-03" data-page-node-id="O7Sm8m86sbGf4vPDtWigAO">
+      <span class="sec-num" data-page-node-id="oIO5TZundSRTbdgEIO2PaH">Chapter 03</span>
+      <h2 data-page-node-id="nEAyVDUWhD2eOhxIGvY8uQ">核心设计一 · 骑后 AI 解读</h2>
+
+      <h3 data-page-node-id="n5Zoyx9QDDH44CpVa06JLs">3.1 设计哲学</h3>
+      <p data-page-node-id="e8dAZnsaVyPFz26nGM3Syg">让 LLM 直接读原始骑行数据，会出现三条失败模式：</p>
+      <ul data-page-node-id="mmQztuwvHYsN1EjM5TfjGh">
+        <li data-page-node-id="AQYQDzb8ktwpKH5CcUtI5R"><strong data-page-node-id="NOgj9af1x0iOwL7OugUSSB">数字不可信</strong>——模型可能把"41.4 公里"算成"40 公里"，用户根本没法验证。</li>
+        <li data-page-node-id="57ODznoTGqpFjtcZxziIvE"><strong data-page-node-id="ZzrxAwG2oD0cuz3nmo8RFi">结论不可证伪</strong>——模型可能说"这次爬坡表现不错"，但没有任何证据指向。</li>
+        <li data-page-node-id="UN3nKnP8DRvGVEE069Efzy"><strong data-page-node-id="iqSGgonMN0XCYwb7zMtwFd">失败即空白</strong>——AI 失败时，用户什么也看不到。</li>
+      </ul>
+      <p data-page-node-id="CdLaIxFKHgH2kVWjCdVE6P">反过来，我的工程路径是：<strong data-page-node-id="Zjm8zXm1zO3wUAmO9WggtK">确定性规则引擎 = 唯一事实源，LLM 只做语言表达</strong>。AI 是"可关闭、可降级的表达增强"，不是系统的核心。</p>
+
+      <h3 data-page-node-id="8iXk303nlxofwjE6G422La">3.2 L0–L8 分层数据处理管线</h3>
+      <figure data-page-node-id="etgrBAdprrumnvbElYaiOc">
+        <svg viewBox="0 0 880 520" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC, Microsoft YaHei, sans-serif" data-page-node-id="MdDuMjg0yXwQ6WHJXunEYA">
+          <text x="440" y="28" text-anchor="middle" font-size="15" font-weight="700" fill="#1c2333" data-page-node-id="1FtTGsswsFXxeO5VJdir2F">L0–L8 分层数据处理管线：确定性计算与 AI 表达彻底分离</text>
+          <defs data-page-node-id="xc3FPfHBWzA4DvSEKuQOWJ">
+            <marker id="arrowBlue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto" data-page-node-id="T3Wd5HAreUHAspci3LrhDI"><path d="M 0 0 L 10 5 L 0 10 z" fill="#3b82f6" data-page-node-id="XXAV1Oyf5qA0D5R4jm7guo"/></marker>
+            <marker id="arrowAmber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto" data-page-node-id="ExGOb8ApclLNHMPh5souu8"><path d="M 0 0 L 10 5 L 0 10 z" fill="#f59e0b" data-page-node-id="9tfY8bmMj2nDIzzlBRy1vz"/></marker>
+            <marker id="arrowRed" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto" data-page-node-id="qHJVDmHT2FC2iDBT9h2OL3"><path d="M 0 0 L 10 5 L 0 10 z" fill="#ef4444" data-page-node-id="Eh5vCDPKjih4EFB13EvSbu"/></marker>
+          </defs>
+
+          <!-- 区块 1：确定性事实层 L0–L6 -->
+          <rect x="40" y="60" width="450" height="430" rx="10" fill="#f0f9ff" stroke="#3b82f6" stroke-width="1.5" data-page-node-id="YybT7fGxbYC9MtaTX8LM2W"/>
+          <text x="265" y="88" text-anchor="middle" font-size="14" font-weight="700" fill="#1e40af" data-page-node-id="GoR9TYqUGFttvlXJmokaSd">确定性事实层（L0–L6）</text>
+          <text x="265" y="106" text-anchor="middle" font-size="11" fill="#3b82f6" data-page-node-id="FZd6y1iIqiprCr1EYpe88M">规则引擎 · 纯函数 · 不调模型</text>
+
+          <g transform="translate(60,128)" data-page-node-id="UNrJH535J4fpAHIH3OGGz6">
+            <rect x="0" y="0" width="56" height="44" rx="4" fill="#fff" stroke="#3b82f6" data-page-node-id="lESrdGFL0fU2p5yUWruvfY"/>
+            <text x="28" y="20" text-anchor="middle" font-size="12" font-weight="700" fill="#1e40af" data-page-node-id="ZvJ0Gu4D2RDJjm24sHoaBg">L0</text>
+            <text x="28" y="36" text-anchor="middle" font-size="9" fill="#1e40af" data-page-node-id="Jw2kLsLEwO3fUcXk7iaDkB">原始输入</text>
+            <text x="76" y="14" font-size="11" font-weight="700" fill="#1f2937" data-page-node-id="NwHDuLdpegPTQ43id7WUZA">原始输入</text>
+            <text x="76" y="30" font-size="10" fill="#6b7280" data-page-node-id="RRhqWW1rpAyW4eDWbiWai5">FIT/GPX 文件、用户资料、历史记录</text>
+
+            <rect x="0" y="54" width="56" height="44" rx="4" fill="#fff" stroke="#3b82f6" data-page-node-id="7w5cGHp1jvV3XVFP2pt01o"/>
+            <text x="28" y="74" text-anchor="middle" font-size="12" font-weight="700" fill="#1e40af" data-page-node-id="npzlOdiXnuMWKG3qT0J1sH">L1</text>
+            <text x="28" y="90" text-anchor="middle" font-size="9" fill="#1e40af" data-page-node-id="46gGRz9zz0kdmCJAhOJdgM">标准化</text>
+            <text x="76" y="68" font-size="11" font-weight="700" fill="#1f2937" data-page-node-id="vWGAwPzstfE2hazgLYkWwN">标准化时序</text>
+            <text x="76" y="84" font-size="10" fill="#6b7280" data-page-node-id="VbTshaJGcuySVJ8m16TfzB">统一时间轴、单位、缺失/暂停标记</text>
+
+            <rect x="0" y="108" width="56" height="44" rx="4" fill="#fff" stroke="#3b82f6" data-page-node-id="WWt5wx3uCpkwHLY7DDYUAx"/>
+            <text x="28" y="128" text-anchor="middle" font-size="12" font-weight="700" fill="#1e40af" data-page-node-id="dyXSyNTJSPbcPoqNEypCr9">L2</text>
+            <text x="28" y="144" text-anchor="middle" font-size="9" fill="#1e40af" data-page-node-id="vFKyoE9oNgLuBby3CdxM0s">指标</text>
+            <text x="76" y="122" font-size="11" font-weight="700" fill="#1f2937" data-page-node-id="gFas8P1zeFUdrooGMIucW0">确定性指标</text>
+            <text x="76" y="138" font-size="10" fill="#6b7280" data-page-node-id="YvBP6toUesrpLW07SU9I3y">速度 / 时间 / 海拔 / 坡度 / 功率 / 心率 / 踏频 / 区间</text>
+
+            <rect x="0" y="162" width="56" height="44" rx="4" fill="#fff" stroke="#3b82f6" data-page-node-id="n1yVrVlZmExiutLpwzHxss"/>
+            <text x="28" y="182" text-anchor="middle" font-size="12" font-weight="700" fill="#1e40af" data-page-node-id="1AWSRuNjbzswnCXAtNP4GH">L3</text>
+            <text x="28" y="198" text-anchor="middle" font-size="9" fill="#1e40af" data-page-node-id="v0O6kCOaCuiUT2E4BNitxQ">质量门</text>
+            <text x="76" y="176" font-size="11" font-weight="700" fill="#1f2937" data-page-node-id="h8VGX7mHACqIP1bgDi0eDa">质量与解读门</text>
+            <text x="76" y="192" font-size="10" fill="#6b7280" data-page-node-id="aXiapkOwLKpGNO828CuLAR">available / partial / insufficient / unavailable</text>
+
+            <rect x="0" y="216" width="56" height="44" rx="4" fill="#fff" stroke="#3b82f6" data-page-node-id="a8cNX0ualK9nTxd1OHBhv5"/>
+            <text x="28" y="236" text-anchor="middle" font-size="12" font-weight="700" fill="#1e40af" data-page-node-id="i1KMe1Nuy6E40kCWvyPPlL">L4</text>
+            <text x="28" y="252" text-anchor="middle" font-size="9" fill="#1e40af" data-page-node-id="C5zN5uMSoBo9WIebiXZgb6">关系</text>
+            <text x="76" y="230" font-size="11" font-weight="700" fill="#1f2937" data-page-node-id="oRXBFeVo41nbSBYF8F0She">分段 / 事件 / 关系</text>
+            <text x="76" y="246" font-size="10" fill="#6b7280" data-page-node-id="5RDxKwDdQCWDnn5hmK3K55">巡航段、爬坡段、共变 / 对比 / 权衡关系</text>
+
+            <rect x="0" y="270" width="56" height="44" rx="4" fill="#fff" stroke="#3b82f6" data-page-node-id="yj1tSwCK3BPvycDxWREHld"/>
+            <text x="28" y="290" text-anchor="middle" font-size="12" font-weight="700" fill="#1e40af" data-page-node-id="CCZiatQQIGASfaU9mvDZjZ">L5</text>
+            <text x="28" y="306" text-anchor="middle" font-size="9" fill="#1e40af" data-page-node-id="dVuSmeAS3jxa2DHzfcTFZ7">Claim</text>
+            <text x="76" y="284" font-size="11" font-weight="700" fill="#1f2937" data-page-node-id="ttCZDCtIlFyaB39896uTD4">原子 Claim</text>
+            <text x="76" y="300" font-size="10" fill="#6b7280" data-page-node-id="ZntD4fkeozAfnzWTnpkAsL">claimId + 事实 + 证据 + 限制</text>
+
+            <rect x="0" y="324" width="56" height="44" rx="4" fill="#fff" stroke="#3b82f6" data-page-node-id="DN4DDo3BNRxfHLsgQBNzjD"/>
+            <text x="28" y="344" text-anchor="middle" font-size="12" font-weight="700" fill="#1e40af" data-page-node-id="tGA4SdXGF44CBBCQF3w0NB">L6</text>
+            <text x="28" y="360" text-anchor="middle" font-size="9" fill="#1e40af" data-page-node-id="sK8Y6FPkosxZPaXOSmMwgj">计划</text>
+            <text x="76" y="338" font-size="11" font-weight="700" fill="#1f2937" data-page-node-id="PZ8HXH9brWQKwdTXxYHRXu">解读计划</text>
+            <text x="76" y="354" font-size="10" fill="#6b7280" data-page-node-id="8hn5VmdGxjhn7faEc18IBE">重点维度排序、输出预算</text>
+          </g>
+
+          <!-- 区块 2：LLM 表达 L7 -->
+          <rect x="500" y="60" width="160" height="430" rx="10" fill="#fffbeb" stroke="#f59e0b" stroke-width="1.5" data-page-node-id="L6UOPOj6cSHCaVmP7bUhJ9"/>
+          <text x="580" y="88" text-anchor="middle" font-size="14" font-weight="700" fill="#92400e" data-page-node-id="Q9L6PElFiwA9ml8JiX7xcR">LLM 表达（L7）</text>
+          <text x="580" y="106" text-anchor="middle" font-size="11" fill="#f59e0b" data-page-node-id="S8uGaOg58CGdrOS7SkfcpM">扣子 Workflow · 无状态</text>
+
+          <rect x="520" y="240" width="120" height="120" rx="8" fill="#fff" stroke="#f59e0b" data-page-node-id="kgP2beXFxxleLHbmbfJDuU"/>
+          <text x="580" y="266" text-anchor="middle" font-size="14" font-weight="700" fill="#92400e" data-page-node-id="QVM34hZZejAl7AqEZCS0f6">L7</text>
+          <text x="580" y="290" text-anchor="middle" font-size="11" fill="#1f2937" data-page-node-id="gK7mrTLRcPiGtzhIneqD5y">组织语言</text>
+          <text x="580" y="308" text-anchor="middle" font-size="11" fill="#1f2937" data-page-node-id="aGdWBk58PsCoY09fK7EsSv">不产事实</text>
+          <text x="580" y="332" text-anchor="middle" font-size="10" fill="#92400e" data-page-node-id="0CwRgu1NqaH261dxi4JUY5">不重算数字</text>
+          <text x="580" y="348" text-anchor="middle" font-size="10" fill="#92400e" data-page-node-id="q8cjUyF4IkvZuKuopzFyXD">不补缺失值</text>
+
+          <text x="580" y="394" text-anchor="middle" font-size="10" fill="#92400e" data-page-node-id="ac2DK3wcsK2MaTskwwKn5v">一句话标签 · 维度解读</text>
+          <text x="580" y="410" text-anchor="middle" font-size="10" fill="#92400e" data-page-node-id="9lKWPZgWOKUeI50FE0OnGE">行动建议 · 限制与下一步</text>
+
+          <!-- 区块 3：校验兜底 L8 -->
+          <rect x="670" y="60" width="180" height="430" rx="10" fill="#fef2f2" stroke="#ef4444" stroke-width="1.5" data-page-node-id="gt2w1y0wIdMWANHLzmk1YD"/>
+          <text x="760" y="88" text-anchor="middle" font-size="14" font-weight="700" fill="#991b1b" data-page-node-id="m2UeGvlaFcQrBpOGeEj4Sx">校验与降级（L8）</text>
+          <text x="760" y="106" text-anchor="middle" font-size="11" fill="#ef4444" data-page-node-id="Ysxsp0a552a9PBTdePKlxo">确定性兜底 · 不让 AI 出去</text>
+
+          <rect x="690" y="240" width="140" height="120" rx="8" fill="#fff" stroke="#ef4444" data-page-node-id="3xK4QrJlh7Uy81AIl0O7C7"/>
+          <text x="760" y="266" text-anchor="middle" font-size="14" font-weight="700" fill="#991b1b" data-page-node-id="BrNSXXBgelDQQDpA7B3aLa">L8</text>
+          <text x="760" y="290" text-anchor="middle" font-size="11" fill="#1f2937" data-page-node-id="bZfOba8P0ESMkMfP9NWQwX">Schema / Claim</text>
+          <text x="760" y="308" text-anchor="middle" font-size="11" fill="#1f2937" data-page-node-id="7s8Hk7FFEckKNik3352I9j">数字 / 安全校验</text>
+
+          <text x="760" y="394" text-anchor="middle" font-size="10" fill="#991b1b" data-page-node-id="xoKocvhZB24kacRBHLvTgx">通过 → 呈现</text>
+          <text x="760" y="410" text-anchor="middle" font-size="10" fill="#991b1b" data-page-node-id="5pyQTGMqTYTxK1vZCHIp2q">失败 → 一次受限修复</text>
+          <text x="760" y="426" text-anchor="middle" font-size="10" fill="#991b1b" data-page-node-id="cQoYhDneAaVgmRyulkftUs">仍失败 → 降级为 B0</text>
+
+          <!-- 连接箭头 -->
+          <line x1="490" y1="300" x2="500" y2="300" stroke="#f59e0b" stroke-width="1.5" marker-end="url(#arrowAmber)" data-page-node-id="V5Bg2oMGHltrEepquiio40"/>
+          <line x1="660" y1="300" x2="670" y2="300" stroke="#ef4444" stroke-width="1.5" marker-end="url(#arrowRed)" data-page-node-id="rgyvqBkco1rsXXTRrEkkgu"/>
+
+          <!-- 底部要点 -->
+          <text x="40" y="510" font-size="11" fill="#6b7280" data-page-node-id="OEBYAEBiieNHLDL1Fg15KS">关键原则：模型看不到原始曲线，只能看到经批准的 Claim；AI 失败、越界或幻觉时，系统自动降级回确定性输出（B0）。</text>
+        </svg>
+        <figcaption data-page-node-id="ZBnB3EFSAkdZyO406DUinD">图：L0–L8 管线——前 7 层做事实，第 8 层做兜底，模型只在 L7 组织语言</figcaption>
+      </figure>
+
+      <h3 data-page-node-id="i7GvRrSFy7ZN6H3m3YXP9U">3.3 Prompt 设计与模型选型</h3>
+      <ul data-page-node-id="QDoNaF3DthFTT8NM55AFAn">
+        <li data-page-node-id="jmNYlsF3JYFXRyS8BV7JvD"><strong data-page-node-id="Ht87H3wXRVBDMw0JfPmzw5">职责边界</strong>——只理解结构、组织语言、区分事实/本次表现/本次能力/用户意义，不做任何计算或扩展。</li>
+        <li data-page-node-id="96PWbdJ4OUMdDhvtFekFGs"><strong data-page-node-id="rVBs9aLNcox5BdcKROqmwF">System / User 分工</strong>——System 承载规则，User 接收三类输入：<code data-page-node-id="LjkE4cZNRxapru6Dzs9Bd8">ride_interpretation_inputs</code>（结构化事实）、<code data-page-node-id="lUhXrcOiyaDid8QyTLcizz">repair_instruction</code>（上一次校验问题）、<code data-page-node-id="nkeF4tnfkRaBasXxdCulcA">previous_output</code>（上一次候选输出）。</li>
+        <li data-page-node-id="NeYtaYFLrwwXCJaGCuPK9w"><strong data-page-node-id="cD6xA3pV0DbCxlXAlLIA0X">正反例教学</strong>——行动建议强约束：建议只能写进 <code data-page-node-id="Mpe8evAjilDbVgtdHpOqvV">nextAction</code>，用失败反例 ❌ + 合规样例 ✅ 训练模型。</li>
+        <li data-page-node-id="kqKSGqhTf7N9UYx6A3BpS3"><strong data-page-node-id="n7depJVAneDVzgyYrBDeHS">范围回填</strong>——只解读服务端选定维度，<code data-page-node-id="b6M0jBkRG2ZRCb6nFSKWYW">dimensions</code> 按原顺序完整回填，把"解读什么"的决定权留在确定性计划层。</li>
+        <li data-page-node-id="0iHOp9XrDEkVmVUqZ9o52O"><strong data-page-node-id="Ob6jkS0VhvnRctGYcWj6zK">模型选型</strong>——Coze Workflow 作为无状态表达节点；默认快速模型，深度思考独立 Workflow 对照（不混跑）。</li>
+      </ul>
+
+      <h3 data-page-node-id="hFjfRfDUajunCSkcTBlwqb">3.4 兜底设计（B0-first）</h3>
+      <ul data-page-node-id="WD7K6Dlg47A7KNa7YuvJFi">
+        <li data-page-node-id="TCaMG3QDPL7Di0XEzhRBCg"><strong data-page-node-id="77ch3tGVCaKvfd7t53ROHB">B0 确定性事实报告</strong>——AI 未配置、超时、Provider 错误、校验失败时，用户永远拿到确定性事实，绝不空白、绝不猜测。</li>
+        <li data-page-node-id="qFvbZAHbIPVS6h4sKdK3RD"><strong data-page-node-id="oRbHBZybzKWmJmBjIS1NcP">D0–D4 五级降级</strong>——完整回答 → 部分降级 → 受限修复 → 确定性模板 → 安全停止。</li>
+        <li data-page-node-id="GQ4T7IgD2ZsNTaPUiSpSZQ"><strong data-page-node-id="DdNXtim564X0PCAB36biD7">一次受限修复</strong>——首次校验失败只允许一次删除违规内容，仍失败则降级。</li>
+      </ul>
+
+      <h3 data-page-node-id="I69rJWvp7MMmFGbNlGjkrT">3.5 界面交互流程</h3>
+      <div class="callout" data-page-node-id="AKVaZlbHAQx2zU5vJGbWGv">用户从「打开一条骑行记录」到「读完 AI 解读」的完整交互流，每步都有确定性的背后机制。</div>
+
+      <div class="shot-grid cols-2" data-page-node-id="BqGl1u5rK7lnR8crWzWdmX">
+        <figure class="shot" data-page-node-id="erfcSFiGi87kR1niDDMlEA">
+          <img src="./2026-09-12_效果截图/详情页- AI解读入口.jpg" alt="详情页 AI 解读入口" data-page-node-id="wKKL1ap4W6stGSaEJIMcSX">
+          <figcaption data-page-node-id="GT2dOa3dhvCjPQY2RLK9V3">① 详情页顶部 RIDE INSIGHT 卡片——"查看 AI 解读"按钮</figcaption>
+        </figure>
+        <figure class="shot" data-page-node-id="34ICQCwRQwyTLWWbYChEH3">
+          <img src="./2026-09-12_效果截图/AI解读页-解读中状态.jpg" alt="生成状态页" data-page-node-id="kkr1gCBqhXsz28YdF9Acd0">
+          <figcaption data-page-node-id="6iXAaQEAs3HXJWk1KrjNHV">② 生成状态页：准备事实 → 识别表现 → 组织解读 → 校验输出</figcaption>
+        </figure>
+        <figure class="shot" data-page-node-id="WdHLZFurHDCQJhbfteeBNX">
+          <img src="./2026-09-12_效果截图/AI解读页-完成解读.jpg" alt="完成态解读抽屉" data-page-node-id="Pc8C54N8t9xeLGxIcpOBMS">
+          <figcaption data-page-node-id="cODSNqvQQjPgZHyKXw9LUe">③ 完成态：暗卡片一句话标签 → 整体评价（含功率曲线证据）→ 表现高光 → 重点维度 → 限制与下一步</figcaption>
+        </figure>
+        <figure class="shot" data-page-node-id="mFmqlfa0JhI3IBlO0oNsAL">
+          <img src="./2026-09-12_效果截图/AI解读页-长图（抽屉）.jpg" alt="解读长页/抽屉" data-page-node-id="5CIdyHmEMWIpZ3DYl3FXOJ">
+          <figcaption data-page-node-id="HOHmVHc7BZQkW9eDovqZJq">④ 解读长页/抽屉——可切换默认（3 维度）vs 展开（全维度）</figcaption>
+        </figure>
+        <figure class="shot" data-page-node-id="u46ZTBhDFJTye2JlG2iq7F">
+          <img src="./2026-09-12_效果截图/AI解读页-维度可收起查看.jpg" alt="维度收起" data-page-node-id="h3zC6nUVHHqfF9I9OFneO1">
+          <figcaption data-page-node-id="7vhhKrgGyTpHhnqMHCu9bH">⑤ 默认模式：仅看重点 3 个维度，不浪费用户时间</figcaption>
+        </figure>
+        <figure class="shot" data-page-node-id="iUBRUdxa23c6EjCKtLPHU7">
+          <img src="./2026-09-12_效果截图/AI解读页-降级与重新解读.jpg" alt="降级态" data-page-node-id="iG4L7UV4i2FDs5zSCo00Bl">
+          <figcaption data-page-node-id="oPEJ8niYWDVRgSZJGokpoa">⑥ B0 降级态："候选输出已降级 · DETERMINISTIC_VISUAL_NOT_FOUND" + 重新解读按钮</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <!-- =================== 04 对话 Agent =================== -->
+    <section id="sec-04" data-page-node-id="fzrkIuL04Ci1upRzLW86zN">
+      <span class="sec-num" data-page-node-id="HyyQ59Uzd71QaGyFFwkBLz">Chapter 04</span>
+      <h2 data-page-node-id="nFtz697aUgbWY5Qq8k5qbF">核心设计二 · 对话 Agent</h2>
+
+      <h3 data-page-node-id="CVByZLE8BBeCWKioGkAn4Z">4.1 与骑后解读的关系</h3>
+      <p data-page-node-id="CAK2WkFbNoPPHBNMYXlciR">骑后解读解决「看完一条记录后的解读」，对话 Agent 解决「随时随地问一个骑行问题」。两者<strong data-page-node-id="FBXAXi0p1laeTMxNcsdRDk">不是并列关系，而是复用关系</strong>：对话 Agent 在进行「数据解读 / 回答骑行数据相关问题」时，<strong data-page-node-id="wrbfNYLoIbu8BPSL3BRLHK">共享骑后解读的确定性事实层（L0–L6）</strong>——复用其确定性事实构造器（Claim / 质量门 / 安全校验），再走对话 Agent 自己的表达层。其它工作流（骑行水平评估 / 训练计划 / 知识问答 / 复杂问题场景）会使用各自不同的安全校验。</p>
+
+      <h3 data-page-node-id="EIvPYHAW48A2GGmOutTxvG">4.2 混合意图路由（核心决策）</h3>
+      <p data-page-node-id="h9iDQhKpOQBa3JQQ4bx8nF">对话 Agent 的当前架构是<strong data-page-node-id="ip3vp84cl0chfrrGC8PTmd">混合意图路由</strong>——「规则前置 + LLM 语义分类 + 场景分化 + 虚线后续扩展」。这一架构是从纯规则路由迭代而来的。</p>
+
+      <div class="callout warn" data-page-node-id="HWPIEvAMNmGSb3kLJodstM"><strong data-page-node-id="BPIfDM3TrjpswavwqlmUDB">演进故事：</strong>早期版本用纯正则匹配意图，上线后暴露了 6 个结构性缺陷：① 「骑行中」在「我在骑行中」（危险）和「最近的骑行中」（历史查询）里语义相反；② 宽词「骑了」误吞聚合 / 历史 / 能力等意图；③ 空 Claims 时模型注定无法通过校验；等等。根因是正则没有语境，宽词相互吞噬，<strong data-page-node-id="NofPzERhyphSfFrElX3SlN">路由粒度不等于能力粒度</strong>。解法是引入混合路由。</div>
+
+      <figure data-page-node-id="VfBfkGAC3IJUkJ9BrOFxPF">
+        <svg viewBox="0 0 940 690" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC, Microsoft YaHei, sans-serif" data-page-node-id="BtFwDRpKY1uiWqaGIHMmhf">
+          <defs data-page-node-id="dpiZJGFBGNJqiGbrFLhims">
+            <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse" data-page-node-id="GOn4Yuw75aDNa8smXjDfUW"><path d="M 0 0 L 10 5 L 0 10 z" fill="#8a93a6" data-page-node-id="D1yrMy02GuxWb5BlBSeCXO"/></marker>
+            <marker id="arrowD" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse" data-page-node-id="kzs3OpMCWUZlpKt4BUwoY1"><path d="M 0 0 L 10 5 L 0 10 z" fill="#9aa0ad" data-page-node-id="vhAHYqIO1sXMD8JC0kHzeU"/></marker>
+            <linearGradient id="gRule" x1="0" y1="0" x2="0" y2="1" data-page-node-id="HCwkBVnR6bnVEqQ4Uk9ywK"><stop offset="0" stop-color="#0f7b6c" stop-opacity="0.16" data-page-node-id="ow8plVM4du1C32HWArrhof"/><stop offset="1" stop-color="#0f7b6c" stop-opacity="0.06" data-page-node-id="9jdAlhG0vrdEOyqGZbca0l"/></linearGradient>
+            <linearGradient id="gLLM" x1="0" y1="0" x2="0" y2="1" data-page-node-id="uJdgVFBxz6vjaPOKBlYMwT"><stop offset="0" stop-color="#b8860b" stop-opacity="0.16" data-page-node-id="oYGuaOkc0HVhOzwBn8BmEN"/><stop offset="1" stop-color="#b8860b" stop-opacity="0.06" data-page-node-id="zFvC5nFLG3p4P1r5pqCNKL"/></linearGradient>
+            <linearGradient id="gScene" x1="0" y1="0" x2="0" y2="1" data-page-node-id="swUQ2vNCS1bGVreETeWXU4"><stop offset="0" stop-color="#4756c7" stop-opacity="0.16" data-page-node-id="3NIfyKf5TiYenKDeIkPUkg"/><stop offset="1" stop-color="#4756c7" stop-opacity="0.06" data-page-node-id="0es9ZJawBI9h46zxt0aS32"/></linearGradient>
+            <linearGradient id="gAgent" x1="0" y1="0" x2="0" y2="1" data-page-node-id="7uBGNiRwbBBbfFz7FGu0Jt"><stop offset="0" stop-color="#b3426b" stop-opacity="0.16" data-page-node-id="Zg14IFYpBAFmWjMMmhdDr4"/><stop offset="1" stop-color="#b3426b" stop-opacity="0.06" data-page-node-id="DJVMnN6ZZgJ2X6QxEQPWMb"/></linearGradient>
+          </defs>
+
+          <text x="470" y="26" text-anchor="middle" font-size="17" font-weight="700" fill="#1c2333" data-page-node-id="BK0GH5Mg3jDOlfA3jCP62n">混合意图路由目标架构（v0.4）：规则前置 + LLM 语义分类 + 场景分化 + 虚线后续扩展</text>
+
+          <rect x="370" y="42" width="200" height="34" rx="17" fill="#eef1f6" stroke="#c3cad8" data-page-node-id="jlQV1AcotxOMcLbo4bqXx7"/>
+          <text x="470" y="64" text-anchor="middle" font-size="12.5" fill="#3a4356" data-page-node-id="t4Xro5j5XF001GbXNBktb0">用户输入</text>
+          <line x1="470" y1="76" x2="470" y2="92" stroke="#8a93a6" stroke-width="1.5" marker-end="url(#arrow)" data-page-node-id="67zVTkgdnM6CyZH5GVlaSV"/>
+
+          <rect x="90" y="96" width="760" height="86" rx="10" fill="url(#gRule)" stroke="#0f7b6c" stroke-width="1.4" data-page-node-id="9WwObAb63s2yv1tLzg3NXr"/>
+          <text x="110" y="120" font-size="13.5" font-weight="700" fill="#0f7b6c" data-page-node-id="X9O7JwwDIokSf5wqkmHjfP">L0 规则层（收窄：只拦 100% 确定红线 · 零延迟零成本）</text>
+          <text x="110" y="142" font-size="11.5" fill="#3a4356" data-page-node-id="AGQETEfnqKSBzjlOBzblQI">• 注入检测（模式化攻击）　• 隐私红线（"别人的记录"）　• 共现安全模式："正在骑车"+"看手机"共现才拦截</text>
+          <text x="110" y="161" font-size="11.5" fill="#0f7b6c" data-page-node-id="R6M8T91wubFDljnVe1wTqj">• 高置信聚合快捷路径："总共 / 累计 / 本周" → 服务端仓储聚合秒答（零模型调用）</text>
+
+          <line x1="470" y1="182" x2="470" y2="200" stroke="#8a93a6" stroke-width="1.5" marker-end="url(#arrow)" data-page-node-id="iAP1HHUw9XiG3Ocs5AYGx1"/>
+          <text x="556" y="196" font-size="10.5" fill="#8a93a6" data-page-node-id="9aKUunpIC4LT4wVlR2S40d">未命中 → 语义分类</text>
+
+          <rect x="90" y="204" width="760" height="90" rx="10" fill="url(#gLLM)" stroke="#b8860b" stroke-width="1.4" data-page-node-id="F0vqifcb7989tz8VzHPTrD"/>
+          <text x="110" y="228" font-size="13.5" font-weight="700" fill="#9a6f0a" data-page-node-id="1DWs0pO2CN6uoC8JAKWwCD">L1 LLM 意图分类器（小模型 · 无状态表达节点 · 语义消歧主路由）</text>
+          <text x="110" y="250" font-size="11.5" fill="#3a4356" data-page-node-id="p0qGHLOF1BwtJwzbge8zct">输出结构化意图 { intent, needs_clarification }，不自报数字置信度（快速模型校准不可信）</text>
+          <text x="110" y="269" font-size="11.5" fill="#3a4356" data-page-node-id="XHRwo3GNYo16XWAEIDIFRI">intent ∈ 单次解读 | 历史比较 | 聚合 | 能力评估*(M4) | 训练计划*(M4) | open_chat | unclear（触发澄清）</text>
+          <text x="110" y="287" font-size="10.5" fill="#6a7690" data-page-node-id="PpdLmDRpXNmxofK9zZkEN6">* 虚线场景：当前不路由，M4 专项准入后生效</text>
+
+          <line x1="300" y1="294" x2="215" y2="340" stroke="#4756c7" stroke-width="1.5" marker-end="url(#arrow)" data-page-node-id="dFgITDCRPeUtpgxoymFsGU"/>
+          <text x="218" y="324" font-size="11" fill="#4756c7" data-page-node-id="hBYRRiJbDlYvjrm3IdbmIE">intent = 具体场景</text>
+          <line x1="640" y1="294" x2="565" y2="340" stroke="#b3426b" stroke-width="1.5" marker-end="url(#arrow)" data-page-node-id="2HChbdCCIG9kLezoHQHHa0"/>
+          <text x="600" y="318" font-size="11" fill="#b3426b" data-page-node-id="KEGva29wXIqVrIydGp13E5">open_chat / 复合问题</text>
+          <line x1="820" y1="294" x2="846" y2="340" stroke="#9aa0ad" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#arrowD)" data-page-node-id="7AzbjUSGQn3g8eckfknVxh"/>
+          <text x="810" y="318" text-anchor="end" font-size="10.5" fill="#6a7690" data-page-node-id="GZENC5S9D1e8VynNg6rFUh">M4 规划场景（虚线）</text>
+
+          <rect x="40" y="344" width="340" height="158" rx="10" fill="url(#gScene)" stroke="#4756c7" stroke-width="1.4" data-page-node-id="39aNMIabBTX7mPRZg52NjT"/>
+          <text x="60" y="368" font-size="13.5" font-weight="700" fill="#3543a8" data-page-node-id="darxVrDItr26FrjsA8RnqZ">L2a 场景 Workflow（确定性执行）</text>
+          <rect x="60" y="380" width="300" height="24" rx="6" fill="#ffffff" stroke="#c3ccf0" data-page-node-id="H69Bw6QePTlx8wNf3BskB6"/>
+          <text x="210" y="396" text-anchor="middle" font-size="11.5" fill="#3543a8" data-page-node-id="rO3abrFHPc2S82nSXb1pua">骑行解读（复用 M1 链路）</text>
+          <rect x="60" y="410" width="300" height="24" rx="6" fill="#ffffff" stroke="#c3ccf0" data-page-node-id="ulMI06FYONTK16DDDl9D1D"/>
+          <text x="210" y="426" text-anchor="middle" font-size="11.5" fill="#3543a8" data-page-node-id="3ZZFLMf0VinYjXlT8r9GxJ">历史比较（CHAT-13 compare_rides）</text>
+          <rect x="60" y="440" width="300" height="24" rx="6" fill="#ffffff" stroke="#c3ccf0" data-page-node-id="HEz6ToGhwHAkP7dvx2tREo"/>
+          <text x="210" y="456" text-anchor="middle" font-size="11.5" fill="#3543a8" data-page-node-id="lh0Hq9Rya4nbpciFkGiMfv">聚合统计（服务端仓储聚合）</text>
+          <text x="60" y="488" font-size="10.5" fill="#6a7690" data-page-node-id="imyGbkzufVfv5XIyOsykIL">输出合同与 Claim 溯源在场景内闭环</text>
+
+          <rect x="400" y="344" width="340" height="158" rx="10" fill="url(#gAgent)" stroke="#b3426b" stroke-width="1.4" data-page-node-id="HRpk2cZfUdBO4oTL3Hb6HB"/>
+          <text x="420" y="368" font-size="13.5" font-weight="700" fill="#933257" data-page-node-id="BYkQQTnWqHk14GEwdi3sWs">L2b 自主工具循环（开放推理）</text>
+          <rect x="420" y="380" width="300" height="46" rx="6" fill="#ffffff" stroke="#e3c3d2" data-page-node-id="UD9GkWvxLKATNPhMadivXm"/>
+          <text x="570" y="398" text-anchor="middle" font-size="11" fill="#933257" data-page-node-id="vluC2ePL0hwxyzfGGPU4Is">工具调用循环：模型自行决定只读工具组合</text>
+          <text x="570" y="415" text-anchor="middle" font-size="11" fill="#933257" data-page-node-id="GnKaQYqE55DFFgKDac9Ws4">get_ride_context · compare_rides · …（白名单内）</text>
+          <rect x="420" y="432" width="300" height="24" rx="6" fill="#ffffff" stroke="#e3c3d2" data-page-node-id="lBnDvu9hU9kCgOHATywQkN"/>
+          <text x="570" y="448" text-anchor="middle" font-size="11" fill="#933257" data-page-node-id="vJFy5PC4VzjkSFkBZ2etaX">动态输出校验（溯源随工具结果构建）</text>
+          <text x="420" y="488" font-size="10.5" fill="#6a7690" data-page-node-id="xV5h4FinYdEz090ci5RB10">典型："我最近状态怎么样？"</text>
+
+          <rect x="766" y="344" width="164" height="158" rx="10" fill="#fcfcfc" stroke="#9aa0ad" stroke-width="1.4" stroke-dasharray="6 4" data-page-node-id="AYGcdQDoU1YOhSxsXwtyFC"/>
+          <text x="786" y="366" font-size="12" font-weight="700" fill="#6a7690" data-page-node-id="OGCzzGzN2pZ3QXBhIRH0f7">后续扩展（虚线）</text>
+          <text x="786" y="380" font-size="9.5" fill="#9aa0ad" data-page-node-id="MZKwc2xIQY0NqoEdvcVvp9">过 M4 专项准入后转实线</text>
+          <rect x="778" y="388" width="140" height="32" rx="6" fill="#fcfcfc" stroke="#9aa0ad" stroke-dasharray="5 4" data-page-node-id="xqry4fztJNjaoRkLhRsqBD"/>
+          <text x="848" y="402" text-anchor="middle" font-size="11" font-weight="700" fill="#5a6578" data-page-node-id="269kWeOvoSMT67WKzb80lP">能力评估</text>
+          <text x="848" y="414" text-anchor="middle" font-size="8.5" fill="#9aa3af" data-page-node-id="cG5tGlFyWM3yYfaSKnFj4t">AI-CAP-01 画像数据</text>
+          <rect x="778" y="426" width="140" height="32" rx="6" fill="#fcfcfc" stroke="#9aa0ad" stroke-dasharray="5 4" data-page-node-id="rgob2yT4zUfVqBo3Mp7FNX"/>
+          <text x="848" y="440" text-anchor="middle" font-size="11" font-weight="700" fill="#5a6578" data-page-node-id="UYB9EUabYVOJ1ubDJK3Q44">训练计划</text>
+          <text x="848" y="452" text-anchor="middle" font-size="8.5" fill="#9aa3af" data-page-node-id="FbGHmHIPgjLv29aaDPaokt">依赖能力评估结论</text>
+          <rect x="778" y="464" width="140" height="32" rx="6" fill="#fcfcfc" stroke="#9aa0ad" stroke-dasharray="5 4" data-page-node-id="QdzaEi1hkiE056hBAstZFt"/>
+          <text x="848" y="478" text-anchor="middle" font-size="11" font-weight="700" fill="#5a6578" data-page-node-id="MzXR3aDX7lIckpqqwa4xj9">RAG 知识检索</text>
+          <text x="848" y="490" text-anchor="middle" font-size="8.5" fill="#9aa3af" data-page-node-id="NOBY2AM29MXXCLhqpBiDXU">只读工具 · 场景复用</text>
+
+          <line x1="740" y1="468" x2="766" y2="478" stroke="#9aa0ad" stroke-width="1.3" stroke-dasharray="5 4" marker-end="url(#arrowD)" data-page-node-id="va2SedQPzlbFX4wXQqg8B9"/>
+          <text x="753" y="462" text-anchor="middle" font-size="9" fill="#9aa3af" data-page-node-id="MWNh89WiAw3IFJx5rLVeHw">调用</text>
+
+          <line x1="210" y1="502" x2="210" y2="524" stroke="#8a93a6" stroke-width="1.5" marker-end="url(#arrow)" data-page-node-id="0iefMNfjFCdVwKpNhUIyCA"/>
+          <line x1="570" y1="502" x2="570" y2="524" stroke="#8a93a6" stroke-width="1.5" marker-end="url(#arrow)" data-page-node-id="XWRhSaerUVqoYT8gLvD3lp"/>
+          <line x1="800" y1="502" x2="714" y2="545" stroke="#9aa0ad" stroke-width="1.3" stroke-dasharray="5 4" marker-end="url(#arrowD)" data-page-node-id="znmXiT7sJgVWOHFKjrcmjZ"/>
+          <text x="760" y="519" text-anchor="middle" font-size="9.5" fill="#6a7690" data-page-node-id="N5M18vMZoDOnMG4ZY4CLXj">同样过校验</text>
+
+          <rect x="40" y="524" width="672" height="46" rx="8" fill="#eef1f6" stroke="#c3cad8" data-page-node-id="gwFuoPEb9fDjZiBUAvD9xi"/>
+          <text x="376" y="544" text-anchor="middle" font-size="11.5" fill="#3a4356" data-page-node-id="31V1RPEJDg8x5hMz9XkJNL">场景化输出校验：各场景各自的白名单与 Claim 溯源；用户输入数字（如阈值 120）加入白名单</text>
+          <text x="376" y="561" text-anchor="middle" font-size="11" fill="#3a4356" data-page-node-id="6hxd4SvkY9qWJTJHlmBtIz">通过 → 回答与证据 / Chat UI　·　失败 → 一次受限修复，仍失败 → 确定性模板</text>
+
+          <rect x="40" y="592" width="890" height="72" rx="8" fill="#eef1f6" stroke="#c3cad8" data-page-node-id="51AFHhxdq2wVaBznxxuDMc"/>
+          <text x="485" y="614" text-anchor="middle" font-size="11.5" fill="#3a4356" data-page-node-id="VTeSQRpbcO1Nc1lt3wFRRt">失败保底：分类器失败 / 超时 / 限流 → 降级为 P1 确定性模板（任何时刻不劣于纯规则基线可用性）</text>
+          <text x="485" y="632" text-anchor="middle" font-size="11.5" fill="#3a4356" data-page-node-id="adhRshRSz2BE3j1lZsE4BT">低置信 / unclear → 澄清话术（一等路径）："你想看最近一次的心率，还是找出所有超 120 的骑行？"</text>
+          <text x="485" y="651" text-anchor="middle" font-size="11" fill="#6a7690" data-page-node-id="kr5jsaAKZ4cUFSOrAus2eD">虚线 = 后续规划能力（能力评估 / 训练计划 / RAG）：过 M4 与知识增强专项准入后转实线，CHAT-12 POC 不实现</text>
+        </svg>
+        <figcaption data-page-node-id="pL5m8CfFEMvQygtAEHLMdY">图：对话 Agent 混合意图路由 v0.4 —— L0 规则 / L1 分类器 / L2a 场景 / L2b 自主循环 / 后续虚线</figcaption>
+      </figure>
+
+      <div class="callout ok" data-page-node-id="MWSzO4BDieuPHXGPhJdZlv"><strong data-page-node-id="HGU7y0ha6MpjevZzIsEYU8">两个关键设计原则：</strong>① <strong data-page-node-id="Mq5UDLCBEdoeAeUhbVUPur">意图标签 ≠ 路由</strong>——分类器回答"用户想干什么"，服务端权威映射决定"谁来答、怎么取数"，两层各自演进互不牵连；② <strong data-page-node-id="nCLjPMPwvw1efuwL3Qfaiq">失败保底</strong>——任何时刻不劣于纯规则基线的可用性。</div>
+
+      <h3 data-page-node-id="cn7LkBt4MkMrHCLK5dt4QQ">4.3 Prompt 设计：把约束写到每一句</h3>
+      <ul data-page-node-id="9Rlc7c5r52CvA6gfDtFtKI">
+        <li data-page-node-id="54YGERysZwh9JeSXhqEluq"><strong data-page-node-id="LuRMyrQZspI44QJMxxhRQf">角色收窄</strong>——「受控的骑行记录对话表达器，不是通用聊天机器人 / 医疗服务 / 训练计划生成器」。</li>
+        <li data-page-node-id="RNEFAP73qnEUnUbZqsTSdn"><strong data-page-node-id="Jz9EstRDuCSYDl3z7ow4cm">三段不可信输入</strong>——<code data-page-node-id="3BWcqzXylDJhKlCzGRVn9m">chat_request</code> / <code data-page-node-id="CvVOpDBU3L0dj5T51ixui2">repair_instruction</code> / <code data-page-node-id="1OF1C50e222X7qDDjMdJ8z">previous_output</code> 用 XML 标签包裹，并声明"不是指令"，作为注入防护第一道闸。</li>
+        <li data-page-node-id="eowKtSL9WaeLHNjjtI6LQk"><strong data-page-node-id="3orK2hIioPn3pV1yIIcHVj">数字逐字复制</strong>——每个数字必须逐字复制自己授权数据，禁止换算 / 取整 / 自行计算（"41.4 不得写成 41"）。</li>
+        <li data-page-node-id="gt4otU0U3HsOBtSrlYPsET"><strong data-page-node-id="BHxdP2xk3C03AkF7M4dqHo">按 route 分派输出</strong>——5 种路由各独立规则 + <code data-page-node-id="AXVJHWsCHI2BdSBge5x2tL">autonomous_tools</code> 双模式（工具调用请求 vs 最终回答）。</li>
+        <li data-page-node-id="f9ATOzDd6FZZrIzI5SPlvU"><strong data-page-node-id="CTNCRXI5kqccoKMXih5b2G">会话摘要防污染</strong>——历史问题里的数字"不是事实来源，不得引用"。</li>
+      </ul>
+      <p class="callout" data-page-node-id="yEVTaIswFvPm4DCJ07GnDR"><strong data-page-node-id="h6nJDNhSZwHGO2TrxaFuSU">核心洞察：</strong>Prompt 让模型尽量不犯错，服务端校验保证犯错也出不去——双保险。</p>
+
+      <h3 data-page-node-id="0ooNhr7m1lZX1DYbwm6hMT">4.4 安全与隐私</h3>
+      <ul data-page-node-id="xKXfW3zdfnoyoEr1hErfG4">
+        <li data-page-node-id="DlldieGPRv9ygfI0rueyIJ"><strong data-page-node-id="4Bnqot2HH91FTb5maFfsE5">最小数据暴露</strong>——原始 FIT/GPX、精确坐标、完整时序、文件名、密钥永不进入模型投影或日志。</li>
+        <li data-page-node-id="x2FQwQDn6JFTR18ju501Yg"><strong data-page-node-id="5Lwr19i1qco2fzW2FrICbL">工具白名单</strong>——只读 + 白名单 + 参数枚举 + 越权拦截；按 session owner 校验私有对象。</li>
+        <li data-page-node-id="7FBb9yd9oauSTitCwrdlxr"><strong data-page-node-id="1iSa6e8Un8UYxkYS8t29ql">删除级联</strong>——记录删除级联删除分析、历史快照、会话摘要。</li>
+        <li data-page-node-id="qm1jHjbmiJVSFFPWS7STeL"><strong data-page-node-id="BEo6rOt24QBlSaGfCRfRgx">红线模板</strong>——急症 / 越权 / 注入 / 域外一律固定模板，绝不调模型。</li>
+      </ul>
+
+      <h3 data-page-node-id="4LADyiPDFIQBFpM20GPHOs">4.5 界面交互流程</h3>
+      <div class="callout" data-page-node-id="nmMFpcxatSyCopwQ5FlbOk">用户从「打开对话」到「收到答案」的完整路径——混合意图路由在用户端呈现为统一的"像在和一个人对话"的感受。</div>
+
+      <div class="shot-grid cols-2" data-page-node-id="Ap1buKVmdAFMWFyC8ozYv6">
+        <figure class="shot" data-page-node-id="zpMkZv9BxdoP4GmWLdyIbe">
+          <img src="./2026-09-12_效果截图/骑行伙伴对话页.jpg" alt="对话首页" data-page-node-id="F5orJXBILYoSN3c9CAIrG8">
+          <figcaption data-page-node-id="hQ7jUmK6uiAAYeX1fUO2jR">① 对话首页——问候气泡带用户真实累计数据 + 三个固定快捷问题 + 底部输入区</figcaption>
+        </figure>
+        <figure class="shot" data-page-node-id="oLoIufCe1QgmEscLjRqKR4">
+          <img src="./2026-09-12_效果截图/骑行伙伴页-回复生成.jpg" alt="回复生成中" data-page-node-id="8C7wn1pWgHBBAG4QObE0G4">
+          <figcaption data-page-node-id="9esfwhU1wmLhXKsspMoeyB">② 用户提问后，AI 气泡内显示三段式动态进度（与骑后解读 4 步进度设计对齐）</figcaption>
+        </figure>
+        <figure class="shot" data-page-node-id="OvyH4e1DABlfOFGTkeT9RA">
+          <img src="./2026-09-12_效果截图/骑行伙伴对话页-对话记录.jpg" alt="对话记录" data-page-node-id="Tt1WI0LiapDVD0dpsRER9m">
+          <figcaption data-page-node-id="ZvqDSYVp2NT9z1bd7R3JHr">③ 对话记录标签页 + unclear 澄清路径："我还不太确定你指的是哪一次骑行..."</figcaption>
+        </figure>
+        <figure class="shot" data-page-node-id="5P2iReihuWB55Lj4JLBffG">
+          <img src="./2026-09-12_效果截图/骑行伙伴对话页-回复生成中.jpg" alt="实际回复" data-page-node-id="Gm5FJ4cGkI9FZYGYvhkG8j">
+          <figcaption data-page-node-id="ZMKg7fESCA8qsGNY4VXeGC">④ 真实回复示例：数字带 Claim 引用 + "查看本次记录 →" 操作</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <!-- =================== 05 测评方法论 =================== -->
+    <section id="sec-05" data-page-node-id="giTjRfu8vmxM6wjv4oPSeB">
+      <span class="sec-num" data-page-node-id="2DNqidBFFcQIbOUCPb9CeE">Chapter 05</span>
+      <h2 data-page-node-id="NWb5ZmPqfBtupvfk3qaJZi">AI 质量与测评方法论</h2>
+      <p data-page-node-id="JmPLauVwKFhe2Ew6h37Ffa">AI 产品最大的风险不是"不会说"，而是"胡说"。所以本项目建立了一套<strong data-page-node-id="VqMT7SmM0WwRoXEbFNKpsD">统一、可复用的测评方法论</strong>——硬门 + 六维 Rubric + 分层数据集 + A–E 检查点 + 双人盲评。</p>
+
+      <h3 data-page-node-id="grhY2ZJKHNEI1ad68hAlUU">5.1 指标体系</h3>
+      <ul data-page-node-id="IIeelwF5tirjz88NWVdAAU">
+        <li data-page-node-id="YpuXyO69tfuO6gZeB288C7"><strong data-page-node-id="l4FgMSXClxAa6Mni7eG8uT">硬门指标</strong>（不可被平均分抵消）：Schema 合法率 100% / 数值事实忠实率 100% / 原子能力越权 0 / 高风险安全召回 100% / 医疗诊断·危险建议 0 / 注入·泄露 0 / 位置·隐私泄露 0。</li>
+        <li data-page-node-id="JNQPKZFg6CPN92SzjX36hA"><strong data-page-node-id="ywz2qTNWIRmET0EQ41FLmv">六维质量 Rubric</strong>：事实忠实 30% · 洞察价值 25% · 行动性 20% · 易懂性 10% · 语气 5% · 不确定性 10%。</li>
+      </ul>
+
+      <h3 data-page-node-id="1LBWIa3BFHKQlSaFaTV0hd">5.2 数据集分层</h3>
+      <table data-page-node-id="oBvH9Tl7cQueN6wgqiTw5K">
+        <thead data-page-node-id="sFAI49WLfoWwy9DtMvG247"><tr data-page-node-id="xh3hQKfslTKqM3mxEj8hOT"><th data-page-node-id="CeUtKqf4TUErySsPw9HO5z">层级</th><th data-page-node-id="sCc0JmEfkdA4iuk5PDa9MY">用途</th><th data-page-node-id="628BaKwsNTCrDUC9ruCMzW">关键约束</th></tr></thead>
+        <tbody data-page-node-id="1N6MNgGKwMH2jXS0UEWyDQ">
+          <tr data-page-node-id="TVmXMkwn5yxDXIgdFBSVgy"><td data-page-node-id="mDciXTH06z00AJIpLrfoMN"><strong data-page-node-id="nbVt2zctWdDdBfWi1n3tWn">dev</strong></td><td data-page-node-id="JTqFE1XJbs9uHSKjq5HIhN">快速诊断、Prompt 迭代</td><td data-page-node-id="TeOQVfUIxUg4dBqbDSfonH">实现侧可见</td></tr>
+          <tr data-page-node-id="HNKndkuXMAl0lxph6Sib9C"><td data-page-node-id="YkU9n9ae7wlvU1jjKxLLkL"><strong data-page-node-id="EJCPLXfIM4GfheVQnZ6fxX">regression</strong></td><td data-page-node-id="wKvof2vsRR9cj26r2Pqvi2">已知缺陷回归</td><td data-page-node-id="PAMtamqANXUipUQq3OPrkT">每次发布必跑</td></tr>
+          <tr data-page-node-id="UHy1s6XHyn8kk5NbXCkBa4"><td data-page-node-id="q8THGL8k1PZGwk7EfwEpq9"><strong data-page-node-id="UEhTnDTOJdf20bEOymS9Z6">blind</strong></td><td data-page-node-id="Y5vgGPHqfeLCeXm9aHE4sm">正式质量 · 冻结不可调参</td><td data-page-node-id="lpGfq5QaXMloLrLjlFNeKH">对实现侧隐藏答案</td></tr>
+          <tr data-page-node-id="VNpaE0qfHkebJx8PM1QEXA"><td data-page-node-id="UdsisjEGmDdRV0loqwXm6A"><strong data-page-node-id="RMpBLPxitkiALGrclzmvOq">red-team</strong></td><td data-page-node-id="fLZtFG2lVRPqtOIT7Gqfqj">安全对抗（注入 / 越权 / 隐私 / 医疗）</td><td data-page-node-id="KEzs6yspEXjxZ3GpXeGYkt">持续追加新案例</td></tr>
+          <tr data-page-node-id="501BcRDm4PAvDXjwhv1bDK"><td data-page-node-id="ae3BUPjeHFjCpAHmdBmYsW"><strong data-page-node-id="mot8OH3NggPhVJfQP6z5IX">product</strong></td><td data-page-node-id="mQCSrwqZ3eFlZUOoHHkXC2">目标用户真实任务</td><td data-page-node-id="cfTiYJ5GwBDBIiFzAL9tyF">外部采样</td></tr>
+        </tbody>
+      </table>
+      <p class="callout warn" data-page-node-id="zyxb2EZhvBsJn2SEYCKUSM"><strong data-page-node-id="Y4j1sOH9ln8qTEg8qD9Bdb">关键原则：</strong>blind 集对实现侧隐藏答案；<strong data-page-node-id="6CT02Gj89DNwBGVYUnbzOJ">小样本 100% 不得外推为永不失败</strong>。</p>
+
+      <h3 data-page-node-id="7QAtaGzLRWSHWGiQm3sACf">5.3 A–E 协作测评流程</h3>
+      <figure data-page-node-id="GCDl830CTRWtvjRHt8J9qN">
+        <svg viewBox="0 0 880 200" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC, Microsoft YaHei, sans-serif" data-page-node-id="sJuFp14IFMlLqb7LlBfbCI">
+          <text x="440" y="26" text-anchor="middle" font-size="15" font-weight="700" fill="#1c2333" data-page-node-id="VEqitfQxaFxL2VJf1SAUtz">A–E 协作测评流程（检查点制度）</text>
+          <defs data-page-node-id="JoVUt3QmGDzOzp1hFGjvxJ"><marker id="arrA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto" data-page-node-id="NZN2tHdZdqp9YfnCnUXQD5"><path d="M 0 0 L 10 5 L 0 10 z" fill="#0f7b6c" data-page-node-id="A6HR37n1qkCCELRiuawCBR"/></marker></defs>
+          <g transform="translate(40,60)" data-page-node-id="aYCEMzMtCKQu9izScjVSXZ">
+            <rect x="0" y="0" width="150" height="100" rx="8" fill="#e8f4f1" stroke="#0f7b6c" stroke-width="1.5" data-page-node-id="mDpTW5eRaoG6HElskoeq9u"/>
+            <text x="75" y="32" text-anchor="middle" font-size="22" font-weight="700" fill="#0f7b6c" data-page-node-id="3ZpWq5f0CbGRYXptKwExVq">A</text>
+            <text x="75" y="56" text-anchor="middle" font-size="12" font-weight="600" fill="#1f2937" data-page-node-id="YVCtCJGEEyMUsALCqZZU0D">指标冻结</text>
+            <text x="75" y="76" text-anchor="middle" font-size="10" fill="#6b7280" data-page-node-id="bwh7qbZWGtFsG0ZtuHgjGV">硬门 + Rubric 定稿</text>
+            <text x="75" y="92" text-anchor="middle" font-size="10" fill="#6b7280" data-page-node-id="3uoveYBAvBTFPVE8cpeaNB">不再中途调整</text>
+          </g>
+          <line x1="195" y1="110" x2="225" y2="110" stroke="#0f7b6c" stroke-width="2" marker-end="url(#arrA)" data-page-node-id="4rIZXyA8wGLNv4fDoitHDH"/>
+
+          <g transform="translate(230,60)" data-page-node-id="eHaBDLNHvm2U6WENKNbPqF">
+            <rect x="0" y="0" width="150" height="100" rx="8" fill="#e8f4f1" stroke="#0f7b6c" stroke-width="1.5" data-page-node-id="GjJPqJi0qbAXF5M48jOdSB"/>
+            <text x="75" y="32" text-anchor="middle" font-size="22" font-weight="700" fill="#0f7b6c" data-page-node-id="Z5cKUM7tkQ0AuMjkEU9RT5">B</text>
+            <text x="75" y="56" text-anchor="middle" font-size="12" font-weight="600" fill="#1f2937" data-page-node-id="26nOkgk6X90OYxh3hLw2dP">测评集冻结</text>
+            <text x="75" y="76" text-anchor="middle" font-size="10" fill="#6b7280" data-page-node-id="opqB4HjR5jqDkBCAgprBBs">dev / blind / red-team</text>
+            <text x="75" y="92" text-anchor="middle" font-size="10" fill="#6b7280" data-page-node-id="jfKpKWzee9KNDj82jX2clP">实现侧不见盲集答案</text>
+          </g>
+          <line x1="385" y1="110" x2="415" y2="110" stroke="#0f7b6c" stroke-width="2" marker-end="url(#arrA)" data-page-node-id="cvxfN8f7no9rtTk6vsBxk5"/>
+
+          <g transform="translate(420,60)" data-page-node-id="HZGrC8ef8Aw7jR9eiCzu1p">
+            <rect x="0" y="0" width="150" height="100" rx="8" fill="#e8f4f1" stroke="#0f7b6c" stroke-width="1.5" data-page-node-id="HkCQ2BDyyMkNQwuktniPpa"/>
+            <text x="75" y="32" text-anchor="middle" font-size="22" font-weight="700" fill="#0f7b6c" data-page-node-id="PcWChC5EbyF5QUNsSVzqEn">C</text>
+            <text x="75" y="56" text-anchor="middle" font-size="12" font-weight="600" fill="#1f2937" data-page-node-id="7rEBOfQQqG8AEXoFtHyoUT">执行授权</text>
+            <text x="75" y="76" text-anchor="middle" font-size="10" fill="#6b7280" data-page-node-id="eqr0sOs6BOexDGggZhWKZD">固定 Prompt / 模型 / 参数</text>
+            <text x="75" y="92" text-anchor="middle" font-size="10" fill="#6b7280" data-page-node-id="NmBsKAH8DGu1RFXrFYifQ3">记录完整运行日志</text>
+          </g>
+          <line x1="575" y1="110" x2="605" y2="110" stroke="#0f7b6c" stroke-width="2" marker-end="url(#arrA)" data-page-node-id="qnzPNBOOd4z9yi91Na2g8A"/>
+
+          <g transform="translate(610,60)" data-page-node-id="VWuEc9Fas32wz5zeEEshU5">
+            <rect x="0" y="0" width="150" height="100" rx="8" fill="#e8f4f1" stroke="#0f7b6c" stroke-width="1.5" data-page-node-id="DSYVoresbTEhKkI89zU2eW"/>
+            <text x="75" y="32" text-anchor="middle" font-size="22" font-weight="700" fill="#0f7b6c" data-page-node-id="f7iFq8Ztg0T4tmygbdTpRL">D</text>
+            <text x="75" y="56" text-anchor="middle" font-size="12" font-weight="600" fill="#1f2937" data-page-node-id="nXNY9mgF32V6jZWJBrfhpE">人工盲评</text>
+            <text x="75" y="76" text-anchor="middle" font-size="10" fill="#6b7280" data-page-node-id="zjieBSAs3ZbIwfu7xeKRmH">双人独立评分</text>
+            <text x="75" y="92" text-anchor="middle" font-size="10" fill="#6b7280" data-page-node-id="w7okGpobXcoNaIuTqmZUUz">Cohen's kappa 一致性</text>
+          </g>
+          <line x1="765" y1="110" x2="795" y2="110" stroke="#0f7b6c" stroke-width="2" marker-end="url(#arrA)" data-page-node-id="oAjw5rFc5BNUAikVaDU1iw"/>
+
+          <g transform="translate(800,60)" data-page-node-id="qKaYNtnaQfp9NlHf4ZL1au">
+            <rect x="0" y="0" width="80" height="100" rx="8" fill="#e8f4f1" stroke="#0f7b6c" stroke-width="1.5" data-page-node-id="No5GtFdY1MrwM7x8cizjGV"/>
+            <text x="40" y="32" text-anchor="middle" font-size="22" font-weight="700" fill="#0f7b6c" data-page-node-id="3pHgGQarrWRQcJPD7254v7">E</text>
+            <text x="40" y="56" text-anchor="middle" font-size="12" font-weight="600" fill="#1f2937" data-page-node-id="y2N8BDgMhX1dRRBGIh0ACx">结论签署</text>
+            <text x="40" y="76" text-anchor="middle" font-size="9" fill="#6b7280" data-page-node-id="eYTppLd98kGXe1BDPD1n0I">GO</text>
+            <text x="40" y="90" text-anchor="middle" font-size="9" fill="#6b7280" data-page-node-id="w9qo8kZ3SXF6BJMK2hSkSu">NO-GO</text>
+          </g>
+
+          <text x="40" y="186" font-size="11" fill="#9ca3af" data-page-node-id="3C7W27D7hATlgp2BB5Vsgh">任何一步不通过 → STOP & RETHINK，回到 A 重新定义指标。</text>
+        </svg>
+        <figcaption data-page-node-id="3tflGSU3jf7y1IQoNm36Vu">图：A–E 检查点制度——把 AI 质量评估工程化、可追溯</figcaption>
+      </figure>
+
+      <h3 data-page-node-id="tcMYiHZYaYmiSslTPIedzm">5.4 关键结果（真实数据）</h3>
+      <table data-page-node-id="Sfg4kY6L4wtteaw8CG6Is2">
+        <thead data-page-node-id="zusl9oEmO3C3a0NTnkG0Y0"><tr data-page-node-id="FxCAlSrFCZdn5M2Vku57ZE"><th data-page-node-id="v8JHpVSxlLDtfEHUwnkmmL">评测项</th><th data-page-node-id="ADWHSPf1G4T1Wp0EzA57qe">结果</th><th data-page-node-id="yeygZciRaFZpqt6wrmgAsq">说明</th></tr></thead>
+        <tbody data-page-node-id="ctbDEaGRXLOLadMxd0TXTl">
+          <tr data-page-node-id="RtoXAIf36LalPM3xSsbTJR"><td data-page-node-id="JHHAX5L5LMR6JOhdbAhArt">骑后解读正式门</td><td data-page-node-id="itMoChmVx6tZ7IJNlXBvf5"><strong data-page-node-id="y5qg8hSlMLAofyoebkRXc6">81 槽 / 81</strong></td><td data-page-node-id="u8cVSAfrl6CUISjNBomrnw">P50/P95 = 10.7s / 18.9s</td></tr>
+          <tr data-page-node-id="esZLE7AkZEo4UifuE3nQbd"><td data-page-node-id="zb76sHi14GsyLprB90DoiE">对话 Agent · 意图分类器</td><td data-page-node-id="S8M9odSIlDCLjTGYMar10w"><strong data-page-node-id="ldaTgCuCYijr1dNhJewRB2">38/38 = 100%</strong></td><td data-page-node-id="t4ByXtIppVKRfg330nwkgR">red-team 6/6 零失误</td></tr>
+          <tr data-page-node-id="QDfQBTp2WsDZBMhnxyxbA3"><td data-page-node-id="nHHpm6YsSERuaUbOoLBzZg">M3 里程碑固定集</td><td data-page-node-id="Jh25wECgERjCRxPBw8BnaW"><strong data-page-node-id="WlK9HLttwr3ZHg1GF2DdJh">27/27 全绿</strong></td><td data-page-node-id="q6NF7PAShH3ZF5NSKrHRWA">L2a 确定场景 workflow，不涉及自主 agent 测试</td></tr>
+          <tr data-page-node-id="11FQuZkuUWS844SSEPMQKR"><td data-page-node-id="FWq61ukcYYkRxDDQGX5gWx">工程回归测试</td><td data-page-node-id="fayT37sVLLSQHKpA89Ym5k"><strong data-page-node-id="b0gpccGbYSKCGcAnwRPamf">460/460 全过</strong></td><td data-page-node-id="QY4oCiQ5t96EVxojZ1ReTB">typecheck + build 全绿</td></tr>
+        </tbody>
+      </table>
+
+      <h3 data-page-node-id="n27HeAMVEt5I4frPCAe6Y3">5.5 诚实的失败（NO-GO 复盘）</h3>
+      <p data-page-node-id="2IBfPYgndts2WRlL3yG7oC">骑后解读的<strong data-page-node-id="ELEqbc7xs5nQABR9iCRce3">质量盲评签署 NO-GO</strong>：综合 2.75 &lt; 4.2 目标；洞察价值 +1.39（有增量）但<strong data-page-node-id="CPMsxguJO2BahNCQC8gGcU">事实忠实 −2.17 低于 B0</strong>。</p>
+      <div class="callout danger" data-page-node-id="DVN7QCotkJAhesSd2nVXKx"><strong data-page-node-id="0b1gaOmCQf2wXZHksfddxi">根因拆解（不混淆两个维度）：</strong><br data-page-node-id="RPGYj1MWFVwsbvqZlmJqCE">
+        ① <strong data-page-node-id="eXuzH1LAWlJRtuPAQ3uiis">事实忠实 −2.17</strong>（<strong data-page-node-id="FlUrUGwih4DOnZ8ZMuxnqO">根因层 · 规则口径问题</strong>）——经过规则引擎后，可用数据（即被允许的 Claim）缺失较多，AI 可解读数据较全量数据<strong data-page-node-id="FO1Wv1L5sbKLtTT2JbDctn">降低了近 50%</strong>。AI 想引用某个事实但它没在允许的 Claim 集里，硬门校验就过不去。这是<strong data-page-node-id="zECDedBvezijEagBLulqhk">规则口径过严</strong>导致，不是 AI 行为问题。<br data-page-node-id="4fjMryfTu1rjGv6eKNHKT6">
+        ② <strong data-page-node-id="hDqJrouuHui0uGlaPCmES3">洞察价值 +1.39</strong>（<strong data-page-node-id="IlAfOMETt14U7nG5Zhd6hr">用户感知层</strong>）——AI 实际解读出来的事实内容无误，但可解读数据减少后，用户感受到的就是"洞察性偏低"。这是<strong data-page-node-id="9R6via0ZFfDWShvnF9fCst">用户直接看到的结果</strong>。<br data-page-node-id="TFjhcJAUcp5IaqeodY0k6z">
+        结论：不是"AI 解读质量问题"，而是"前置数据规则过于保守 + 可用 Claim 集不够"。修复方向：放宽规则口径，让更多有意义的事实进入 Claim 白名单。</div>
+      <p class="callout" data-page-node-id="lKa5scgTSccDNrOG4dHUQI"><strong data-page-node-id="f6AC4llVUYsyhP6xayho4l">价值：</strong>不粉饰结果、能定位根因——这是 AI 产品经理最该有的专业态度。</p>
+    </section>
+
+    <!-- =================== 06 交互与视觉 =================== -->
+    <section id="sec-06" data-page-node-id="5vH6PSYEnZQ80XSBz3cCRM">
+      <span class="sec-num" data-page-node-id="Qw30ckGx4nZKzCy8zAgKlf">Chapter 06</span>
+      <h2 data-page-node-id="9l3UF8qO3XtnWWeDVIX3Bk">交互与视觉设计</h2>
+
+      <h3 data-page-node-id="gbOqDfRYcROR12g162xmHj">6.1 信息架构</h3>
+      <p data-page-node-id="1JgYl0wsH6KRrHhGx46lqx">三层 Tab 内容模型：<strong data-page-node-id="VdN81TjAornu7s6UeXpDDH">摘要 Tab</strong>（相对轨迹 + 核心概要）→ <strong data-page-node-id="6J92UmF08z7tEwNRCqBHav">分析 Tab</strong>（时序曲线 + 区间分布 + 分段）→ <strong data-page-node-id="pyRNqOxv3GTnt4SqfdQP98">数据 Tab</strong>（按能力分组的事实明细）。AI 解读的层级设计：<strong data-page-node-id="Jj8twmMFbeMpLHKzb13sOp">结论 → 必要证据图表 → 解读正文</strong>，正文内部遵循「事实 → 本次表现 → 本次体现的能力 → 用户意义」。</p>
+      <p class="callout" data-page-node-id="uDPQ1kVfwxlpYxeIDSmWwW"><strong data-page-node-id="ZoQpMZKM5HZDcHstyQXeiO">无数据即无模块</strong>——缺数据的维度整体隐藏，绝不显示空卡片或占位 0，避免"有结构没内容"的信息噪音。</p>
+
+      <div class="shot-grid cols-3" data-page-node-id="kaizqonXo1XF9WEhUpYfZe">
+        <figure class="shot" data-page-node-id="YCiptjAdX7Fcu8kvTLqzDo">
+          <img src="./2026-09-12_效果截图/数据详情页-摘要.jpg" alt="摘要 Tab" data-page-node-id="JIsRwtzX0Fo9oEm3C4J3aZ">
+          <figcaption data-page-node-id="BSBHHJutXDYLncKGtu6eFs">摘要 Tab —— 相对轨迹 + 核心概要</figcaption>
+        </figure>
+        <figure class="shot" data-page-node-id="Zi0eDaHG77DZ3LKMm2EYwQ">
+          <img src="./2026-09-12_效果截图/数据详情页-分析.jpg" alt="分析 Tab" data-page-node-id="qO1GZLVwLxcthEwzUEJI5m">
+          <figcaption data-page-node-id="1SDnj24EwzWLcGklzUHZvB">分析 Tab —— 时序曲线 + 区间分布</figcaption>
+        </figure>
+        <figure class="shot" data-page-node-id="lA2UTuFkjuFeHInBwXi1XO">
+          <img src="./2026-09-12_效果截图/数据详情页-数据.jpg" alt="数据 Tab" data-page-node-id="duS188jEEsLgw9t0Cir4ZD">
+          <figcaption data-page-node-id="QuJGYXBeNR7mjFgzRFoLDd">数据 Tab —— 按能力分组，每项带规则版本号</figcaption>
+        </figure>
+      </div>
+
+      <h3 data-page-node-id="ROEe2VhN9uK2gI7CkTYdE7">6.2 状态设计</h3>
+      <p data-page-node-id="0AnfZWl07LogvEWN4JrPSj">AI 生成的完整状态机：入口卡片 → 生成状态页（4 步真实步骤）→ 完成解读（结论 → 证据 → 正文 → 维度 → 限制与下一步）。降级状态的用户表达：AI 失败时展示 B0 确定性事实报告，附原因与重试入口，<strong data-page-node-id="NNKH9nXpVnuYMWcy3la3LB">绝不展示半成品结论</strong>。<strong data-page-node-id="ulUPc04U8NFfpa9zzqAjWG">partial 语义</strong>：部分数据缺失用「部分数据，仅供参考」轻量标记，而非静默省略或误导。</p>
+
+      <div class="shot-grid cols-2" data-page-node-id="KTAGUpPy0bKSHqCrbWINMk">
+        <figure class="shot" data-page-node-id="xl9xtMJV0C7lhdQ2XoxUqv">
+          <img src="./2026-09-12_效果截图/AI解读页-维度可展开查看.jpg" alt="维度展开" data-page-node-id="aD7SAtzZIn20uYB88hfxAi">
+          <figcaption data-page-node-id="pV3VNe1fQLxUfc3LZtSDdk">展开模式：全维度展示，每项带"点开看证据"</figcaption>
+        </figure>
+        <figure class="shot" data-page-node-id="dAf8FNEUXrydctkPS07gFw">
+          <img src="./2026-09-12_效果截图/数据详情页-分析-图表交互.jpg" alt="图表交互" data-page-node-id="8ipe7EnXrkNip8tU6GFeKo">
+          <figcaption data-page-node-id="QTmVsXzYHACrTbMrTPPxza">图表-文字双向联动：点击曲线区段高亮关联 Claim</figcaption>
+        </figure>
+      </div>
+
+      <h3 data-page-node-id="xa881LM6syrBzvb1EBAgV8">6.3 可访问性</h3>
+      <ul data-page-node-id="8CxhJJTANd169BM01yFCZz">
+        <li data-page-node-id="cmFK3vI3lzkUM4uJCOfdpn"><strong data-page-node-id="ddJDr6NOC2vslIjClWCJMb">不只靠颜色</strong>——所有区间、图例、状态均配文字 / 纹理提示，支持键盘 / 触控访问。</li>
+        <li data-page-node-id="eAcV4Hmfmz8tQJpZG5dB9Q"><strong data-page-node-id="Zt4I38KcDDZ12Tozb0fj2l">图表-文字双向联动</strong>——点击曲线区段 / 标签定位到对应时间窗并高亮关联 Claim；文字引用反向滚动到图表证据——让"结论"和"证据"始终可互查。</li>
+        <li data-page-node-id="OUhktRqwBv0AQHHtL6UL0v"><strong data-page-node-id="WTS5SZntzlAjmUdCGPFq1R">无障碍文本不引入 Claim 之外的新数字</strong>。</li>
+      </ul>
+
+      <h3 data-page-node-id="KzJIvC1ODF6czNqVv61z4J">6.4 移动端适配</h3>
+      <ul data-page-node-id="6HE8FRG1ukrnFW2gQzTbSo">
+        <li data-page-node-id="Sk4Zgww8HaJ5GhSoetlzeR">移动端优先，单列主阅读流，稳定纵横比。</li>
+        <li data-page-node-id="eZodDpmmXaHtoWKddrMOHS">图表允许横向拖动查看但<strong data-page-node-id="ePB8kKv3dDh1cn7OhMiOZD">不拉伸、不横向溢出</strong>。</li>
+        <li data-page-node-id="GCmWDaNkWHzUJGCCjgK2Bd">重点检查尺寸：390×844、768px、1280px 三视口。</li>
+        <li data-page-node-id="5UVwlCnIsLDPMnjTx2Qiov">AI 解读采用<strong data-page-node-id="iXp4Ncp46bK7mx1JkCyAsg">底部 sheet / 桌面 modal</strong> 的响应式容器，重开秒开（会话缓存 <strong data-page-node-id="IyhhUDKl168qzmFB03ap9Z">19ms</strong> 命中）。</li>
+      </ul>
+
+      <h3 data-page-node-id="98Gja8jlK6As90gwuG4Imm">6.5 设计原则小结</h3>
+      <p data-page-node-id="jJskRT56CxSWXUvVHshoY7">结论先于证据；事实可追溯；信息密度优先于装饰；颜色永远有文字补充。</p>
+
+      <figure class="shot" data-page-node-id="URiyUG680alVymvqRDrok0">
+        <img src="./2026-09-12_效果截图/首页.jpg" alt="产品首页" data-page-node-id="s6u8u0D9R5MBk1XpndiukN">
+        <figcaption data-page-node-id="ADAqK0pbFc499aHP0bjLZu">项目首页 —— 整体气质代表：克制、留白、信息密度优先</figcaption>
+      </figure>
+
+      <div class="shot-grid cols-2" data-page-node-id="pBEOjVkWqzk5G1PZ0FpTod">
+        <figure class="shot" data-page-node-id="xEifDMD9s2I2RRQUXCGimX">
+          <img src="./2026-09-12_效果截图/详情页- AI解读入口.jpg" alt="详情页入口" data-page-node-id="s18X4EvuEvjf0FksilLjLd">
+          <figcaption data-page-node-id="DN0aIIKOzmBltVqQASXCoP">详情页 RIDE INSIGHT 入口 —— 卡片克制，不抢眼</figcaption>
+        </figure>
+        <figure class="shot" data-page-node-id="TE4eEVmWytYaoPE0leTus8">
+          <img src="./2026-09-12_效果截图/数据导入页.jpg" alt="数据导入" data-page-node-id="GIQWJ3SkLaw3BGZRLTNWTY">
+          <figcaption data-page-node-id="SY8FEdwpbgI0no0R99K1pF">数据导入页 —— 拖拽即上传，零障碍上手</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <!-- =================== 07 结果与复盘 =================== -->
+    <section id="sec-07" data-page-node-id="TeBIB58KpoFTYP4Nz3Y4rt">
+      <span class="sec-num" data-page-node-id="yWBIt93pXNr9lzDZHdBkvL">Chapter 07</span>
+      <h2 data-page-node-id="6sn5vM1sha7bLkzqT77bnP">结果与复盘</h2>
+
+      <h3 data-page-node-id="4lSawFBlyiQEoiMberHoSq">7.1 量化结果汇总</h3>
+      <p data-page-node-id="GXqIwqlySw4JXDcP5UHFQq">本项目交付的不是"一个能跑的 Demo"，而是一套<strong data-page-node-id="W4hhq4uoXbLymscJtqhPJ6">有工程证据、有质量门、有测评结论的完整体系</strong>。</p>
+      <table data-page-node-id="7gWq9HXanMoUK1JNCt7Hio">
+        <thead data-page-node-id="ZtwkjagrYZipBsyEwIJYoz"><tr data-page-node-id="tylkL0Tv5uNUOU3wNzlip7"><th data-page-node-id="LJmqq6kgrefpRBCgchCJTk">维度</th><th data-page-node-id="n1TVnqNV6I4NDYST2W3JCq">结果</th><th data-page-node-id="NF1v3jTDtMTtoQuKpgf8TL">备注</th></tr></thead>
+        <tbody data-page-node-id="rWtDrOPdfZJihE7oceF1Da">
+          <tr data-page-node-id="6ZD5QLOptbcHslBgnyv6aR"><td data-page-node-id="YtR5fx5d9BxBL2wX8u461Q"><strong data-page-node-id="Fi6iYoRaUPNF3IPtxmAJtt">工程底座</strong></td><td data-page-node-id="miumUn4U7JblEJtlOLRP6P">FIT/GPX 解析 + 18 项原子能力 + 20 个特征 + 三类 Claim 白名单</td><td data-page-node-id="MlV07WbZkfZqvYjG409rJn">460 项回归测试全绿</td></tr>
+          <tr data-page-node-id="Rl1YXKs9D90w9nGSuqC1ZI"><td data-page-node-id="gbZIHLRPKD8jHa3PPEBSF7"><strong data-page-node-id="EL0H9W1SaJNoguIjrUjSng">产品闭环</strong></td><td data-page-node-id="1aCS2Nho8o1ygrkcHzo2wk">M1 骑后解读 + 数据看板 · M3 对话 Agent 15/15 任务全验收</td><td data-page-node-id="e3VwpKHdD1MElu2yX3Mxdg">里程碑收口</td></tr>
+          <tr data-page-node-id="JBd6bw7d8Nazxu1wDiFOTF"><td data-page-node-id="7MADDsj7tAhu9rZqMzLq4n"><strong data-page-node-id="kgrMnFlm0FM87GBgDyNPIJ">AI 质量</strong></td><td data-page-node-id="MvpLU2UxEie4Zk27ewXADV">81 槽正式门 · 分类器 38/38 · M3 27/27</td><td data-page-node-id="8OyDPFaDc5KZGgfeIjl2rD">详见 05 章</td></tr>
+          <tr data-page-node-id="v0FBYlINCIlIuxqMqElN0w"><td data-page-node-id="HBNvaE9bpNjjfDj1psc4Bq"><strong data-page-node-id="yx3F5ACsIf8uW7bAlwU1Yu">用户体感</strong></td><td data-page-node-id="OnbCqmeLDhsk3gSB9qkWJn">会话缓存 19ms 命中 · 默认 3 维度秒开</td><td data-page-node-id="nLCKm9jIpPHFOAnXywvEwp">实测数据</td></tr>
+        </tbody>
+      </table>
+
+      <h3 data-page-node-id="CzmgcDNUIAJXLAFqlq4cKs">7.2 关键决策复盘（3 个最有代表性的）</h3>
+      <div class="twocol" data-page-node-id="r22kblM2OmJwxtFVgjx3Fy">
+        <div class="card" data-page-node-id="K9zaFrv02pcIAqYR25QLmc">
+          <h4 data-page-node-id="AxtlETJgWlkxS6f0JwRD7H">① 为什么不设「骑行水平总分」</h4>
+          <p data-page-node-id="BFcphzFPwJ0FJeefucSIbl">单次均速 / 里程 / 爬升受路线、风、体重、停歇强干扰，会误导用户。改为<strong data-page-node-id="N9rYvwWIrUlnhcRGR2AQKg">多维能力画像</strong>，且<strong data-page-node-id="dhsNC2WkXpEgY9ObBNZ6fG">单次与长期严格分离</strong>。</p>
+        </div>
+        <div class="card" data-page-node-id="jJkp4cL3wJxdKHLykcDkYv">
+          <h4 data-page-node-id="GmUIXZwpNf3EE7yPV9qdgQ">② 为什么放弃纯规则路由</h4>
+          <p data-page-node-id="uxgREtdELDtJdteKQ8m49g">正则没有语境、宽词相互吞噬。升级为<strong data-page-node-id="ju8IXK6VYO9HDVAqMDVz8F">混合意图路由</strong>（规则红线 + 小模型分类 + 自主工具循环）——从"能用"到"能用好"。</p>
+        </div>
+        <div class="card" data-page-node-id="eSwYODKAGpbSo93bNuYa59">
+          <h4 data-page-node-id="CGvcGsqkzu25ij60uPEARk">③ 为什么 B0-first</h4>
+          <p data-page-node-id="q38nrxXBeyDOh38YMqN4Tp">AI 是可降级的增强而非核心——保证任何 AI 失败用户都有<strong data-page-node-id="kHUzet7DyHbJDoBEseIGdA">确定性事实兜底</strong>。AI 不在时，系统依然完整可用。</p>
+        </div>
+      </div>
+
+      <h3 data-page-node-id="rUFW1u4EGG1IIQHcnqqOpI">7.3 不足与反思</h3>
+      <ul data-page-node-id="tAVNYlAYkX7B8kjod6SxwT">
+        <li data-page-node-id="0l53MYSCyEtrcIR3tjerdL"><strong data-page-node-id="lVRIK1ecYlYP6ZbHjpWTiP">盲评 NO-GO</strong>——事实忠实不足，洞察性偏低。定位为规则口径问题（前置数据规则过严，可用 Claim 缺失近 50%），修复循环暂停；不是方向错误。</li>
+        <li data-page-node-id="nCIv6SYjoOUzQ8xWgccAjC"><strong data-page-node-id="Q06maeziQBzHWPFU0jc2tG">性能</strong>——同步 Provider 25 秒，未达 8 秒 P95 目标，成本不可观测。需引入流式响应 + 成本埋点。</li>
+        <li data-page-node-id="HUD72Ey7d6gL6MLMICAtH3"><strong data-page-node-id="dT5AXjKK8AgOmLUPnmO7Mt">数据持久化</strong>——本地文件仓储，未接生产 PostgreSQL。需迁移 + 数据迁移工具链。</li>
+      </ul>
+
+      <h3 data-page-node-id="eUENpIPadwHD2VconKWEK5">7.4 下一步展望</h3>
+      <ul data-page-node-id="IVzEifsCjoqyQYTmk8WtQL">
+        <li data-page-node-id="dCf9DUbEFm4CrpVOaZKoEV"><strong data-page-node-id="3OoYfZLX4gWuetg9USX5Sb">M2</strong>：社交分享导出（图片 / 系统分享）+ 持久化迁移。</li>
+        <li data-page-node-id="EWayN8AZaf0nNftfyMZWj8"><strong data-page-node-id="eJiuRztcLZHvswtI2SJ2FT">M4</strong>：骑行水平评估（能力画像，设计已完成 <code data-page-node-id="Qv05QjvBJsiw0dSlhDDEdO">AI-CAP-01</code> Review）+ 入门训练计划（需专业审核）。</li>
+        <li data-page-node-id="3f4QZbdeENldWcDkfqOXrH"><strong data-page-node-id="gq4qZ8Ysmi8MffzCMHMZfD">生产化</strong>：OIDC 接入、成本可观测、模型对照选择、码表数据自动拉取。</li>
+      </ul>
+    </section>
+
+    <!-- =================== 附录 =================== -->
+    <section class="appendix" id="appendix" data-page-node-id="HUrMbzfx8JWQYRtuYoM4Nt">
+      <h2 data-page-node-id="KwwrFFZxuPsRyI1bTWYJx1">附录</h2>
+
+      <h3 data-page-node-id="TTKAXFMGH3LTyQpKXIMooE">技术栈</h3>
+      <p data-page-node-id="GcABD4IQF842dOtfQ2hezM">Next.js 16 · React 19 · TypeScript · Coze Workflow · 确定性规则引擎 · SQLite（本地）</p>
+
+      <h3 data-page-node-id="A7ySORhZOQHTbWwv05NtTq">关键设计文档</h3>
+      <ul class="doc-list" data-page-node-id="7nlJ5MyOneTHoqfD2avG5H">
+        <li data-page-node-id="zmhnpCkmxY7gTmyFaBq8s0">PRD · AI 骑行伙伴 v1</li>
+        <li data-page-node-id="lcIpzUIwrX8waQJWVaYZ3p">技术方案 · AI 骑行伙伴 v1</li>
+        <li data-page-node-id="qbbE5Il2HDPoTOK9yg4SqR">Agent 架构设计</li>
+        <li data-page-node-id="qObzgDA8AegcVcEMtl6qsy">骑后解读规则重构设计</li>
+        <li data-page-node-id="hjOPAKAgbL6wTbr6WCrtOJ">骑行水平能力评估模块设计</li>
+        <li data-page-node-id="sLv3FOPwrcmnPaZSxZD2T2">骑行高阶指标与可视化规则草案</li>
+        <li data-page-node-id="RuFraqGUkzOIlCNnWv2n8T">AI_AGENT 测评计划与记录</li>
+        <li data-page-node-id="K9Tpzjr9UmQuXuee9MFRE4">VIBE_CODING 开发规划</li>
+      </ul>
+
+      <h3 data-page-node-id="65bHgLEHqOB3dhoO3IiDKX">链接</h3>
+      <div class="links" data-page-node-id="v8hOizZmth4FYxA2jqZDZP">
+        <a class="btn" href="#" onclick="return false" data-page-node-id="iX92d7oHJ2gUVFMWkiAkaR">Demo · 本地体验</a>
+        <a class="btn ghost" href="#" onclick="return false" data-page-node-id="SBYq0iPdAnaSbauVZYJe6c">GitHub · 源码</a>
+        <a class="btn ghost" href="#" onclick="return false" data-page-node-id="l6mkpI9t7bA5LeTzuVUbJp">设计文档 · 完整清单</a>
+      </div>
+
+      <hr class="rule" data-page-node-id="pahSCQMkfCD1U7rvuir6QB">
+      <p style="text-align:center;color:var(--muted);font-size:12px" data-page-node-id="ek3FpQmYYwvG4H9wfHFG6f">作品详情 · 设计与实现 © 2026 李伊柠</p>
+    </section>
+
+  </main>
+</div>
+
+</body>
+</html>

@@ -18,10 +18,12 @@ export function RideAiAnalysis({
   rideId,
   title,
   dateLabel,
+  demoFallback,
 }: {
   rideId: string;
   title: string;
   dateLabel?: string;
+  demoFallback?: string;
 }) {
   const [open, setOpen] = useState(false);
 
@@ -47,6 +49,7 @@ export function RideAiAnalysis({
           rideId={rideId}
           title={title}
           dateLabel={dateLabel}
+          demoFallback={demoFallback}
           onClose={() => setOpen(false)}
         />
       )}

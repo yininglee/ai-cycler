@@ -180,10 +180,16 @@ export function resolveRideAnchor(input: {
   }
 
   // current_ride / capabilities：序数（含裸“上次”，如“上次骑了多远”）→ 最新；
-  // 指涉词 → 继承/澄清；capabilities 无指涉（“可以分析哪些数据”）默认最新不澄清——
-  // 能力清单对记录不敏感，而 current_ride 到达本层必含指标词（裸指标 = 指示性指涉）。
+  // 指涉词 → 继承/澄清；capabilities 默认最新不澄清——能力清单对记录不敏感，
+  // “当前/这次可以分析哪些数据”问的是能力范围而非某次骑行，不该触发锚点澄清；
+  // 而 current_ride 到达本层必含指标词（裸指标 = 指示性指涉）。
   if (ORDINAL_WITH_LAST.test(text)) {
     return { status: "resolved", record: latest, ...(rideAnchorDate(latest.activity.startTime) ? { date: rideAnchorDate(latest.activity.startTime) } : {}), source: "explicit_ordinal" };
+  }
+  if (route === "capabilities") {
+    // 已有锚点时沿用（保持会话上下文一致），无锚点则按最新记录回答，不澄清。
+    if (lastSummarizedAnchor(summaries)) return inheritAnchor();
+    return { status: "resolved", record: latest, ...(rideAnchorDate(latest.activity.startTime) ? { date: rideAnchorDate(latest.activity.startTime) } : {}), source: "default_latest" };
   }
   if (DEIXIS_PATTERN.test(text) || route === "current_ride") return inheritAnchor();
   return { status: "resolved", record: latest, ...(rideAnchorDate(latest.activity.startTime) ? { date: rideAnchorDate(latest.activity.startTime) } : {}), source: "default_latest" };

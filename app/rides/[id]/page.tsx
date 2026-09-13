@@ -10,7 +10,8 @@ import { RideAiAnalysis } from "../../components/ride-ai-analysis";
 import { getRideRecord } from "../../../src/imports/demo-ride-store";
 import { isDemoRideId } from "../../../src/ui/ride-view-model";
 import { getNextSessionUserId } from "../../../src/auth/next-session.ts";
-import { getApplicationRepository } from "../../../src/persistence/application-repository.ts";
+import { getRideRepository } from "../../../src/persistence/demo-ride-repository.ts";
+import { getDemoImportedRide } from "../../../src/fixtures/demo-imported-rides.ts";
 import RideDeleteButton from "../../components/ride-delete-button";
 import RideHistoryComparisonSection from "../../components/ride-history-comparison-section";
 import { buildRideHistoryComparisonForRecord } from "../../../src/ui/ride-history-comparison.ts";
@@ -21,24 +22,34 @@ export default async function RideDetailPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ tab?: string | string[] }>;
+  searchParams: Promise<{ tab?: string | string[]; ai?: string | string[] }>;
 }) {
   const { id } = await params;
   const query = await searchParams;
+  // 演示开关：?ai=b0 让抽屉跳过网络请求，直接展示降级到 B0 的解读页。
+  const demoFallback = query.ai === "b0" ? "b0" : undefined;
   const isFixture = isDemoRideId(id);
+  // DEMO-IMPORTED-RIDES：演示「已导入」记录对所有人可读，且不属于任何会话，
+  // 因此无会话访客也能直接打开详情页（不是内置样例，但同样只读）。
+  const demoRide = isFixture ? undefined : await getDemoImportedRide(id);
   const userId = isFixture ? null : await getNextSessionUserId();
-  const record = isFixture ? getRideRecord(id) : userId ? await getApplicationRepository().getRide(userId, id) : null;
+  const record = isFixture
+    ? getRideRecord(id)
+    : demoRide
+      ? demoRide.record
+      : userId ? await (await getRideRepository()).getRide(userId, id) : null;
   if (!record) notFound();
   const view = buildRidePageViewModelFromRecord(record);
   const { snapshot } = view.analysis;
   const rejected = snapshot.analysisMode === "rejected";
   const activeTab = query.tab === "analysis" || query.tab === "data" ? query.tab : "summary";
 
-  // MVP-REPEAT-01：仅本人导入的非拒绝记录参与历史比较；内置样例无历史。
+  // MVP-REPEAT-01：非拒绝记录参与历史比较；内置样例（fixture）无历史。
+  // DEMO-IMPORTED-RIDES：演示记录之间互为历史，因此无会话访客也能看到同环比。
   let historyComparison: ReturnType<typeof buildRideHistoryComparisonForRecord>;
-  if (!isFixture && userId && !rejected) {
-    const ownedRides = await getApplicationRepository().listRides(userId);
-    historyComparison = buildRideHistoryComparisonForRecord(record, ownedRides.map((item) => item.record));
+  if (!isFixture && !rejected) {
+    const peerRides = await (await getRideRepository()).listRides(userId ?? "");
+    historyComparison = buildRideHistoryComparisonForRecord(record, peerRides.map((item) => item.record));
   }
 
   return (
@@ -50,7 +61,7 @@ export default async function RideDetailPage({
             <RideSeriesCharts charts={view.visuals.charts} cruiseSegments={view.timing.cruiseSegments} routeShape={view.visuals.routeShape} />
             <RideSensorAnalysisGroups record={record} charts={view.visuals.charts} />
             {historyComparison && <RideHistoryComparisonSection view={historyComparison} />}
-            <RideAiAnalysis rideId={id} title={view.rideMeta.titleLabel} dateLabel={view.rideMeta.dateLabel} />
+            <RideAiAnalysis rideId={id} title={view.rideMeta.titleLabel} dateLabel={view.rideMeta.dateLabel} demoFallback={demoFallback} />
           </>}
         </section>}
         dataPanel={<section className="data-tab" aria-label="骑行详细数据">
@@ -77,12 +88,12 @@ export default async function RideDetailPage({
             <section className="summary-record-heading" aria-label="骑行记录信息">
               <span className="summary-record-icon"><BikeIcon /></span>
               <div>{view.rideMeta.dateLabel && <p>{view.rideMeta.dateLabel}</p>}<h1>{view.rideMeta.titleLabel}</h1></div>
-              {!isFixture && <RideDeleteButton rideId={id} />}
+              {!isFixture && !demoRide && <RideDeleteButton rideId={id} />}
             </section>
             <section className="summary-metrics" aria-label="核心骑行事实">
               {view.factCards.map((fact) => <article className="summary-metric" key={fact.claimId}><p>{fact.label}</p><strong>{fact.value}</strong></article>)}
             </section>
-            <RideAiAnalysis rideId={id} title={view.rideMeta.titleLabel} dateLabel={view.rideMeta.dateLabel} />
+            <RideAiAnalysis rideId={id} title={view.rideMeta.titleLabel} dateLabel={view.rideMeta.dateLabel} demoFallback={demoFallback} />
           </div>
         </>}
 

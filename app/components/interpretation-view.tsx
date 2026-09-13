@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { recordDemoEvent } from "./demo-event-client";
+import { CheckIcon, SparkIcon } from "./icons";
 import { RideSeriesChart } from "./ride-visuals";
 import type {
   RideInterpretationOutputV04Candidate,
@@ -39,6 +40,13 @@ const DIMENSION_LABELS: Record<string, string> = {
 };
 
 const EVENT_FALLBACK_CODES = new Set(["AI_DISABLED", "AI_NOT_CONFIGURED", "DATA_NOT_ELIGIBLE", "AI_TIMEOUT", "PROVIDER_ERROR", "REPAIR_FAILED"]);
+
+/**
+ * 生成解说的四段式进度：真实链路是一次 Provider 请求，拿不到细粒度进度，
+ * 因此这里用固定节奏推进前三段，最后一段「校验输出」保持进行中，直到响应返回。
+ */
+const LOADING_STEPS = ["准备事实", "识别表现", "组织解读", "校验输出"] as const;
+const LOADING_STEP_DELAYS_MS = [2400, 5000, 8000] as const;
 
 type LoadState =
   | { kind: "loading" }
@@ -83,16 +91,27 @@ const DEFAULT_DIMENSION_DISPLAY_LIMIT = 3;
  * per 骑后解读规则重构设计 §6.1. Mounted inside `InterpretationSheet` by
  * `RideAiAnalysis` on the detail page.
  */
+/** 演示用：强制降级到 B0 的合成响应，供 `?ai=b0` 预览降级页面。 */
+function demoB0Response(rideId: string): InterpretationResponse {
+  return { rideId, source: "b0", output: null, fallbackCode: "DATA_NOT_ELIGIBLE" };
+}
+
 export function InterpretationView({
   rideId,
   title,
   dateLabel,
+  demoFallback,
 }: {
   rideId: string;
   title: string;
   dateLabel?: string;
+  demoFallback?: string;
 }) {
+  const isDemoB0 = demoFallback === "b0";
+  // demoB0 为 true 时跳过网络请求，直接展示降级页；点「重新解读」会退出演示、走真实链路。
+  const [demoB0, setDemoB0] = useState(isDemoB0);
   const [state, setState] = useState<LoadState>(() => {
+    if (isDemoB0) return { kind: "ok", data: demoB0Response(rideId) };
     const cached = responseCache.get(rideId);
     return cached ? { kind: "ok", data: cached } : { kind: "loading" };
   });
@@ -114,6 +133,10 @@ export function InterpretationView({
   }
 
   const load = useCallback(async (force = false) => {
+    if (demoB0) {
+      setState({ kind: "ok", data: demoB0Response(rideId) });
+      return;
+    }
     if (!force && responseCache.has(rideId)) {
       setState({ kind: "ok", data: responseCache.get(rideId)! });
       return;
@@ -159,11 +182,21 @@ export function InterpretationView({
         inFlight.delete(rideId);
       }
     }
-  }, [rideId]);
+  }, [rideId, demoB0]);
 
   useEffect(() => {
     void load();
   }, [load]);
+
+  // 「重新解读」：跳过会话缓存重新请求；若处在降级演示中，则先退出演示再走真实链路。
+  const reanalyze = useCallback(() => {
+    if (demoB0) {
+      setDemoB0(false);
+      return;
+    }
+    responseCache.delete(rideId);
+    void load(true);
+  }, [demoB0, load, rideId]);
 
   const blockVisuals = useMemo(() => {
     if (state.kind !== "ok") return new Map<string, Array<{ visualId: string; chart?: unknown }>>();
@@ -186,21 +219,13 @@ export function InterpretationView({
           <p>基于本次记录中的可靠证据生成的整体评价、重点维度解读、表现高光与下一步建议。{dateLabel ? `覆盖骑行日期 ${dateLabel}。` : ""}</p>
         </header>
 
-        {state.kind === "loading" && (
-          <div className="candidate-preview-notice" role="status">
-            <strong>正在生成解读…</strong>
-            <span>首次调用需进入生产链路，请稍候。</span>
-          </div>
-        )}
+        {state.kind === "loading" && <LoadingSteps />}
 
         {state.kind === "error" && (
           <section className="candidate-preview-rejected">
             <h2>解读暂时不可用</h2>
-            <p>请求生产链路时出错，请稍后重试。</p>
+            <p>请求生产链路时出错，可在下方重新解读。</p>
             <code>{state.message}</code>
-            <p style={{ marginTop: 12 }}>
-              <button type="button" onClick={() => void load(true)} className="ride-ai-secondary-button">重试</button>
-            </p>
           </section>
         )}
 
@@ -217,6 +242,7 @@ export function InterpretationView({
             <h2>本次骑行暂未生成 AI 解读</h2>
             <p>当前证据不足以保证解读质量，先展示本次骑行的事实卡片与图表。</p>
             <code>{state.data.fallbackCode ?? "DATA_NOT_ELIGIBLE"}</code>
+            {demoB0 && <p className="candidate-demo-hint">演示模式：本条为强制降级预览，点击「重新解读」可走真实链路。</p>}
             <FeedbackButtons feedback={feedback} onSubmit={submitFeedback} />
           </section>
         )}
@@ -231,6 +257,16 @@ export function InterpretationView({
             <p>服务端返回了 b2 结果，但缺少 v04Candidate 呈现数据。请稍后重试或联系维护者。</p>
             <code>{state.data.validationIssues?.join(" · ") || "MISSING_V04_CANDIDATE"}</code>
           </section>
+        )}
+
+        {state.kind !== "loading" && (
+          <div className="candidate-reanalyze">
+            <button type="button" className="candidate-reanalyze-button" onClick={reanalyze}>
+              <SparkIcon />
+              重新解读
+            </button>
+            <p>重新调用 AI 解读链路，生成最新结果。</p>
+          </div>
         )}
       </div>
     </div>
@@ -401,6 +437,34 @@ function B2Body({
 
       <FeedbackButtons feedback={feedback} onSubmit={onFeedback} />
     </>
+  );
+}
+
+function LoadingSteps() {
+  const [activeStep, setActiveStep] = useState(0);
+
+  useEffect(() => {
+    const timers = LOADING_STEP_DELAYS_MS.map((delay, index) =>
+      window.setTimeout(() => setActiveStep(index + 1), delay),
+    );
+    return () => timers.forEach((timer) => window.clearTimeout(timer));
+  }, []);
+
+  return (
+    <div className="candidate-preview-notice candidate-loading-steps" role="status" aria-live="polite">
+      <p className="candidate-loading-title">正在生成解读</p>
+      <ol className="candidate-loading-list">
+        {LOADING_STEPS.map((label, index) => {
+          const status = index < activeStep ? "done" : index === activeStep ? "active" : "pending";
+          return (
+            <li className={`candidate-loading-step is-${status}`} key={label}>
+              <span className="candidate-loading-mark" aria-hidden="true">{status === "done" && <CheckIcon />}</span>
+              <span className="candidate-loading-text">{status === "active" ? `正在${label}…` : label}</span>
+            </li>
+          );
+        })}
+      </ol>
+    </div>
   );
 }
 
