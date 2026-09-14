@@ -3,6 +3,8 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 export const SESSION_COOKIE_NAME = "ai-cycling-buddy-session";
 const DEV_SECRET = "ai-cycling-buddy-local-development-secret-v1";
 const AUTH_SESSION_MODE = "AUTH_SESSION_MODE";
+const SESSION_COOKIE_SECURE = "SESSION_COOKIE_SECURE";
+const INSECURE_COOKIE_VALUES = new Set(["0", "false", "off", "no"]);
 
 type SessionPayload = { userId: string; issuedAt: number };
 
@@ -54,6 +56,18 @@ export function getRequestSession(request: Request): RequestSession | null {
   return payload ? { userId: payload.userId } : null;
 }
 
+/**
+ * 会话 cookie 的 `Secure` 标记。
+ * 默认：生产环境开启、开发环境关闭。
+ * 局域网内以纯 HTTP 演示（如 http://192.168.x.x:3000）时，浏览器会丢弃带
+ * `Secure` 的 cookie，导致会话无法保持；此时可显式设 `SESSION_COOKIE_SECURE=0` 关闭。
+ */
+function sessionCookieSecureSuffix(): string {
+  const override = process.env[SESSION_COOKIE_SECURE]?.trim().toLowerCase();
+  const secure = override ? !INSECURE_COOKIE_VALUES.has(override) : process.env.NODE_ENV === "production";
+  return secure ? "; Secure" : "";
+}
+
 /** Development-only signed cookie session. This is not a production OIDC session. */
 export function resolveOrCreateRequestSession(request: Request): RequestSession {
   if (usesOidcSession()) {
@@ -63,7 +77,7 @@ export function resolveOrCreateRequestSession(request: Request): RequestSession 
   if (existing) return existing;
   const userId = `local-user-${crypto.randomUUID()}`;
   const value = encode({ userId, issuedAt: Date.now() });
-  const secure = process.env.NODE_ENV === "production" ? "; Secure" : "";
+  const secure = sessionCookieSecureSuffix();
   return { userId, setCookie: `${SESSION_COOKIE_NAME}=${value}; HttpOnly; SameSite=Lax; Path=/; Max-Age=2592000${secure}` };
 }
 
