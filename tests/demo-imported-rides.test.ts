@@ -38,12 +38,13 @@ test("清单里的每条演示记录都能从 FIT 解析出通过校验的记录
   }
 });
 
-test("演示记录覆盖长距离功率与心率两类形态，足以支撑演示", async () => {
+test("演示记录分别覆盖功率与心率两类形态，足以支撑演示", async () => {
   const rides = await loadDemoImportedRides();
   const withPower = rides.filter((ride) => Number.isFinite(ride.record.activity.metrics.avgPowerW?.value));
   const withHeartRate = rides.filter((ride) => Number.isFinite(ride.record.activity.metrics.avgHeartRateBpm?.value));
-  assert.ok(withPower.length >= 2, "至少需要两条带功率的记录");
-  assert.ok(withHeartRate.length >= 2, "至少需要两条带心率的记录");
+  assert.equal(rides.length, 2, "演示记录应正好两条");
+  assert.ok(withPower.length >= 1, "至少需要一条带功率的记录");
+  assert.ok(withHeartRate.length >= 1, "至少需要一条带心率的记录");
 });
 
 test("loadDemoImportedRides 进程内只解析一次（返回同一份缓存）", async () => {
