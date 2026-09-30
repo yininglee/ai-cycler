@@ -1,6 +1,6 @@
 {
   "schemaVersion": "ride-analysis-eval-migration-v0.1",
-  "sourceCaseFile": "eval/ai-cycling-eval-cases.jsonl",
+  "sourceCaseFile": "archive/v1-testing-2026-09-30/eval/ai-cycling-eval-cases.jsonl",
   "targetOutputSchema": "ride-analysis-output-v0.3",
   "targetSurface": "automatic_ride_analysis",
   "fewShotMode": "disabled",

@@ -10,7 +10,7 @@
 
 本版 Prompt `v0.4.12` 延续标签规则，并将高光归属简化为整体评价：高光统一使用 `{kind:"overall"}`，仍可概括任意已选维度，但只能复用整体评价已引用的 Claim/图表。高光文字出现数字时，该数字必须由同一条计划内 Candidate Claim 同时支撑高光自身 `claimIds` 和整体评价 `claimIds`；不能同时满足时，删掉数字，必要时删掉整条高光。修复指令会先补齐整体评价中已开放的同一 Claim，再让高光复用；无法合法补齐时不得只删 Claim ID 而保留数字。禁止输出 `dimension`、`dimensionId` 或其他归属类型。输出合同版本、L8 校验、修复次数和生产链路均不变。
 
-已确认独立 `ride_analysis_v3` 发布为 `v0.0.9`，并标注 Prompt `v0.4.12`。保持 Workflow ID、模型、三个开始变量和输出 Schema 不变；生产 `ride_analysis_v2` 未修改。发布后四槽 Run [AEVAL-SMOKE-20260904-002](../eval/runs/AEVAL-SMOKE-20260904-002.json) 已 `4/4` 通过，当前等待用户验收；该结果不等同新的 81 槽正式测评授权。
+已确认独立 `ride_analysis_v3` 发布为 `v0.0.9`，并标注 Prompt `v0.4.12`。保持 Workflow ID、模型、三个开始变量和输出 Schema 不变；生产 `ride_analysis_v2` 未修改。发布后四槽 Run [AEVAL-SMOKE-20260904-002](../archive/v1-testing-2026-09-30/eval/runs/AEVAL-SMOKE-20260904-002.json) 已 `4/4` 通过，当前等待用户验收；该结果不等同新的 81 槽正式测评授权。
 
 ## 节点与变量
 
