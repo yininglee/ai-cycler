@@ -1,4 +1,3 @@
-import { generateB0RideAnalysis, type B0RideAnalysis } from "../domain/ride-summary.ts";
 import { buildRideTimingSummary, type RideTimingSummary } from "../domain/ride-timing.ts";
 import { buildRideElevationSummary, type RideElevationSummary } from "../domain/ride-elevation.ts";
 import { buildRideRouteShapeSummary, type RideRouteShapeSummary } from "../domain/ride-route-shape.ts";
@@ -156,7 +155,7 @@ export interface RidePageViewModel {
   uiVersion: typeof RIDE_DETAIL_UI_VERSION;
   id: string;
   fixtureDescription: string;
-  analysis: B0RideAnalysis;
+  rejected: boolean;
   factCards: RideMetricDisplay[];
   detailSections: RideDetailSection[];
   rideMeta: {
@@ -397,11 +396,11 @@ export function buildRidePageViewModelFromRecord(
   fixtureDescription = "已导入的 FIT/GPX 骑行记录",
 ): RidePageViewModel {
   const { activity, series } = record;
-  const analysis = generateB0RideAnalysis(activity);
   const { source } = activity;
   const sourceLabel = sourceKindLabel(source.kind);
   const dateLabel = formatRideDate(activity.startTime);
-  const recordIsValid = validateRideRecord(record).valid;
+  const validation = validateRideRecord(record);
+  const recordIsValid = validation.valid;
   const timing = recordIsValid ? buildRideTimingSummary(record) : undefined;
   const elevation = recordIsValid ? buildRideElevationSummary(record) : undefined;
   const routeShape = elevation ? buildRideRouteShapeSummary(elevation) : undefined;
@@ -432,9 +431,9 @@ export function buildRidePageViewModelFromRecord(
       : timingMetrics.length > 0 ? timingMetrics : elevationMetrics.length > 0 ? elevationMetrics : [...metrics, ...routeShapeMetrics];
     return displayedMetrics.length > 0 ? [{ ...group, metrics: displayedMetrics }] : [];
   });
-  const sensors = (Object.entries(analysis.snapshot.quality.sensors) as Array<[
+  const sensors = (Object.entries(activity.sensorQuality) as Array<[
     SensorKind,
-    NonNullable<typeof analysis.snapshot.quality.sensors[SensorKind]>,
+    NonNullable<typeof activity.sensorQuality[SensorKind]>,
   ]>).map(([key, quality]) => ({
     key,
     label: SENSOR_LABELS[key],
@@ -445,7 +444,7 @@ export function buildRidePageViewModelFromRecord(
     uiVersion: RIDE_DETAIL_UI_VERSION,
     id: activity.rideId,
     fixtureDescription,
-    analysis,
+    rejected: !recordIsValid,
     factCards,
     detailSections,
     rideMeta: {
@@ -462,7 +461,7 @@ export function buildRidePageViewModelFromRecord(
         ? "当前为内置演示样例，质量参数仅用于验证界面与规则，不代表真实设备兼容结果。"
         : "只展示通过当前质量规则的数据；缺失或不可靠的项目不会用 0 代替。",
       sensors,
-      issueCodes: analysis.snapshot.quality.issueCodes,
+      issueCodes: validation.issues.map((item) => item.code),
     },
   };
 }

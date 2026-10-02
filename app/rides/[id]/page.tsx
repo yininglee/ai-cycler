@@ -40,8 +40,7 @@ export default async function RideDetailPage({
       : userId ? await (await getRideRepository()).getRide(userId, id) : null;
   if (!record) notFound();
   const view = buildRidePageViewModelFromRecord(record);
-  const { snapshot } = view.analysis;
-  const rejected = snapshot.analysisMode === "rejected";
+  const rejected = view.rejected;
   const activeTab = query.tab === "analysis" || query.tab === "data" ? query.tab : "summary";
 
   // MVP-REPEAT-01：非拒绝记录参与历史比较；内置样例（fixture）无历史。

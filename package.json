@@ -10,7 +10,6 @@
     "test": "node --test tests/*.test.ts",
     "typecheck": "tsc --noEmit",
     "verify": "pnpm typecheck && pnpm test",
-    "benchmark:b0": "node scripts/benchmark-b0.ts",
     "inspect:capabilities": "node scripts/inspect-atomic-capabilities.ts",
     "inspect:features": "node scripts/inspect-ride-features.ts",
     "inspect:history": "node scripts/inspect-history.ts",

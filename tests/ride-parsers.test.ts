@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { buildRideCapability, validateRideActivity } from "../src/domain/ride-rules.ts";
+import { validateRideActivity } from "../src/domain/ride-rules.ts";
 import { parseFitActivity } from "../src/parsers/fit-parser.ts";
 import {
   GPX_GPS_QUALITY_RULE_VERSION,
@@ -59,7 +59,6 @@ test("a standards-compliant generated FIT binary is decoded into the accepted Ri
     bytes: buildCyclingFitSample(),
   });
   const validation = validateRideActivity(activity);
-  const capability = buildRideCapability(activity);
 
   assert.equal(validation.valid, true);
   assert.equal(activity.source.kind, "fit");
@@ -69,8 +68,6 @@ test("a standards-compliant generated FIT binary is decoded into the accepted Ri
   assert.equal(activity.metrics.avgSpeedMps?.provenance, "calculated");
   assert.equal(activity.metrics.avgSpeedMps?.formulaVersion, "distance-over-moving-time-v0.1");
   assert.equal(activity.metrics.avgPowerW?.value, 210);
-  assert.equal(capability.dataLevel, "L3");
-  assert.equal(capability.analysisMode, "full");
 });
 
 test("a truncated FIT binary returns a stable parser error", async () => {
@@ -109,18 +106,16 @@ test("non-cycling and multi-session FIT files are not silently misclassified", a
   );
 });
 
-test("all-zero FIT power placeholders do not create false L3 capability", async () => {
+test("all-zero FIT power placeholders do not create false power metrics", async () => {
   const activity = await parseFitActivity({
     rideId: "fit-zero-power-001",
     fileName: "zero-power.fit",
     bytes: buildCyclingFitSample({ allZeroPower: true }),
   });
-  const capability = buildRideCapability(activity);
 
   assert.equal(activity.metrics.avgPowerW, undefined);
   assert.equal(activity.metrics.normalizedPowerW, undefined);
   assert.equal(activity.sensorQuality.power, undefined);
-  assert.equal(capability.dataLevel, "L2");
   assert.ok(activity.sourceIssues.some((issue) => issue.code === "FIT_ALL_ZERO_POWER_IGNORED"));
 });
 
@@ -131,14 +126,11 @@ test("all-zero FIT heart-rate placeholders do not reject otherwise valid rides",
     bytes: buildCyclingFitSample({ allZeroHeartRate: true }),
   });
   const validation = validateRideActivity(activity);
-  const capability = buildRideCapability(activity);
 
   assert.equal(validation.valid, true);
   assert.equal(activity.metrics.avgHeartRateBpm, undefined);
   assert.equal(activity.metrics.maxHeartRateBpm, undefined);
   assert.equal(activity.sensorQuality.heart_rate, undefined);
-  assert.equal(capability.dataLevel, "L3");
-  assert.equal(capability.analysisMode, "full");
   assert.ok(activity.sourceIssues.some((issue) => issue.code === "FIT_ALL_ZERO_HEART_RATE_IGNORED"));
 });
 
@@ -157,14 +149,11 @@ test("all-zero FIT cadence placeholders do not create cadence capability", async
   assert.ok(activity.sourceIssues.some((issue) => issue.code === "FIT_ALL_ZERO_CADENCE_IGNORED"));
 });
 
-test("timed GPX computes only traceable L1 metrics", () => {
+test("timed GPX computes only traceable metrics", () => {
   const activity = parseGpxActivity({ rideId: "gpx-timed-001", fileName: "timed.gpx", xml: TIMED_GPX });
   const validation = validateRideActivity(activity);
-  const capability = buildRideCapability(activity);
 
   assert.equal(validation.valid, true);
-  assert.equal(capability.dataLevel, "L1");
-  assert.equal(capability.analysisMode, "full");
   assert.ok((activity.metrics.distanceM?.value ?? 0) > 3_000);
   assert.equal(activity.metrics.elapsedTimeS?.value, 1_200);
   assert.equal(activity.metrics.elevationGainM?.value, 20);
@@ -174,14 +163,12 @@ test("timed GPX computes only traceable L1 metrics", () => {
 test("GPX without timestamps never creates time or speed", () => {
   const activity = parseGpxActivity({ rideId: "gpx-untimed-001", fileName: "untimed.gpx", xml: UNTIMED_GPX });
   const validation = validateRideActivity(activity);
-  const capability = buildRideCapability(activity);
 
   assert.equal(validation.valid, true);
   assert.equal(activity.startTime, undefined);
   assert.equal(activity.metrics.elapsedTimeS, undefined);
   assert.equal(activity.metrics.movingTimeS, undefined);
   assert.equal(activity.metrics.avgSpeedMps, undefined);
-  assert.equal(capability.analysisMode, "basic");
   assert.ok(validation.issues.some((issue) => issue.code === "MISSING_TIMESTAMPS"));
 });
 
@@ -214,7 +201,6 @@ test("an isolated impossible GPS spike is filtered before metric calculation", (
     fileName: "isolated-spike.gpx",
     xml: ISOLATED_GPS_SPIKE_GPX,
   });
-  const capability = buildRideCapability(activity);
 
   assert.ok((activity.metrics.distanceM?.value ?? Number.POSITIVE_INFINITY) < 100);
   assert.equal(activity.metrics.avgSpeedMps, undefined);
@@ -224,8 +210,6 @@ test("an isolated impossible GPS spike is filtered before metric calculation", (
   assert.ok(activity.sourceIssues.some((issue) =>
     issue.code === "GPX_GPS_SPIKE_FILTERED" && issue.message.includes(GPX_GPS_QUALITY_RULE_VERSION)
   ));
-  assert.equal(capability.analysisMode, "basic");
-  assert.ok(!capability.allowedTopics.includes("速度"));
 });
 
 test("continuous or endpoint-like impossible jumps are rejected instead of guessed", () => {

@@ -1,14 +1,15 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { buildRidePageViewModel, DEMO_RIDE_IDS, isDemoRideId, RIDE_DETAIL_UI_VERSION } from "../src/ui/ride-view-model.ts";
+import { getRideFixture } from "../src/fixtures/rides.ts";
+import { buildRidePageViewModel, buildRidePageViewModelFromRecord, DEMO_RIDE_IDS, isDemoRideId, RIDE_DETAIL_UI_VERSION } from "../src/ui/ride-view-model.ts";
 
-test("all visual-shell demo routes resolve to valid B0 view models", () => {
+test("all visual-shell demo routes resolve to valid ride detail view models", () => {
   for (const id of DEMO_RIDE_IDS) {
     const view = buildRidePageViewModel(id);
     assert.equal(view.id, id);
     assert.equal(view.uiVersion, RIDE_DETAIL_UI_VERSION);
-    assert.ok(view.analysis.output.headline);
+    assert.equal(view.rejected, id === "fit-truncated-file");
     assert.ok(view.factCards.length <= 5);
   }
 });
@@ -18,15 +19,16 @@ test("visual route guard rejects unknown fixture ids", () => {
   assert.equal(isDemoRideId("other-user-private"), false);
 });
 
-test("fact cards keep evidence labels and capability boundaries", () => {
+test("fact cards keep evidence labels and follow fields present in each normalized record", () => {
   const l1 = buildRidePageViewModel("l1-built-in-sample");
   const l2 = buildRidePageViewModel("l2-built-in-sample");
   const l3 = buildRidePageViewModel("l3-built-in-sample");
 
   assert.ok(l1.factCards.every((card) => card.evidenceId));
   assert.ok(!l1.factCards.some((card) => card.label.includes("心率") || card.label.includes("功率")));
-  assert.ok(l2.analysis.snapshot.allowedClaims.some((claim) => claim.metricKey === "avgHeartRateBpm"));
-  assert.ok(l3.analysis.snapshot.allowedClaims.some((claim) => claim.metricKey === "avgPowerW"));
+  assert.ok(l2.factCards.every((card) => card.evidenceId));
+  assert.ok(l2.detailSections.flatMap((section) => section.metrics).some((metric) => metric.label === "平均心率"));
+  assert.ok(l3.detailSections.flatMap((section) => section.metrics).some((metric) => metric.label === "平均功率"));
 });
 
 test("summary keeps four core metrics and adds energy only when reliable", () => {
@@ -42,7 +44,16 @@ test("summary keeps four core metrics and adds energy only when reliable", () =>
   assert.equal(l3.factCards.at(-1)?.value, "860 kcal");
 });
 
-test("detail sections expand only within the available data capability", () => {
+test("short valid rides remain visible without the retired full-sample gate", () => {
+  const fixture = getRideFixture("short-fit-ride");
+  const view = buildRidePageViewModelFromRecord({ activity: fixture.activity, series: fixture.series });
+
+  assert.equal(view.rejected, false);
+  assert.ok(view.factCards.some((card) => card.label === "距离"));
+  assert.ok(view.factCards.some((card) => card.label === "骑行时间"));
+});
+
+test("detail sections include all supported values present in the normalized record", () => {
   const l1 = buildRidePageViewModel("l1-built-in-sample");
   const l2 = buildRidePageViewModel("l2-built-in-sample");
   const l3 = buildRidePageViewModel("l3-built-in-sample");
@@ -50,7 +61,6 @@ test("detail sections expand only within the available data capability", () => {
   assert.deepEqual(l1.detailSections.map((section) => section.key), ["speed", "distance", "timing", "elevation"]);
   assert.deepEqual(l2.detailSections.map((section) => section.key), ["speed", "distance", "timing", "heart-rate", "cadence", "elevation"]);
   assert.deepEqual(l3.detailSections.map((section) => section.key), ["speed", "distance", "timing", "heart-rate", "power", "cadence", "elevation", "other"]);
-  assert.ok(l2.detailSections.flatMap((section) => section.metrics).every((metric) => !metric.label.includes("功率")));
   assert.ok(!l3.detailSections.flatMap((section) => section.metrics).some((metric) => metric.label === "标准化功率"));
   assert.ok(l2.detailSections.flatMap((section) => section.metrics).some((metric) => metric.value === "84 rpm"));
   assert.ok(l3.detailSections.flatMap((section) => section.metrics).some((metric) => metric.value === "87 rpm"));
@@ -58,7 +68,7 @@ test("detail sections expand only within the available data capability", () => {
     .filter((metric) => ["最高速度", "最高心率", "最大功率", "最大踏频", "运动消耗"].includes(metric.label))
     .map((metric) => metric.label), ["最高速度", "最高心率", "最大功率", "最大踏频", "运动消耗"]);
   assert.equal(l3.factCards.length, 5);
-  assert.ok(!l3.analysis.snapshot.allowedClaims.some((claim) => claim.metricKey === "activityEnergyKcal"));
+  assert.ok(l3.detailSections.find((section) => section.key === "other")?.metrics.some((metric) => metric.label === "运动消耗"));
   assert.deepEqual(l1.detailSections.find((section) => section.key === "elevation")?.metrics.map((metric) => metric.label), ["累计爬升", "累计下降", "最高海拔", "最低海拔", "海拔范围"]);
 });
 
@@ -122,7 +132,7 @@ test("visual view model exposes only relative drawing data", () => {
 test("invalid ride records do not produce route or chart visuals", () => {
   const rejected = buildRidePageViewModel("fit-truncated-file");
 
-  assert.equal(rejected.analysis.snapshot.analysisMode, "rejected");
+  assert.equal(rejected.rejected, true);
   assert.equal(rejected.visuals.route, undefined);
   assert.deepEqual(rejected.visuals.charts, []);
 });

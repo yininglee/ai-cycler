@@ -4,7 +4,7 @@ import { basename } from "node:path";
 import { buildRideElevationSummary } from "../src/domain/ride-elevation.ts";
 import { buildRideEventClimbSummary } from "../src/domain/ride-event-climbs.ts";
 import { buildRidePowerSummary } from "../src/domain/ride-power.ts";
-import { buildRideCapability, validateRideActivity } from "../src/domain/ride-rules.ts";
+import { validateRideActivity } from "../src/domain/ride-rules.ts";
 import { validateRideSeries } from "../src/domain/ride-series.ts";
 import { buildRideRouteShapeSummary } from "../src/domain/ride-route-shape.ts";
 import { buildRideTimingSummary } from "../src/domain/ride-timing.ts";
@@ -42,7 +42,6 @@ if (files.length === 0) {
       file: basename(filePath),
       sourceKind: record.activity.source.kind,
       validation: { activity: validation.valid, series: seriesValidation.valid, issues: [...validation.issues, ...seriesValidation.issues] },
-    capability: { level: buildRideCapability(record.activity).dataLevel, mode: buildRideCapability(record.activity).analysisMode },
       metrics: Object.fromEntries(Object.entries(record.activity.metrics).map(([key, metric]) => [key, metric?.value])),
       timing: { elapsedTimeS: timing.elapsedTimeS, movingTimeS: timing.movingTimeS, stopCount: timing.stops.length, cruiseCount: timing.cruiseSegments.length },
       elevation: { gainM: elevation.gainM, lossM: elevation.lossM, minM: elevation.minM, maxM: elevation.maxM, source: elevation.gainSource },

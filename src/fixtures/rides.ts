@@ -49,7 +49,7 @@ function activity(
 const activityFixtures: Omit<RideFixture, "series">[] = [
   {
     fixtureId: "l1-built-in-sample",
-    description: "Demo 内置 L1 轨迹样例",
+    description: "不含心率与功率的内置轨迹样例",
     activity: activity({
       rideId: "ride-l1-built-in-sample",
       sport: "cycling",
@@ -63,11 +63,11 @@ const activityFixtures: Omit<RideFixture, "series">[] = [
       },
       sensorQuality: { gps: { coverage: 0.99, sampleCount: 3_500, invalidSampleCount: 2 } },
     }),
-    expected: { valid: true, dataLevel: "L1", analysisMode: "full", requiredIssueCodes: [] },
+    expected: { valid: true, requiredIssueCodes: [] },
   },
   {
     fixtureId: "l2-built-in-sample",
-    description: "Demo 内置 L2 心率样例",
+    description: "含心率与踏频的内置骑行样例",
     activity: activity({
       rideId: "ride-l2-built-in-sample",
       sport: "cycling",
@@ -88,11 +88,11 @@ const activityFixtures: Omit<RideFixture, "series">[] = [
         cadence: { coverage: 0.96, sampleCount: 4_600, invalidSampleCount: 4 },
       },
     }),
-    expected: { valid: true, dataLevel: "L2", analysisMode: "full", requiredIssueCodes: [] },
+    expected: { valid: true, requiredIssueCodes: [] },
   },
   {
     fixtureId: "l3-built-in-sample",
-    description: "Demo 内置 L3 功率样例",
+    description: "含心率、功率与踏频的内置骑行样例",
     activity: activity({
       rideId: "ride-l3-built-in-sample",
       sport: "cycling",
@@ -120,7 +120,7 @@ const activityFixtures: Omit<RideFixture, "series">[] = [
         cadence: { coverage: 0.98, sampleCount: 6_150, invalidSampleCount: 3 },
       },
     }),
-    expected: { valid: true, dataLevel: "L3", analysisMode: "full", requiredIssueCodes: [] },
+    expected: { valid: true, requiredIssueCodes: [] },
   },
   {
     fixtureId: "l1-gpx-normal",
@@ -139,7 +139,7 @@ const activityFixtures: Omit<RideFixture, "series">[] = [
       },
       sensorQuality: { gps: { coverage: 0.99, sampleCount: 4_800, invalidSampleCount: 2 } },
     }),
-    expected: { valid: true, dataLevel: "L1", analysisMode: "full", requiredIssueCodes: [] },
+    expected: { valid: true, requiredIssueCodes: [] },
   },
   {
     fixtureId: "l2-fit-heart-rate",
@@ -172,7 +172,7 @@ const activityFixtures: Omit<RideFixture, "series">[] = [
         cadence: { coverage: 0.95, sampleCount: 5_700, invalidSampleCount: 4 },
       },
     }),
-    expected: { valid: true, dataLevel: "L2", analysisMode: "full", requiredIssueCodes: [] },
+    expected: { valid: true, requiredIssueCodes: [] },
   },
   {
     fixtureId: "l3-fit-power",
@@ -208,11 +208,11 @@ const activityFixtures: Omit<RideFixture, "series">[] = [
         cadence: { coverage: 0.98, sampleCount: 7_000, invalidSampleCount: 5 },
       },
     }),
-    expected: { valid: true, dataLevel: "L3", analysisMode: "full", requiredIssueCodes: [] },
+    expected: { valid: true, requiredIssueCodes: [] },
   },
   {
     fixtureId: "gpx-no-timestamps",
-    description: "没有时间戳的 GPX，只能做基础路线事实",
+    description: "没有时间戳的 GPX，仅展示可追溯路线事实",
     activity: activity({
       rideId: "ride-gpx-no-timestamps",
       sport: "cycling",
@@ -223,7 +223,7 @@ const activityFixtures: Omit<RideFixture, "series">[] = [
       },
       sensorQuality: { gps: { coverage: 0.93, sampleCount: 2_400, invalidSampleCount: 8 } },
     }),
-    expected: { valid: true, dataLevel: "L1", analysisMode: "basic", requiredIssueCodes: ["MISSING_TIMESTAMPS"] },
+    expected: { valid: true, requiredIssueCodes: ["MISSING_TIMESTAMPS"] },
   },
   {
     fixtureId: "l1-gps-spike",
@@ -247,14 +247,12 @@ const activityFixtures: Omit<RideFixture, "series">[] = [
     }),
     expected: {
       valid: true,
-      dataLevel: "L1",
-      analysisMode: "basic",
       requiredIssueCodes: ["GPX_GPS_SPIKE_FILTERED"],
     },
   },
   {
     fixtureId: "fit-heart-rate-dropout",
-    description: "FIT 心率覆盖不足，降级为 L1",
+    description: "FIT 心率覆盖不足的骑行记录",
     activity: activity({
       rideId: "ride-fit-heart-rate-dropout",
       sport: "cycling",
@@ -271,11 +269,11 @@ const activityFixtures: Omit<RideFixture, "series">[] = [
         heart_rate: { coverage: 0.42, sampleCount: 1_900, invalidSampleCount: 120 },
       },
     }),
-    expected: { valid: true, dataLevel: "L1", analysisMode: "full", requiredIssueCodes: ["HEART_RATE_NOT_USABLE"] },
+    expected: { valid: true, requiredIssueCodes: ["HEART_RATE_NOT_USABLE"] },
   },
   {
     fixtureId: "fit-power-dropout-with-heart-rate",
-    description: "FIT 功率掉线但心率可靠，降级为 L2",
+    description: "FIT 功率掉线但心率可靠的骑行记录",
     activity: activity({
       rideId: "ride-fit-power-dropout",
       sport: "cycling",
@@ -294,7 +292,7 @@ const activityFixtures: Omit<RideFixture, "series">[] = [
         power: { coverage: 0.63, sampleCount: 3_400, invalidSampleCount: 180 },
       },
     }),
-    expected: { valid: true, dataLevel: "L2", analysisMode: "full", requiredIssueCodes: ["POWER_NOT_USABLE"] },
+    expected: { valid: true, requiredIssueCodes: ["POWER_NOT_USABLE"] },
   },
   {
     fixtureId: "fit-unknown-developer-field",
@@ -328,7 +326,7 @@ const activityFixtures: Omit<RideFixture, "series">[] = [
         },
       ],
     }),
-    expected: { valid: true, dataLevel: "L2", analysisMode: "full", requiredIssueCodes: ["FIT_DEVELOPER_FIELD_IGNORED"] },
+    expected: { valid: true, requiredIssueCodes: ["FIT_DEVELOPER_FIELD_IGNORED"] },
   },
   {
     fixtureId: "fit-truncated-file",
@@ -347,11 +345,11 @@ const activityFixtures: Omit<RideFixture, "series">[] = [
         },
       ],
     }),
-    expected: { valid: false, dataLevel: "L1", analysisMode: "rejected", requiredIssueCodes: ["FIT_TRUNCATED_FILE"] },
+    expected: { valid: false, requiredIssueCodes: ["FIT_TRUNCATED_FILE"] },
   },
   {
     fixtureId: "short-fit-ride",
-    description: "短于 3km 和 10 分钟的 FIT，只展示基础事实",
+    description: "距离较短的 FIT 骑行记录",
     activity: activity({
       rideId: "ride-short-fit",
       sport: "cycling",
@@ -364,11 +362,11 @@ const activityFixtures: Omit<RideFixture, "series">[] = [
       },
       sensorQuality: { gps: { coverage: 0.96, sampleCount: 570, invalidSampleCount: 1 } },
     }),
-    expected: { valid: true, dataLevel: "L1", analysisMode: "basic", requiredIssueCodes: [] },
+    expected: { valid: true, requiredIssueCodes: [] },
   },
   {
     fixtureId: "inconsistent-fit-summary",
-    description: "FIT 汇总均速与距离/时间矛盾，拒绝深度分析",
+    description: "FIT 汇总均速与距离/时间矛盾，阻断冲突数据展示",
     activity: activity({
       rideId: "ride-inconsistent-fit",
       sport: "cycling",
@@ -381,7 +379,7 @@ const activityFixtures: Omit<RideFixture, "series">[] = [
       },
       sensorQuality: { gps: { coverage: 0.99, sampleCount: 3_500, invalidSampleCount: 2 } },
     }),
-    expected: { valid: false, dataLevel: "L1", analysisMode: "rejected", requiredIssueCodes: ["INCONSISTENT_AVG_SPEED"] },
+    expected: { valid: false, requiredIssueCodes: ["INCONSISTENT_AVG_SPEED"] },
   },
 ];
 
@@ -390,12 +388,12 @@ if (!l3Activity) throw new Error("Missing L3 fixture for power preview");
 
 const powerPreviewFixture: Omit<RideFixture, "series"> = {
   fixtureId: "l3-power-preview",
-  description: "Demo 完整功率数据样例",
+  description: "Demo 含完整功率数据的骑行样例",
   activity: {
     ...structuredClone(l3Activity),
     rideId: "ride-l3-power-preview",
   },
-  expected: { valid: true, dataLevel: "L3", analysisMode: "full", requiredIssueCodes: [] },
+  expected: { valid: true, requiredIssueCodes: [] },
 };
 
 function buildFixtureSeries(activity: RideActivity) {

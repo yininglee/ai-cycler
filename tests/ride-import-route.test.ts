@@ -56,7 +56,7 @@ test("a valid FIT with non-fatal source warnings remains available in the detail
   assert.ok(record);
   assert.ok(record.activity.sourceIssues.some((issue) => issue.severity === "warning"));
   const view = buildRidePageViewModelFromRecord(record);
-  assert.equal(view.analysis.snapshot.analysisMode, "full");
+  assert.equal(view.rejected, false);
   assert.ok(view.factCards.length > 0);
   assert.equal(view.visuals.charts.length > 0, true);
 });

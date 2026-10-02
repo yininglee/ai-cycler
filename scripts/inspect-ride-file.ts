@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { basename } from "node:path";
 
-import { buildRideCapability, validateRideActivity } from "../src/domain/ride-rules.ts";
+import { validateRideActivity } from "../src/domain/ride-rules.ts";
 import { validateRideSeries } from "../src/domain/ride-series.ts";
 import { isRideParseError, parseRideRecord } from "../src/parsers/index.ts";
 
@@ -20,8 +20,7 @@ if (!filePath) {
     const { activity, series } = record;
     const validation = validateRideActivity(activity);
     const seriesValidation = validateRideSeries(series, activity);
-    const capability = buildRideCapability(activity);
-    console.log(JSON.stringify({ activity, series, validation, seriesValidation, capability }, null, 2));
+    console.log(JSON.stringify({ activity, series, validation, seriesValidation }, null, 2));
     if (!validation.valid || !seriesValidation.valid) process.exitCode = 1;
   } catch (error) {
     if (isRideParseError(error)) {

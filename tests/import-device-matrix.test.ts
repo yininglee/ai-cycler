@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { isRideParseError, parseRideRecord } from "../src/parsers/index.ts";
-import { buildRideCapability } from "../src/domain/ride-rules.ts";
+import { validateRideActivity } from "../src/domain/ride-rules.ts";
 import { buildCyclingFitSample } from "./helpers/fit-sample.ts";
 
 /**
@@ -14,13 +14,13 @@ import { buildCyclingFitSample } from "./helpers/fit-sample.ts";
  *
  * | 编号 | 来源类别 | 格式 | 预期 |
  * |---|---|---|---|
- * | FIT-1 | 码表完整记录（GPS+心率+功率+踏频） | FIT | 接受，L3/full |
+ * | FIT-1 | 码表完整记录（GPS+心率+功率+踏频） | FIT | 接受，各字段独立保留 |
  * | FIT-2 | 智能骑行台/虚拟平台（无 GPS） | FIT | 接受，轨迹降级 |
  * | FIT-3 | 功率字段全零占位设备 | FIT | 接受，FIT_ALL_ZERO_POWER_IGNORED 警告 |
  * | FIT-4 | GPS (0,0) 占位坐标设备 | FIT | 接受，轨迹按不可用处理 |
  * | FIT-5 | 多段骑行合并导出 | FIT | 拒绝 FIT_MULTIPLE_CYCLING_SESSIONS |
  * | FIT-6 | 扩展名伪装（.fit 的 XML/随机字节） | FIT | 拒绝 FILE_HEADER_MISMATCH |
- * | GPX-1 | 标准导出（时间+海拔） | GPX | 接受，L1 可追溯指标 |
+ * | GPX-1 | 标准导出（时间+海拔） | GPX | 接受，可追溯指标 |
  * | GPX-2 | 无海拔导出 | GPX | 接受，海拔不生成 |
  * | GPX-3 | 无时间戳导出 | GPX | 接受，GPX_TIMING_UNAVAILABLE 警告 |
  * | GPX-4 | 多段 trkseg（自动暂停设备） | GPX | 接受，点位按顺序合并 |
@@ -38,16 +38,17 @@ async function expectParseError(input: Parameters<typeof parseRideRecord>[0], co
   }
 }
 
-test("matrix FIT-1: head-unit full record (GPS+HR+power+cadence) is accepted at L3", async () => {
+test("matrix FIT-1: head-unit record keeps all reliable sensor fields", async () => {
   const record = await parseRideRecord({
     rideId: "matrix-fit-1",
     fileName: "head-unit.fit",
     content: buildCyclingFitSample({ realGps: true }),
   });
-  const capability = buildRideCapability(record.activity);
   assert.equal(record.activity.source.kind, "fit");
-  assert.equal(capability.dataLevel, "L3");
-  assert.equal(capability.analysisMode, "full");
+  assert.equal(validateRideActivity(record.activity).valid, true);
+  assert.ok(record.activity.metrics.avgHeartRateBpm);
+  assert.ok(record.activity.metrics.avgPowerW);
+  assert.ok(record.activity.metrics.avgCadenceRpm);
   assert.ok(record.series.availableSeries.includes("route"));
   assert.equal(record.series.seriesMetadata.route?.qualityStatus, "valid");
 });

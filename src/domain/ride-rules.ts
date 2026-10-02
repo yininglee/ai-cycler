@@ -1,16 +1,12 @@
 import type {
-  DataLevel,
   Metric,
   MetricKey,
   RideActivity,
-  RideCapabilityProfile,
   RideIssue,
   RideValidationResult,
   SensorKind,
 } from "./ride-schema.ts";
 
-const MIN_FULL_DISTANCE_M = 3_000;
-const MIN_FULL_DURATION_S = 600;
 const MIN_SENSOR_COVERAGE = 0.8;
 const MAX_INVALID_SAMPLE_RATIO = 0.02;
 const SPEED_CONSISTENCY_TOLERANCE = 0.05;
@@ -31,21 +27,6 @@ const METRIC_BOUNDS: Partial<Record<MetricKey, { min: number; max: number }>> = 
   avgCadenceRpm: { min: 0, max: 250 },
   maxCadenceRpm: { min: 0, max: 250 },
   activityEnergyKcal: { min: 0, max: 50_000 },
-};
-
-const LEVEL_TOPICS: Record<DataLevel, { allowed: string[]; forbidden: string[] }> = {
-  L1: {
-    allowed: ["距离", "时长", "速度", "爬升", "路线回顾"],
-    forbidden: ["心率区间", "功率", "FTP", "IF", "TSS", "恢复时间", "体能提升"],
-  },
-  L2: {
-    allowed: ["距离", "时长", "速度", "爬升", "心率"],
-    forbidden: ["心率区间", "功率", "FTP", "IF", "TSS", "功率输出"],
-  },
-  L3: {
-    allowed: ["距离", "时长", "速度", "爬升", "心率", "功率"],
-    forbidden: ["心率区间", "FTP", "功率区间", "IF", "TSS", "训练负荷", "医疗诊断", "保证提升"],
-  },
 };
 
 function issue(
@@ -187,75 +168,7 @@ export function validateRideActivity(activity: RideActivity): RideValidationResu
   return { valid: !issues.some((item) => item.severity === "error"), issues };
 }
 
-export function buildRideCapability(activity: RideActivity): RideCapabilityProfile {
-  const validation = validateRideActivity(activity);
-  const availableMetrics = Object.keys(activity.metrics) as MetricKey[];
-  const usablePower = Boolean(activity.metrics.avgPowerW) && isRideSensorUsable(activity, "power");
-  const usableHeartRate = Boolean(activity.metrics.avgHeartRateBpm) && isRideSensorUsable(activity, "heart_rate");
-
-  const dataLevel: DataLevel = usablePower ? "L3" : usableHeartRate ? "L2" : "L1";
-  const limitations = validation.issues.map((item) => item.message);
-
-  const distance = activity.metrics.distanceM?.value;
-  const duration = activity.metrics.movingTimeS?.value ?? activity.metrics.elapsedTimeS?.value;
-  const hasReliableTiming = !(activity.source.kind === "gpx" && !activity.startTime);
-  const hasMinimumSample = Boolean(
-    hasReliableTiming &&
-    distance !== undefined &&
-      distance >= MIN_FULL_DISTANCE_M &&
-      duration !== undefined &&
-      duration >= MIN_FULL_DURATION_S,
-  );
-  // Indoor or sensor-only records can intentionally omit route distance while
-  // still carrying reliable heart-rate/power evidence. Keep those records in
-  // the basic deterministic path instead of treating the missing route field
-  // as a contradiction that invalidates every capability.
-  const hasUsableAnalysisMetric = Boolean(
-    activity.metrics.movingTimeS ||
-    activity.metrics.elapsedTimeS ||
-    activity.metrics.avgSpeedMps ||
-    activity.metrics.avgHeartRateBpm && usableHeartRate ||
-    activity.metrics.avgPowerW && usablePower ||
-    activity.metrics.avgCadenceRpm ||
-    activity.metrics.elevationGainM,
-  );
-
-  let analysisMode: RideCapabilityProfile["analysisMode"];
-  if (!validation.valid || (!hasUsableAnalysisMetric && (distance === undefined || distance <= 0))) {
-    analysisMode = "rejected";
-  } else if (!hasMinimumSample) {
-    analysisMode = "basic";
-    if (distance === undefined) limitations.push("缺少完整路线距离，仅展示可追溯的基础事实");
-    else if (distance < MIN_FULL_DISTANCE_M) limitations.push("骑行距离不足 3 km，仅展示基础事实");
-    if (duration === undefined) limitations.push("缺少可靠时长，不能生成速度或完整强度解读");
-    else if (duration < MIN_FULL_DURATION_S) limitations.push("骑行时长不足 10 分钟，仅展示基础事实");
-  } else {
-    analysisMode = "full";
-  }
-
-  const allowedTopics = LEVEL_TOPICS[dataLevel].allowed.filter((topic) => {
-    if (topic === "时长") return Boolean(activity.metrics.movingTimeS || activity.metrics.elapsedTimeS);
-    if (topic === "速度") return Boolean(activity.metrics.avgSpeedMps || activity.metrics.maxSpeedMps);
-    if (topic === "爬升") return Boolean(activity.metrics.elevationGainM);
-    if (topic === "心率" || topic === "心率区间") return usableHeartRate;
-    if (topic === "功率") return usablePower;
-    return true;
-  });
-
-  return {
-    rideId: activity.rideId,
-    dataLevel,
-    analysisMode,
-    availableMetrics,
-    allowedTopics,
-    forbiddenTopics: LEVEL_TOPICS[dataLevel].forbidden,
-    limitations: [...new Set(limitations)],
-  };
-}
-
 export const rideRuleThresholds = {
-  minimumFullDistanceM: MIN_FULL_DISTANCE_M,
-  minimumFullDurationS: MIN_FULL_DURATION_S,
   minimumSensorCoverage: MIN_SENSOR_COVERAGE,
   maximumInvalidSampleRatio: MAX_INVALID_SAMPLE_RATIO,
   speedConsistencyTolerance: SPEED_CONSISTENCY_TOLERANCE,

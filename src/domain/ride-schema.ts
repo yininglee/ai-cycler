@@ -2,8 +2,6 @@ export const RIDE_SCHEMA_VERSION = "0.2" as const;
 export const RIDE_SERIES_SCHEMA_VERSION = "0.1" as const;
 
 export type DataSourceKind = "sample" | "fit" | "gpx";
-export type DataLevel = "L1" | "L2" | "L3";
-export type AnalysisMode = "full" | "basic" | "rejected";
 export type MetricProvenance = "recorded" | "calculated" | "estimated";
 export type Confidence = "high" | "medium" | "low";
 export type QualityStatus = "valid" | "degraded";
@@ -141,16 +139,6 @@ export interface RideValidationResult {
   issues: RideIssue[];
 }
 
-export interface RideCapabilityProfile {
-  rideId: string;
-  dataLevel: DataLevel;
-  analysisMode: AnalysisMode;
-  availableMetrics: MetricKey[];
-  allowedTopics: string[];
-  forbiddenTopics: string[];
-  limitations: string[];
-}
-
 export interface RideFixture {
   fixtureId: string;
   description: string;
@@ -158,8 +146,6 @@ export interface RideFixture {
   series: RideSeries;
   expected: {
     valid: boolean;
-    dataLevel: DataLevel;
-    analysisMode: AnalysisMode;
     requiredIssueCodes: string[];
   };
 }
