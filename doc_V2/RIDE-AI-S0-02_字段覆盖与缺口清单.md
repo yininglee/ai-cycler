@@ -1,6 +1,6 @@
 # RIDE-AI-S0-02 字段覆盖与缺口清单
 
-> 状态：V2 目标映射，等待用户验收。此文件不是当前模型输入清单，也不证明骑后解读已改善。
+> 状态：V2 目标映射，已于 2026-10-04 获用户验收；面向用户的验收汇报见[开发规划的 S0-02 工作项](VIBE_CODING_开发规划.md#ride-ai-s0-02-验收汇报已通过)。此文件不是当前模型输入清单，也不证明骑后解读已改善。
 > 对照：`src/domain/ride-schema.ts`、`ride-timing.ts`、`ride-elevation.ts`、`ride-route-shape.ts`、`ride-event-climbs.ts`、`ride-zones.ts`、`ride-power.ts` 的实际接口，以及详情页 ViewModel。可由类型检查核对的每个字段与目标路径见 `src/domain/ride-analysis-coverage-v2.ts`。
 
 ## 1. 如何阅读这条链
