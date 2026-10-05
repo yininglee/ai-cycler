@@ -163,6 +163,9 @@ test("S4-01 keeps knowledge layered beside facts with citation and safety bounda
   assert.deepEqual(knowledge.forbiddenFactKeys, ["power.mean", "power.np", "power.peak"]);
   assert.equal(knowledge.knowledgeBaseVersion, "kb-1");
   assert.equal(knowledge.retrievedAt, START);
+  // PMC-01 follow-up: the self-written explanation travels with the citation
+  // contract so knowledge transcription can only quote this text.
+  assert.equal(knowledge.explanation, "Normalized power reflects load above average power when output is variable.");
   // Knowledge stays outside the claim list: it must never appear as a ride fact.
   assert.equal(power.claims.some((claim) => claim.claimId === "kb-power-np"), false);
   assert.equal(result.input.inputStats.knowledgeCount, 1);

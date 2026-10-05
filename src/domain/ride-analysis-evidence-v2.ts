@@ -4,6 +4,7 @@ export const RIDE_EVIDENCE_RULES_VERSION = "ride-evidence-rules-v2.0.0" as const
 export const analysisDimensionIds = [
   "pacingExecution", "climbPerformance", "heartRateLoad", "powerOutput",
   "intensityAndTrainingLoad", "cadenceStrategy", "crossSensorCoordination", "historicalPerformance",
+  "longTermLoadRecovery",
 ] as const;
 export type AnalysisDimensionId = (typeof analysisDimensionIds)[number];
 
@@ -77,6 +78,11 @@ export interface V2KnowledgeEvidence {
   knowledgeId: string;
   sourceRef: EvidenceSourceRef;
   citation: string;
+  // PMC-01 follow-up (user decision 2026-10-06): the self-written explanation
+  // travels with the citation contract into the model input so the model can
+  // only transcribe this text (never invent knowledge content), and the output
+  // validator can whitelist numbers that genuinely come from it.
+  explanation: string;
   applicableDimensions: AnalysisDimensionId[];
   conditions: string[];
   // S3-02 additions, recorded per V2 business rules 11.2: retrieval time, knowledge-base

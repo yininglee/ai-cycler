@@ -17,7 +17,7 @@ import {
   type RideCapabilityClaimSnapshotV2,
 } from "./ride-capability-claims-v2.ts";
 
-export const RIDE_EVIDENCE_PACKET_BUILDER_RULES_VERSION = "ride-evidence-packet-builder-v2.1" as const;
+export const RIDE_EVIDENCE_PACKET_BUILDER_RULES_VERSION = "ride-evidence-packet-builder-v2.2" as const;
 
 export interface BuildRideAnalysisEvidencePacketsV2Options {
   analysisRunId: string;
@@ -102,10 +102,24 @@ const PACKET_DEFINITIONS: readonly PacketDefinition[] = [
     dimensionId: "historicalPerformance",
     question: "How does this ride compare with qualified personal history?",
     required: ["historyComparison"],
-    optional: ["longTermLoad", "recoverySignals", "sameRouteComparison", "trainingLoad"],
-    supports: ["historical_comparison", "long_term_load", "recovery_signal", "same_route_comparison"],
-    keyPrefixes: ["history.", "longTerm.", "recovery.", "sameRoute."],
+    optional: ["sameRouteComparison", "trainingLoad"],
+    supports: ["historical_comparison", "same_route_comparison"],
+    keyPrefixes: ["history.all.", "history.same_route.", "sameRoute."],
     prohibits: ["ability_change_without_comparable_history", "recovery_complete", "overtraining", "causation"],
+  },
+  // PMC-01 (user decision 2026-10-06): long-term load and recovery statistics
+  // get their own packet. Its admission gates are the PMC window doors
+  // (confirmed FTP, >= 42-day window, >= 10 load days) — it never depends on
+  // having a comparable single ride, and the relative-past packet above never
+  // swallows PMC claims.
+  {
+    dimensionId: "longTermLoadRecovery",
+    question: "What do the long-term load (CTL/ATL) and the load-balance signal (TSB) show?",
+    required: ["longTermLoad", "recoverySignals"],
+    optional: [],
+    supports: ["long_term_load", "recovery_signal"],
+    keyPrefixes: ["history.pmc.", "longTerm.", "recovery."],
+    prohibits: ["causation", "overtraining", "medical_diagnosis", "injury_prediction", "ability_change_without_comparable_history"],
   },
 ];
 

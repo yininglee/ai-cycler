@@ -18,9 +18,10 @@ import {
 } from "./historical-comparison.ts";
 import type { RideRecord } from "./ride-schema.ts";
 import type { UserProfile } from "./user-profile.ts";
+import type { RidePmcLoadSnapshotV2 } from "./ride-pmc-load-v2.ts";
 
 export const RIDE_PROFILE_HISTORY_SCHEMA_VERSION = "2.0.0" as const;
-export const RIDE_PROFILE_HISTORY_RULES_VERSION = "ride-profile-history-v2.1" as const;
+export const RIDE_PROFILE_HISTORY_RULES_VERSION = "ride-profile-history-v2.2" as const;
 
 type GateStatus = "available" | "unavailable";
 
@@ -62,6 +63,10 @@ export interface RideProfileHistorySnapshotV2 {
 export interface BuildRideProfileHistoryV2Options extends Omit<BuildRideCapabilityClaimsV2Options, "profile"> {
   profile?: UserProfile | null;
   historicalComparison?: HistoricalComparisonSnapshot;
+  // PMC-01: deterministic long-term load / recovery statistics. When omitted
+  // (or unavailable) the longTermLoad/recoverySignals gates stay unavailable
+  // exactly as before; when available the PMC claims join the history claims.
+  pmcLoad?: RidePmcLoadSnapshotV2;
 }
 
 export interface ProfileHistoryIssue {
@@ -242,14 +247,30 @@ export function buildRideProfileHistoryV2(
     }
   }
 
-  const sourceInventory = [...capabilityClaims.sourceInventory, ...historySources];
+  // PMC-01: merge available PMC claims (CTL/ATL/TSB) into the history claims
+  // so they flow into the dedicated long-term load & recovery evidence packet
+  // (longTermLoadRecovery) and the model input.
+  const pmcLoad = options.pmcLoad;
+  const pmcAvailable = pmcLoad?.status === "available" && pmcLoad.rideId === record.activity.rideId;
+  if (pmcAvailable) {
+    historyClaims.push(...(pmcLoad as RidePmcLoadSnapshotV2).claims);
+  }
+
+  const sourceInventory = [
+    ...capabilityClaims.sourceInventory,
+    ...historySources,
+    ...(pmcAvailable && (pmcLoad as RidePmcLoadSnapshotV2).source ? [(pmcLoad as RidePmcLoadSnapshotV2).source as EvidenceSource] : []),
+  ];
   const claims = [...capabilityClaims.claims, ...historyClaims];
-  const comparisonAvailable = historyClaims.length > 0;
+  // Single-ride comparison capability is driven by comparable-metric claims,
+  // not by PMC statistics (long-term load is a separate capability).
+  const comparisonClaims = historyClaims.filter((claim) => !claim.key.startsWith("history.pmc."));
+  const comparisonAvailable = comparisonClaims.length > 0;
   const sameRouteClaims = historyClaims.filter((claim) => claim.key.startsWith("history.same_route."));
   const capabilities = capabilityClaims.capabilities.map((capability) => {
     if (capability.key === "historyComparison") {
       return comparisonAvailable
-        ? availableCapability("historyComparison", [], historySources.map((source) => source.sourceId), historyClaims.flatMap((claim) => claim.evidenceIds), ["historical_comparison"], ["ability_change_without_comparable_history", "recovery_complete", "causation"])
+        ? availableCapability("historyComparison", [], historySources.map((source) => source.sourceId), comparisonClaims.flatMap((claim) => claim.evidenceIds), ["historical_comparison"], ["ability_change_without_comparable_history", "recovery_complete", "causation"])
         : unavailableCapability("historyComparison", [], comparison ? "NO_COMPARABLE_HISTORY" : "HISTORY_NOT_PROVIDED", ["historical_comparison"], ["ability_change_without_comparable_history", "recovery_complete", "causation"]);
     }
     if (capability.key === "sameRouteComparison") {
@@ -257,17 +278,41 @@ export function buildRideProfileHistoryV2(
         ? availableCapability("sameRouteComparison", ["historyComparison"], sameRouteClaims.flatMap((claim) => claim.sourceRefs.map((ref) => ref.sourceId)), sameRouteClaims.flatMap((claim) => claim.evidenceIds), ["same_route_comparison"], ["ability_change_without_comparable_history", "causation"])
         : unavailableCapability("sameRouteComparison", ["historyComparison"], comparisonAvailable ? "NO_COMPARABLE_SAME_ROUTE_HISTORY" : "HISTORY_NOT_AVAILABLE", ["same_route_comparison"], ["ability_change_without_comparable_history", "causation"]);
     }
+    if (capability.key === "longTermLoad" || capability.key === "recoverySignals") {
+      // PMC-01: the gates open only when the deterministic PMC window passed
+      // its quality doors (confirmed FTP, >= 42-day window, >= 10 load days).
+      return pmcAvailable
+        ? availableCapability(
+            capability.key,
+            [],
+            (pmcLoad as RidePmcLoadSnapshotV2).claims.flatMap((claim) => claim.sourceRefs.map((ref) => ref.sourceId)),
+            (pmcLoad as RidePmcLoadSnapshotV2).evidenceIds,
+            capability.key === "recoverySignals" ? ["recovery_signal", "long_term_load"] : ["long_term_load"],
+            ["causation", "overtraining", "medical_diagnosis", "injury_prediction"],
+          )
+        : unavailableCapability(
+            capability.key,
+            [],
+            pmcLoad?.reason ?? (comparisonAvailable ? "HISTORY_WINDOW_NOT_IMPLEMENTED" : "HISTORY_NOT_AVAILABLE"),
+            ["long_term_load"],
+            ["causation", "overtraining", "medical_diagnosis", "injury_prediction"],
+          );
+    }
     return capability;
   });
 
-  const history = historyState(record.activity.rideId, comparison, historyClaims);
-  const longTermReason = comparisonAvailable ? "HISTORY_WINDOW_NOT_IMPLEMENTED" : "HISTORY_NOT_AVAILABLE";
-  const longTermLoad = { status: "unavailable" as const, reason: longTermReason, sourceHistoryIds: [...history.sourceHistoryIds], evidenceIds: [], rulesVersion: RIDE_PROFILE_HISTORY_RULES_VERSION };
-  const recoverySignals = { status: "unavailable" as const, reason: longTermReason, sourceHistoryIds: [...history.sourceHistoryIds], evidenceIds: [], rulesVersion: RIDE_PROFILE_HISTORY_RULES_VERSION };
+  const history = historyState(record.activity.rideId, comparison, comparisonClaims);
+  const longTermReason = pmcLoad?.reason ?? (comparisonAvailable ? "HISTORY_WINDOW_NOT_IMPLEMENTED" : "HISTORY_NOT_AVAILABLE");
+  const pmcEvidenceIds = pmcAvailable ? (pmcLoad as RidePmcLoadSnapshotV2).evidenceIds : [];
+  const longTermLoad = pmcAvailable
+    ? { status: "available" as const, sourceHistoryIds: [...(pmcLoad as RidePmcLoadSnapshotV2).sourceHistoryIds], evidenceIds: [...pmcEvidenceIds], rulesVersion: RIDE_PROFILE_HISTORY_RULES_VERSION }
+    : { status: "unavailable" as const, reason: longTermReason, sourceHistoryIds: [...history.sourceHistoryIds], evidenceIds: [], rulesVersion: RIDE_PROFILE_HISTORY_RULES_VERSION };
+  const recoverySignals = pmcAvailable
+    ? { status: "available" as const, sourceHistoryIds: [...(pmcLoad as RidePmcLoadSnapshotV2).sourceHistoryIds], evidenceIds: [...pmcEvidenceIds], rulesVersion: RIDE_PROFILE_HISTORY_RULES_VERSION }
+    : { status: "unavailable" as const, reason: longTermReason, sourceHistoryIds: [...history.sourceHistoryIds], evidenceIds: [], rulesVersion: RIDE_PROFILE_HISTORY_RULES_VERSION };
   const limitations = unique([
     ...capabilityClaims.limitations,
-    `history.longTermLoad:${longTermReason}`,
-    `history.recoverySignals:${longTermReason}`,
+    ...(!pmcAvailable ? [`history.longTermLoad:${longTermReason}`, `history.recoverySignals:${longTermReason}`] : []),
     ...(history.status !== "available" ? [`history.comparison:${history.reason}`] : []),
   ]);
   const snapshot: RideCapabilityClaimSnapshotV2 = {
@@ -306,7 +351,16 @@ export function validateRideProfileHistoryV2(snapshot: RideProfileHistorySnapsho
     if (!validation.valid) add("HISTORY_SNAPSHOT_INVALID", "history.comparison");
     if (snapshot.history.comparison.anchorRideId !== snapshot.rideId) add("HISTORY_ANCHOR_MISMATCH", "history.comparison.anchorRideId");
   }
-  if (snapshot.longTermLoad.status === "available" || snapshot.recoverySignals.status === "available") add("UNSUPPORTED_LONG_TERM_GATE", "history");
+  // PMC-01: the long-term gates may now be available, but only with the PMC
+  // claims actually present in the snapshot and internally consistent.
+  if (snapshot.longTermLoad.status !== snapshot.recoverySignals.status) add("LONG_TERM_GATE_STATUS_MISMATCH", "history");
+  if (snapshot.longTermLoad.status === "available") {
+    const pmcKeys = new Set(snapshot.capabilityClaims.claims.filter((claim) => claim.key.startsWith("history.pmc.")).map((claim) => claim.key));
+    for (const key of ["history.pmc.ctl", "history.pmc.atl", "history.pmc.tsb"]) {
+      if (!pmcKeys.has(key)) add("PMC_CLAIM_MISSING", key);
+    }
+    if (snapshot.longTermLoad.evidenceIds.length === 0 || snapshot.recoverySignals.evidenceIds.length === 0) add("PMC_EVIDENCE_MISSING", "history.longTermLoad");
+  }
   if (snapshot.profile.status === "available" && (!snapshot.profile.schemaVersion || !snapshot.profile.updatedAt || !snapshot.profile.sourceId)) add("PROFILE_SNAPSHOT_INCOMPLETE", "profile");
   return issues;
 }

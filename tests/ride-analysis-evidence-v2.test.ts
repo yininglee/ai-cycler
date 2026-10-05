@@ -48,7 +48,8 @@ function sample(): RideAnalysisEvidenceV2 {
     ],
     knowledgeEvidence: [{
       knowledgeId: "knowledge-speed", sourceRef: { sourceId: "knowledge-1", version: "knowledge-v1", evidenceIds: ["ev-citation"] },
-      citation: "Example reference, section 1", applicableDimensions: ["pacingExecution"], conditions: ["outdoor cycling"],
+      citation: "Example reference, section 1", explanation: "Speed variation reflects how evenly effort is distributed.",
+      applicableDimensions: ["pacingExecution"], conditions: ["outdoor cycling"],
     }],
     evidencePackets: [{
       packetVersion: RIDE_EVIDENCE_SCHEMA_VERSION, rulesVersion: RIDE_EVIDENCE_RULES_VERSION,

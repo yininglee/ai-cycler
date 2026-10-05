@@ -347,7 +347,7 @@ test("S6-02 never repairs fabricated citations in core content — direct fallba
   assert.equal(counter.count, 0);
 });
 
-test("S6-02 never repairs a recovery conclusion in core content — direct fallback with zero repair calls", async () => {
+test("PMC-01 gives recovery wording without TSB support exactly one model repair", async () => {
   const counter: CallCounter = { count: 0 };
   const recovery = baseOutput({
     overallAssessment: {
@@ -362,11 +362,33 @@ test("S6-02 never repairs a recovery conclusion in core content — direct fallb
     requestId: "req-10",
     repairCaller: repairCallerReturning(validRepairOutput, counter),
   });
+  assert.equal(result.status, "pass");
+  assert.equal(result.stage, "modelRepairPass");
+  assert.equal(result.modelRepairCalls, 1);
+  assert.equal(counter.count, 1);
+});
+
+test("PMC-01 degrades after the single repair when recovery wording persists", async () => {
+  const counter: CallCounter = { count: 0 };
+  const recovery = baseOutput({
+    overallAssessment: {
+      text: "本次骑行功率与心率数据完整，整体恢复良好。",
+      conclusionType: "fact",
+      claimIds: ["c-power-mean", "c-hr-mean"],
+    },
+  });
+  const result = await orchestrateRideOutputValidationV2({
+    input: standardInput(),
+    firstOutput: recovery,
+    requestId: "req-10b",
+    // The repair output keeps the unsupported recovery wording.
+    repairCaller: repairCallerReturning(recovery, counter),
+  });
   assert.equal(result.status, "fallback");
-  assert.equal(result.fallback?.reason, "UNREPAIRABLE_ISSUES");
+  assert.equal(result.fallback?.reason, "REPAIR_OUTPUT_INVALID");
   assert.ok(result.fallback?.failureCodes.includes("RECOVERY_CONCLUSION_FORBIDDEN"));
-  assert.equal(result.modelRepairCalls, 0);
-  assert.equal(counter.count, 0);
+  assert.equal(result.modelRepairCalls, 1);
+  assert.equal(counter.count, 1);
 });
 
 test("S6-02 skips the model repair when the caller bars it (budget) and degrades", async () => {

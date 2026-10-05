@@ -111,6 +111,7 @@ function knowledgeEvidence(
       evidenceIds: [entry.knowledgeId],
     },
     citation: `${entry.title} — ${entry.publisher} (${entry.version}), ${entry.citationLocation}`,
+    explanation: entry.explanation,
     applicableDimensions: [...coveredDimensions],
     conditions: unique([
       ...entry.applicableConditions,

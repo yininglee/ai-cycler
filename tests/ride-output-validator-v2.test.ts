@@ -98,7 +98,12 @@ function makeInput(questions: RideModelInputQuestionV2[]): RideModelInputV2 {
 
 const powerQuestion = question("powerOutput", [powerMean, powerCv], {
   limitations: ["power.coverage:90%"],
-  knowledge: [{ knowledgeId: "kb-1", citation: "TrainingPeaks Glossary", conditions: [] }],
+  knowledge: [{
+    knowledgeId: "kb-1",
+    citation: "TrainingPeaks Glossary",
+    explanation: "按 TrainingPeaks 指标标准，单次 TSS 超过 300 后恢复需求显著上升。",
+    conditions: [],
+  }],
 });
 const hrQuestion = question("heartRateLoad", [hrMean]);
 
@@ -216,6 +221,57 @@ test("S6-01 blocks history wording and historyComparison without comparable hist
   assert.deepEqual(validateRideModelOutputV2(historyInput, validHistory), { status: "pass" });
 });
 
+test("PMC-01 passes recovery wording backed by a TSB claim at or above +5", () => {
+  const tsbClaim = claim("c-pmc-tsb", {
+    kind: "history",
+    key: "history.pmc.tsb",
+    value: 12.5,
+    unit: "TSS",
+    displayValue: "+12.5",
+    supports: ["recovery_signal", "long_term_load"],
+  });
+  const historyQuestion = question("historicalPerformance", [tsbClaim]);
+  const output = baseOutput({
+    historyComparison: {
+      text: "训练负荷平衡（TSB +12.5），整体恢复良好。",
+      conclusionType: "historyComparison",
+      claimIds: ["c-pmc-tsb"],
+    },
+  });
+  const result = validateRideModelOutputV2(makeInput([powerQuestion, hrQuestion, historyQuestion]), output);
+  assert.equal(result.status, "pass");
+});
+
+test("PMC-01 still blocks recovery wording when TSB is below +5 or unreferenced", () => {
+  const lowTsbClaim = claim("c-pmc-tsb-low", {
+    kind: "history",
+    key: "history.pmc.tsb",
+    value: 3,
+    unit: "TSS",
+    displayValue: "+3",
+    supports: ["recovery_signal"],
+  });
+  const historyQuestion = question("historicalPerformance", [lowTsbClaim]);
+  const input = makeInput([powerQuestion, hrQuestion, historyQuestion]);
+  const lowTsb = baseOutput({
+    historyComparison: {
+      text: "训练负荷平衡（TSB +3），整体恢复良好。",
+      conclusionType: "historyComparison",
+      claimIds: ["c-pmc-tsb-low"],
+    },
+  });
+  assert.ok(failureCodes(validateRideModelOutputV2(input, lowTsb)).includes("RECOVERY_CONCLUSION_FORBIDDEN"));
+
+  const unreferenced = baseOutput({
+    overallAssessment: {
+      text: "本次骑行功率与心率数据完整，整体恢复良好。",
+      conclusionType: "fact",
+      claimIds: ["c-power-mean", "c-hr-mean"],
+    },
+  });
+  assert.ok(failureCodes(validateRideModelOutputV2(input, unreferenced)).includes("RECOVERY_CONCLUSION_FORBIDDEN"));
+});
+
 test("S6-01 blocks causal, plan, and recovery conclusions", () => {
   const causal = baseOutput({
     dimensions: [
@@ -234,11 +290,66 @@ test("S6-01 blocks causal, plan, and recovery conclusions", () => {
   assert.ok(failureCodes(validateRideModelOutputV2(standardInput(), plan)).includes("PLAN_COMPLETION_FORBIDDEN"));
 
   const recovery = baseOutput({
-    suggestions: [
-      { text: "整体恢复良好，可以放心加大负荷。", conclusionType: "suggestion", claimIds: ["c-power-mean"] },
-    ],
+    overallAssessment: {
+      text: "本次骑行功率与心率数据完整，整体恢复良好。",
+      conclusionType: "fact",
+      claimIds: ["c-power-mean", "c-hr-mean"],
+    },
   });
   assert.ok(failureCodes(validateRideModelOutputV2(standardInput(), recovery)).includes("RECOVERY_CONCLUSION_FORBIDDEN"));
+});
+
+test("PMC-01 exempts recovery/load wording inside suggestions from the recovery gate", () => {
+  const suggestion = baseOutput({
+    suggestions: [
+      {
+        text: "近期负荷偏高，建议这几天注意恢复、适当降低负荷，恢复良好后再考虑加量。",
+        conclusionType: "suggestion",
+        claimIds: ["c-power-mean"],
+      },
+    ],
+  });
+  assert.deepEqual(validateRideModelOutputV2(standardInput(), suggestion), { status: "pass" });
+});
+
+test("PMC-01 allows knowledge-reference numbers quoted from the cited knowledge explanation", () => {
+  const output = baseOutput({
+    dimensions: [
+      {
+        ...baseOutput().dimensions[0],
+        assertions: [
+          {
+            text: "按 TrainingPeaks 指标标准，单次超过 300 后恢复需求显著上升。",
+            conclusionType: "knowledgeReference",
+            claimIds: [],
+            knowledgeIds: ["kb-1"],
+          },
+        ],
+      },
+      ...baseOutput().dimensions.slice(1),
+    ],
+  });
+  assert.deepEqual(validateRideModelOutputV2(standardInput(), output), { status: "pass" });
+});
+
+test("PMC-01 still blocks knowledge-reference numbers absent from the cited knowledge", () => {
+  const output = baseOutput({
+    dimensions: [
+      {
+        ...baseOutput().dimensions[0],
+        assertions: [
+          {
+            text: "按 TrainingPeaks 指标标准，单次超过 500 后恢复需求显著上升。",
+            conclusionType: "knowledgeReference",
+            claimIds: [],
+            knowledgeIds: ["kb-1"],
+          },
+        ],
+      },
+      ...baseOutput().dimensions.slice(1),
+    ],
+  });
+  assert.ok(failureCodes(validateRideModelOutputV2(standardInput(), output)).includes("NUMBER_NOT_IN_CLAIMS"));
 });
 
 test("S6-01 allows goal-oriented suggestion wording while blocking plan assertions", () => {

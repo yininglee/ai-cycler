@@ -19,15 +19,19 @@ import {
 export const RIDE_OUTPUT_REPAIR_RULES_VERSION = "ride-output-repair-v2.0.0" as const;
 export const RIDE_REPAIR_PROMPT_VERSION = "ride-repair-prompt-v2.0.0" as const;
 
-// Business rules 14.6.4 / FR-13: fabricated citations in required content and
-// recovery (medical-adjacent) conclusions are integrity red lines — they never
-// enter the repair path. When such an issue is confined to an optional fragment
-// (a highlight, a suggestion, or historyComparison), the fragment is deleted
-// deterministically instead; only occurrences in core content force a fallback.
+// Business rules 14.6.4 / FR-13: fabricated citations in required content are
+// integrity red lines — they never enter the repair path. When such an issue
+// is confined to an optional fragment (a highlight, a suggestion, or
+// historyComparison), the fragment is deleted deterministically instead; only
+// occurrences in core content force a fallback.
+// PMC-01 (user decision 2026-10-06): recovery-conclusion failures are no
+// longer unrepairable. The validator only emits RECOVERY_CONCLUSION_FORBIDDEN
+// when no PMC TSB claim (>= +5) backs the wording, and such wording is now
+// eligible for the single constrained model repair like other locatable
+// non-high-risk errors.
 export const rideOutputUnrepairableCoreCodes: readonly RideOutputFailureCode[] = [
   "CLAIM_NOT_IN_INPUT",
   "KNOWLEDGE_NOT_IN_INPUT",
-  "RECOVERY_CONCLUSION_FORBIDDEN",
 ];
 
 export type RideOutputFallbackReasonV2 =

@@ -5,6 +5,7 @@ import {
   rideOutputConclusionTypes,
   type RideOutputConclusionType,
 } from "./ride-output-schema-v2.ts";
+import { RIDE_PMC_RECOVERY_TSB_THRESHOLD } from "../domain/ride-pmc-load-v2.ts";
 
 // S6-01 (V2 business rules 14.5 / PRD FR-10): independent output validator.
 // It checks the model output against the input snapshot that was actually
@@ -235,9 +236,12 @@ export function validateRideModelOutputV2(
     }
 
     // Every number in an assertion must hit a value of a referenced claim (or a
-    // number inside the referenced knowledge citation/conditions). Suggestions
-    // are exempt: operational numbers there (补水量、时长安排) are legitimate
-    // and their factual basis is already guaranteed by the anchor gate.
+    // number inside the referenced knowledge citation/conditions/explanation).
+    // Suggestions are exempt: operational numbers there (补水量、时长安排) are
+    // legitimate and their factual basis is already guaranteed by the anchor
+    // gate. Knowledge references may quote numbers from the cited knowledge's
+    // self-written explanation — that text is the only legitimate source of
+    // knowledge content, so numbers outside it are still fabrication.
     if (view.conclusionType !== "suggestion") {
       for (const number of extractNumbers(text)) {
         const claimHit = claims.some((claim) => claimAllowsNumber(claim, number));
@@ -247,8 +251,11 @@ export function validateRideModelOutputV2(
             .flatMap((question) => question.knowledge)
             .find((item) => item.knowledgeId === knowledgeId);
           if (!knowledge) return false;
-          return [...extractNumbers(knowledge.citation), ...knowledge.conditions.flatMap(extractNumbers)]
-            .some((allowed) => allowed === number);
+          return [
+            ...extractNumbers(knowledge.citation),
+            ...extractNumbers(knowledge.explanation ?? ""),
+            ...knowledge.conditions.flatMap(extractNumbers),
+          ].some((allowed) => allowed === number);
         });
         if (!knowledgeHit) {
           issue(
@@ -260,11 +267,12 @@ export function validateRideModelOutputV2(
       }
     }
 
-    // Expression gates (business rules 14.5 / 15). Stability, history, and plan
-    // gates only apply to assertions (fact / historyComparison): operational
-    // wording inside suggestions ("保持稳定输出"、"想要进步"、"下次计划加入")
-    // and methodology wording in knowledge references are not claims about the
-    // ride itself. Causality and recovery stay global: they are red lines.
+    // Expression gates (business rules 14.5 / 15). Stability, history, plan,
+    // and recovery gates only apply to assertions (fact / historyComparison):
+    // operational wording inside suggestions ("保持稳定输出"、"想要进步"、
+    // "注意恢复、适当降低负荷") and methodology wording in knowledge references
+    // are not claims about the ride itself. Causality stays global: it is a
+    // red line in every position.
     const isAssertiveConclusion =
       view.conclusionType === "fact" || view.conclusionType === "historyComparison";
     if (isAssertiveConclusion && stabilityTextPattern.test(text)) {
@@ -305,12 +313,26 @@ export function validateRideModelOutputV2(
         "plan or goal-completion assertions are forbidden because no plan claim exists in the input",
       );
     }
-    if (recoveryTextPattern.test(text)) {
-      issue(
-        "RECOVERY_CONCLUSION_FORBIDDEN",
-        path,
-        "recovery-completion conclusions are forbidden; recovery may only appear as a watch-out suggestion",
+    // PMC-01 (PRD FR-08, user decision 2026-10-06): recovery-completion
+    // wording in assertions is no longer an unconditional red line. It passes
+    // only when the assertion cites a PMC TSB history claim whose value reached
+    // the recovery threshold (+5). Inside suggestions and knowledge references
+    // recovery/load wording is operational advice or methodology, not a claim
+    // about recovery state, so the gate is scoped to assertive conclusions.
+    if (isAssertiveConclusion && recoveryTextPattern.test(text)) {
+      const tsbSupported = claims.some(
+        (claim) =>
+          claim.key === "history.pmc.tsb"
+          && typeof claim.value === "number"
+          && claim.value >= RIDE_PMC_RECOVERY_TSB_THRESHOLD,
       );
+      if (!tsbSupported) {
+        issue(
+          "RECOVERY_CONCLUSION_FORBIDDEN",
+          path,
+          `recovery-completion wording requires a referenced PMC TSB claim with TSB >= ${RIDE_PMC_RECOVERY_TSB_THRESHOLD}; otherwise recovery may only appear as a watch-out suggestion`,
+        );
+      }
     }
     return claims;
   };

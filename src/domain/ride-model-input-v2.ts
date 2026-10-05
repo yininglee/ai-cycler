@@ -13,7 +13,7 @@ import {
 // forbidden inputs, and blocks the model call with a traceable failure code instead
 // of silently trimming claims when authorization, privacy, or budget gates fail.
 
-export const RIDE_MODEL_INPUT_SCHEMA_VERSION = "ride-model-input-v2.0.0" as const;
+export const RIDE_MODEL_INPUT_SCHEMA_VERSION = "ride-model-input-v2.1.0" as const;
 export const RIDE_MODEL_INPUT_RULES_VERSION = "ride-model-input-v2.0" as const;
 export const DEFAULT_RIDE_MODEL_INPUT_MAX_CHARACTERS = 160_000 as const;
 
@@ -31,6 +31,9 @@ const forbiddenInputKeys = new Set([
 export interface RideModelInputKnowledgeV2 {
   knowledgeId: string;
   citation: string;
+  // The self-written knowledge explanation. The model may only transcribe this
+  // text inside knowledgeReference conclusions; it never acts as ride facts.
+  explanation: string;
   conditions: string[];
   conclusionStrength?: "high" | "moderate" | "limited";
   limitations?: string[];
@@ -122,6 +125,7 @@ function copyKnowledge(item: V2KnowledgeEvidence): RideModelInputKnowledgeV2 {
   return {
     knowledgeId: item.knowledgeId,
     citation: item.citation,
+    explanation: item.explanation,
     conditions: [...item.conditions],
     ...(item.conclusionStrength !== undefined ? { conclusionStrength: item.conclusionStrength } : {}),
     ...(item.limitations ? { limitations: [...item.limitations] } : {}),
