@@ -79,6 +79,15 @@ export interface V2KnowledgeEvidence {
   citation: string;
   applicableDimensions: AnalysisDimensionId[];
   conditions: string[];
+  // S3-02 additions, recorded per V2 business rules 11.2: retrieval time, knowledge-base
+  // version, conclusion strength, known limitations, safety boundaries, and the ride-fact
+  // keys this knowledge must never replace or fabricate.
+  retrievedAt?: string;
+  knowledgeBaseVersion?: string;
+  conclusionStrength?: "high" | "moderate" | "limited";
+  limitations?: string[];
+  safetyBoundaries?: string[];
+  forbiddenFactKeys?: string[];
 }
 
 export interface V2EvidenceCoverage {
