@@ -416,7 +416,7 @@ function addRelationClaims(
   return allRefs;
 }
 
-function missingDependency(capabilities: Map<EvidenceCapabilityKey, V2EvidenceCapability>, keys: EvidenceCapabilityKey[]): string | undefined {
+function missingDependency(capabilities: Map<EvidenceCapabilityKey, V2EvidenceCapability>, keys: readonly EvidenceCapabilityKey[]): string | undefined {
   const missing = keys.filter((key) => capabilities.get(key)?.status === "unavailable");
   return missing.length ? `DEPENDENCY_UNAVAILABLE:${missing.join(",")}` : undefined;
 }
@@ -552,15 +552,6 @@ export function buildRideCapabilityClaimsV2(
   const segmentRefs = windows.unavailableReason
     ? new Map<SegmentWindowV2["kind"], EvidenceSourceRef[]>()
     : addSegmentClaims(claims, rideId, windows.segments, windowsSource);
-  for (const [kind, key, dependencies] of [
-    ["cruise", "cruise", ["speed", "timing"]],
-    ["terrain", "terrain", ["elevation"]],
-    ["climb", "climbing", ["elevation", "timing"]],
-  ] as const) {
-    const refs = segmentRefs.get(kind);
-    if (refs?.length) capabilities.set(key, availableCapability(key, dependencies, refs, "valid", [`${kind}_segment`], ["ability_change", "causation"]));
-    else capabilities.set(key, unavailableCapability(key, dependencies, "SOURCE_UNAVAILABLE"));
-  }
   if (record.series.availableSeries.includes("elevation") || segmentRefs.has("climb") || segmentRefs.has("terrain")) {
     const evidenceId = record.series.availableSeries.includes("elevation")
       ? derivedEvidence(rideId, "series-contract-elevation")
@@ -570,6 +561,20 @@ export function buildRideCapabilityClaimsV2(
       : [sourceRef(windowsSource, [evidenceId])];
     capabilities.set("elevation", availableCapability("elevation", [], refs, "valid", ["elevation_context"], []));
   } else capabilities.set("elevation", unavailableCapability("elevation", [], "SOURCE_UNAVAILABLE"));
+
+  for (const [kind, key, dependencies] of [
+    ["cruise", "cruise", ["speed", "timing"]],
+    ["terrain", "terrain", ["elevation"]],
+    ["climb", "climbing", ["elevation", "timing"]],
+  ] as const) {
+    const refs = segmentRefs.get(kind);
+    const dependencyReason = missingDependency(capabilities, dependencies);
+    if (refs?.length && !dependencyReason) {
+      capabilities.set(key, availableCapability(key, dependencies, refs, "valid", [`${kind}_segment`], ["ability_change", "causation"]));
+    } else {
+      capabilities.set(key, unavailableCapability(key, dependencies, dependencyReason ?? "SOURCE_UNAVAILABLE"));
+    }
+  }
 
   const allRelations = [...windows.jointWindows, ...windows.segments.flatMap((segment) => segment.jointWindows)];
   const relationRefs = windows.unavailableReason ? [] : addRelationClaims(claims, rideId, allRelations, windowsSource);

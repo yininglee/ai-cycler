@@ -9,6 +9,7 @@ import {
   validateRideCapabilityClaimsV2,
 } from "../src/domain/ride-capability-claims-v2.ts";
 import { createUserProfile } from "../src/domain/user-profile.ts";
+import { getRideFixture } from "../src/fixtures/rides.ts";
 
 const START = "2026-10-05T06:00:00.000Z";
 
@@ -139,6 +140,18 @@ test("insufficient power quality leaves independent heart-rate and cadence claim
   assert.notEqual(getEvidenceCapabilityV2(snapshot, "cadence").status, "unavailable");
   assert.ok(snapshot.claims.some((item) => item.key === "heart_rate.mean"));
   assert.ok(snapshot.claims.some((item) => item.key === "cadence.mean"));
+});
+
+test("segment capabilities close when their sensor dependency is unavailable", () => {
+  const fixture = getRideFixture("l3-power-preview");
+  const snapshot = buildRideCapabilityClaimsV2({
+    activity: structuredClone(fixture.activity),
+    series: structuredClone(fixture.series),
+  }, { profile: createUserProfile({ ftpWatts: 240 }, START) });
+  assert.equal(getEvidenceCapabilityV2(snapshot, "speed").status, "unavailable");
+  assert.equal(getEvidenceCapabilityV2(snapshot, "cruise").status, "unavailable");
+  assert.equal(getEvidenceCapabilityV2(snapshot, "cruise").unavailableReason, "DEPENDENCY_UNAVAILABLE:speed");
+  assert.equal(validateRideCapabilityClaimsV2(snapshot).length, 0);
 });
 
 test("untimed rides cannot unlock timing, process, NP, IF, or TSS", () => {
