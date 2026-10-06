@@ -19,11 +19,14 @@ export function RideAiAnalysis({
   title,
   dateLabel,
   demoFallback,
+  engine,
 }: {
   rideId: string;
   title: string;
   dateLabel?: string;
   demoFallback?: string;
+  /** S6-03: "v2" forces the drawer through the V2 chain (?ai=v2 page param). */
+  engine?: "v2";
 }) {
   const [open, setOpen] = useState(false);
 
@@ -50,6 +53,7 @@ export function RideAiAnalysis({
           title={title}
           dateLabel={dateLabel}
           demoFallback={demoFallback}
+          engine={engine}
           onClose={() => setOpen(false)}
         />
       )}

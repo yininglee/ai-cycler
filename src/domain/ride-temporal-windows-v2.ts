@@ -4,7 +4,9 @@ import type { RideRecord, RideSeriesPoint } from "./ride-schema.ts";
 import { buildRideTemporalFeaturesV2 } from "./ride-temporal-features-v2.ts";
 import { buildRideTimingSummary, type RideTimingSummary } from "./ride-timing.ts";
 
-export const RIDE_TEMPORAL_WINDOWS_RULES_VERSION = "ride-temporal-windows-v2.1" as const;
+// S2-03 (PD-AI-16): version upgraded together with the claims layer so the
+// aggregation rule change is traceable across S1 window snapshots and S2 claims.
+export const RIDE_TEMPORAL_WINDOWS_RULES_VERSION = "ride-temporal-windows-v2.2" as const;
 
 const MAX_INTERVAL_S = 10;
 const MOVING_SPEED_MPS = 1 / 3.6;

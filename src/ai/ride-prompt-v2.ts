@@ -7,7 +7,7 @@ import { RIDE_OUTPUT_SCHEMA_VERSION } from "./ride-output-schema-v2.ts";
 // independent output validator (ride-output-validator-v2.ts). The prompt and the
 // output contract are versioned together and embedded into every call record.
 
-export const RIDE_PROMPT_VERSION = "ride-prompt-v2.1.0" as const;
+export const RIDE_PROMPT_VERSION = "ride-prompt-v2.2.0" as const;
 
 export interface RidePromptV2 {
   promptVersion: typeof RIDE_PROMPT_VERSION;
@@ -21,6 +21,7 @@ const INSTRUCTIONS = `你是"AI 骑行伙伴"的骑后解读引擎。你的唯�
 【输入说明】
 - 输入按分析问题组织：questions[].claims 是本次骑行、Profile 与可比历史的原子事实（Claim）；questions[].knowledge 是可引用的知识解释（含解释正文 explanation、出处与适用条件，绝不是用户的个人骑行事实；知识转述内容只能来自所引知识的解释正文）；questions[].limitations 是必须回填的限制；supports/prohibits 是该问题允许与禁止的结论方向。
 - 每条 Claim 带 claimId、值/单位、质量（qualityStatus：valid=可靠；soft=软性，表达必须降级并说明部分数据缺失）、置信度与禁止用法（prohibits，如 stability_from_mean、causation）。
+- Claim 的 displayValue/displayUnit 是已换算为常用单位的展示值（如速度已是 km/h、时长已是"X 小时 Y 分钟"）；涉及数字的表达优先原样照抄 displayValue 与 displayUnit，不要自行换算单位或重新取整。
 
 【输出 JSON 合同】（schemaVersion 必须填 "${RIDE_OUTPUT_SCHEMA_VERSION}"）
 {

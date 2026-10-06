@@ -19,12 +19,14 @@ export function InterpretationSheet({
   title,
   dateLabel,
   demoFallback,
+  engine,
   onClose,
 }: {
   rideId: string;
   title: string;
   dateLabel?: string;
   demoFallback?: string;
+  engine?: "v2";
   onClose: () => void;
 }) {
   useEffect(() => {
@@ -81,7 +83,7 @@ export function InterpretationSheet({
           </button>
         </header>
         <div className="interpretation-sheet-body">
-          <InterpretationView rideId={rideId} title={title} dateLabel={dateLabel} demoFallback={demoFallback} />
+          <InterpretationView rideId={rideId} title={title} dateLabel={dateLabel} demoFallback={demoFallback} engine={engine} />
         </div>
       </div>
     </div>,

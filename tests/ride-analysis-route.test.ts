@@ -78,6 +78,7 @@ test("ride-analysis route can analyze a record imported into the local demo stor
 test("ride-analysis route reaches the v0.4 candidate chain and reports its version matrix", async () => {
   const previousEnabled = process.env.AI_ANALYSIS_ENABLED;
   const trackedVars = [
+    "RIDE_INTERPRETATION_ENGINE",
     "COZE_API_URL",
     "COZE_API_TOKEN",
     "COZE_INTERPRETATION_WORKFLOW_NAME",
@@ -111,4 +112,82 @@ test("ride-analysis route reaches the v0.4 candidate chain and reports its versi
       else process.env[key] = value;
     }
   }
+});
+
+// Shared helper for the S6-03 engine-switch tests: AI on, engine + provider
+// vars tracked so every test restores the developer's environment.
+async function withEngineVars(
+  vars: Record<string, string | undefined>,
+  run: () => Promise<void>,
+): Promise<void> {
+  const trackedKeys = ["AI_ANALYSIS_ENABLED", "RIDE_INTERPRETATION_ENGINE", "SILICONFLOW_API_TOKEN"];
+  const previous = trackedKeys.map((key) => [key, process.env[key]] as const);
+  process.env.AI_ANALYSIS_ENABLED = "true";
+  for (const [key, value] of Object.entries(vars)) {
+    if (value === undefined) delete process.env[key];
+    else process.env[key] = value;
+  }
+  try {
+    await run();
+  } finally {
+    for (const [key, value] of previous) {
+      if (value === undefined) delete process.env[key];
+      else process.env[key] = value;
+    }
+  }
+}
+
+test("ride-analysis route cuts over to the V2 chain via RIDE_INTERPRETATION_ENGINE=V2", async () => {
+  await withEngineVars({ RIDE_INTERPRETATION_ENGINE: "V2", SILICONFLOW_API_TOKEN: undefined }, async () => {
+    const response = await POST(new Request("http://localhost/api/ride-analysis", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ rideId: "l3-power-preview" }),
+    }));
+    const body = await response.json() as Record<string, unknown>;
+
+    assert.equal(response.status, 200);
+    // No provider token configured -> V2 chain degrades through its own b0
+    // contract (never a silent V1 fallback).
+    assert.equal(body.source, "b0");
+    assert.equal(body.fallbackCode, "AI_NOT_CONFIGURED");
+    assert.equal(body.engine, "v2");
+    const versions = body.versions as Record<string, unknown>;
+    assert.ok(String(versions.service).startsWith("ride-interpretation-service-v2."));
+  });
+});
+
+test("ride-analysis route forces the V2 chain for a single request via body engine", async () => {
+  await withEngineVars({ RIDE_INTERPRETATION_ENGINE: undefined, SILICONFLOW_API_TOKEN: undefined }, async () => {
+    const response = await POST(new Request("http://localhost/api/ride-analysis", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ rideId: "l3-power-preview", engine: "v2" }),
+    }));
+    const body = await response.json() as Record<string, unknown>;
+
+    assert.equal(response.status, 200);
+    assert.equal(body.source, "b0");
+    assert.equal(body.fallbackCode, "AI_NOT_CONFIGURED");
+    assert.equal(body.engine, "v2");
+  });
+});
+
+test("ride-analysis route body engine v1 overrides a V2 environment cut-over", async () => {
+  await withEngineVars({ RIDE_INTERPRETATION_ENGINE: "V2", SILICONFLOW_API_TOKEN: undefined }, async () => {
+    const response = await POST(new Request("http://localhost/api/ride-analysis", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ rideId: "l1-built-in-sample", engine: "v1" }),
+    }));
+    const body = await response.json() as Record<string, unknown>;
+
+    assert.equal(response.status, 200);
+    // V1 Coze chain (no Coze config) — its own version matrix, no engine field.
+    assert.equal(body.source, "b0");
+    assert.equal(body.fallbackCode, "AI_NOT_CONFIGURED");
+    assert.equal(body.engine, undefined);
+    const versions = body.versions as Record<string, unknown>;
+    assert.equal(versions.workflowName, "ride_analysis_v3");
+  });
 });

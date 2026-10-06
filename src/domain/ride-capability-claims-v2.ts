@@ -17,7 +17,12 @@ import { buildCadenceZoneDistribution, buildHeartRateZoneDistribution, type Zone
 import type { UserProfile } from "./user-profile.ts";
 
 export const RIDE_CAPABILITY_CLAIMS_SCHEMA_VERSION = RIDE_EVIDENCE_SCHEMA_VERSION;
-export const RIDE_CAPABILITY_CLAIMS_RULES_VERSION = "ride-capability-claims-v2.1" as const;
+// S2-03 (PD-AI-16, user decision 2026-10-06): fixed 30-second joint-window
+// relation claims are always delivered as one aggregate claim per sensor pair
+// plus at most three deterministic representative windows. There is no
+// per-window mode and no threshold; segment (cruise/terrain) relation claims
+// stay per-window because each segment emits at most one window per pair.
+export const RIDE_CAPABILITY_CLAIMS_RULES_VERSION = "ride-capability-claims-v2.3" as const;
 export const RIDE_CONTIGUOUS_NP_RULES_VERSION = "ride-contiguous-np-v2.1" as const;
 export const RIDE_POWER_ZONE_RULES_VERSION = "ride-power-zone-v2.1" as const;
 export const RIDE_INTENSITY_RULES_VERSION = "ride-intensity-v2.1" as const;
@@ -82,6 +87,23 @@ function unique(values: string[]): string[] {
 
 function compact(value: number, digits = 1): string {
   return Number(value.toFixed(digits)).toString();
+}
+
+// Reuses V1's metric-display-v0.1 rules (src/domain/ride-analysis-context.ts):
+// claims carry a raw `value` plus a pre-converted human-facing display token so
+// the model can copy the display verbatim instead of converting units itself
+// (e.g. 6.68 m/s -> "24.05 km/h", 23997 s -> "6 小时 40 分钟"). Numbers the
+// model copies from displayValue are whitelisted by the output validator.
+function speedDisplayMps(value: number): { displayValue: string; displayUnit: string } {
+  return { displayValue: compact(value * 3.6, 2), displayUnit: "km/h" };
+}
+
+function durationDisplayS(seconds: number): { displayValue: string; displayUnit: string } {
+  const totalMinutes = Math.round(seconds / 60);
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  const text = hours === 0 ? `${minutes} 分钟` : minutes === 0 ? `${hours} 小时` : `${hours} 小时 ${minutes} 分钟`;
+  return { displayValue: text, displayUnit: "duration" };
 }
 
 function overlap(start: number, end: number, otherStart: number, otherEnd: number): number {
@@ -199,6 +221,7 @@ function claim(
     displayValue?: string;
     displayUnit?: string;
     text?: string;
+    aggregatedFromCount?: number;
   } = {},
 ): V2AnalysisClaim {
   const provenance = options.provenance ?? "calculated";
@@ -218,6 +241,7 @@ function claim(
     ...(provenance !== "recorded" ? { formulaVersion: options.formulaVersion ?? RIDE_CAPABILITY_CLAIMS_RULES_VERSION } : {}),
     ...(options.displayValue ? { displayValue: options.displayValue } : {}),
     ...(options.displayUnit ? { displayUnit: options.displayUnit } : {}),
+    ...(options.aggregatedFromCount !== undefined ? { aggregatedFromCount: options.aggregatedFromCount } : {}),
     supports: options.supports ?? [],
     prohibits: options.prohibits ?? [],
   };
@@ -239,13 +263,16 @@ function addSeriesClaims(
   const quality = qualityFor(feature) === "valid" ? "valid" : "soft";
   const refs = [sourceRef(temporalSource, feature.evidenceIds)];
   const label = feature.seriesKey.replace("_", " ");
+  const meanDisplay = feature.unit === "m/s"
+    ? speedDisplayMps(feature.statistics.mean)
+    : { displayValue: compact(feature.statistics.mean, feature.unit === "W" || feature.unit === "bpm" || feature.unit === "rpm" ? 0 : 2), displayUnit: feature.unit };
   claims.push(claim(rideId, `${feature.seriesKey}.mean`, feature.statistics.mean, feature.unit, refs, {
     quality,
     formulaVersion: feature.formulaVersion,
     supports: [`${feature.seriesKey}_level`],
     prohibits: ["stability_from_mean", "causation_from_level"],
-    displayValue: compact(feature.statistics.mean, feature.unit === "W" || feature.unit === "bpm" || feature.unit === "rpm" ? 0 : 2),
-    displayUnit: feature.unit,
+    displayValue: meanDisplay.displayValue,
+    displayUnit: meanDisplay.displayUnit,
     text: `${label} weighted mean`,
   }));
   if (feature.stability.eligible) {
@@ -259,13 +286,15 @@ function addSeriesClaims(
     }));
   }
   if (feature.stageComparison.eligible && finite(feature.stageComparison.lastMinusFirst)) {
-    claims.push(claim(rideId, `${feature.seriesKey}.lastMinusFirst`, feature.stageComparison.lastMinusFirst, feature.unit, refs, {
+    const drift = feature.stageComparison.lastMinusFirst;
+    const driftDisplay = feature.unit === "m/s" ? speedDisplayMps(drift) : { displayValue: compact(drift, 1), displayUnit: feature.unit };
+    claims.push(claim(rideId, `${feature.seriesKey}.lastMinusFirst`, drift, feature.unit, refs, {
       quality,
       formulaVersion: feature.formulaVersion,
       supports: [`${feature.seriesKey}_stage_comparison`],
       prohibits: ["trend_beyond_current_ride", "causation"],
-      displayValue: compact(feature.stageComparison.lastMinusFirst, 1),
-      displayUnit: feature.unit,
+      displayValue: driftDisplay.displayValue,
+      displayUnit: driftDisplay.displayUnit,
     }));
   }
 }
@@ -371,25 +400,83 @@ function addSegmentClaims(
       ? segment.endElapsedTimeS - segment.startElapsedTimeS
       : finite(segment.startDistanceM) && finite(segment.endDistanceM) ? segment.endDistanceM - segment.startDistanceM : undefined;
     if (finite(boundaryValue)) {
+      const spanUnit = finite(segment.startElapsedTimeS) ? "s" : "m";
+      const spanDisplay = spanUnit === "s"
+        ? durationDisplayS(boundaryValue)
+        : { displayValue: compact(boundaryValue, 0), displayUnit: spanUnit };
       claims.push(claim(rideId, `segment.${segment.kind}.${segment.id}.span`, boundaryValue,
-        finite(segment.startElapsedTimeS) ? "s" : "m", refs, {
+        spanUnit, refs, {
           kind: "advanced",
           formulaVersion: segment.sourceRulesVersion,
           supports: [`${segment.kind}_segment`],
           prohibits: ["ability_change", "causation"],
+          displayValue: spanDisplay.displayValue,
+          displayUnit: spanDisplay.displayUnit,
         }));
     }
     for (const [sensor, stats] of Object.entries(segment.sensorMeans) as [Sensor, NonNullable<SegmentWindowV2["sensorMeans"][Sensor]>][]) {
+      const sensorUnit = sensor === "speed" ? "m/s" : sensor === "heart_rate" ? "bpm" : sensor === "power" ? "W" : "rpm";
+      const sensorDisplay = sensor === "speed"
+        ? speedDisplayMps(stats.mean)
+        : { displayValue: compact(stats.mean, sensorUnit === "W" || sensorUnit === "bpm" || sensorUnit === "rpm" ? 0 : 2), displayUnit: sensorUnit };
       claims.push(claim(rideId, `segment.${segment.kind}.${segment.id}.${sensor}.mean`, stats.mean,
-        sensor === "speed" ? "m/s" : sensor === "heart_rate" ? "bpm" : sensor === "power" ? "W" : "rpm", refs, {
+        sensorUnit, refs, {
           kind: "advanced",
           formulaVersion: RIDE_CAPABILITY_CLAIMS_RULES_VERSION,
           supports: [`${segment.kind}_${sensor}_observation`],
           prohibits: ["stability_from_mean", "causation"],
+          displayValue: sensorDisplay.displayValue,
+          displayUnit: sensorDisplay.displayUnit,
         }));
     }
   }
   return refsByKind;
+}
+
+// S2-03 (PD-AI-16): representative-window selection is deterministic —
+// (1) longest shared time, (2) highest common coverage (next highest when it
+// repeats pick 1), (3) lowest common coverage as the anomaly floor. Duplicates
+// fall through in order. With three or fewer windows every window is shown.
+const MAX_FIXED_RELATION_REPRESENTATIVES = 3;
+
+export interface RelationRepresentative {
+  window: JointWindowV2;
+  index: number;
+  reason: string;
+}
+
+export function selectRelationRepresentatives(windows: JointWindowV2[]): RelationRepresentative[] {
+  const indexed = windows.map((window, index) => ({ window, index: index + 1 }));
+  if (windows.length <= MAX_FIXED_RELATION_REPRESENTATIVES) {
+    return indexed.map((item) => ({ ...item, reason: `all ${windows.length} fixed windows shown` }));
+  }
+  const picked: RelationRepresentative[] = [];
+  const takeNext = (ordered: typeof indexed, reason: string): void => {
+    const candidate = ordered.find((item) => !picked.some((chosen) => chosen.window === item.window));
+    if (candidate) picked.push({ ...candidate, reason });
+  };
+  takeNext([...indexed].sort((a, b) => b.window.sharedTimeS - a.window.sharedTimeS), "longest shared time");
+  takeNext([...indexed].sort((a, b) => b.window.commonCoverage - a.window.commonCoverage), "highest common coverage");
+  takeNext([...indexed].sort((a, b) => a.window.commonCoverage - b.window.commonCoverage), "lowest common coverage");
+  return picked;
+}
+
+// Mean common coverage of the early/middle/late thirds of the ride
+// (chronological). Undefined when fewer than three windows exist.
+function thirdsCoverageMeans(windows: JointWindowV2[]): number[] | undefined {
+  if (windows.length < 3) return undefined;
+  const sorted = [...windows].sort((a, b) => a.startElapsedTimeS - b.startElapsedTimeS);
+  const base = Math.floor(sorted.length / 3);
+  const sizes = [base, base, base];
+  for (let remainder = sorted.length % 3, slot = 0; remainder > 0; remainder -= 1, slot += 1) sizes[slot] += 1;
+  const means: number[] = [];
+  let offset = 0;
+  for (const size of sizes) {
+    const slice = sorted.slice(offset, offset + size);
+    means.push(slice.reduce((total, window) => total + window.commonCoverage, 0) / slice.length);
+    offset += size;
+  }
+  return means;
 }
 
 function addRelationClaims(
@@ -399,11 +486,72 @@ function addRelationClaims(
   windowsSource: SourceSpec,
 ): EvidenceSourceRef[] {
   const allRefs: EvidenceSourceRef[] = [];
-  windows.forEach((window, index) => {
+  const fixedByPair = new Map<string, JointWindowV2[]>();
+  const segmentWindows: JointWindowV2[] = [];
+  for (const window of windows) {
+    if (window.segmentId) segmentWindows.push(window);
+    else {
+      const pair = window.seriesKeys.join("-");
+      fixedByPair.set(pair, [...(fixedByPair.get(pair) ?? []), window]);
+    }
+  }
+
+  // Fixed windows: one aggregate claim plus at most three representatives
+  // per sensor pair (S2-03 / PD-AI-16). The aggregate claim cites the
+  // representative windows' evidence so the claim stays within a bounded
+  // evidence footprint; the packet limitations disclose the aggregation.
+  for (const [pair, pairWindows] of fixedByPair) {
+    if (!pairWindows.length) continue;
+    const representatives = selectRelationRepresentatives(pairWindows);
+    const aggregateRefs = [sourceRef(windowsSource, unique(representatives.flatMap((item) => item.window.evidenceIds)))];
+    allRefs.push(...aggregateRefs);
+    const coverages = pairWindows.map((window) => window.commonCoverage);
+    const meanCoverage = coverages.reduce((total, value) => total + value, 0) / coverages.length;
+    const totalSharedS = pairWindows.reduce((total, window) => total + window.sharedTimeS, 0);
+    const thirds = thirdsCoverageMeans(pairWindows);
+    claims.push(claim(rideId, `relation.fixed.${pair}.aggregate`, meanCoverage, "ratio", aggregateRefs, {
+      kind: "relation",
+      formulaVersion: RIDE_CAPABILITY_CLAIMS_RULES_VERSION,
+      supports: ["same_window_observation"],
+      prohibits: ["causation", "response_order", "trend"],
+      displayValue: compact(meanCoverage * 100, 0),
+      displayUnit: "%",
+      text: `aggregated: ${pair} relation aggregated across ${pairWindows.length} fixed windows`
+        + ` (coverage mean ${compact(meanCoverage * 100, 0)}%`
+        + `, min ${compact(Math.min(...coverages) * 100, 0)}%`
+        + `, max ${compact(Math.max(...coverages) * 100, 0)}%`
+        + `, total shared time ${compact(totalSharedS, 0)} s`
+        + (thirds ? `, thirds coverage mean ${thirds.map((value) => `${compact(value * 100, 0)}%`).join("/")}` : "")
+        + ")",
+      aggregatedFromCount: pairWindows.length,
+    }));
+    for (const representative of representatives) {
+      const refs = [sourceRef(windowsSource, representative.window.evidenceIds)];
+      allRefs.push(...refs);
+      claims.push(claim(rideId, `relation.fixed.${pair}.rep.${representative.index}`, representative.window.commonCoverage, "ratio", refs, {
+        kind: "relation",
+        formulaVersion: representative.window.rulesVersion,
+        supports: ["same_window_observation"],
+        prohibits: ["causation", "response_order", "trend"],
+        displayValue: compact(representative.window.commonCoverage * 100, 0),
+        displayUnit: "%",
+        text: `${pair} representative window ${representative.index} (${representative.reason})`
+          + `: shared ${compact(representative.window.sharedTimeS, 0)} s in the same window`,
+      }));
+    }
+  }
+
+  // Segment (cruise/terrain) windows stay per-window: each segment emits at
+  // most one window per pair, so their count is bounded by construction.
+  const segmentIndexes = new Map<string, number>();
+  for (const window of segmentWindows) {
+    const pair = window.seriesKeys.join("-");
+    const group = `${window.segmentId}:${pair}`;
+    const index = (segmentIndexes.get(group) ?? 0) + 1;
+    segmentIndexes.set(group, index);
     const refs = [sourceRef(windowsSource, window.evidenceIds)];
     allRefs.push(...refs);
-    const pair = window.seriesKeys.join("-");
-    claims.push(claim(rideId, `relation.${window.segmentId ?? "fixed"}.${pair}.${index + 1}`, window.commonCoverage, "ratio", refs, {
+    claims.push(claim(rideId, `relation.${window.segmentId}.${pair}.${index}`, window.commonCoverage, "ratio", refs, {
       kind: "relation",
       formulaVersion: window.rulesVersion,
       supports: ["same_window_observation"],
@@ -412,7 +560,7 @@ function addRelationClaims(
       displayUnit: "%",
       text: `${pair} shared ${compact(window.sharedTimeS, 0)} s in the same window`,
     }));
-  });
+  }
   return allRefs;
 }
 
@@ -472,9 +620,10 @@ export function buildRideCapabilityClaimsV2(
     const timingEvidence = derivedEvidence(rideId, "timing-moving-duration");
     const timingRefs = [sourceRef(derivedSource, [timingEvidence])];
     if (finite(timing.movingTimeS)) {
+      const durationDisplay = durationDisplayS(timing.movingTimeS);
       claims.push(claim(rideId, "timing.movingDurationS", timing.movingTimeS, "s", timingRefs, {
         kind: "advanced", formulaVersion: timing.rulesVersion, supports: ["current_ride_timing"], prohibits: ["training_effect"],
-        displayValue: compact(timing.movingTimeS, 0), displayUnit: "s",
+        displayValue: durationDisplay.displayValue, displayUnit: durationDisplay.displayUnit,
       }));
     }
     claims.push(claim(rideId, "stops.count", temporal.stops.length, "count", temporalRef, {
@@ -544,6 +693,10 @@ export function buildRideCapabilityClaimsV2(
       claims.push(claim(rideId, `power.peakAverage.${peak.durationS}s`, peak.meanPowerW!, "W", [sourceRef(windowsSource, peak.evidenceIds)], {
         kind: "advanced", quality, formulaVersion: peak.rulesVersion, supports: ["short_duration_power_peak"],
         prohibits: ["ability_change", "bridge_recording_gap"], displayValue: compact(peak.meanPowerW!, 0), displayUnit: "W",
+        // The window length is part of the claim text so "10 s / 20 s / 30 s
+        // peak" wording copies a whitelisted number instead of deriving one
+        // from the claim key.
+        text: `contiguous ${peak.durationS} s peak average power`,
       }));
     }
   } else capabilities.set("powerPeaks", unavailableCapability("powerPeaks", ["power", "sensorContinuity"],

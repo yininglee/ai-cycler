@@ -91,6 +91,8 @@ function makeInput(questions: RideModelInputQuestionV2[]): RideModelInputV2 {
       questionCount: questions.length,
       claimCount: questions.reduce((total, item) => total + item.claims.length, 0),
       knowledgeCount: 0,
+      aggregatedRelationPairCount: 0,
+      aggregatedRelationWindowCount: 0,
     },
   };
 }

@@ -14,18 +14,30 @@ import type {
 import type {
   RideInterpretationPresentationViewModelV04Candidate,
 } from "../../src/ai/ride-interpretation-presentation-view-model-v04-candidate";
+import type { RideOutputPresentationV2 } from "../../src/ai/ride-output-presentation-v2";
+import type { RideSeriesChartDisplay } from "../../src/ui/ride-series-view-model";
+import { RideOutputV2View } from "./ride-output-v2-view";
 
 interface InterpretationResponse {
   rideId: string;
-  source: "b2" | "b0" | "safety_stop";
+  source: "b2" | "v2" | "b0" | "safety_stop";
   output: unknown;
   fallbackCode?: string;
+  failureCodes?: string[];
+  engine?: "v2";
   attempts?: number;
   validationIssues?: string[];
   v04Candidate?: {
     output: RideInterpretationOutputV04Candidate;
     presentation: RideInterpretationPresentationV04Candidate;
     viewModel: RideInterpretationPresentationViewModelV04Candidate;
+  };
+  v2Candidate?: {
+    presentation: RideOutputPresentationV2;
+    charts: Record<string, RideSeriesChartDisplay>;
+    stage: string;
+    modelRepairCalls: number;
+    versions: Record<string, unknown>;
   };
 }
 
@@ -39,7 +51,15 @@ const DIMENSION_LABELS: Record<string, string> = {
   history_change: "相对自己",
 };
 
-const EVENT_FALLBACK_CODES = new Set(["AI_DISABLED", "AI_NOT_CONFIGURED", "DATA_NOT_ELIGIBLE", "AI_TIMEOUT", "PROVIDER_ERROR", "REPAIR_FAILED"]);
+const EVENT_FALLBACK_CODES = new Set([
+  "AI_DISABLED", "AI_NOT_CONFIGURED", "DATA_NOT_ELIGIBLE", "AI_TIMEOUT", "PROVIDER_ERROR", "REPAIR_FAILED",
+  // S6-03 V2 classified provider/input failures surfaced as b0 fallback codes.
+  "PROVIDER_AUTH_ERROR", "PROVIDER_RATE_LIMITED", "PROVIDER_HTTP_ERROR", "PROVIDER_INVALID_RESPONSE",
+  "PROVIDER_MISSING_CONTENT", "PROVIDER_REQUEST_TOO_LARGE", "PROVIDER_RESPONSE_TOO_LARGE",
+  "INPUT_BUDGET_EXCEEDED", "OPTIONS_INVALID", "RUN_SCOPE_MISMATCH", "EVIDENCE_CONTEXT_INVALID",
+  "PACKET_CLAIM_UNRESOLVED", "PACKET_KNOWLEDGE_UNRESOLVED", "INPUT_CLAIM_COVERAGE_MISMATCH",
+  "PRIVATE_FIELD_PRESENT",
+]);
 
 /**
  * 生成解说的四段式进度：真实链路是一次 Provider 请求，拿不到细粒度进度，
@@ -101,18 +121,24 @@ export function InterpretationView({
   title,
   dateLabel,
   demoFallback,
+  engine,
 }: {
   rideId: string;
   title: string;
   dateLabel?: string;
   demoFallback?: string;
+  /** S6-03: "v2" forces this request through the V2 chain (?ai=v2 page param). */
+  engine?: "v2";
 }) {
   const isDemoB0 = demoFallback === "b0";
+  // Cache/in-flight keys include the engine so a V2 trial response never
+  // shadows the cached V1 response for the same ride (and vice versa).
+  const requestKey = engine === "v2" ? `${rideId}|v2` : rideId;
   // demoB0 为 true 时跳过网络请求，直接展示降级页；点「重新解读」会退出演示、走真实链路。
   const [demoB0, setDemoB0] = useState(isDemoB0);
   const [state, setState] = useState<LoadState>(() => {
     if (isDemoB0) return { kind: "ok", data: demoB0Response(rideId) };
-    const cached = responseCache.get(rideId);
+    const cached = responseCache.get(requestKey);
     return cached ? { kind: "ok", data: cached } : { kind: "loading" };
   });
   const [feedback, setFeedback] = useState<"helpful" | "not_helpful" | null>(null);
@@ -137,8 +163,8 @@ export function InterpretationView({
       setState({ kind: "ok", data: demoB0Response(rideId) });
       return;
     }
-    if (!force && responseCache.has(rideId)) {
-      setState({ kind: "ok", data: responseCache.get(rideId)! });
+    if (!force && responseCache.has(requestKey)) {
+      setState({ kind: "ok", data: responseCache.get(requestKey)! });
       return;
     }
     setState({ kind: "loading" });
@@ -146,13 +172,13 @@ export function InterpretationView({
     // Reuse an in-flight request for the same rideId instead of firing a
     // second POST. Covers React Strict Mode's double-mount effect and any
     // other concurrent callers (e.g. the retry button during a pending load).
-    let pending = !force ? inFlight.get(rideId) : undefined;
+    let pending = !force ? inFlight.get(requestKey) : undefined;
     if (!pending) {
       pending = (async () => {
         const response = await fetch("/api/ride-analysis", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ rideId }),
+          body: JSON.stringify({ rideId, ...(engine ? { engine } : {}) }),
           cache: "no-store",
         });
         if (!response.ok) {
@@ -161,13 +187,13 @@ export function InterpretationView({
         }
         return (await response.json()) as InterpretationResponse;
       })();
-      inFlight.set(rideId, pending);
+      inFlight.set(requestKey, pending);
     }
 
     try {
       const data = await pending;
-      if (data.source === "b2" && data.v04Candidate) {
-        responseCache.set(rideId, data);
+      if ((data.source === "b2" && data.v04Candidate) || (data.source === "v2" && data.v2Candidate)) {
+        responseCache.set(requestKey, data);
       }
       setState({ kind: "ok", data });
     } catch (cause) {
@@ -178,11 +204,11 @@ export function InterpretationView({
     } finally {
       // Only clear if it's still our promise; a forced refresh may have
       // replaced it.
-      if (inFlight.get(rideId) === pending) {
-        inFlight.delete(rideId);
+      if (inFlight.get(requestKey) === pending) {
+        inFlight.delete(requestKey);
       }
     }
-  }, [rideId, demoB0]);
+  }, [rideId, requestKey, demoB0, engine]);
 
   useEffect(() => {
     void load();
@@ -194,9 +220,9 @@ export function InterpretationView({
       setDemoB0(false);
       return;
     }
-    responseCache.delete(rideId);
+    responseCache.delete(requestKey);
     void load(true);
-  }, [demoB0, load, rideId]);
+  }, [demoB0, load, requestKey]);
 
   const blockVisuals = useMemo(() => {
     if (state.kind !== "ok") return new Map<string, Array<{ visualId: string; chart?: unknown }>>();
@@ -249,6 +275,10 @@ export function InterpretationView({
 
         {state.kind === "ok" && state.data.source === "b2" && state.data.v04Candidate && (
           <B2Body response={state.data} blockVisuals={blockVisuals} feedback={feedback} onFeedback={submitFeedback} />
+        )}
+
+        {state.kind === "ok" && state.data.source === "v2" && state.data.v2Candidate && (
+          <V2Body candidate={state.data.v2Candidate} feedback={feedback} onFeedback={submitFeedback} />
         )}
 
         {state.kind === "ok" && state.data.source === "b2" && !state.data.v04Candidate && (
@@ -435,6 +465,26 @@ function B2Body({
         )}
       </section>
 
+      <FeedbackButtons feedback={feedback} onSubmit={onFeedback} />
+    </>
+  );
+}
+
+// S6-03: V2 engine body — renders the S6-04 presentation component with the
+// deterministic dimension chart bindings from the API response.
+function V2Body({
+  candidate,
+  feedback,
+  onFeedback,
+}: {
+  candidate: NonNullable<InterpretationResponse["v2Candidate"]>;
+  feedback: "helpful" | "not_helpful" | null;
+  onFeedback: (value: "helpful" | "not_helpful") => void;
+}) {
+  return (
+    <>
+      <p className="candidate-demo-hint">V2 解读链路（证据体系重构版）·本次输出已通过全部校验后展示。</p>
+      <RideOutputV2View presentation={candidate.presentation} charts={candidate.charts} />
       <FeedbackButtons feedback={feedback} onSubmit={onFeedback} />
     </>
   );

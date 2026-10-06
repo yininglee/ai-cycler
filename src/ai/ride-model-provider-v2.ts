@@ -104,7 +104,9 @@ export function readRideModelProviderConfigV2(
     apiUrl: parsedUrl.toString(),
     apiToken,
     modelId: environment.RIDE_MODEL_V2_MODEL_ID?.trim() || DEFAULT_RIDE_MODEL_V2_MODEL_ID,
-    timeoutMs: positiveInteger(environment.AI_ANALYSIS_TIMEOUT_MS, 25_000, 60_000),
+    // S2-03: long rides with aggregated evidence still need >60s of generation
+    // time for the full structured output, so the ceiling is 5 minutes.
+    timeoutMs: positiveInteger(environment.AI_ANALYSIS_TIMEOUT_MS, 25_000, 300_000),
     maxRequestBytes: positiveInteger(environment.RIDE_MODEL_V2_MAX_REQUEST_BYTES, 262_144, 524_288),
     maxResponseBytes: positiveInteger(environment.AI_MAX_RESPONSE_BYTES, 262_144, 524_288),
   };

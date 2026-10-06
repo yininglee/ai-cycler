@@ -14,6 +14,8 @@ import type {
   RideOutputPresentationAssertionV2,
   RideOutputPresentationV2,
 } from "../../src/ai/ride-output-presentation-v2";
+import type { RideSeriesChartDisplay } from "../../src/ui/ride-series-view-model";
+import { RideSeriesChart } from "./ride-visuals";
 
 function AssertionText({
   assertion,
@@ -48,8 +50,13 @@ function AssertionList({ assertions }: { assertions: RideOutputPresentationAsser
 
 export function RideOutputV2View({
   presentation,
+  charts,
 }: {
   presentation: RideOutputPresentationV2;
+  // S6-03 deterministic chart binding (user decision 2026-10-06): the server
+  // binds each dimension to its sensor chart by fixed rules; the model never
+  // declares chart references.
+  charts?: Record<string, RideSeriesChartDisplay>;
 }) {
   const dimensionCount =
     presentation.dimensions.length + (presentation.longTermLoadRecovery ? 1 : 0);
@@ -95,6 +102,11 @@ export function RideOutputV2View({
                 <h3>{dimension.title}</h3>
               </header>
               <AssertionList assertions={dimension.assertions} />
+              {charts?.[dimension.dimensionId] && (
+                <div className="candidate-dimension-chart">
+                  <RideSeriesChart chart={charts[dimension.dimensionId]} cruiseSegments={[]} />
+                </div>
+              )}
             </article>
           ))}
         </div>

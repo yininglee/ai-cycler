@@ -59,6 +59,11 @@ export interface V2AnalysisClaim {
   displayUnit?: string;
   supports: string[];
   prohibits: string[];
+  // S2-03 (PD-AI-16, user decision 2026-10-06): present only on aggregated
+  // fixed-window relation claims; records how many underlying windows the
+  // claim summarizes so packets, model input stats, and evaluation runs can
+  // distinguish aggregated evidence from per-window evidence.
+  aggregatedFromCount?: number;
 }
 
 export interface V2EvidenceCapability {

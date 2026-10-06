@@ -14,7 +14,12 @@ import { AuthConfigurationError, getRequestSession, resolveOrCreateRequestSessio
 import { createDemoEvent } from "../../../src/observability/demo-events.ts";
 import { getApplicationRepository } from "../../../src/persistence/application-repository.ts";
 import { getRideRepository } from "../../../src/persistence/demo-ride-repository.ts";
-import { isDemoRideId } from "../../../src/ui/ride-view-model.ts";
+import { isDemoRideId, DEMO_RIDE_IDS } from "../../../src/ui/ride-view-model.ts";
+import { buildRidePageViewModelFromRecord } from "../../../src/ui/ride-view-model.ts";
+import type { HistoricalRide } from "../../../src/domain/historical-comparison.ts";
+import { runRideInterpretationV2 } from "../../../src/ai/ride-interpretation-service-v2.ts";
+import { readRideModelProviderConfigV2, RideModelClientV2 } from "../../../src/ai/ride-model-provider-v2.ts";
+import { bindRideV2DimensionChartsV2 } from "../../../src/ai/ride-output-chart-binding-v2.ts";
 
 export const runtime = "nodejs";
 
@@ -38,6 +43,33 @@ export const RIDE_INTERPRETATION_ROUTE_VERSION_MATRIX = {
 } as const;
 
 const MAX_REQUEST_BYTES = 1_024;
+
+// S6-03 engine switch: default stays on the V1 Coze candidate chain. Set
+// RIDE_INTERPRETATION_ENGINE=V2 (env) for a global cut-over, or send
+// {"engine":"v2"} in the request body to force V2 for a single request
+// (the drawer's ?ai=v2 page parameter). One-click rollback = remove the env
+// var (or send engine:"v1"); the V1 code path below is untouched.
+function resolveInterpretationEngine(requestedEngine: unknown, environment: NodeJS.ProcessEnv): "v1" | "v2" {
+  if (requestedEngine === "v2" || requestedEngine === "v1") return requestedEngine;
+  return environment.RIDE_INTERPRETATION_ENGINE?.trim().toLowerCase() === "v2" ? "v2" : "v1";
+}
+
+// V2 history source: the session owner's imported rides; demo fixture rides
+// fall back to the other built-in fixtures so the V2 chain stays testable
+// without a session. The comparison builder filters the anchor itself.
+async function collectV2HistoryRides(sessionUserId: string | undefined, currentRideId: string): Promise<HistoricalRide[]> {
+  if (sessionUserId) {
+    const rides = await (await getRideRepository()).listRides(sessionUserId);
+    return rides
+      .filter((ride) => ride.record.activity.rideId !== currentRideId)
+      .map((ride) => ({ metadata: { historyId: ride.record.activity.rideId }, record: ride.record }));
+  }
+  return DEMO_RIDE_IDS
+    .filter((id) => id !== currentRideId)
+    .map((id) => getRideRecord(id))
+    .filter((record): record is NonNullable<typeof record> => record !== undefined)
+    .map((record) => ({ metadata: { historyId: record.activity.rideId }, record }));
+}
 
 function noStoreJson(value: unknown, status = 200, headers: Record<string, string> = {}): Response {
   return Response.json(value, {
@@ -69,6 +101,10 @@ export async function POST(request: Request): Promise<Response> {
   if (typeof rideId !== "string") {
     return noStoreJson({ error: "UNKNOWN_RIDE" }, 400);
   }
+  const requestedEngine = typeof body === "object" && body !== null && !Array.isArray(body)
+    ? (body as Record<string, unknown>).engine
+    : undefined;
+  const engine = resolveInterpretationEngine(requestedEngine, process.env);
 
   const isFixture = isDemoRideId(rideId);
   let session = getRequestSession(request);
@@ -88,7 +124,7 @@ export async function POST(request: Request): Promise<Response> {
   const finalize = async (payload: Record<string, unknown>, run: Record<string, unknown>): Promise<Response> => {
     if (session) {
       if (!isFixture) await getApplicationRepository().saveAnalysisRun(session.userId, rideId, run);
-      if (payload.source === "b2" || payload.source === "safety_stop") {
+      if (payload.source === "b2" || payload.source === "v2" || payload.source === "safety_stop") {
         await getApplicationRepository().saveDemoEvent(session.userId, createDemoEvent({ type: "ai_completed", rideId, attributes: { source: String(payload.source) } }));
       } else {
         await getApplicationRepository().saveDemoEvent(session.userId, createDemoEvent({ type: "ai_degraded", rideId, attributes: { code: String(payload.fallbackCode ?? "UNKNOWN") } }));
@@ -111,6 +147,66 @@ export async function POST(request: Request): Promise<Response> {
     return finalize(
       { rideId, source: "safety_stop", output: null, fallbackCode: "SAFETY_STOP", versions },
       { source: "safety_stop", fallbackCode: "SAFETY_STOP", versions },
+    );
+  }
+
+  // S6-03 V2 branch: full V2 chain against real data sources. Any internal
+  // failure degrades through the b0 contract (never a silent V1 fallback, so
+  // a V2 problem is always traceable and no double model calls happen).
+  if (engine === "v2") {
+    if (process.env.AI_ANALYSIS_ENABLED !== "true") {
+      return finalize(
+        { rideId, source: "b0", output: null, fallbackCode: "AI_DISABLED", engine: "v2", versions },
+        { source: "b0", engine: "v2", fallbackCode: "AI_DISABLED", versions },
+      );
+    }
+    const profile = session ? await getApplicationRepository().getProfile(session.userId) : null;
+    const historyRides = await collectV2HistoryRides(session?.userId, rideId);
+    const providerConfig = readRideModelProviderConfigV2(process.env);
+    const modelClient = providerConfig ? new RideModelClientV2(providerConfig) : undefined;
+    const result = await runRideInterpretationV2({
+      record,
+      profile,
+      historyRides,
+      analysisRunId: `ride-v2-${crypto.randomUUID()}`,
+      userScope: session?.userId ?? "anonymous",
+      requestId: crypto.randomUUID(),
+      modelCaller: modelClient ? (invocation) => modelClient.run(invocation) : undefined,
+    });
+    if (result.source === "b0") {
+      return finalize(
+        {
+          rideId,
+          source: "b0",
+          output: null,
+          fallbackCode: result.fallbackCode,
+          ...(result.failureCodes ? { failureCodes: result.failureCodes } : {}),
+          engine: "v2",
+          versions: result.versions,
+        },
+        { source: "b0", engine: "v2", fallbackCode: result.fallbackCode, ...(result.failureCodes ? { failureCodes: result.failureCodes } : {}), versions: result.versions },
+      );
+    }
+    const pageView = buildRidePageViewModelFromRecord(record);
+    const charts = bindRideV2DimensionChartsV2(
+      pageView.visuals,
+      result.presentation.dimensions.map((dimension) => dimension.dimensionId),
+    );
+    return finalize(
+      {
+        rideId,
+        source: "v2",
+        output: null,
+        v2Candidate: {
+          presentation: result.presentation,
+          charts,
+          stage: result.stage,
+          modelRepairCalls: result.modelRepairCalls,
+          versions: result.versions,
+        },
+        versions: result.versions,
+      },
+      { source: "v2", stage: result.stage, modelRepairCalls: result.modelRepairCalls, versions: result.versions, ...(result.callRecords.length ? { callRecords: result.callRecords } : {}) },
     );
   }
 

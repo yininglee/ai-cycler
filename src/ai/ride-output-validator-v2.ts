@@ -64,7 +64,10 @@ interface AssertionView {
 
 interface ClaimBinding {
   claim: V2AnalysisClaim;
-  dimensionId: string;
+  // A claim legitimately fans out into several question packets (e.g. timing
+  // and cruise-segment claims are delivered to both pacingExecution and
+  // powerOutput), so every delivered dimension is tracked here.
+  dimensionIds: Set<string>;
 }
 
 const stabilityTextPattern = /稳定|平稳|保持良好/;
@@ -95,10 +98,13 @@ function extractNumbers(text: string): number[] {
 }
 
 function claimAllowsNumber(claim: V2AnalysisClaim, number: number): boolean {
-  if (typeof claim.value === "number" && claim.value === number) return true;
+  // Sign equivalence: a negative claim value (e.g. lastMinusFirst -31.5 W) is
+  // faithfully expressed in natural language as "下降 31.5 W", so the absolute
+  // value is allowed as well.
+  if (typeof claim.value === "number" && (claim.value === number || claim.value === -number)) return true;
   const sources = [claim.displayValue ?? "", claim.text ?? ""];
   return sources.some((source) =>
-    extractNumbers(String(source)).some((allowed) => allowed === number),
+    extractNumbers(String(source)).some((allowed) => allowed === number || allowed === -number),
   );
 }
 
@@ -134,15 +140,19 @@ export function validateRideModelOutputV2(
 
   // Input indexes used by every assertion check.
   const claimsById = new Map<string, ClaimBinding>();
-  const knowledgeDimensionsById = new Map<string, string>();
+  const knowledgeDimensionsById = new Map<string, Set<string>>();
   const questionsByDimension = new Map<string, RideModelInputQuestionV2>();
   for (const question of input.questions) {
     questionsByDimension.set(question.dimensionId, question);
     for (const claim of question.claims) {
-      claimsById.set(claim.claimId, { claim, dimensionId: question.dimensionId });
+      const binding = claimsById.get(claim.claimId);
+      if (binding) binding.dimensionIds.add(question.dimensionId);
+      else claimsById.set(claim.claimId, { claim, dimensionIds: new Set([question.dimensionId]) });
     }
     for (const knowledge of question.knowledge) {
-      knowledgeDimensionsById.set(knowledge.knowledgeId, question.dimensionId);
+      const dimensions = knowledgeDimensionsById.get(knowledge.knowledgeId);
+      if (dimensions) dimensions.add(question.dimensionId);
+      else knowledgeDimensionsById.set(knowledge.knowledgeId, new Set([question.dimensionId]));
     }
   }
   const inputHasHistoryClaims = [...claimsById.values()].some(
@@ -157,11 +167,11 @@ export function validateRideModelOutputV2(
         issue("CLAIM_NOT_IN_INPUT", path, `claimId "${claimId}" does not exist in the delivered input`);
         continue;
       }
-      if (dimensionId && binding.dimensionId !== dimensionId) {
+      if (dimensionId && !binding.dimensionIds.has(dimensionId)) {
         issue(
           "CLAIM_NOT_IN_DIMENSION",
           path,
-          `claimId "${claimId}" belongs to dimension "${binding.dimensionId}", not "${dimensionId}"`,
+          `claimId "${claimId}" belongs to dimension "${[...binding.dimensionIds].join(", ")}", not "${dimensionId}"`,
         );
         continue;
       }
@@ -172,14 +182,14 @@ export function validateRideModelOutputV2(
 
   const checkKnowledgeIds = (path: string, knowledgeIds: string[], dimensionId?: string) => {
     for (const knowledgeId of knowledgeIds) {
-      const boundDimension = knowledgeDimensionsById.get(knowledgeId);
-      if (!boundDimension) {
+      const boundDimensions = knowledgeDimensionsById.get(knowledgeId);
+      if (!boundDimensions) {
         issue("KNOWLEDGE_NOT_IN_INPUT", path, `knowledgeId "${knowledgeId}" does not exist in the delivered input`);
-      } else if (dimensionId && boundDimension !== dimensionId) {
+      } else if (dimensionId && !boundDimensions.has(dimensionId)) {
         issue(
           "KNOWLEDGE_NOT_IN_DIMENSION",
           path,
-          `knowledgeId "${knowledgeId}" is attached to dimension "${boundDimension}", not "${dimensionId}"`,
+          `knowledgeId "${knowledgeId}" is attached to dimension "${[...boundDimensions].join(", ")}", not "${dimensionId}"`,
         );
       }
     }

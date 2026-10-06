@@ -58,7 +58,7 @@ test("S5-02 config reader applies safe defaults and the selected model baseline"
     AI_ANALYSIS_TIMEOUT_MS: "999999999",
   });
   assert.equal(overridden?.modelId, "zai-org/GLM-5.2");
-  assert.equal(overridden?.timeoutMs, 60_000);
+  assert.equal(overridden?.timeoutMs, 300_000);
 });
 
 test("S5-02 config reader refuses non-HTTPS endpoints except localhost", () => {

@@ -14,7 +14,9 @@ import {
 // of silently trimming claims when authorization, privacy, or budget gates fail.
 
 export const RIDE_MODEL_INPUT_SCHEMA_VERSION = "ride-model-input-v2.1.0" as const;
-export const RIDE_MODEL_INPUT_RULES_VERSION = "ride-model-input-v2.0" as const;
+// S2-03 (PD-AI-16): v2.1 — inputStats now records aggregated relation
+// evidence (pair count and underlying fixed-window count).
+export const RIDE_MODEL_INPUT_RULES_VERSION = "ride-model-input-v2.1" as const;
 export const DEFAULT_RIDE_MODEL_INPUT_MAX_CHARACTERS = 160_000 as const;
 
 const requiredPrivacyFlags = [
@@ -62,6 +64,12 @@ export interface RideModelInputStatsV2 {
   questionCount: number;
   claimCount: number;
   knowledgeCount: number;
+  // S2-03 (PD-AI-16): aggregated fixed-window relation disclosure — how many
+  // sensor pairs were delivered as aggregates and how many underlying fixed
+  // windows they summarize, so evaluation runs can distinguish aggregated
+  // samples from per-window samples.
+  aggregatedRelationPairCount: number;
+  aggregatedRelationWindowCount: number;
 }
 
 export interface RideModelInputV2 {
@@ -220,6 +228,18 @@ export function buildRideModelInputV2(
     });
   }
 
+  // S2-03 (PD-AI-16): deduplicate aggregate relation claims across packets
+  // (the same claim fans out into several questions) so the stats report each
+  // sensor pair and its underlying window count exactly once.
+  const relationAggregation = new Map<string, number>();
+  for (const question of questions) {
+    for (const claim of question.claims) {
+      if (claim.aggregatedFromCount !== undefined && !relationAggregation.has(claim.key)) {
+        relationAggregation.set(claim.key, claim.aggregatedFromCount);
+      }
+    }
+  }
+
   const input: RideModelInputV2 = {
     schemaVersion: RIDE_MODEL_INPUT_SCHEMA_VERSION,
     rulesVersion: RIDE_MODEL_INPUT_RULES_VERSION,
@@ -236,6 +256,8 @@ export function buildRideModelInputV2(
       questionCount: questions.length,
       claimCount: questions.reduce((total, question) => total + question.claims.length, 0),
       knowledgeCount: questions.reduce((total, question) => total + question.knowledge.length, 0),
+      aggregatedRelationPairCount: relationAggregation.size,
+      aggregatedRelationWindowCount: [...relationAggregation.values()].reduce((total, count) => total + count, 0),
     },
   };
 

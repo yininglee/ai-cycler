@@ -28,6 +28,8 @@ export default async function RideDetailPage({
   const query = await searchParams;
   // 演示开关：?ai=b0 让抽屉跳过网络请求，直接展示降级到 B0 的解读页。
   const demoFallback = query.ai === "b0" ? "b0" : undefined;
+  // S6-03 引擎开关：?ai=v2 强制本次抽屉走 V2 解读链路（不影响全局默认 V1）。
+  const engineHint = query.ai === "v2" ? "v2" as const : undefined;
   const isFixture = isDemoRideId(id);
   // DEMO-IMPORTED-RIDES：演示「已导入」记录对所有人可读，且不属于任何会话，
   // 因此无会话访客也能直接打开详情页（不是内置样例，但同样只读）。
@@ -60,7 +62,7 @@ export default async function RideDetailPage({
             <RideSeriesCharts charts={view.visuals.charts} cruiseSegments={view.timing.cruiseSegments} routeShape={view.visuals.routeShape} />
             <RideSensorAnalysisGroups record={record} charts={view.visuals.charts} />
             {historyComparison && <RideHistoryComparisonSection view={historyComparison} />}
-            <RideAiAnalysis rideId={id} title={view.rideMeta.titleLabel} dateLabel={view.rideMeta.dateLabel} demoFallback={demoFallback} />
+            <RideAiAnalysis rideId={id} title={view.rideMeta.titleLabel} dateLabel={view.rideMeta.dateLabel} demoFallback={demoFallback} engine={engineHint} />
           </>}
         </section>}
         dataPanel={<section className="data-tab" aria-label="骑行详细数据">
@@ -92,7 +94,7 @@ export default async function RideDetailPage({
             <section className="summary-metrics" aria-label="核心骑行事实">
               {view.factCards.map((fact) => <article className="summary-metric" key={fact.claimId}><p>{fact.label}</p><strong>{fact.value}</strong></article>)}
             </section>
-            <RideAiAnalysis rideId={id} title={view.rideMeta.titleLabel} dateLabel={view.rideMeta.dateLabel} demoFallback={demoFallback} />
+            <RideAiAnalysis rideId={id} title={view.rideMeta.titleLabel} dateLabel={view.rideMeta.dateLabel} demoFallback={demoFallback} engine={engineHint} />
           </div>
         </>}
 

@@ -17,7 +17,9 @@ import {
   type RideCapabilityClaimSnapshotV2,
 } from "./ride-capability-claims-v2.ts";
 
-export const RIDE_EVIDENCE_PACKET_BUILDER_RULES_VERSION = "ride-evidence-packet-builder-v2.2" as const;
+// S2-03 (PD-AI-16): v2.3 — packets that carry aggregated fixed-window relation
+// claims now disclose the aggregation and the underlying window count.
+export const RIDE_EVIDENCE_PACKET_BUILDER_RULES_VERSION = "ride-evidence-packet-builder-v2.3" as const;
 
 export interface BuildRideAnalysisEvidencePacketsV2Options {
   analysisRunId: string;
@@ -195,6 +197,12 @@ function buildPacket(
   const missingLimitations = [...requiredCoverage, ...optionalCoverage]
     .filter((item) => item.status === "missing")
     .map((item) => `${item.capabilityKey}:${item.reason ?? "CAPABILITY_UNAVAILABLE"}`);
+  // S2-03 (PD-AI-16): a packet that carries an aggregated fixed-window
+  // relation claim must disclose that the pair's relation evidence arrives
+  // as an aggregate over N windows, not as per-window observation.
+  const aggregationLimitations = claims
+    .filter((item) => item.aggregatedFromCount !== undefined)
+    .map((item) => `${item.key}:AGGREGATED_FROM_${item.aggregatedFromCount}_WINDOWS`);
   const supports = unique(claims.flatMap((claim) => claim.supports));
   const prohibits = unique([...definition.prohibits, ...claims.flatMap((claim) => claim.prohibits)]);
   const claimIds = claims.map((claim) => claim.claimId);
@@ -211,7 +219,7 @@ function buildPacket(
     claimIds,
     claimGroups: claimGroups(claims),
     qualityStatus,
-    limitations: unique([...snapshot.limitations, ...missingLimitations]),
+    limitations: unique([...snapshot.limitations, ...missingLimitations, ...aggregationLimitations]),
     supports,
     prohibits,
     knowledgeIds: [],
