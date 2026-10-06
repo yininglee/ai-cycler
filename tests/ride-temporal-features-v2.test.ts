@@ -158,8 +158,15 @@ test("unlocated device stop time blocks process claims, while absent and degrade
   assert.ok(powerWithUnlocatedStop.unavailable.includes("UNLOCATED_STOP_TIME"));
   assert.equal(snapshot.series.find((item) => item.seriesKey === "cadence")?.stability.reason, "SERIES_MISSING");
   ride.series.seriesMetadata.power!.qualityStatus = "degraded";
-  assert.equal(buildRideTemporalFeaturesV2(ride).series.find((item) => item.seriesKey === "power")?.statistics, undefined);
-  assert.equal(buildRideTemporalFeaturesV2(ride).series.find((item) => item.seriesKey === "power")?.unavailable[0], "QUALITY_INSUFFICIENT");
+  // S2-05: a degraded parser label alone no longer disqualifies a series whose
+  // effective coverage is high — the ride-level unlocated-stop gate surfaces first.
+  const degradedLabel = buildRideTemporalFeaturesV2(ride).series.find((item) => item.seriesKey === "power")!;
+  assert.equal(degradedLabel.unavailable.includes("QUALITY_INSUFFICIENT"), false);
+  // Genuinely insufficient effective coverage still fails closed.
+  ride.activity.sensorQuality.power!.coverage = 0.5;
+  const insufficient = buildRideTemporalFeaturesV2(ride).series.find((item) => item.seriesKey === "power")!;
+  assert.equal(insufficient.statistics, undefined);
+  assert.equal(insufficient.unavailable[0], "QUALITY_INSUFFICIENT");
 });
 
 test("missing sensor intervals reduce coverage independently, and all-zero power is not stability evidence", () => {

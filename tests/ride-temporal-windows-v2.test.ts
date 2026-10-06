@@ -118,7 +118,7 @@ test("pair gates require twenty shared seconds, two intervals, and 70 percent jo
     window.seriesKeys.join("-") === "power-heart_rate")?.commonCoverage, 0.7);
 });
 
-test("all climbs, cruises and terrain runs remain separate; means and pairs use each segment's bounds", () => {
+test("all climbs, cruises and terrain runs remain separate; means use each segment's bounds", () => {
   const ride = record(Array.from({ length: 36 }, () => ({ seconds: 10, speed: 5, power: 180, heartRate: 135 })));
   const timing = buildRideTimingSummary(ride);
   timing.cruiseSegments = [
@@ -136,17 +136,28 @@ test("all climbs, cruises and terrain runs remain separate; means and pairs use 
     trendDescentDistanceM: 0, trendClassifiedDistanceM: 300, coverageRatio: 1, needsCoverageNotice: false,
   };
   const result = buildRideTemporalWindowsV2(ride, {
-    climbs: climbs([100, 300], [350, 550], [600, 800], [850, 1050]), timing, routeShape,
+    climbs: climbs([100, 300], [350, 550], [600, 800]), timing, routeShape,
   });
   const segmentClimbs = result.segments.filter((segment) => segment.kind === "climb");
-  assert.equal(segmentClimbs.length, 4);
+  assert.equal(segmentClimbs.length, 3);
   assert.deepEqual(segmentClimbs.map((segment) => [segment.startElapsedTimeS, segment.endElapsedTimeS]),
-    [[20, 60], [70, 110], [120, 160], [170, 210]]);
-  assert.ok(segmentClimbs.every((segment) => segment.sensorMeans.power?.mean === 180
-    && segment.jointWindows.some((joint) => joint.seriesKeys.join("-") === "power-heart_rate")));
+    [[20, 60], [70, 110], [120, 160]]);
+  assert.ok(segmentClimbs.every((segment) => segment.sensorMeans.power?.mean === 180));
   assert.equal(result.segments.filter((segment) => segment.kind === "cruise").length, 2);
   assert.equal(result.segments.filter((segment) => segment.kind === "terrain").length, 1);
   assert.equal(result.segments.find((segment) => segment.kind === "terrain")?.sensorMeans.power?.mean, 180);
+});
+
+test("only the three hardest climbs are kept as representative segments with counts disclosed", () => {
+  const ride = record(Array.from({ length: 36 }, () => ({ seconds: 10, speed: 5, power: 180 })));
+  const summary = climbs([100, 300], [350, 550], [600, 800], [850, 1050], [1100, 1300]);
+  const difficulties = [10, 30, 20, 5, 25];
+  summary.climbs.forEach((climb, index) => { climb.difficultyScore = difficulties[index]!; });
+  const result = buildRideTemporalWindowsV2(ride, { climbs: summary });
+  const segmentClimbs = result.segments.filter((segment) => segment.kind === "climb");
+  // Top 3 by difficulty: 30 (climb-1), 25 (climb-4), 20 (climb-2), restored to chronological order.
+  assert.deepEqual(segmentClimbs.map((segment) => segment.id), ["climb-1", "climb-2", "climb-4"]);
+  assert.deepEqual(result.climbRepresentativeCounts, { totalClimbs: 5, representativeClimbs: 3 });
 });
 
 test("a distance boundary within an unrecorded gap is not given invented time", () => {
@@ -155,9 +166,6 @@ test("a distance boundary within an unrecorded gap is not given invented time", 
     ...Array.from({ length: 6 }, () => ({ seconds: 10, speed: 5, power: 200, heartRate: 130 }))]);
   const result = buildRideTemporalWindowsV2(ride, { climbs: climbs([100, 400]) });
   assert.equal(result.segments[0]?.unavailableReason, "BOUNDARY_UNAVAILABLE");
-  assert.deepEqual(result.segments[0]?.jointWindows, []);
-  assert.equal(result.segments[0]?.pairAvailability.find((pair) => pair.seriesKeys.join("-") === "power-heart_rate")?.reason,
-    "BOUNDARY_UNAVAILABLE");
 });
 
 test("out-of-ride segments cannot pass on partial coverage; unavailable climb sources are ignored", () => {
@@ -169,19 +177,15 @@ test("out-of-ride segments cannot pass on partial coverage; unavailable climb so
   const result = buildRideTemporalWindowsV2(ride, { timing, climbs: unavailableClimbs });
   assert.equal(result.segments.length, 1);
   assert.equal(result.segments[0]?.unavailableReason, "BOUNDARY_UNAVAILABLE");
-  assert.deepEqual(result.segments[0]?.jointWindows, []);
-  assert.equal(result.segments[0]?.pairAvailability.find((pair) => pair.seriesKeys.join("-") === "power-heart_rate")?.reason,
-    "BOUNDARY_UNAVAILABLE");
 });
 
-test("a qualified segment pair counts even when no fixed thirty-second bin qualifies", () => {
+test("segments no longer emit joint windows; pair eligibility comes from fixed bins only", () => {
   const ride = record(Array.from({ length: 9 }, (_, index) => ({ seconds: 10, speed: 5,
     power: index === 2 || index === 3 ? 200 : undefined,
     heartRate: index === 2 || index === 3 ? 140 : undefined })));
   const result = buildRideTemporalWindowsV2(ride, { climbs: climbs([100, 200]) });
   assert.equal(result.jointWindows.some((window) => window.seriesKeys.join("-") === "power-heart_rate"), false);
-  assert.equal(result.segments[0]?.jointWindows.find((window) => window.seriesKeys.join("-") === "power-heart_rate")?.sharedTimeS, 20);
-  assert.equal(result.pairAvailability.find((pair) => pair.seriesKeys.join("-") === "power-heart_rate")?.eligible, true);
+  assert.equal(result.pairAvailability.find((pair) => pair.seriesKeys.join("-") === "power-heart_rate")?.eligible, false);
 });
 
 test("missing time, unlocated device stop, and absent sensors fail closed independently", () => {

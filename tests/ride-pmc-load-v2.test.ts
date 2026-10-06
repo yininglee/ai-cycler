@@ -169,7 +169,8 @@ test("PMC-01 keeps the S3-01 gates closed by default (no PMC snapshot passed)", 
   const snapshot = buildRideProfileHistoryV2(current, {});
   assert.equal(snapshot.longTermLoad.status, "unavailable");
   assert.equal(snapshot.recoverySignals.status, "unavailable");
-  assert.ok(snapshot.limitations.includes("history.longTermLoad:HISTORY_NOT_AVAILABLE"));
+  // PD-AI-21 follow-up: no history attempted -> no history disclosure lines.
+  assert.equal(snapshot.limitations.some((limitation) => limitation.startsWith("history.")), false);
   assert.equal(validateRideProfileHistoryV2(snapshot).length, 0);
 });
 

@@ -64,15 +64,10 @@ const knowledgeTitles = {
   "kb-b1-pmc": "体能-疲劳模型（Fitness-Fatigue）",
 };
 
-test("full output maps every section and splits longTermLoadRecovery out", () => {
+test("full output maps every section and renders all dimensions uniformly", () => {
   const output: RideModelOutputV2 = {
     ...baseOutput,
     highlights: [{ text: "连续 8 分钟阈值区段。", conclusionType: "fact", claimIds: ["ride.power.peak-window"] }],
-    historyComparison: {
-      text: "平均功率由 208W 提升至 220W。",
-      conclusionType: "historyComparison",
-      claimIds: ["history.all.power-mean"],
-    },
     suggestions: [{ text: "建议安排低强度恢复骑行。", conclusionType: "suggestion", claimIds: ["ride.load.if"] }],
   };
   const presentation = buildRideOutputPresentationV2(output, { knowledgeTitles });
@@ -80,15 +75,18 @@ test("full output maps every section and splits longTermLoadRecovery out", () =>
   assert.equal(presentation.label.text, "阈值强度下的稳定功率输出");
   assert.equal(presentation.overallAssessment.text, "平均功率 220W、变异系数 4.1%，输出稳定。");
   assert.equal(presentation.highlights?.length, 1);
-  assert.equal(presentation.historyComparison?.text, "平均功率由 208W 提升至 220W。");
   assert.equal(presentation.suggestions?.length, 1);
   assert.deepEqual(presentation.limitations, ["训练计划数据当前未接入。"]);
-  // longTermLoadRecovery is split into its own section, not mixed into dimensions.
-  assert.equal(presentation.dimensions.length, 1);
+  // S2-06 (user decision 2026-10-06): single-ride interpretation has no
+  // history comparison or PMC section — both slots stay null and every
+  // dimension carried by the output renders as a regular section.
+  assert.equal(presentation.historyComparison, null);
+  assert.equal(presentation.longTermLoadRecovery, null);
+  assert.equal(presentation.dimensions.length, 2);
   assert.equal(presentation.dimensions[0].title, "功率输出");
-  assert.equal(presentation.longTermLoadRecovery?.title, "长期负荷与恢复");
+  assert.equal(presentation.dimensions[1].title, "长期负荷与恢复");
   assert.equal(
-    presentation.longTermLoadRecovery?.assertions[1].text,
+    presentation.dimensions[1].assertions[1].text,
     "TSB +12.5，训练负荷平衡，整体恢复良好。",
   );
 });
@@ -97,7 +95,7 @@ test("knowledge references become numbered footnotes collected at the bottom", (
   const presentation = buildRideOutputPresentationV2(baseOutput, { knowledgeTitles });
   const knowledgeAssertion = presentation.dimensions[0].assertions[1];
   assert.deepEqual(knowledgeAssertion.knowledgeFootnoteNumbers, [1]);
-  const pmcKnowledgeAssertion = presentation.longTermLoadRecovery?.assertions[0];
+  const pmcKnowledgeAssertion = presentation.dimensions[1].assertions[0];
   assert.deepEqual(pmcKnowledgeAssertion?.knowledgeFootnoteNumbers, [2]);
   // Assertions without knowledge references carry no footnote markers.
   assert.deepEqual(presentation.dimensions[0].assertions[0].knowledgeFootnoteNumbers, []);
@@ -141,8 +139,10 @@ test("omitted optional sections become null instead of fabricated content", () =
   assert.equal(presentation.highlights, null);
   assert.equal(presentation.historyComparison, null);
   assert.equal(presentation.suggestions, null);
-  // baseOutput still carries the PMC dimension, so it stays present.
-  assert.notEqual(presentation.longTermLoadRecovery, null);
+  // S2-06: the PMC slot is a constant null; the PMC dimension carried by the
+  // output still renders as a regular dimension section.
+  assert.equal(presentation.longTermLoadRecovery, null);
+  assert.equal(presentation.dimensions.length, 2);
 });
 
 test("repair outcome label passes through and defaults to null", () => {
@@ -186,18 +186,13 @@ test("footnote numbers follow page display order across sections", () => {
         knowledgeIds: ["kb-b1-pmc"],
       },
     ],
-    historyComparison: {
-      text: "平均功率由 208W 提升至 220W。",
-      conclusionType: "historyComparison",
-      claimIds: ["history.all.power-mean"],
-    },
   };
   const presentation = buildRideOutputPresentationV2(output, { knowledgeTitles });
   // Highlights render before dimensions: kb-b1-pmc is numbered 1 there and
-  // reused in the PMC section; kb-b1-power-zones inside a dimension is 2.
+  // reused in the PMC dimension; kb-b1-power-zones inside a dimension is 2.
   assert.deepEqual(presentation.highlights?.[0].knowledgeFootnoteNumbers, [1]);
   assert.deepEqual(presentation.dimensions[0].assertions[1].knowledgeFootnoteNumbers, [2]);
-  assert.deepEqual(presentation.longTermLoadRecovery?.assertions[0].knowledgeFootnoteNumbers, [1]);
+  assert.deepEqual(presentation.dimensions[1].assertions[0].knowledgeFootnoteNumbers, [1]);
   assert.equal(presentation.knowledgeFootnotes[0].knowledgeId, "kb-b1-pmc");
   assert.equal(presentation.knowledgeFootnotes[1].knowledgeId, "kb-b1-power-zones");
 });

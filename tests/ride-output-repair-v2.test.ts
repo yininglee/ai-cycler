@@ -24,6 +24,10 @@ import {
   type RideOutputRepairCallV2,
 } from "../src/ai/ride-output-repair-v2.ts";
 
+// S2-06: claims live once at the top level of the input; the pool lets
+// hand-built questions reference them by id like the production assembler.
+const claimPool = new Map<string, V2AnalysisClaim>();
+
 const powerMean = claim("c-power-mean", { key: "power.mean", value: 220, unit: "W", displayValue: "220" });
 const powerCv = claim("c-power-cv", {
   key: "power.coefficientOfVariation",
@@ -36,7 +40,7 @@ const powerCv = claim("c-power-cv", {
 const hrMean = claim("c-hr-mean", { key: "heartRate.mean", value: 150, unit: "bpm", displayValue: "150" });
 
 function claim(claimId: string, overrides: Partial<V2AnalysisClaim> = {}): V2AnalysisClaim {
-  return {
+  const value: V2AnalysisClaim = {
     claimId,
     rideId: "ride-1",
     kind: "metric",
@@ -52,6 +56,8 @@ function claim(claimId: string, overrides: Partial<V2AnalysisClaim> = {}): V2Ana
     prohibits: ["causation"],
     ...overrides,
   };
+  claimPool.set(claimId, value);
+  return value;
 }
 
 function question(
@@ -64,17 +70,18 @@ function question(
     question: `question for ${dimensionId}`,
     eligibility: "available",
     qualityStatus: "valid",
-    claims,
+    claimIds: claims.map((item) => item.claimId),
     limitations: [],
     supports: [],
     prohibits: [],
-    knowledge: [],
+    knowledgeIds: [],
     recommendationAnchorClaimIds: [],
     ...overrides,
   };
 }
 
 function makeInput(questions: RideModelInputQuestionV2[]): RideModelInputV2 {
+  const claimIds = new Set(questions.flatMap((item) => item.claimIds));
   return {
     schemaVersion: RIDE_MODEL_INPUT_SCHEMA_VERSION,
     rulesVersion: RIDE_MODEL_INPUT_RULES_VERSION,
@@ -84,12 +91,14 @@ function makeInput(questions: RideModelInputQuestionV2[]): RideModelInputV2 {
     analysisRunId: "run-s6-02",
     userScope: "user-s6-02",
     privacyFlags: [],
+    claims: [...claimIds].map((id) => claimPool.get(id)!),
+    knowledge: [],
     questions,
     inputStats: {
       totalCharacters: 0,
       maxInputCharacters: 160_000,
       questionCount: questions.length,
-      claimCount: questions.reduce((total, item) => total + item.claims.length, 0),
+      claimCount: claimIds.size,
       knowledgeCount: 0,
       aggregatedRelationPairCount: 0,
       aggregatedRelationWindowCount: 0,
@@ -238,18 +247,23 @@ test("S6-02 deletes invalid optional fragments (fabricated highlight, anchorless
 
 test("S6-02 deletes an optional historyComparison without comparable history", async () => {
   const counter: CallCounter = { count: 0 };
+  // S2-06: historyComparison left the output contract; a non-compliant
+  // response that still carries it gets the fragment deleted deterministically.
+  const firstOutput = baseOutput() as unknown as Record<string, unknown>;
+  firstOutput.historyComparison = { text: "相比之前有进步。", conclusionType: "historyComparison", claimIds: ["c-power-mean"] };
   const result = await orchestrateRideOutputValidationV2({
     input: standardInput(),
-    firstOutput: baseOutput({
-      historyComparison: { text: "相比之前有进步。", conclusionType: "historyComparison", claimIds: ["c-power-mean"] },
-    }),
+    firstOutput,
     requestId: "req-5",
     repairCaller: repairCallerReturning(validRepairOutput, counter),
   });
   assert.equal(result.status, "pass");
   assert.equal(result.stage, "deterministicRepairPass");
   assert.equal(result.modelRepairCalls, 0);
-  assert.equal(result.output?.historyComparison, undefined);
+  assert.equal(
+    (result.output as unknown as Record<string, unknown>).historyComparison,
+    undefined,
+  );
 });
 
 test("S6-02 performs exactly one constrained model repair when local organizing cannot fix a core wording issue", async () => {

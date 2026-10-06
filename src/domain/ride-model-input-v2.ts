@@ -12,11 +12,16 @@ import {
 // versioned model input. L7 keeps every qualified claim in each packet, excludes
 // forbidden inputs, and blocks the model call with a traceable failure code instead
 // of silently trimming claims when authorization, privacy, or budget gates fail.
+//
+// S2-06 (user decision 2026-10-06): claims and knowledge are serialized ONCE at
+// the top level (unique, order-preserving). A claim that legitimately fans out
+// into several question packets is referenced by claimId from each packet
+// instead of being inlined again — the same fact is never sent twice.
 
-export const RIDE_MODEL_INPUT_SCHEMA_VERSION = "ride-model-input-v2.2.0" as const;
-// S2-03 (PD-AI-16): v2.1 — inputStats now records aggregated relation
-// evidence (pair count and underlying fixed-window count).
-export const RIDE_MODEL_INPUT_RULES_VERSION = "ride-model-input-v2.1" as const;
+export const RIDE_MODEL_INPUT_SCHEMA_VERSION = "ride-model-input-v2.3.0" as const;
+// S2-06: v2.2 — top-level unique claims/knowledge with per-question
+// claimIds/knowledgeIds references (input deduplication).
+export const RIDE_MODEL_INPUT_RULES_VERSION = "ride-model-input-v2.2" as const;
 export const DEFAULT_RIDE_MODEL_INPUT_MAX_CHARACTERS = 160_000 as const;
 
 const requiredPrivacyFlags = [
@@ -50,11 +55,13 @@ export interface RideModelInputQuestionV2 {
   question: string;
   eligibility: "available" | "partial";
   qualityStatus: "valid" | "soft";
-  claims: V2AnalysisClaim[];
+  // S2-06: references into the top-level unique claims list — the packet's
+  // claims are no longer inlined per question.
+  claimIds: string[];
   limitations: string[];
   supports: string[];
   prohibits: string[];
-  knowledge: RideModelInputKnowledgeV2[];
+  knowledgeIds: string[];
   recommendationAnchorClaimIds: string[];
 }
 
@@ -81,6 +88,11 @@ export interface RideModelInputV2 {
   analysisRunId: string;
   userScope: string;
   privacyFlags: string[];
+  // S2-06: unique, order-preserving claim list — the single serialized copy of
+  // every fact delivered to the model. Questions reference entries by claimId.
+  claims: V2AnalysisClaim[];
+  // S2-06: unique knowledge list, referenced by knowledgeId from questions.
+  knowledge: RideModelInputKnowledgeV2[];
   questions: RideModelInputQuestionV2[];
   inputStats: RideModelInputStatsV2;
 }
@@ -200,30 +212,35 @@ export function buildRideModelInputV2(
   const claimMap = new Map(context.allowedClaims.map((claim) => [claim.claimId, claim]));
   const knowledgeMap = new Map(context.knowledgeEvidence.map((item) => [item.knowledgeId, item]));
   const questions: RideModelInputQuestionV2[] = [];
+  // S2-06: unique, order-preserving registries — each claim/knowledge is
+  // serialized exactly once regardless of how many packets reference it.
+  const uniqueClaims = new Map<string, V2AnalysisClaim>();
+  const uniqueKnowledge = new Map<string, RideModelInputKnowledgeV2>();
   for (const packet of context.evidencePackets) {
     const unresolvedClaims = packet.claimIds.filter((id) => !claimMap.has(id));
     if (unresolvedClaims.length) {
       return blocked("PACKET_CLAIM_UNRESOLVED", `${packet.dimensionId}: ${unresolvedClaims.join(",")}`);
     }
-    const claims = packet.claimIds.map((id) => copyClaim(claimMap.get(id)!));
-    const claimIds = claims.map((claim) => claim.claimId);
-    if (JSON.stringify(claimIds) !== JSON.stringify(packet.claimIds)) {
-      return blocked("INPUT_CLAIM_COVERAGE_MISMATCH", `${packet.dimensionId}: assembled claims do not cover the packet exactly`);
+    for (const claimId of packet.claimIds) {
+      if (!uniqueClaims.has(claimId)) uniqueClaims.set(claimId, copyClaim(claimMap.get(claimId)!));
     }
     const unresolvedKnowledge = packet.knowledgeIds.filter((id) => !knowledgeMap.has(id));
     if (unresolvedKnowledge.length) {
       return blocked("PACKET_KNOWLEDGE_UNRESOLVED", `${packet.dimensionId}: ${unresolvedKnowledge.join(",")}`);
+    }
+    for (const knowledgeId of packet.knowledgeIds) {
+      if (!uniqueKnowledge.has(knowledgeId)) uniqueKnowledge.set(knowledgeId, copyKnowledge(knowledgeMap.get(knowledgeId)!));
     }
     questions.push({
       dimensionId: packet.dimensionId,
       question: packet.question,
       eligibility: packet.eligibility,
       qualityStatus: packet.qualityStatus,
-      claims,
+      claimIds: [...packet.claimIds],
       limitations: [...packet.limitations],
       supports: [...packet.supports],
       prohibits: [...packet.prohibits],
-      knowledge: packet.knowledgeIds.map((id) => copyKnowledge(knowledgeMap.get(id)!)),
+      knowledgeIds: [...packet.knowledgeIds],
       recommendationAnchorClaimIds: [...packet.recommendationAnchorClaimIds],
     });
   }
@@ -232,14 +249,14 @@ export function buildRideModelInputV2(
   // (the same claim fans out into several questions) so the stats report each
   // sensor pair and its underlying window count exactly once.
   const relationAggregation = new Map<string, number>();
-  for (const question of questions) {
-    for (const claim of question.claims) {
-      if (claim.aggregatedFromCount !== undefined && !relationAggregation.has(claim.key)) {
-        relationAggregation.set(claim.key, claim.aggregatedFromCount);
-      }
+  for (const claim of uniqueClaims.values()) {
+    if (claim.aggregatedFromCount !== undefined) {
+      relationAggregation.set(claim.key, claim.aggregatedFromCount);
     }
   }
 
+  const claims = [...uniqueClaims.values()];
+  const knowledge = [...uniqueKnowledge.values()];
   const input: RideModelInputV2 = {
     schemaVersion: RIDE_MODEL_INPUT_SCHEMA_VERSION,
     rulesVersion: RIDE_MODEL_INPUT_RULES_VERSION,
@@ -249,13 +266,15 @@ export function buildRideModelInputV2(
     analysisRunId: context.analysisRunId,
     userScope: context.userScope,
     privacyFlags: [...context.privacyFlags],
+    claims,
+    knowledge,
     questions,
     inputStats: {
       totalCharacters: 0,
       maxInputCharacters,
       questionCount: questions.length,
-      claimCount: questions.reduce((total, question) => total + question.claims.length, 0),
-      knowledgeCount: questions.reduce((total, question) => total + question.knowledge.length, 0),
+      claimCount: claims.length,
+      knowledgeCount: knowledge.length,
       aggregatedRelationPairCount: relationAggregation.size,
       aggregatedRelationWindowCount: [...relationAggregation.values()].reduce((total, count) => total + count, 0),
     },

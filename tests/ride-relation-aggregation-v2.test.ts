@@ -154,9 +154,10 @@ test("three or fewer windows are all shown as representatives", () => {
   assert.equal(aggregate?.aggregatedFromCount, 3);
 });
 
-test("segment relation claims stay per-window and are never aggregated", () => {
-  // Mirror of the S1 segment scenario: 360 s ride with four climbs, two
-  // cruise segments, and one terrain run, all producing joint windows.
+test("segments no longer emit relation claims; only fixed-window aggregates remain", () => {
+  // S2-05 (user decision 2026-10-06, option B): 360 s ride with climbs, cruise
+  // segments, and a terrain run — segments carry sensor means only, and the
+  // sole cross-sensor pairing evidence is the fixed-window aggregate.
   const ride = record(36);
   const timing = buildRideTimingSummary(ride);
   timing.cruiseSegments = [
@@ -166,21 +167,20 @@ test("segment relation claims stay per-window and are never aggregated", () => {
       speedCoefficientOfVariation: 0, isLong: false },
   ];
   const windows = buildRideTemporalWindowsV2(ride, {
-    climbs: climbs([100, 300], [350, 550], [600, 800], [850, 1050]),
+    climbs: climbs([100, 300], [350, 550], [600, 800]),
     timing,
     routeShape: terrainRouteShape(),
   });
-  assert.ok(windows.segments.some((segment) => segment.jointWindows.length > 0));
+  assert.ok(windows.segments.every((segment) => segment.sensorMeans.power === undefined
+    || typeof segment.sensorMeans.power.mean === "number"));
 
   const snapshot = buildRideCapabilityClaimsV2(ride, { windows });
   assert.equal(validateRideCapabilityClaimsV2(snapshot).length, 0);
-  const segmentRelations = snapshot.claims.filter((claim) =>
-    claim.kind === "relation" && !claim.key.startsWith("relation.fixed."));
-  assert.ok(segmentRelations.length > 0);
-  assert.ok(segmentRelations.every((claim) => claim.aggregatedFromCount === undefined));
-  assert.ok(segmentRelations.every((claim) => !claim.text?.startsWith("aggregated:")));
-  assert.ok(segmentRelations.every((claim) => claim.prohibits.includes("causation")));
-  // The fixed-window aggregation still applies alongside the segment claims.
+  const relations = snapshot.claims.filter((claim) => claim.kind === "relation");
+  assert.ok(relations.length > 0);
+  assert.ok(relations.every((claim) => claim.key.startsWith("relation.fixed.")));
+  assert.ok(relations.every((claim) => claim.prohibits.includes("causation")));
+  // The fixed-window aggregation still applies.
   assert.ok(snapshot.claims.some((claim) => claim.key === "relation.fixed.power-heart_rate.aggregate"));
 });
 

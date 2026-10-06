@@ -14,9 +14,8 @@ import { AuthConfigurationError, getRequestSession, resolveOrCreateRequestSessio
 import { createDemoEvent } from "../../../src/observability/demo-events.ts";
 import { getApplicationRepository } from "../../../src/persistence/application-repository.ts";
 import { getRideRepository } from "../../../src/persistence/demo-ride-repository.ts";
-import { isDemoRideId, DEMO_RIDE_IDS } from "../../../src/ui/ride-view-model.ts";
+import { isDemoRideId } from "../../../src/ui/ride-view-model.ts";
 import { buildRidePageViewModelFromRecord } from "../../../src/ui/ride-view-model.ts";
-import type { HistoricalRide } from "../../../src/domain/historical-comparison.ts";
 import { runRideInterpretationV2 } from "../../../src/ai/ride-interpretation-service-v2.ts";
 import { readRideModelProviderConfigV2, RideModelClientV2 } from "../../../src/ai/ride-model-provider-v2.ts";
 import { bindRideV2DimensionChartsV2 } from "../../../src/ai/ride-output-chart-binding-v2.ts";
@@ -52,23 +51,6 @@ const MAX_REQUEST_BYTES = 1_024;
 function resolveInterpretationEngine(requestedEngine: unknown, environment: NodeJS.ProcessEnv): "v1" | "v2" {
   if (requestedEngine === "v2" || requestedEngine === "v1") return requestedEngine;
   return environment.RIDE_INTERPRETATION_ENGINE?.trim().toLowerCase() === "v2" ? "v2" : "v1";
-}
-
-// V2 history source: the session owner's imported rides; demo fixture rides
-// fall back to the other built-in fixtures so the V2 chain stays testable
-// without a session. The comparison builder filters the anchor itself.
-async function collectV2HistoryRides(sessionUserId: string | undefined, currentRideId: string): Promise<HistoricalRide[]> {
-  if (sessionUserId) {
-    const rides = await (await getRideRepository()).listRides(sessionUserId);
-    return rides
-      .filter((ride) => ride.record.activity.rideId !== currentRideId)
-      .map((ride) => ({ metadata: { historyId: ride.record.activity.rideId }, record: ride.record }));
-  }
-  return DEMO_RIDE_IDS
-    .filter((id) => id !== currentRideId)
-    .map((id) => getRideRecord(id))
-    .filter((record): record is NonNullable<typeof record> => record !== undefined)
-    .map((record) => ({ metadata: { historyId: record.activity.rideId }, record }));
 }
 
 function noStoreJson(value: unknown, status = 200, headers: Record<string, string> = {}): Response {
@@ -161,13 +143,11 @@ export async function POST(request: Request): Promise<Response> {
       );
     }
     const profile = session ? await getApplicationRepository().getProfile(session.userId) : null;
-    const historyRides = await collectV2HistoryRides(session?.userId, rideId);
     const providerConfig = readRideModelProviderConfigV2(process.env);
     const modelClient = providerConfig ? new RideModelClientV2(providerConfig) : undefined;
     const result = await runRideInterpretationV2({
       record,
       profile,
-      historyRides,
       analysisRunId: `ride-v2-${crypto.randomUUID()}`,
       userScope: session?.userId ?? "anonymous",
       requestId: crypto.randomUUID(),

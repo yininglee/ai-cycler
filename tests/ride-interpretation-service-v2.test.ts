@@ -3,7 +3,6 @@ import test from "node:test";
 
 import { getRideRecord } from "../src/imports/demo-ride-store.ts";
 import type { RideRecord } from "../src/domain/ride-schema.ts";
-import type { HistoricalRide } from "../src/domain/historical-comparison.ts";
 import type { RideModelInputQuestionV2, RideModelInputV2 } from "../src/domain/ride-model-input-v2.ts";
 import type { V2AnalysisClaim } from "../src/domain/ride-analysis-evidence-v2.ts";
 import { RIDE_OUTPUT_SCHEMA_VERSION } from "../src/ai/ride-output-schema-v2.ts";
@@ -35,13 +34,6 @@ function anchorRecord(): RideRecord {
   return record;
 }
 
-function fixtureHistoryRides(): HistoricalRide[] {
-  return ["l1-built-in-sample", "l2-built-in-sample", "l3-built-in-sample"]
-    .map((id) => getRideRecord(id))
-    .filter((record): record is RideRecord => record !== undefined)
-    .map((record) => ({ metadata: { historyId: record.activity.rideId }, record }));
-}
-
 function inputFromPrompt(promptText: string): RideModelInputV2 {
   const index = promptText.indexOf(PROMPT_INPUT_MARKER);
   if (index >= 0) {
@@ -61,15 +53,17 @@ function isAnchorClaim(claim: V2AnalysisClaim): boolean {
 // A non-variance anchor claim keeps scripted "稳定" wording provably
 // un-supported (STABILITY_WITHOUT_VARIANCE) in the broken-output scripts.
 function nonVarianceAnchorClaim(input: RideModelInputV2): V2AnalysisClaim {
-  const claim = input.questions
-    .flatMap((question) => question.claims)
+  const claim = input.claims
     .find((item) => isAnchorClaim(item) && !/coefficientOfVariation|lastMinusFirst|drift|variance/i.test(item.key));
   assert.ok(claim, "test setup: input must contain a high-confidence non-variance claim");
   return claim;
 }
 
-function dimensionClaim(question: RideModelInputQuestionV2): V2AnalysisClaim {
-  const claim = question.claims.find((item) => item.kind !== "limitation") ?? question.claims[0];
+function dimensionClaim(input: RideModelInputV2, question: RideModelInputQuestionV2): V2AnalysisClaim {
+  const questionClaims = question.claimIds
+    .map((claimId) => input.claims.find((item) => item.claimId === claimId))
+    .filter((item): item is V2AnalysisClaim => item !== undefined);
+  const claim = questionClaims.find((item) => item.kind !== "limitation") ?? questionClaims[0];
   assert.ok(claim, `test setup: question ${question.dimensionId} must carry a claim`);
   return claim;
 }
@@ -105,7 +99,7 @@ function buildPassingOutput(input: RideModelInputV2): RideModelOutputV2 {
             ? "该维度数据部分依赖估算，表现处于预期范围。"
             : "该维度表现处于预期范围。",
           conclusionType: "fact",
-          claimIds: [dimensionClaim(question).claimId],
+          claimIds: [dimensionClaim(input, question).claimId],
         },
       ],
     })),
@@ -164,7 +158,6 @@ function baseOptions(caller?: RideModelCallerV2) {
   return {
     record: anchorRecord(),
     profile: null,
-    historyRides: fixtureHistoryRides(),
     analysisRunId: "run-s6-03-test",
     userScope: "user-s6-03-test",
     requestId: "req-s6-03-test",
@@ -181,7 +174,6 @@ test("S6-03 blocks the model call when the input gate rejects the ride (zero pro
   const result = await runRideInterpretationV2({
     ...baseOptions(caller),
     record,
-    historyRides: [],
   });
   assert.equal(result.source, "b0");
   assert.equal(result.stage, "blocked");

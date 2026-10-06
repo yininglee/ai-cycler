@@ -310,10 +310,19 @@ export function buildRideProfileHistoryV2(
   const recoverySignals = pmcAvailable
     ? { status: "available" as const, sourceHistoryIds: [...(pmcLoad as RidePmcLoadSnapshotV2).sourceHistoryIds], evidenceIds: [...pmcEvidenceIds], rulesVersion: RIDE_PROFILE_HISTORY_RULES_VERSION }
     : { status: "unavailable" as const, reason: longTermReason, sourceHistoryIds: [...history.sourceHistoryIds], evidenceIds: [], rulesVersion: RIDE_PROFILE_HISTORY_RULES_VERSION };
+  // S2-06 follow-up (PD-AI-21): history comparison and PMC are out of scope
+  // for a single-ride interpretation. When the caller did not attempt history
+  // (neither historicalComparison nor pmcLoad provided), the "history not
+  // available" limitation lines are NOT disclosed — the model must not see
+  // prompts about data the product intentionally does not include, otherwise
+  // it explains the absence in prose and trips the history wording gate.
+  const historyAttempted = options.historicalComparison !== undefined || options.pmcLoad !== undefined;
   const limitations = unique([
     ...capabilityClaims.limitations,
-    ...(!pmcAvailable ? [`history.longTermLoad:${longTermReason}`, `history.recoverySignals:${longTermReason}`] : []),
-    ...(history.status !== "available" ? [`history.comparison:${history.reason}`] : []),
+    ...(historyAttempted && !pmcAvailable
+      ? [`history.longTermLoad:${longTermReason}`, `history.recoverySignals:${longTermReason}`]
+      : []),
+    ...(historyAttempted && history.status !== "available" ? [`history.comparison:${history.reason}`] : []),
   ]);
   const snapshot: RideCapabilityClaimSnapshotV2 = {
     ...capabilityClaims,

@@ -20,9 +20,11 @@ export const RIDE_CAPABILITY_CLAIMS_SCHEMA_VERSION = RIDE_EVIDENCE_SCHEMA_VERSIO
 // S2-03 (PD-AI-16, user decision 2026-10-06): fixed 30-second joint-window
 // relation claims are always delivered as one aggregate claim per sensor pair
 // plus at most three deterministic representative windows. There is no
-// per-window mode and no threshold; segment (cruise/terrain) relation claims
-// stay per-window because each segment emits at most one window per pair.
-export const RIDE_CAPABILITY_CLAIMS_RULES_VERSION = "ride-capability-claims-v2.4" as const;
+// per-window mode and no threshold.
+// S2-05 (user decision 2026-10-06, option B): segment-level relation claims
+// are removed entirely — cross-sensor pairing evidence is the fixed-window
+// aggregate only.
+export const RIDE_CAPABILITY_CLAIMS_RULES_VERSION = "ride-capability-claims-v2.6" as const;
 export const RIDE_CONTIGUOUS_NP_RULES_VERSION = "ride-contiguous-np-v2.1" as const;
 export const RIDE_POWER_ZONE_RULES_VERSION = "ride-power-zone-v2.1" as const;
 export const RIDE_INTENSITY_RULES_VERSION = "ride-intensity-v2.1" as const;
@@ -412,7 +414,42 @@ function addSegmentClaims(
           prohibits: ["ability_change", "causation"],
           displayValue: spanDisplay.displayValue,
           displayUnit: spanDisplay.displayUnit,
+          ...(segment.mergedFromCount ? { text: `merged from ${segment.mergedFromCount} adjacent ${segment.kind} segments` } : {}),
         }));
+    }
+    // S2-05: climb facts the detail page shows (category, distance, net gain,
+    // average grade, difficulty) become citable claims alongside the window
+    // statistics, so the climb dimension can speak about gradient and gain —
+    // not only duration and sensor means.
+    if (segment.kind === "climb" && segment.climbFacts) {
+      // S2-05: climb facts (category, distance, gain, grade, difficulty) are
+      // terrain-context evidence — they only feed the climb dimension. Sensor
+      // packets (power/cadence/cross) still receive the climb span, sensor
+      // means, and relation claims, which carry the per-segment context they
+      // need. This keeps the four fact claims from being duplicated into every
+      // climb-touching question.
+      const facts = segment.climbFacts;
+      claims.push(claim(rideId, `segment.climb.${segment.id}.distanceM`, facts.distanceM, "m", refs, {
+        kind: "advanced", formulaVersion: segment.sourceRulesVersion,
+        supports: ["climb_fact"], prohibits: ["ability_change", "causation"],
+        displayValue: compact(facts.distanceM / 1_000, 1), displayUnit: "km",
+      }));
+      claims.push(claim(rideId, `segment.climb.${segment.id}.netElevationGainM`, facts.netElevationGainM, "m", refs, {
+        kind: "advanced", formulaVersion: segment.sourceRulesVersion,
+        supports: ["climb_fact"], prohibits: ["ability_change", "causation"],
+        displayValue: compact(facts.netElevationGainM, 0), displayUnit: "m",
+      }));
+      claims.push(claim(rideId, `segment.climb.${segment.id}.averageGrade`, facts.averageGrade, "ratio", refs, {
+        kind: "advanced", formulaVersion: segment.sourceRulesVersion,
+        supports: ["climb_fact"], prohibits: ["ability_change", "causation"],
+        displayValue: compact(facts.averageGrade * 100, 1), displayUnit: "%",
+      }));
+      claims.push(claim(rideId, `segment.climb.${segment.id}.difficultyScore`, facts.difficultyScore, "score", refs, {
+        kind: "advanced", formulaVersion: segment.sourceRulesVersion,
+        supports: ["climb_fact"], prohibits: ["ability_change", "causation"],
+        displayValue: compact(facts.difficultyScore, 0), displayUnit: "score",
+        text: `climb category ${facts.category}`,
+      }));
     }
     for (const [sensor, stats] of Object.entries(segment.sensorMeans) as [Sensor, NonNullable<SegmentWindowV2["sensorMeans"][Sensor]>][]) {
       const sensorUnit = sensor === "speed" ? "m/s" : sensor === "heart_rate" ? "bpm" : sensor === "power" ? "W" : "rpm";
@@ -487,13 +524,9 @@ function addRelationClaims(
 ): EvidenceSourceRef[] {
   const allRefs: EvidenceSourceRef[] = [];
   const fixedByPair = new Map<string, JointWindowV2[]>();
-  const segmentWindows: JointWindowV2[] = [];
   for (const window of windows) {
-    if (window.segmentId) segmentWindows.push(window);
-    else {
-      const pair = window.seriesKeys.join("-");
-      fixedByPair.set(pair, [...(fixedByPair.get(pair) ?? []), window]);
-    }
+    const pair = window.seriesKeys.join("-");
+    fixedByPair.set(pair, [...(fixedByPair.get(pair) ?? []), window]);
   }
 
   // Fixed windows: one aggregate claim plus at most three representatives
@@ -541,26 +574,6 @@ function addRelationClaims(
     }
   }
 
-  // Segment (cruise/terrain) windows stay per-window: each segment emits at
-  // most one window per pair, so their count is bounded by construction.
-  const segmentIndexes = new Map<string, number>();
-  for (const window of segmentWindows) {
-    const pair = window.seriesKeys.join("-");
-    const group = `${window.segmentId}:${pair}`;
-    const index = (segmentIndexes.get(group) ?? 0) + 1;
-    segmentIndexes.set(group, index);
-    const refs = [sourceRef(windowsSource, window.evidenceIds)];
-    allRefs.push(...refs);
-    claims.push(claim(rideId, `relation.${window.segmentId}.${pair}.${index}`, window.commonCoverage, "ratio", refs, {
-      kind: "relation",
-      formulaVersion: window.rulesVersion,
-      supports: ["same_window_observation"],
-      prohibits: ["causation", "response_order", "trend"],
-      displayValue: compact(window.commonCoverage * 100, 0),
-      displayUnit: "%",
-      text: `${pair} shared ${compact(window.sharedTimeS, 0)} s in the same window`,
-    }));
-  }
   return allRefs;
 }
 
@@ -593,6 +606,7 @@ export function buildRideCapabilityClaimsV2(
   windows.powerPeaks.flatMap((item) => item.evidenceIds).forEach((id) => windowsSource.evidenceIds.add(id));
   windows.segments.flatMap((item) => item.evidenceIds).forEach((id) => windowsSource.evidenceIds.add(id));
   windows.jointWindows.flatMap((item) => item.evidenceIds).forEach((id) => windowsSource.evidenceIds.add(id));
+  windows.terrainDistances?.evidenceIds.forEach((id) => windowsSource.evidenceIds.add(id));
   const profileHasFacts = Boolean(profile && (profile.age || profile.heightCm || profile.weightKg || profile.maxHeartRate || profile.ftp));
   const profileSource = source(rideId, "profile", "profile", profile ? `${profile.schemaVersion}:${profile.updatedAt}` : "profile-v0.1",
     profileHasFacts ? "available" : "missing", profileHasFacts ? undefined : "PROFILE_MISSING_OR_EMPTY");
@@ -647,6 +661,55 @@ export function buildRideCapabilityClaimsV2(
     const refs = distanceIds.length ? [sourceRef(activitySource, ids)] : [sourceRef(seriesSource, ids)];
     capabilities.set("distance", availableCapability("distance", [], refs, "valid", ["ride_distance"], []));
   } else capabilities.set("distance", unavailableCapability("distance", [], "SOURCE_UNAVAILABLE"));
+
+  // S2-05 (FR-01: every detail-page riding fact must reach the model): the
+  // recorded summary metrics — total distance, elevation gain/loss, elapsed
+  // duration and activity energy — become recorded-provenance claims. Device
+  // aggregates stay separate from the series-recomputed statistics above; both
+  // calibers are preserved, never merged.
+  const recordedMetricClaims: Array<{
+    key: keyof RideRecord["activity"]["metrics"];
+    claimKey: string;
+    unit: string;
+    supports: string[];
+    displayValue: (value: number) => string;
+    displayUnit: string;
+  }> = [
+    { key: "distanceM", claimKey: "metric.distanceM", unit: "m", supports: ["ride_distance"],
+      displayValue: (value) => compact(value / 1_000, 1), displayUnit: "km" },
+    { key: "elevationGainM", claimKey: "metric.elevationGainM", unit: "m", supports: ["elevation_context"],
+      displayValue: (value) => compact(value, 0), displayUnit: "m" },
+    { key: "elevationLossM", claimKey: "metric.elevationLossM", unit: "m", supports: ["elevation_context"],
+      displayValue: (value) => compact(value, 0), displayUnit: "m" },
+    { key: "activityEnergyKcal", claimKey: "metric.activityEnergyKcal", unit: "kcal", supports: ["activity_energy"],
+      displayValue: (value) => compact(value, 0), displayUnit: "kcal" },
+  ];
+  for (const definition of recordedMetricClaims) {
+    const metric = record.activity.metrics[definition.key];
+    if (!metric || typeof metric.value !== "number" || !Number.isFinite(metric.value)) continue;
+    const ids = metricEvidence(definition.key);
+    if (!ids.length) continue;
+    claims.push(claim(rideId, definition.claimKey, metric.value, definition.unit, [sourceRef(activitySource, ids)], {
+      kind: "advanced", provenance: "recorded", quality: metric.qualityStatus === "valid" ? "valid" : "soft",
+      supports: definition.supports, prohibits: ["causation"],
+      displayValue: definition.displayValue(metric.value), displayUnit: definition.displayUnit,
+    }));
+  }
+  // Elapsed duration is the device/rule total including stops, complementing
+  // the moving-duration claim emitted with the timing capability above.
+  const elapsedMetric = record.activity.metrics.elapsedTimeS;
+  if (timed && elapsedMetric && typeof elapsedMetric.value === "number" && Number.isFinite(elapsedMetric.value)) {
+    const ids = metricEvidence("elapsedTimeS");
+    if (ids.length) {
+      const durationDisplay = durationDisplayS(elapsedMetric.value);
+      claims.push(claim(rideId, "metric.elapsedDurationS", elapsedMetric.value, "s", [sourceRef(activitySource, ids)], {
+        kind: "advanced", provenance: "recorded", quality: elapsedMetric.qualityStatus === "valid" ? "valid" : "soft",
+        supports: ["current_ride_timing"], prohibits: ["training_effect"],
+        displayValue: durationDisplay.displayValue, displayUnit: durationDisplay.displayUnit,
+        text: "elapsed duration including stops",
+      }));
+    }
+  }
 
   if (record.series.availableSeries.includes("route")) {
     const refs = [sourceRef(seriesSource, [derivedEvidence(rideId, "series-contract-route")])];
@@ -729,7 +792,76 @@ export function buildRideCapabilityClaimsV2(
     }
   }
 
-  const allRelations = [...windows.jointWindows, ...windows.segments.flatMap((segment) => segment.jointWindows)];
+  // S2-05: aggregate terrain distances (climb/flat/descent mileage, trend and
+  // local calibers) from the route-shape summary — the same figures the detail
+  // page shows — become citable claims for the climb and pacing dimensions.
+  if (windows.terrainDistances) {
+    const terrain = windows.terrainDistances;
+    const refs = [sourceRef(windowsSource, terrain.evidenceIds)];
+    const terrainMetricClaims: Array<{
+      claimKey: string;
+      value: number;
+      supports: string[];
+    }> = [
+      { claimKey: "terrain.trendClimbDistanceM", value: terrain.trendClimbDistanceM, supports: ["terrain_segment"] },
+      { claimKey: "terrain.trendFlatDistanceM", value: terrain.trendFlatDistanceM, supports: ["terrain_segment"] },
+      { claimKey: "terrain.trendDescentDistanceM", value: terrain.trendDescentDistanceM, supports: ["terrain_segment"] },
+      { claimKey: "terrain.localClimbDistanceM", value: terrain.climbDistanceM, supports: ["terrain_segment"] },
+      { claimKey: "terrain.localFlatDistanceM", value: terrain.flatDistanceM, supports: ["terrain_segment"] },
+      { claimKey: "terrain.localDescentDistanceM", value: terrain.descentDistanceM, supports: ["terrain_segment"] },
+    ];
+    for (const definition of terrainMetricClaims) {
+      claims.push(claim(rideId, definition.claimKey, definition.value, "m", refs, {
+        kind: "advanced", formulaVersion: terrain.rulesVersion,
+        supports: definition.supports, prohibits: ["ability_change", "causation"],
+        displayValue: compact(definition.value / 1_000, 1), displayUnit: "km",
+      }));
+    }
+    claims.push(claim(rideId, "terrain.classifiedCoverageRatio", terrain.coverageRatio, "ratio", refs, {
+      kind: "advanced", formulaVersion: terrain.rulesVersion,
+      supports: ["terrain_segment"], prohibits: ["ability_change", "causation"],
+      displayValue: compact(terrain.coverageRatio * 100, 0), displayUnit: "%",
+      text: "share of moving distance with a classified terrain type",
+    }));
+    // PD-AI-16-style disclosure: only the longest N terrain runs per type are
+    // delivered as segment windows; the counts below state what was dropped.
+    const terrainCountClaims: Array<{ claimKey: string; label: string; total: number; shown: number }> = [
+      { claimKey: "terrain.climbRunCount", label: "climb", total: terrain.segmentCounts.climb, shown: terrain.representativeCounts.climb },
+      { claimKey: "terrain.flatRunCount", label: "flat", total: terrain.segmentCounts.flat, shown: terrain.representativeCounts.flat },
+      { claimKey: "terrain.descentRunCount", label: "descent", total: terrain.segmentCounts.descent, shown: terrain.representativeCounts.descent },
+    ];
+    for (const definition of terrainCountClaims) {
+      claims.push(claim(rideId, definition.claimKey, definition.total, "count", refs, {
+        kind: "advanced", formulaVersion: terrain.rulesVersion,
+        supports: ["terrain_segment"], prohibits: ["ability_change", "causation"],
+        displayValue: String(definition.total), displayUnit: "count",
+        ...(definition.total > definition.shown ? { aggregatedFromCount: definition.total } : {}),
+        text: `${definition.total} merged ${definition.label} terrain runs; ${definition.shown} longest shown as representative segments`,
+      }));
+    }
+  }
+
+  // S2-05: PD-AI-16-style disclosure for climb representative selection — the
+  // climb dimension sees which share of the identified climbs the windows carry.
+  if (windows.climbRepresentativeCounts && windows.climbRepresentativeCounts.totalClimbs > 0) {
+    const climbEvidenceIds = windows.segments.filter((segment) => segment.kind === "climb")
+      .flatMap((segment) => segment.evidenceIds);
+    const refs = [sourceRef(windowsSource, climbEvidenceIds)];
+    const counts = windows.climbRepresentativeCounts;
+    claims.push(claim(rideId, "climb.representativeClimbCount", counts.totalClimbs, "count", refs, {
+      kind: "advanced", formulaVersion: windows.rulesVersion,
+      supports: ["climb_fact"], prohibits: ["ability_change", "causation"],
+      displayValue: `${counts.representativeClimbs}/${counts.totalClimbs}`, displayUnit: "count",
+      ...(counts.totalClimbs > counts.representativeClimbs ? { aggregatedFromCount: counts.totalClimbs } : {}),
+      text: counts.totalClimbs > counts.representativeClimbs
+        ? `${counts.totalClimbs} climbs identified; ${counts.representativeClimbs} hardest kept as representative segments (ranked by category, difficulty, distance)`
+        : `${counts.totalClimbs} climbs identified; all kept as segment windows`,
+    }));
+  }
+
+  // S2-05 (user decision 2026-10-06, option B): cross-sensor pairing evidence
+  // is the fixed-window aggregate only; segments no longer emit relation claims.
+  const allRelations = windows.jointWindows;
   const relationRefs = windows.unavailableReason ? [] : addRelationClaims(claims, rideId, allRelations, windowsSource);
   if (relationRefs.length) capabilities.set("crossSensorAlignment", availableCapability("crossSensorAlignment", ["sensorContinuity"], relationRefs,
     "valid", ["same_window_observation"], ["causation", "response_order", "trend"]));

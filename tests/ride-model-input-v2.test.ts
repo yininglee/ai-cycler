@@ -119,29 +119,69 @@ test("S4-01 assembles every packet claim into a versioned model input", () => {
   assert.deepEqual(input.privacyFlags, attached.privacyFlags);
 
   assert.equal(input.questions.length, attached.evidencePackets.length);
-  let expectedClaimCount = 0;
+  const uniqueClaimIds = new Set<string>();
   for (const packet of attached.evidencePackets) {
     const question = getRideModelInputQuestionV2(input, packet.dimensionId);
     assert.ok(question, `missing question for ${packet.dimensionId}`);
     assert.equal(question.question, packet.question);
     assert.equal(question.eligibility, packet.eligibility);
     assert.equal(question.qualityStatus, packet.qualityStatus);
-    assert.deepEqual(question.claims.map((claim) => claim.claimId), packet.claimIds);
+    assert.deepEqual(question.claimIds, packet.claimIds);
     assert.deepEqual(question.limitations, packet.limitations);
     assert.deepEqual(question.supports, packet.supports);
     assert.deepEqual(question.prohibits, packet.prohibits);
     assert.deepEqual(question.recommendationAnchorClaimIds, packet.recommendationAnchorClaimIds);
-    expectedClaimCount += packet.claimIds.length;
-    for (const claim of question.claims) {
-      const original = attached.allowedClaims.find((item) => item.claimId === claim.claimId);
-      assert.ok(original);
-      assert.deepEqual(claim, original);
-    }
+    for (const claimId of packet.claimIds) uniqueClaimIds.add(claimId);
   }
-  assert.equal(input.inputStats.claimCount, expectedClaimCount);
+  // S2-06: claims are serialized once at the top level; every packet claim is
+  // resolvable there and no id is duplicated in the unique list.
+  assert.equal(input.claims.length, uniqueClaimIds.size);
+  assert.equal(new Set(input.claims.map((claim) => claim.claimId)).size, input.claims.length);
+  for (const claim of input.claims) {
+    const original = attached.allowedClaims.find((item) => item.claimId === claim.claimId);
+    assert.ok(original);
+    assert.deepEqual(claim, original);
+  }
+  assert.equal(input.inputStats.claimCount, uniqueClaimIds.size);
   assert.ok(input.inputStats.totalCharacters > 0);
   assert.ok(input.inputStats.totalCharacters <= DEFAULT_RIDE_MODEL_INPUT_MAX_CHARACTERS);
   assert.equal(input.inputStats.maxInputCharacters, DEFAULT_RIDE_MODEL_INPUT_MAX_CHARACTERS);
+});
+
+test("S2-06 serializes a fanned-out claim once and references it by id from every packet", () => {
+  // Real fan-out shape: the same power facts feed several dimensions (e.g.
+  // powerOutput and intensityAndTrainingLoad). The committed fixture only
+  // emits the powerOutput packet, so a second packet is derived from it —
+  // same claimIds, another dimension — which is exactly what the production
+  // packet builder emits when one claim supports multiple dimensions.
+  const attached = context();
+  const powerPacket = attached.evidencePackets.find((packet) => packet.dimensionId === "powerOutput");
+  assert.ok(powerPacket, "test setup: fixture must produce the powerOutput packet");
+  attached.evidencePackets.push({
+    ...structuredClone(powerPacket),
+    dimensionId: "intensityAndTrainingLoad",
+    question: "What intensity and single-ride training-load facts are supported?",
+    knowledgeIds: [],
+  });
+
+  const result = buildRideModelInputV2(attached, { analysisRunId: RUN, userScope: SCOPE });
+  assert.equal(result.status, "ready");
+  if (result.status !== "ready") return;
+  const modelInput = result.input;
+
+  const serialized = JSON.stringify(modelInput);
+  const power = getRideModelInputQuestionV2(modelInput, "powerOutput");
+  const intensity = getRideModelInputQuestionV2(modelInput, "intensityAndTrainingLoad");
+  assert.ok(power && intensity);
+  for (const claimId of power.claimIds) {
+    // Exactly one serialized copy in the top-level claim list; both questions
+    // reference the id without re-serializing the claim object.
+    const occurrences = serialized.split(`"claimId":"${claimId}"`).length - 1;
+    assert.equal(occurrences, 1, `fanned-out claim ${claimId} must be serialized exactly once`);
+    assert.ok(intensity.claimIds.includes(claimId), `intensityAndTrainingLoad must reference ${claimId}`);
+  }
+  assert.equal(modelInput.claims.length, new Set(power.claimIds).size);
+  assert.equal(modelInput.inputStats.claimCount, modelInput.claims.length);
 });
 
 test("S4-01 keeps knowledge layered beside facts with citation and safety boundaries", () => {
@@ -153,9 +193,10 @@ test("S4-01 keeps knowledge layered beside facts with citation and safety bounda
   const power = getRideModelInputQuestionV2(result.input, "powerOutput");
   const packet = getRideAnalysisEvidencePacketV2(attached, "powerOutput");
   assert.ok(power && packet);
-  assert.equal(power.knowledge.length, 1);
-  const knowledge = power.knowledge[0];
-  assert.equal(knowledge.knowledgeId, "kb-power-np");
+  assert.deepEqual(power.knowledgeIds, packet.knowledgeIds);
+  assert.equal(power.knowledgeIds.length, 1);
+  const knowledge = result.input.knowledge.find((item) => item.knowledgeId === "kb-power-np");
+  assert.ok(knowledge);
   assert.ok(knowledge.citation.includes("Cycling Power Metrics Reference"));
   assert.ok(knowledge.citation.includes("Example Sports Science Institute"));
   assert.ok(knowledge.conditions.includes("strength:moderate"));
@@ -167,14 +208,15 @@ test("S4-01 keeps knowledge layered beside facts with citation and safety bounda
   // contract so knowledge transcription can only quote this text.
   assert.equal(knowledge.explanation, "Normalized power reflects load above average power when output is variable.");
   // Knowledge stays outside the claim list: it must never appear as a ride fact.
-  assert.equal(power.claims.some((claim) => claim.claimId === "kb-power-np"), false);
+  assert.equal(result.input.claims.some((claim) => claim.claimId === "kb-power-np"), false);
   assert.equal(result.input.inputStats.knowledgeCount, 1);
 
   // Without applicable knowledge no citation is fabricated.
   const bare = buildRideModelInputV2(context([]), { analysisRunId: RUN, userScope: SCOPE });
   assert.equal(bare.status, "ready");
   if (bare.status !== "ready") return;
-  for (const question of bare.input.questions) assert.deepEqual(question.knowledge, []);
+  for (const question of bare.input.questions) assert.deepEqual(question.knowledgeIds, []);
+  assert.deepEqual(bare.input.knowledge, []);
   assert.equal(bare.input.inputStats.knowledgeCount, 0);
 });
 

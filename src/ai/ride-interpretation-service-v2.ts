@@ -1,19 +1,25 @@
 // S6-03: production V2 ride-interpretation orchestration. Wires the isolated
-// V2 slices (S1 features -> S2 claims/packets -> S3 profile/history/knowledge
-// -> PMC-01 -> L7 input gate -> S6-01 prompt/schema/validator -> S6-02 repair
-// orchestration -> S6-04 presentation) into one server-side run against real
-// data sources. Safety contracts preserved end to end:
+// V2 slices (S1 features -> S2 claims/packets -> S3 profile/knowledge -> L7
+// input gate -> S6-01 prompt/schema/validator -> S6-02 repair orchestration
+// -> S6-04 presentation) into one server-side run against real data sources.
+// Safety contracts preserved end to end:
 //   - input-gate failures block the model call and return a traceable b0;
 //   - no provider config -> AI_NOT_CONFIGURED b0 (no network call);
 //   - provider failures are classified (RideModelErrorV2.code), never retried;
 //   - output validation runs the S6-02 pipeline: deterministic organize, at
 //     most ONE model repair, full revalidation, otherwise b0 REPAIR_FAILED.
+//
+// S2-06 (user decision 2026-10-06): single-ride interpretation no longer
+// builds historical-comparison or PMC (CTL/ATL/TSB) evidence. Both are
+// trend-level readings that belong to a future multi-ride statistics feature,
+// not to one ride's interpretation. The packet definitions and the PMC /
+// history modules stay in the codebase for that future reuse.
 
 import type { RideRecord } from "../domain/ride-schema.ts";
 import type { UserProfile } from "../domain/user-profile.ts";
-import { buildHistoricalComparisonSnapshot, type HistoricalRide } from "../domain/historical-comparison.ts";
-import { buildRideCapabilityClaimsV2 } from "../domain/ride-capability-claims-v2.ts";
-import { buildRidePmcLoadV2, type RidePmcDailyLoadInput, type RidePmcLoadSnapshotV2 } from "../domain/ride-pmc-load-v2.ts";
+import { buildRideEventClimbSummary } from "../domain/ride-event-climbs.ts";
+import { buildRideElevationSummary } from "../domain/ride-elevation.ts";
+import { buildRideRouteShapeSummary } from "../domain/ride-route-shape.ts";
 import { buildRideProfileHistoryV2 } from "../domain/ride-profile-history-v2.ts";
 import {
   RIDE_EVIDENCE_PACKET_BUILDER_RULES_VERSION,
@@ -31,6 +37,7 @@ import {
   type RideModelInputV2,
 } from "../domain/ride-model-input-v2.ts";
 import { buildRidePromptV2, RIDE_PROMPT_VERSION } from "./ride-prompt-v2.ts";
+import { buildRideTemporalWindowsV2 } from "../domain/ride-temporal-windows-v2.ts";
 import {
   RideModelErrorV2,
   type RideModelCallRecordV2,
@@ -45,7 +52,7 @@ import {
 import { buildRideOutputPresentationV2, type RideOutputPresentationV2 } from "./ride-output-presentation-v2.ts";
 import { RIDE_OUTPUT_SCHEMA_VERSION, type RideModelOutputV2 } from "./ride-output-schema-v2.ts";
 
-export const RIDE_INTERPRETATION_SERVICE_V2_VERSION = "ride-interpretation-service-v2.0.0" as const;
+export const RIDE_INTERPRETATION_SERVICE_V2_VERSION = "ride-interpretation-service-v2.2.0" as const;
 
 // Adapts RideModelClientV2.run (or a test double) to the service. callRecord is
 // optional so tests can inject minimal fakes; production always returns one.
@@ -56,10 +63,6 @@ export type RideModelCallerV2 = (
 export interface RideInterpretationV2Options {
   record: RideRecord;
   profile?: UserProfile | null;
-  // Prior rides for the "relative to the past" question and PMC daily loads.
-  // The anchor ride itself is filtered by the comparison builder; PMC loads
-  // additionally include the current ride's own TSS.
-  historyRides?: HistoricalRide[];
   analysisRunId: string;
   userScope: string;
   requestId: string;
@@ -102,8 +105,6 @@ export type RideInterpretationV2Result =
       versions: RideInterpretationV2Versions;
     };
 
-const TSS_CLAIM_KEY = "power.trainingStressScore";
-
 const KNOWLEDGE_TITLES: Readonly<Record<string, string>> = Object.fromEntries(
   rideKnowledgeBaseBatch1V2.map((entry) => [entry.knowledgeId, entry.title]),
 );
@@ -119,22 +120,6 @@ function baseVersions(): RideInterpretationV2Versions {
     outputSchema: RIDE_OUTPUT_SCHEMA_VERSION,
     repairRules: RIDE_OUTPUT_REPAIR_RULES_VERSION,
   };
-}
-
-function rideDate(record: RideRecord): string | undefined {
-  const startTime = record.activity.startTime;
-  return startTime ? startTime.slice(0, 10) : undefined;
-}
-
-// Single source of truth for a ride's TSS: the S2-01 capability snapshot
-// (same formula version as the claims the model cites).
-function dailyLoadFromRecord(historyId: string, record: RideRecord, profile?: UserProfile | null): RidePmcDailyLoadInput | undefined {
-  const date = rideDate(record);
-  if (!date) return undefined;
-  const snapshot = buildRideCapabilityClaimsV2(record, { profile: profile ?? undefined });
-  const tssClaim = snapshot.claims.find((claim) => claim.key === TSS_CLAIM_KEY);
-  if (!tssClaim || typeof tssClaim.value !== "number") return undefined;
-  return { historyId, date, tss: tssClaim.value };
 }
 
 // Best-effort JSON extraction: plain JSON first, then a fenced ```json block.
@@ -165,35 +150,22 @@ export async function runRideInterpretationV2(options: RideInterpretationV2Optio
   const { record, analysisRunId, userScope, requestId } = options;
   const versions = baseVersions();
   const callRecords: RideModelCallRecordV2[] = [];
-  const historyRides = options.historyRides ?? [];
-  const anchorRide: HistoricalRide = { metadata: { historyId: record.activity.rideId }, record };
-  const anchorDate = rideDate(record);
 
-  // S3-01: comparable-history snapshot (same defaults as the fixed samples).
-  const comparison = anchorDate && historyRides.length
-    ? buildHistoricalComparisonSnapshot(anchorRide, historyRides)
-    : undefined;
+  // S2-05: feed the climb events and terrain segments — the same deterministic
+  // summaries the detail page renders (elevation -> route shape -> climbs) —
+  // into the temporal windows. Without this wiring the climb and terrain
+  // capabilities stay closed even when the ride has full elevation data.
+  const elevationSummary = buildRideElevationSummary(record);
+  const routeShape = buildRideRouteShapeSummary(elevationSummary);
+  const eventClimbs = buildRideEventClimbSummary(elevationSummary, routeShape, record);
+  const windows = buildRideTemporalWindowsV2(record, { climbs: eventClimbs, routeShape });
 
-  // PMC-01: daily TSS from history plus the anchor ride itself. The snapshot
-  // carries its own availability; closed gates simply keep the packet closed.
-  let pmcLoad: RidePmcLoadSnapshotV2 | undefined;
-  if (anchorDate) {
-    const dailyLoads = [
-      ...historyRides.map((ride) => dailyLoadFromRecord(ride.metadata.historyId, ride.record, options.profile)),
-      dailyLoadFromRecord(anchorRide.metadata.historyId, record, options.profile),
-    ].filter((load): load is RidePmcDailyLoadInput => load !== undefined);
-    pmcLoad = buildRidePmcLoadV2({
-      rideId: record.activity.rideId,
-      anchorDate,
-      ftpConfirmed: options.profile?.ftp?.trustStatus === "user_confirmed",
-      dailyLoads,
-    });
-  }
-
+  // S2-06: no historical comparison and no PMC loads are built for a
+  // single-ride interpretation (user decision 2026-10-06) — the corresponding
+  // packets simply stay closed because their capabilities are unavailable.
   const profileHistory = buildRideProfileHistoryV2(record, {
     profile: options.profile ?? undefined,
-    ...(comparison ? { historicalComparison: comparison } : {}),
-    ...(pmcLoad ? { pmcLoad } : {}),
+    windows,
   });
 
   // S2-02: full evidence packets, then S3-02 knowledge attachment.

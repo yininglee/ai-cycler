@@ -83,11 +83,6 @@ const fullOutput: RideModelOutputV2 = {
       ],
     },
   ],
-  historyComparison: {
-    text: "与 9 月 28 日同路线骑行相比，平均功率由 208W 提升至 220W，心率基本持平，输出效率提高。",
-    conclusionType: "historyComparison",
-    claimIds: ["history.all.power-mean"],
-  },
   suggestions: [
     {
       text: "阈值区段表现稳定，可以在下次训练中尝试把阈值区段从 8 分钟延长到 2 组 10 分钟。",
@@ -104,29 +99,6 @@ const fullOutput: RideModelOutputV2 = {
   limitations: [
     "本次骑行海拔数据存在 12% 缺口，爬坡相关结论未生成。",
     "训练计划数据当前未接入，无法评价是否符合计划。",
-  ],
-};
-
-const fullOutputWithPmc: RideModelOutputV2 = {
-  ...fullOutput,
-  dimensions: [
-    ...fullOutput.dimensions,
-    {
-      dimensionId: "longTermLoadRecovery",
-      assertions: [
-        {
-          text: "过去 42 天 CTL 65.2、ATL 52.7，TSB +12.5，训练负荷平衡（TSB +12.5），整体恢复良好。",
-          conclusionType: "fact",
-          claimIds: ["history.pmc.ctl", "history.pmc.atl", "history.pmc.tsb"],
-        },
-        {
-          text: "按体能-疲劳模型，TSB 为正通常表示短期疲劳已消退、状态向好；该指标是负荷账本推算，不是生理测量。",
-          conclusionType: "knowledgeReference",
-          claimIds: [],
-          knowledgeIds: ["kb-b1-pmc"],
-        },
-      ],
-    },
   ],
 };
 
@@ -156,20 +128,17 @@ const omittedOutput: RideModelOutputV2 = {
   ],
   limitations: [
     "心率与踏频数据覆盖率不足，对应维度解读未生成。",
-    "历史骑行不足 42 天，长期负荷与恢复解读未生成。",
+    "海拔数据缺失，爬坡表现维度解读未生成。",
   ],
 };
 
 function buildScenarioPresentation(scenario: ScenarioId) {
-  if (scenario === "normal") {
-    return buildRideOutputPresentationV2(fullOutputWithPmc, { knowledgeTitles });
-  }
   if (scenario === "omitted") {
     return buildRideOutputPresentationV2(omittedOutput, { knowledgeTitles });
   }
   return buildRideOutputPresentationV2(fullOutput, {
     knowledgeTitles,
-    repairOutcomeLabel: "本地整理后通过",
+    repairOutcomeLabel: scenario === "repaired" ? "本地整理后通过" : undefined,
   });
 }
 
@@ -198,7 +167,7 @@ export default async function RideInterpretationPreviewV2Page({
           <header className="candidate-preview-header">
             <p className="kicker">OFFLINE · V2</p>
             <h1>骑后 AI 解读 V2 预览</h1>
-            <p>基于内置固定样例检查 V2 输出合同的界面展示：七段结构、知识引用角标与底部知识出处、可选段省略、修复留痕与降级兜底。不调用模型，不代表生产输出。</p>
+            <p>基于内置固定样例检查 V2 输出合同的界面展示：分段结构、知识引用角标与底部知识出处、可选段省略、修复留痕与降级兜底。不调用模型，不代表生产输出。</p>
           </header>
 
           <div className="candidate-preview-notice" role="status">

@@ -17,7 +17,9 @@ import {
 // facts, claims, knowledge, or dimensions.
 
 export const RIDE_OUTPUT_REPAIR_RULES_VERSION = "ride-output-repair-v2.0.0" as const;
-export const RIDE_REPAIR_PROMPT_VERSION = "ride-repair-prompt-v2.0.0" as const;
+// S2-06: v2.1 — the repair contract no longer carries the top-level
+// historyComparison section (removed from the output schema).
+export const RIDE_REPAIR_PROMPT_VERSION = "ride-repair-prompt-v2.1.0" as const;
 
 // Business rules 14.6.4 / FR-13: fabricated citations in required content are
 // integrity red lines — they never enter the repair path. When such an issue
@@ -291,17 +293,16 @@ export function buildRideRepairPromptV2(options: {
   "overallAssessment": { 断言对象 },
   "highlights": [ 断言对象（可选，证据不足时省略整个字段） ],
   "dimensions": [ { "dimensionId": "...", "assertions": [ 断言对象 ] } ],
-  "historyComparison": { 断言对象（可选） },
   "suggestions": [ { ...断言对象, "riskNote": "..." }（可选） ],
   "limitations": [ "..." ]
 }
-断言对象：{ "text": "中文解读文本", "conclusionType": "fact | historyComparison | knowledgeReference | suggestion", "claimIds": ["..."], "knowledgeIds": ["..."] }（knowledgeIds 仅在实际引用知识时提供）。
+断言对象：{ "text": "中文解读文本", "conclusionType": "fact | knowledgeReference | suggestion", "claimIds": ["..."], "knowledgeIds": ["..."] }（knowledgeIds 仅在实际引用知识时提供）。
 
 【合同要点】
 - label 必须引用至少一条高置信、非限制类 Claim；overallAssessment 在可用数据不足两类时必须写明"本次可用数据有限"。
 - 事实断言中的每个数字必须来自所引用 Claim 的 value 或 displayValue（区间代号 Z1-Z7、分段序号、次数/频次表达如"上1次、每15分钟"除外）；建议中的操作性数字不受此限。
 - 知识只能用于解释口径与方法（conclusionType=knowledgeReference 且必须带 knowledgeIds），不得当作个人骑行事实。
-- 没有波动或过程类 Claim 时，禁止在事实断言中使用"稳定、平稳、保持良好"等稳定性表述；没有可比历史 Claim 时，禁止"进步、退步、相比之前"等历史表述，也不得输出 historyComparison。
+- 没有波动或过程类 Claim 时，禁止在事实断言中使用"稳定、平稳、保持良好"等稳定性表述；单次骑行解读不含历史对比，禁止"进步、退步、相比之前、相比以往、比之前、长期负荷"等历史表述，也不得输出 historyComparison，且不得提及"无历史对比/无长期负荷数据"等未提供信息的缺失——删除这类说明，直接解读已有数据。
 - 禁止因果表述（导致、造成、引发）；禁止"完成了训练计划、按计划执行、达成目标"类断言；禁止"恢复良好、已恢复、恢复完成"等恢复结论。
 - 被解读维度的全部 limitations 必须逐条原文回填到 limitations 字段；限制只能使用输入中出现过的原文。
 - 引用 soft 质量 Claim 时必须降低表达强度并说明"部分数据缺失/有限"；没有依据的可选字段直接省略，不硬凑。

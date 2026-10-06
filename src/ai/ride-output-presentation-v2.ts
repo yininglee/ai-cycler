@@ -3,9 +3,9 @@
 // Pure and deterministic — consumed by the offline fixture-driven preview
 // page now, and by the production interpretation UI after S6-03 wiring.
 // Section order mirrors the V2 user-visible contract: label, overall
-// assessment, highlights, per-dimension interpretation, history comparison,
-// suggestions, limitation backfill. Optional sections become null when the
-// model omits them (evidence-insufficient dimensions are omitted, not filled).
+// assessment, highlights, per-dimension interpretation, suggestions,
+// limitation backfill. Optional sections become null when the model omits
+// them (evidence-insufficient dimensions are omitted, not filled).
 //
 // Knowledge references render as numbered footnotes (user decision 2026-10-06):
 // the assertion text carries superscript markers and the resolved source
@@ -106,41 +106,27 @@ export function buildRideOutputPresentationV2(
 
   // Assertions are converted in page display order so footnote numbers follow
   // first appearance as read top-to-bottom: overall assessment, highlights,
-  // dimensions, history comparison, long-term load & recovery, suggestions.
+  // dimensions, suggestions.
   const overallAssessment = toPresentationAssertion(output.overallAssessment);
   const highlights =
     output.highlights && output.highlights.length > 0
       ? output.highlights.map(toPresentationAssertion)
       : null;
 
-  const dimensionSections: RideOutputPresentationDimensionV2[] = [];
-  let pmcDimension: RideModelOutputV2["dimensions"][number] | null = null;
+  // S2-06 (user decision 2026-10-06): single-ride interpretation no longer
+  // produces a history comparison section or a long-term load & recovery
+  // dimension, so both slots stay null. The fields remain in the presentation
+  // contract so the view component keeps its structure (and a future
+  // multi-ride statistics feature can reuse the section).
+  const historyComparison: RideOutputPresentationAssertionV2 | null = null;
+  const longTermLoadRecovery: RideOutputPresentationDimensionV2 | null = null;
 
-  for (const dimension of output.dimensions) {
-    if (dimension.dimensionId === "longTermLoadRecovery") {
-      // Deferred: the PMC section renders after history comparison on the
-      // page, so its assertions are converted below to keep footnote numbers
-      // aligned with display order.
-      pmcDimension = dimension;
-    } else {
-      dimensionSections.push({
-        dimensionId: dimension.dimensionId,
-        title: resolveRideV2DimensionTitle(dimension.dimensionId),
-        assertions: dimension.assertions.map(toPresentationAssertion),
-      });
-    }
-  }
+  const dimensionSections: RideOutputPresentationDimensionV2[] = output.dimensions.map((dimension) => ({
+    dimensionId: dimension.dimensionId,
+    title: resolveRideV2DimensionTitle(dimension.dimensionId),
+    assertions: dimension.assertions.map(toPresentationAssertion),
+  }));
 
-  const historyComparison = output.historyComparison
-    ? toPresentationAssertion(output.historyComparison)
-    : null;
-  const longTermLoadRecovery = pmcDimension
-    ? {
-        dimensionId: pmcDimension.dimensionId,
-        title: resolveRideV2DimensionTitle(pmcDimension.dimensionId),
-        assertions: pmcDimension.assertions.map(toPresentationAssertion),
-      }
-    : null;
   const suggestions =
     output.suggestions && output.suggestions.length > 0
       ? output.suggestions.map((item) => ({

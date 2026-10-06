@@ -2,7 +2,7 @@ import { validateRideRecord } from "./ride-series.ts";
 import { buildRideTimingSummary, type RideStopSegment } from "./ride-timing.ts";
 import type { RideRecord, RideSeriesKey, RideSeriesPoint } from "./ride-schema.ts";
 
-export const RIDE_TEMPORAL_RULES_VERSION = "ride-temporal-v2.2" as const;
+export const RIDE_TEMPORAL_RULES_VERSION = "ride-temporal-v2.3" as const;
 
 // S2-04 (PD-AI-17, user decision 2026-10-06): un-locatable stopped time is the
 // part of the device-recorded stop time that cannot be placed on the timeline
@@ -21,7 +21,11 @@ const MIN_STABILITY_INTERVALS = 5;
 const MIN_STABILITY_WEIGHT_S = 60;
 const MIN_STAGE_INTERVALS = 2;
 const MIN_STAGE_WEIGHT_S = 20;
-const MIN_STABILITY_COVERAGE = 0.8;
+// S2-05 (user decision 2026-10-06): the sensor-coverage quality gate drops from
+// 0.8 to 0.7. A series whose parser metadata is merely "degraded" (e.g. FIT
+// cadence at 77.7% coverage) still enters analysis when its effective coverage
+// reaches this threshold; below it the series stays QUALITY_INSUFFICIENT.
+const MIN_STABILITY_COVERAGE = 0.7;
 const MIN_STAGE_COVERAGE = 0.7;
 
 type SensorKey = "speed" | "heart_rate" | "power" | "cadence";
@@ -217,10 +221,18 @@ export function buildRideTemporalFeaturesV2(record: RideRecord): RideTemporalFea
     const definition = SENSOR_FIELDS[seriesKey];
     const sourceQuality = record.activity.sensorQuality[definition.qualityKey];
     const metadata = record.series.seriesMetadata[seriesKey];
+    // Effective coverage discounts invalid samples, so a "degraded" parser
+    // label alone no longer disqualifies a series that actually covers enough
+    // of the ride (S2-05 decision above).
+    const effectiveCoverage = sourceQuality && sourceQuality.sampleCount > 0
+      ? sourceQuality.coverage * (1 - sourceQuality.invalidSampleCount / sourceQuality.sampleCount)
+      : undefined;
     const sourceReason: TemporalUnavailableReason | undefined = !valid ? "RECORD_INVALID"
       : axis === "none" || span <= 0 ? "AXIS_MISSING"
       : !record.series.availableSeries.includes(seriesKey) || !metadata ? "SERIES_MISSING"
-      : metadata.qualityStatus !== "valid" || (sourceQuality && sourceQuality.coverage < MIN_STABILITY_COVERAGE) ? "QUALITY_INSUFFICIENT" : undefined;
+      : effectiveCoverage !== undefined
+        ? (effectiveCoverage < MIN_STABILITY_COVERAGE ? "QUALITY_INSUFFICIENT" : undefined)
+        : metadata.qualityStatus !== "valid" ? "QUALITY_INSUFFICIENT" : undefined;
     const available = !sourceReason;
     const observed = pieces.flatMap((piece): Observation[] => {
       const value = piece.point[definition.field];

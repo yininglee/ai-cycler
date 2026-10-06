@@ -4,6 +4,7 @@ import test from "node:test";
 import {
   RIDE_MODEL_INPUT_RULES_VERSION,
   RIDE_MODEL_INPUT_SCHEMA_VERSION,
+  type RideModelInputKnowledgeV2,
   type RideModelInputQuestionV2,
   type RideModelInputV2,
 } from "../src/domain/ride-model-input-v2.ts";
@@ -17,6 +18,33 @@ import {
   type RideModelOutputV2,
 } from "../src/ai/ride-output-schema-v2.ts";
 import { validateRideModelOutputV2 } from "../src/ai/ride-output-validator-v2.ts";
+
+// S2-06: claims and knowledge live once at the top level of the input; the
+// pools below let hand-built questions reference them by id exactly like the
+// production assembler does.
+const claimPool = new Map<string, V2AnalysisClaim>();
+const knowledgePool = new Map<string, RideModelInputKnowledgeV2>();
+
+function claim(claimId: string, overrides: Partial<V2AnalysisClaim> = {}): V2AnalysisClaim {
+  const value: V2AnalysisClaim = {
+    claimId,
+    rideId: "ride-1",
+    kind: "metric",
+    key: `power.${claimId}`,
+    value: 1,
+    unit: "W",
+    confidence: "high",
+    provenance: "calculated",
+    qualityStatus: "valid",
+    sourceRefs: [],
+    evidenceIds: [],
+    supports: [],
+    prohibits: ["causation"],
+    ...overrides,
+  };
+  claimPool.set(claimId, value);
+  return value;
+}
 
 const powerMean = claim("c-power-mean", { key: "power.mean", value: 220, unit: "W", displayValue: "220" });
 const powerCv = claim("c-power-cv", {
@@ -36,23 +64,16 @@ const historyPower = claim("c-history-power", {
   displayValue: "205",
 });
 
-function claim(claimId: string, overrides: Partial<V2AnalysisClaim> = {}): V2AnalysisClaim {
-  return {
-    claimId,
-    rideId: "ride-1",
-    kind: "metric",
-    key: `power.${claimId}`,
-    value: 1,
-    unit: "W",
-    confidence: "high",
-    provenance: "calculated",
-    qualityStatus: "valid",
-    sourceRefs: [],
-    evidenceIds: [],
-    supports: [],
-    prohibits: ["causation"],
+function knowledge(knowledgeId: string, overrides: Partial<RideModelInputKnowledgeV2> = {}): RideModelInputKnowledgeV2 {
+  const value: RideModelInputKnowledgeV2 = {
+    knowledgeId,
+    citation: "TrainingPeaks Glossary",
+    explanation: "按 TrainingPeaks 指标标准，单次 TSS 超过 300 后恢复需求显著上升。",
+    conditions: [],
     ...overrides,
   };
+  knowledgePool.set(knowledgeId, value);
+  return value;
 }
 
 function question(
@@ -65,17 +86,19 @@ function question(
     question: `question for ${dimensionId}`,
     eligibility: "available",
     qualityStatus: "valid",
-    claims,
+    claimIds: claims.map((item) => item.claimId),
     limitations: [],
     supports: [],
     prohibits: [],
-    knowledge: [],
+    knowledgeIds: [],
     recommendationAnchorClaimIds: [],
     ...overrides,
   };
 }
 
 function makeInput(questions: RideModelInputQuestionV2[]): RideModelInputV2 {
+  const claimIds = new Set(questions.flatMap((item) => item.claimIds));
+  const knowledgeIds = new Set(questions.flatMap((item) => item.knowledgeIds));
   return {
     schemaVersion: RIDE_MODEL_INPUT_SCHEMA_VERSION,
     rulesVersion: RIDE_MODEL_INPUT_RULES_VERSION,
@@ -85,27 +108,33 @@ function makeInput(questions: RideModelInputQuestionV2[]): RideModelInputV2 {
     analysisRunId: "run-s6-01",
     userScope: "user-s6-01",
     privacyFlags: [],
+    claims: [...claimIds].map((id) => claimPool.get(id)!),
+    knowledge: [...knowledgeIds].map((id) => knowledgePool.get(id)!),
     questions,
     inputStats: {
       totalCharacters: 0,
       maxInputCharacters: 160_000,
       questionCount: questions.length,
-      claimCount: questions.reduce((total, item) => total + item.claims.length, 0),
-      knowledgeCount: 0,
+      claimCount: claimIds.size,
+      knowledgeCount: knowledgeIds.size,
       aggregatedRelationPairCount: 0,
       aggregatedRelationWindowCount: 0,
     },
   };
 }
 
+// S2-06 defense line: the output contract no longer has a top-level
+// historyComparison field, but the validator still rejects one — attach it
+// the way a non-compliant model response would.
+function attachHistoryComparison(output: RideModelOutputV2, assertion: unknown): RideModelOutputV2 {
+  (output as unknown as Record<string, unknown>).historyComparison = assertion;
+  return output;
+}
+
+const powerKnowledge = knowledge("kb-1");
 const powerQuestion = question("powerOutput", [powerMean, powerCv], {
   limitations: ["power.coverage:90%"],
-  knowledge: [{
-    knowledgeId: "kb-1",
-    citation: "TrainingPeaks Glossary",
-    explanation: "按 TrainingPeaks 指标标准，单次 TSS 超过 300 后恢复需求显著上升。",
-    conditions: [],
-  }],
+  knowledgeIds: [powerKnowledge.knowledgeId],
 });
 const hrQuestion = question("heartRateLoad", [hrMean]);
 
@@ -157,7 +186,6 @@ test("S6-01 accepts an output that omits every optional section", () => {
   const output = baseOutput({
     highlights: undefined,
     suggestions: undefined,
-    historyComparison: undefined,
   });
   assert.deepEqual(validateRideModelOutputV2(standardInput(), output), { status: "pass" });
 });
@@ -195,10 +223,29 @@ test("S6-01 blocks stability wording without a variance claim", () => {
   assert.ok(failureCodes(validateRideModelOutputV2(standardInput(), output)).includes("STABILITY_WITHOUT_VARIANCE"));
 });
 
-test("S6-01 blocks history wording and historyComparison without comparable history", () => {
-  const withSection = baseOutput({
-    historyComparison: { text: "相比之前有进步。", conclusionType: "historyComparison", claimIds: ["c-power-mean"] },
+test("S6-01 does not treat the Z2 zone name 稳定区间 as a stability assertion", () => {
+  // Regression (2026-10-06 live run): quoting the official cadence/power zone
+  // name and its share is faithful zone reporting, not a stability claim.
+  const output = baseOutput({
+    dimensions: [
+      {
+        dimensionId: "powerOutput",
+        assertions: [{ text: "功率分布主要集中在稳定区间。", conclusionType: "fact", claimIds: ["c-power-mean"] }],
+      },
+      ...baseOutput().dimensions.slice(1),
+    ],
   });
+  const result = validateRideModelOutputV2(standardInput(), output);
+  assert.equal(result.status === "fail" ? result.issues.some((issue) => issue.code === "STABILITY_WITHOUT_VARIANCE") : false, false);
+});
+
+test("S6-01 blocks history wording and historyComparison without comparable history", () => {
+  // S2-06: the top-level historyComparison section left the output contract;
+  // a non-compliant response that still carries it must be rejected.
+  const withSection = attachHistoryComparison(
+    baseOutput(),
+    { text: "相比之前有进步。", conclusionType: "historyComparison", claimIds: ["c-power-mean"] },
+  );
   const codes = failureCodes(validateRideModelOutputV2(standardInput(), withSection));
   assert.ok(codes.includes("HISTORY_WITHOUT_BASELINE"));
 
@@ -213,13 +260,16 @@ test("S6-01 blocks history wording and historyComparison without comparable hist
   });
   assert.ok(failureCodes(validateRideModelOutputV2(standardInput(), withWording)).includes("HISTORY_WITHOUT_BASELINE"));
 
+  // Validator behavior when the input DOES carry history claims (pure-function
+  // coverage; the production single-ride chain no longer builds such inputs).
   const historyInput = makeInput([
-    { ...powerQuestion, claims: [...powerQuestion.claims, historyPower] },
+    { ...powerQuestion, claimIds: [...powerQuestion.claimIds, historyPower.claimId] },
     hrQuestion,
   ]);
-  const validHistory = baseOutput({
-    historyComparison: { text: "同等路线平均功率 220W，此前为 205W。", conclusionType: "historyComparison", claimIds: ["c-power-mean", "c-history-power"] },
-  });
+  const validHistory = attachHistoryComparison(
+    baseOutput(),
+    { text: "同等路线平均功率 220W，此前为 205W。", conclusionType: "historyComparison", claimIds: ["c-power-mean", "c-history-power"] },
+  );
   assert.deepEqual(validateRideModelOutputV2(historyInput, validHistory), { status: "pass" });
 });
 
@@ -233,13 +283,14 @@ test("PMC-01 passes recovery wording backed by a TSB claim at or above +5", () =
     supports: ["recovery_signal", "long_term_load"],
   });
   const historyQuestion = question("historicalPerformance", [tsbClaim]);
-  const output = baseOutput({
-    historyComparison: {
+  const output = attachHistoryComparison(
+    baseOutput(),
+    {
       text: "训练负荷平衡（TSB +12.5），整体恢复良好。",
       conclusionType: "historyComparison",
       claimIds: ["c-pmc-tsb"],
     },
-  });
+  );
   const result = validateRideModelOutputV2(makeInput([powerQuestion, hrQuestion, historyQuestion]), output);
   assert.equal(result.status, "pass");
 });
@@ -255,13 +306,14 @@ test("PMC-01 still blocks recovery wording when TSB is below +5 or unreferenced"
   });
   const historyQuestion = question("historicalPerformance", [lowTsbClaim]);
   const input = makeInput([powerQuestion, hrQuestion, historyQuestion]);
-  const lowTsb = baseOutput({
-    historyComparison: {
+  const lowTsb = attachHistoryComparison(
+    baseOutput(),
+    {
       text: "训练负荷平衡（TSB +3），整体恢复良好。",
       conclusionType: "historyComparison",
       claimIds: ["c-pmc-tsb-low"],
     },
-  });
+  );
   assert.ok(failureCodes(validateRideModelOutputV2(input, lowTsb)).includes("RECOVERY_CONCLUSION_FORBIDDEN"));
 
   const unreferenced = baseOutput({

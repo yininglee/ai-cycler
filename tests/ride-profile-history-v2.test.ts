@@ -39,7 +39,9 @@ test("S3-01 keeps Profile versioned and closes history, long-term, and recovery 
   assert.equal(snapshot.longTermLoad.status, "unavailable");
   assert.equal(snapshot.longTermLoad.reason, "HISTORY_NOT_AVAILABLE");
   assert.equal(snapshot.recoverySignals.reason, "HISTORY_NOT_AVAILABLE");
-  assert.ok(snapshot.limitations.includes("history.comparison:HISTORY_NOT_PROVIDED"));
+  // PD-AI-21 follow-up: single-ride mode (no history attempted) must NOT
+  // disclose history limitations — the model would translate them into prose.
+  assert.equal(snapshot.limitations.some((limitation) => limitation.startsWith("history.")), false);
   assert.equal(validateRideProfileHistoryV2(snapshot).length, 0);
 });
 

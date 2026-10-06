@@ -19,7 +19,10 @@ import {
 
 // S2-03 (PD-AI-16): v2.3 — packets that carry aggregated fixed-window relation
 // claims now disclose the aggregation and the underlying window count.
-export const RIDE_EVIDENCE_PACKET_BUILDER_RULES_VERSION = "ride-evidence-packet-builder-v2.4" as const;
+// S2-05 (user decision 2026-10-06, option B): v2.6 — crossSensorCoordination
+// carries fixed-window relation aggregates only; segment-level relation claims
+// are removed and segment context no longer enters this packet.
+export const RIDE_EVIDENCE_PACKET_BUILDER_RULES_VERSION = "ride-evidence-packet-builder-v2.6" as const;
 
 export interface BuildRideAnalysisEvidencePacketsV2Options {
   analysisRunId: string;
@@ -51,7 +54,7 @@ const PACKET_DEFINITIONS: readonly PacketDefinition[] = [
     question: "What do the qualified climb and terrain segments show?",
     required: ["elevation", "climbing", "timing"],
     optional: ["power", "heartRate", "speedStability", "crossSensorAlignment"],
-    supports: ["ride_distance", "current_ride_timing", "elevation_context", "terrain_segment", "climb_segment", "climb_power_observation", "climb_heart_rate_observation", "climb_speed_observation", "climb_cadence_observation"],
+    supports: ["ride_distance", "current_ride_timing", "elevation_context", "terrain_segment", "climb_segment", "climb_fact", "climb_power_observation", "climb_heart_rate_observation", "climb_speed_observation", "climb_cadence_observation"],
     keyPrefixes: ["elevation.", "timing.", "segment.terrain.", "segment.climb.", "climb."],
     prohibits: ["ability_change", "technical_diagnosis", "causation"],
   },
@@ -78,7 +81,7 @@ const PACKET_DEFINITIONS: readonly PacketDefinition[] = [
     question: "What intensity and single-ride training-load facts are supported?",
     required: ["power", "normalizedPower", "verifiedFtp", "timing"],
     optional: ["powerZones", "intensity", "trainingLoad", "userProfile"],
-    supports: ["power_level", "normalized_power_output", "ftp_dependent_calculation", "power_zone_distribution", "ride_intensity_factor", "single_ride_training_load", "current_ride_timing", "relative_power_output"],
+    supports: ["power_level", "normalized_power_output", "ftp_dependent_calculation", "power_zone_distribution", "ride_intensity_factor", "single_ride_training_load", "current_ride_timing", "relative_power_output", "activity_energy"],
     keyPrefixes: ["power.", "profile.verifiedFtp"],
     prohibits: ["recovery", "injury_risk", "training_effect", "ftp_estimate_as_confirmed"],
   },
@@ -93,11 +96,14 @@ const PACKET_DEFINITIONS: readonly PacketDefinition[] = [
   },
   {
     dimensionId: "crossSensorCoordination",
-    question: "What same-window or same-segment relationships are observed across sensors?",
+    question: "What same-window relationships are observed across sensors?",
     required: ["crossSensorAlignment"],
     optional: ["power", "heartRate", "speed", "cadence", "timing"],
-    supports: ["same_window_observation", "terrain_segment", "climb_segment", "climb_power_observation", "climb_heart_rate_observation", "climb_speed_observation", "climb_cadence_observation"],
-    keyPrefixes: ["relation.", "segment.terrain.", "segment.climb."],
+    // S2-05 (user decision 2026-10-06, option B): this packet carries the
+    // fixed-window relation aggregates (PD-AI-16) only — segment-level relation
+    // evidence no longer exists and segment context stays in its own dimensions.
+    supports: ["same_window_observation"],
+    keyPrefixes: ["relation.fixed."],
     prohibits: ["causation", "response_order", "trend"],
   },
   {

@@ -70,7 +70,9 @@ interface ClaimBinding {
   dimensionIds: Set<string>;
 }
 
-const stabilityTextPattern = /稳定|平稳|保持良好/;
+// "稳定区间" is the official Z2 cadence/power zone name, not a stability
+// assertion — the negative lookahead keeps zone-share wording legal.
+const stabilityTextPattern = /稳定(?!区间)|平稳|保持良好/;
 const historyTextPattern = /进步|退步|相比之前|相比以往|比之前|长期负荷/;
 const causalTextPattern = /导致|造成|引发/;
 // Plan wording is only forbidden as an assertion ("completed the plan"); goal-
@@ -138,26 +140,31 @@ export function validateRideModelOutputV2(
     return { status: "fail", issues };
   }
 
-  // Input indexes used by every assertion check.
+  // Input indexes used by every assertion check. S2-06: claims and knowledge
+  // live once at the top level of the input; questions reference them by id,
+  // so the fan-out into several question packets is recorded per dimension.
   const claimsById = new Map<string, ClaimBinding>();
+  for (const claim of input.claims) {
+    claimsById.set(claim.claimId, { claim, dimensionIds: new Set() });
+  }
+  const knowledgeById = new Map(input.knowledge.map((item) => [item.knowledgeId, item]));
   const knowledgeDimensionsById = new Map<string, Set<string>>();
   const questionsByDimension = new Map<string, RideModelInputQuestionV2>();
   for (const question of input.questions) {
     questionsByDimension.set(question.dimensionId, question);
-    for (const claim of question.claims) {
-      const binding = claimsById.get(claim.claimId);
-      if (binding) binding.dimensionIds.add(question.dimensionId);
-      else claimsById.set(claim.claimId, { claim, dimensionIds: new Set([question.dimensionId]) });
+    for (const claimId of question.claimIds) {
+      claimsById.get(claimId)?.dimensionIds.add(question.dimensionId);
     }
-    for (const knowledge of question.knowledge) {
-      const dimensions = knowledgeDimensionsById.get(knowledge.knowledgeId);
+    for (const knowledgeId of question.knowledgeIds) {
+      // Only ids that exist in the delivered top-level list count as input;
+      // dangling references simply never register and are rejected on use.
+      if (!knowledgeById.has(knowledgeId)) continue;
+      const dimensions = knowledgeDimensionsById.get(knowledgeId);
       if (dimensions) dimensions.add(question.dimensionId);
-      else knowledgeDimensionsById.set(knowledge.knowledgeId, new Set([question.dimensionId]));
+      else knowledgeDimensionsById.set(knowledgeId, new Set([question.dimensionId]));
     }
   }
-  const inputHasHistoryClaims = [...claimsById.values()].some(
-    (binding) => binding.claim.kind === "history",
-  );
+  const inputHasHistoryClaims = input.claims.some((claim) => claim.kind === "history");
 
   const resolveClaims = (path: string, claimIds: string[], dimensionId?: string): V2AnalysisClaim[] => {
     const claims: V2AnalysisClaim[] = [];
@@ -257,9 +264,7 @@ export function validateRideModelOutputV2(
         const claimHit = claims.some((claim) => claimAllowsNumber(claim, number));
         if (claimHit) continue;
         const knowledgeHit = knowledgeIds.some((knowledgeId) => {
-          const knowledge = input.questions
-            .flatMap((question) => question.knowledge)
-            .find((item) => item.knowledgeId === knowledgeId);
+          const knowledge = knowledgeById.get(knowledgeId);
           if (!knowledge) return false;
           return [
             ...extractNumbers(knowledge.citation),

@@ -126,11 +126,11 @@ test("qualified climb claims reach every related problem packet", () => {
   });
   const climbClaims = context.allowedClaims.filter((claim) => claim.key.startsWith("segment.climb.s2-02-climb-1."));
   assert.ok(climbClaims.length >= 5);
+  // S2-05 (option B): crossSensorCoordination no longer carries segment claims.
   const expectedByDimension = {
     climbPerformance: [".span", ".speed.mean", ".heart_rate.mean", ".power.mean", ".cadence.mean"],
     heartRateLoad: [".span", ".heart_rate.mean"],
     powerOutput: [".span", ".power.mean"],
-    crossSensorCoordination: [".span", ".speed.mean", ".heart_rate.mean", ".power.mean", ".cadence.mean"],
   } as const;
   for (const dimensionId of Object.keys(expectedByDimension) as Array<keyof typeof expectedByDimension>) {
     const packet = getRideAnalysisEvidencePacketV2(context, dimensionId);
