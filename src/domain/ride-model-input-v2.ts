@@ -13,7 +13,7 @@ import {
 // forbidden inputs, and blocks the model call with a traceable failure code instead
 // of silently trimming claims when authorization, privacy, or budget gates fail.
 
-export const RIDE_MODEL_INPUT_SCHEMA_VERSION = "ride-model-input-v2.1.0" as const;
+export const RIDE_MODEL_INPUT_SCHEMA_VERSION = "ride-model-input-v2.2.0" as const;
 // S2-03 (PD-AI-16): v2.1 — inputStats now records aggregated relation
 // evidence (pair count and underlying fixed-window count).
 export const RIDE_MODEL_INPUT_RULES_VERSION = "ride-model-input-v2.1" as const;

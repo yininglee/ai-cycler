@@ -7,7 +7,7 @@ import { RIDE_OUTPUT_SCHEMA_VERSION } from "./ride-output-schema-v2.ts";
 // independent output validator (ride-output-validator-v2.ts). The prompt and the
 // output contract are versioned together and embedded into every call record.
 
-export const RIDE_PROMPT_VERSION = "ride-prompt-v2.2.0" as const;
+export const RIDE_PROMPT_VERSION = "ride-prompt-v2.3.0" as const;
 
 export interface RidePromptV2 {
   promptVersion: typeof RIDE_PROMPT_VERSION;
@@ -44,6 +44,11 @@ const INSTRUCTIONS = `你是"AI 骑行伙伴"的骑后解读引擎。你的唯�
 - historyComparison：只有引用了 kind=history 的可比历史 Claim 时才允许输出。
 - suggestions：建议。每条必须绑定至少一条骑行或历史 Claim 作为事实锚点，可附 riskNote。
 - limitations：只能使用输入中出现过的限制原文，不得改写或编造。
+
+【表达内容建议】（非硬性结构，优先保证事实准确与合同合规）
+- 整体评价与维度解读可以围绕"骑行事实和骑行表现， 骑得怎么样、意味着什么"的思路组织内容：先陈述证据支持的事实与本次表现，再给出有依据的评价，最后说明对用户的意义或后续关注点。
+- 这只是内容组织建议，不是固定模板：证据只够支撑事实时，仅陈述事实并说明限制即可，不硬凑评价或意义。
+- "意味着什么"只能基于所引用的证据解释，不得引申出证据不支持的结论（如能力提升、恢复状态、训练效果）。
 
 【硬性禁止事项】（违反任意一条，本地独立校验器都会拒绝该输出）
 1. 不得编造或改写任何数字、区段、时间；事实断言文本中出现的每个数字都必须来自所引用 Claim 的 value 或 displayValue（区间代号 Z1-Z7、分段序号、次数/频次表达如"上1次、每15分钟"除外）；建议中的操作性数字（补水量、时长安排等）不受此限，但不得在建议中改写本次骑行的事实数字。

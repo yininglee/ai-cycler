@@ -6,7 +6,7 @@ import { buildRideTimingSummary, type RideTimingSummary } from "./ride-timing.ts
 
 // S2-03 (PD-AI-16): version upgraded together with the claims layer so the
 // aggregation rule change is traceable across S1 window snapshots and S2 claims.
-export const RIDE_TEMPORAL_WINDOWS_RULES_VERSION = "ride-temporal-windows-v2.2" as const;
+export const RIDE_TEMPORAL_WINDOWS_RULES_VERSION = "ride-temporal-windows-v2.3" as const;
 
 const MAX_INTERVAL_S = 10;
 const MOVING_SPEED_MPS = 1 / 3.6;
@@ -230,7 +230,7 @@ export function buildRideTemporalWindowsV2(
   const temporal = buildRideTemporalFeaturesV2(record);
   const unavailableReason: WindowUnavailableReason | undefined = temporal.series.some((item) => item.unavailable.includes("RECORD_INVALID"))
     ? "RECORD_INVALID" : temporal.axis !== "time" ? "TIME_AXIS_REQUIRED"
-      : temporal.axisIncomplete ? "AXIS_INCOMPLETE" : temporal.unlocatedStopTimeS > 0 ? "UNLOCATED_STOP_TIME" : undefined;
+      : temporal.axisIncomplete ? "AXIS_INCOMPLETE" : !temporal.unlocatedStopTolerated ? "UNLOCATED_STOP_TIME" : undefined;
   const unavailable = Object.fromEntries(temporal.series.map((item) => [item.seriesKey, item.unavailable])) as Record<Sensor, string[]>;
   const sensors = unavailableReason ? [] : availableSensors(record, unavailable);
   const timing = sources.timing ?? buildRideTimingSummary(record);

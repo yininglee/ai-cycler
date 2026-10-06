@@ -2,7 +2,15 @@ import { validateRideRecord } from "./ride-series.ts";
 import { buildRideTimingSummary, type RideStopSegment } from "./ride-timing.ts";
 import type { RideRecord, RideSeriesKey, RideSeriesPoint } from "./ride-schema.ts";
 
-export const RIDE_TEMPORAL_RULES_VERSION = "ride-temporal-v2.1" as const;
+export const RIDE_TEMPORAL_RULES_VERSION = "ride-temporal-v2.2" as const;
+
+// S2-04 (PD-AI-17, user decision 2026-10-06): un-locatable stopped time is the
+// part of the device-recorded stop time that cannot be placed on the timeline
+// (e.g. scattered traffic-light pauses on commute rides). When it stays within
+// this ratio of the ride span the timeline remains usable; statistics always
+// exclude ALL stopped time (located + unlocated) from time-weighted
+// denominators. Above the ratio the timeline stays blocked as before.
+export const RIDE_UNLOCATED_STOP_TOLERANCE_RATIO = 0.1 as const;
 
 const MAX_CONTINUOUS_INTERVAL_S = 10;
 const STOP_SPEED_MPS = 1 / 3.6;
@@ -80,6 +88,9 @@ export interface RideTemporalFeatureSnapshotV2 {
   longestGapS: number;
   stops: RideStopSegment[];
   unlocatedStopTimeS: number;
+  // PD-AI-17: true when unlocatedStopTimeS is within the tolerated ratio of
+  // the span, so time-axis capabilities stay available.
+  unlocatedStopTolerated: boolean;
   series: TemporalSeriesFeatureV2[];
 }
 
@@ -183,6 +194,8 @@ export function buildRideTemporalFeaturesV2(record: RideRecord): RideTemporalFea
   const stops = timing?.stops ?? [];
   const locatedStopTimeS = stops.reduce((sum, stop) => sum + overlap(start, end, stop.startElapsedTimeS, stop.endElapsedTimeS), 0);
   const unlocatedStopTimeS = Math.max(0, (timing?.stoppedTimeS ?? 0) - locatedStopTimeS);
+  // PD-AI-17: tolerate un-locatable stopped time within 10% of the span.
+  const unlocatedStopTolerated = unlocatedStopTimeS <= RIDE_UNLOCATED_STOP_TOLERANCE_RATIO * span;
   const gaps = axis === "time" ? points.slice(1).flatMap((point, index) => {
     const previous = points[index]!;
     const a = previous.elapsedTimeS;
@@ -215,13 +228,15 @@ export function buildRideTemporalFeaturesV2(record: RideRecord): RideTemporalFea
         ? [{ value, weight: piece.end - piece.start, intervalIndex: piece.intervalIndex, start: piece.start, end: piece.end }] : [];
     });
     const validWeight = observed.reduce((sum, item) => sum + item.weight, 0);
-    // Unknown time and a missing axis lower coverage instead of silently disappearing.
-    const denominator = axis === "time" ? Math.max(0, span - locatedStopTimeS) : eligibleWeight;
+    // Unknown time and a missing axis lower coverage instead of silently
+    // disappearing. PD-AI-17: the denominator excludes ALL stopped time
+    // (located + unlocated), never counting stops as riding time.
+    const denominator = axis === "time" ? Math.max(0, span - (locatedStopTimeS + unlocatedStopTimeS)) : eligibleWeight;
     const coverage = denominator > 0 ? validWeight / denominator : 0;
     const validIntervalCount = new Set(observed.map((item) => item.intervalIndex)).size;
     const allZero = (seriesKey === "power" || seriesKey === "cadence") && observed.length > 0
       && observed.every((item) => item.value === 0);
-    const sufficientStats = !sourceReason && !axisIncomplete && !allZero && unlocatedStopTimeS === 0 && validIntervalCount >= MIN_STAT_INTERVALS
+    const sufficientStats = !sourceReason && !axisIncomplete && !allZero && unlocatedStopTolerated && validIntervalCount >= MIN_STAT_INTERVALS
       && (axis === "distance" ? validWeight >= MIN_STAT_WEIGHT_M : validWeight >= MIN_STAT_WEIGHT_S);
     const stats = sufficientStats ? statistics(observed) : undefined;
     const stageNames = ["first", "middle", "last"] as const;
@@ -236,19 +251,19 @@ export function buildRideTemporalFeaturesV2(record: RideRecord): RideTemporalFea
       const weight = samples.reduce((sum, item) => sum + item.weight, 0);
       const intervalCount = new Set(samples.map((item) => item.intervalIndex)).size;
       const stageCoverage = eligible > 0 ? weight / eligible : 0;
-      const stageQualified = !sourceReason && !axisIncomplete && !allZero && unlocatedStopTimeS === 0 && axis === "time"
+      const stageQualified = !sourceReason && !axisIncomplete && !allZero && unlocatedStopTolerated && axis === "time"
         && intervalCount >= MIN_STAGE_INTERVALS && weight >= MIN_STAGE_WEIGHT_S && stageCoverage >= MIN_STAGE_COVERAGE;
       return { part, start: stageStart, end: stageEnd, eligibleWeight: eligible, validWeight: weight,
         coverage: stageCoverage, validIntervalCount: intervalCount,
         ...(stageQualified ? { mean: statistics(samples).mean } : {}) };
     });
-    const sharedReason: TemporalUnavailableReason | undefined = sourceReason ?? (axisIncomplete ? "AXIS_INCOMPLETE" : allZero ? "ALL_ZERO_SERIES" : axis !== "time" ? "TIME_AXIS_REQUIRED" : unlocatedStopTimeS > 0 ? "UNLOCATED_STOP_TIME" : undefined);
+    const sharedReason: TemporalUnavailableReason | undefined = sourceReason ?? (axisIncomplete ? "AXIS_INCOMPLETE" : allZero ? "ALL_ZERO_SERIES" : axis !== "time" ? "TIME_AXIS_REQUIRED" : !unlocatedStopTolerated ? "UNLOCATED_STOP_TIME" : undefined);
     const stabilityReason: TemporalUnavailableReason | undefined = sharedReason ?? (!stats || validIntervalCount < MIN_STABILITY_INTERVALS || validWeight < MIN_STABILITY_WEIGHT_S
       ? "INSUFFICIENT_SAMPLES" : coverage < MIN_STABILITY_COVERAGE ? "INSUFFICIENT_COVERAGE" : gaps.length > 0 ? "CONTINUITY_GAP" : undefined);
     const stageReason: TemporalUnavailableReason | undefined = sharedReason ?? (stages.some((stage) => stage.validIntervalCount < MIN_STAGE_INTERVALS || stage.validWeight < MIN_STAGE_WEIGHT_S)
       ? "INSUFFICIENT_SAMPLES" : stages.some((stage) => stage.coverage < MIN_STAGE_COVERAGE)
       ? "INSUFFICIENT_COVERAGE" : undefined);
-    const unavailable = [...new Set([sourceReason, !stats && !sourceReason ? axisIncomplete ? "AXIS_INCOMPLETE" : allZero ? "ALL_ZERO_SERIES" : unlocatedStopTimeS > 0 ? "UNLOCATED_STOP_TIME" : "INSUFFICIENT_SAMPLES" : undefined,
+    const unavailable = [...new Set([sourceReason, !stats && !sourceReason ? axisIncomplete ? "AXIS_INCOMPLETE" : allZero ? "ALL_ZERO_SERIES" : !unlocatedStopTolerated ? "UNLOCATED_STOP_TIME" : "INSUFFICIENT_SAMPLES" : undefined,
       stabilityReason, stageReason].filter((reason): reason is TemporalUnavailableReason => reason !== undefined))];
     return {
       seriesKey, unit: definition.unit, weightUnit: axis === "distance" ? "m" : "s", eligibleWeight: denominator, validWeight, coverage,
@@ -258,5 +273,5 @@ export function buildRideTemporalFeaturesV2(record: RideRecord): RideTemporalFea
     };
   });
   return { rideId: record.activity.rideId, rulesVersion: RIDE_TEMPORAL_RULES_VERSION, axis, span, axisIncomplete,
-    gaps, longestGapS: Math.max(0, ...gaps.map((gap) => gap.durationS)), stops, unlocatedStopTimeS, series };
+    gaps, longestGapS: Math.max(0, ...gaps.map((gap) => gap.durationS)), stops, unlocatedStopTimeS, unlocatedStopTolerated, series };
 }

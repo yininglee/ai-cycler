@@ -19,7 +19,7 @@ import {
 
 // S2-03 (PD-AI-16): v2.3 — packets that carry aggregated fixed-window relation
 // claims now disclose the aggregation and the underlying window count.
-export const RIDE_EVIDENCE_PACKET_BUILDER_RULES_VERSION = "ride-evidence-packet-builder-v2.3" as const;
+export const RIDE_EVIDENCE_PACKET_BUILDER_RULES_VERSION = "ride-evidence-packet-builder-v2.4" as const;
 
 export interface BuildRideAnalysisEvidencePacketsV2Options {
   analysisRunId: string;

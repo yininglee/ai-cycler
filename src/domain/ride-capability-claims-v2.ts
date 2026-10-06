@@ -22,7 +22,7 @@ export const RIDE_CAPABILITY_CLAIMS_SCHEMA_VERSION = RIDE_EVIDENCE_SCHEMA_VERSIO
 // plus at most three deterministic representative windows. There is no
 // per-window mode and no threshold; segment (cruise/terrain) relation claims
 // stay per-window because each segment emits at most one window per pair.
-export const RIDE_CAPABILITY_CLAIMS_RULES_VERSION = "ride-capability-claims-v2.3" as const;
+export const RIDE_CAPABILITY_CLAIMS_RULES_VERSION = "ride-capability-claims-v2.4" as const;
 export const RIDE_CONTIGUOUS_NP_RULES_VERSION = "ride-contiguous-np-v2.1" as const;
 export const RIDE_POWER_ZONE_RULES_VERSION = "ride-power-zone-v2.1" as const;
 export const RIDE_INTENSITY_RULES_VERSION = "ride-intensity-v2.1" as const;
@@ -609,7 +609,7 @@ export function buildRideCapabilityClaimsV2(
   for (const key of evidenceCapabilityKeys) capabilities.set(key, unavailableCapability(key, [], "RULE_NOT_IMPLEMENTED"));
 
   const temporalRef = [sourceRef(temporalSource, [derivedEvidence(rideId, "temporal-axis")])];
-  const timed = temporal.axis === "time" && !temporal.axisIncomplete && temporal.unlocatedStopTimeS === 0;
+  const timed = temporal.axis === "time" && !temporal.axisIncomplete && temporal.unlocatedStopTolerated;
   if (timed) {
     capabilities.set("timing", availableCapability("timing", [], temporalRef, "valid", ["current_ride_timing"], []));
     const continuityQuality: Exclude<EvidenceQuality, "unavailable"> = temporal.gaps.length ? "soft" : "valid";
@@ -631,7 +631,7 @@ export function buildRideCapabilityClaimsV2(
       displayValue: String(temporal.stops.length), displayUnit: "count",
     }));
   } else {
-    const reason = temporal.unlocatedStopTimeS > 0 ? "UNLOCATED_STOP_TIME" : temporal.axisIncomplete ? "AXIS_INCOMPLETE" : "TIME_AXIS_REQUIRED";
+    const reason = !temporal.unlocatedStopTolerated ? "UNLOCATED_STOP_TIME" : temporal.axisIncomplete ? "AXIS_INCOMPLETE" : "TIME_AXIS_REQUIRED";
     capabilities.set("timing", unavailableCapability("timing", [], reason));
     capabilities.set("sensorContinuity", unavailableCapability("sensorContinuity", ["timing"], reason));
     capabilities.set("stops", unavailableCapability("stops", ["timing"], reason));
