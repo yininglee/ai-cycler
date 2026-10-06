@@ -86,6 +86,10 @@ test("S5-02 successful call returns raw text with a complete call record and no 
   const body = JSON.parse(String(captured?.init.body)) as Record<string, unknown>;
   assert.equal(body.model, "deepseek-ai/DeepSeek-V4-Flash");
   assert.deepEqual(body.response_format, { type: "json_object" });
+  // Locked sampling controls (user decision 2026-10-06): low temperature and
+  // thinking disabled are always sent so outputs stay deterministic.
+  assert.equal(body.temperature, 0.3);
+  assert.equal(body.enable_thinking, false);
   assert.equal(body.max_tokens, 1024);
   assert.deepEqual(body.messages, [{ role: "user", content: "版本化提示词全文（S6-01 生成）" }]);
 

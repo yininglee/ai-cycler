@@ -4,7 +4,7 @@
 // variables only, never logged, and every call (success or failure) produces a
 // traceable call record per V2 PRD FR-11.
 
-export const RIDE_MODEL_PROVIDER_RULES_VERSION = "ride-model-provider-v2.0.0" as const;
+export const RIDE_MODEL_PROVIDER_RULES_VERSION = "ride-model-provider-v2.1.0" as const;
 export const RIDE_MODEL_PROVIDER_ID = "siliconflow" as const;
 export const DEFAULT_RIDE_MODEL_V2_MODEL_ID = "deepseek-ai/DeepSeek-V4-Flash" as const;
 
@@ -146,6 +146,12 @@ export class RideModelClientV2 {
     const body = JSON.stringify({
       model: this.config.modelId,
       messages: [{ role: "user", content: invocation.promptText }],
+      // Locked sampling controls (user decision 2026-10-06): low temperature for
+      // deterministic structured output, thinking disabled — the validator +
+      // one-shot repair pipeline relies on stable outputs, and chain-of-thought
+      // latency (95-105s per call) is not worth unverified quality gains.
+      temperature: 0.3,
+      enable_thinking: false,
       ...(invocation.jsonMode ? { response_format: { type: "json_object" } } : {}),
       ...(invocation.maxOutputTokens ? { max_tokens: invocation.maxOutputTokens } : {}),
     });
