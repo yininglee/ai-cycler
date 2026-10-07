@@ -7,7 +7,7 @@ import { RIDE_OUTPUT_SCHEMA_VERSION } from "./ride-output-schema-v2.ts";
 // independent output validator (ride-output-validator-v2.ts). The prompt and the
 // output contract are versioned together and embedded into every call record.
 
-export const RIDE_PROMPT_VERSION = "ride-prompt-v2.4.1" as const;
+export const RIDE_PROMPT_VERSION = "ride-prompt-v2.5.0" as const;
 
 export interface RidePromptV2 {
   promptVersion: typeof RIDE_PROMPT_VERSION;
@@ -61,6 +61,42 @@ const INSTRUCTIONS = `你是"AI 骑行伙伴"的骑后解读引擎。你的唯�
 9. 不为了填满结构硬凑高光或建议；没有依据就省略可选字段。
 10. 只输出 JSON 对象本身，不输出任何其他文字、注释或代码块标记。`;
 
+// 输入压缩（2026-10-07 用户决策，PD-AI-24）：模型只消费它推理所需的
+// Claim/知识内容，不消费追溯字段（sourceRefs/evidenceIds/key/formulaVersion/
+// provenance/aggregatedFromCount）与元数据（analysisRunId/userScope/privacyFlags/
+// inputStats/版本号）。这些字段由独立校验器与审计轨迹从内存中的完整
+// RideModelInputV2 读取，不依赖 prompt 文本，因此瘦身投影零质量风险。
+// 同时剥离 analysisRunId 与知识 retrievedAt：二者是"缓存杀手"——同一案例重复
+// 跑时若保留会使 prompt 字节级不一致，导致供应商上下文缓存永远无法命中。
+function projectModelVisibleInput(input: RideModelInputV2): object {
+  return {
+    claims: input.claims.map((claim) => ({
+      claimId: claim.claimId,
+      kind: claim.kind,
+      value: claim.value,
+      unit: claim.unit,
+      text: claim.text,
+      confidence: claim.confidence,
+      qualityStatus: claim.qualityStatus,
+      displayValue: claim.displayValue,
+      displayUnit: claim.displayUnit,
+      supports: claim.supports,
+      prohibits: claim.prohibits,
+    })),
+    knowledge: input.knowledge.map((item) => ({
+      knowledgeId: item.knowledgeId,
+      citation: item.citation,
+      explanation: item.explanation,
+      conditions: item.conditions,
+      conclusionStrength: item.conclusionStrength,
+      limitations: item.limitations,
+      safetyBoundaries: item.safetyBoundaries,
+      forbiddenFactKeys: item.forbiddenFactKeys,
+    })),
+    questions: input.questions,
+  };
+}
+
 export function buildRidePromptV2(input: RideModelInputV2): RidePromptV2 {
   const promptText = `${INSTRUCTIONS}
 
@@ -71,7 +107,7 @@ export function buildRidePromptV2(input: RideModelInputV2): RidePromptV2 {
 - evidenceRulesVersion: ${input.evidenceRulesVersion}
 
 【版本化输入 JSON】
-${JSON.stringify(input)}`;
+${JSON.stringify(projectModelVisibleInput(input))}`;
 
   return {
     promptVersion: RIDE_PROMPT_VERSION,

@@ -168,13 +168,25 @@ export async function runRideInterpretationV2(options: RideInterpretationV2Optio
     windows,
   });
 
+  // Knowledge input soft-off (user decision 2026-10-07, PD-AI-25): the batch-1
+  // knowledge base stays frozen and versioned, but its entries are no longer
+  // attached to the model input for single-ride interpretations. Rationale
+  // (diagnosed 2026-10-07): knowledge-reference assertions were the primary
+  // first-round failure source (4/5 issues: missing claimIds) and attached
+  // knowledge got 100% paraphrased into one dimension without adding insight.
+  // The validator defenses stay active — a knowledgeReference assertion without
+  // a delivered knowledgeId is still rejected (KNOWLEDGE_REFERENCE_WITHOUT_
+  // KNOWLEDGE / KNOWLEDGE_NOT_IN_INPUT), so model habit cannot leak through.
+  // Flip to true to restore knowledge attachment (one-line revert).
+  const KNOWLEDGE_INPUT_ENABLED = false;
+
   // S2-02: full evidence packets, then S3-02 knowledge attachment.
   const packetsContext = buildRideAnalysisEvidencePacketsV2(profileHistory.capabilityClaims, {
     analysisRunId,
     userScope,
   });
   const knowledgeContext = attachRideKnowledgeEvidenceV2(packetsContext, {
-    knowledgeBase: rideKnowledgeBaseBatch1V2,
+    knowledgeBase: KNOWLEDGE_INPUT_ENABLED ? rideKnowledgeBaseBatch1V2 : [],
     knowledgeBaseVersion: RIDE_KNOWLEDGE_BASE_BATCH1_VERSION,
     retrievedAt: (options.now ?? new Date()).toISOString(),
   });

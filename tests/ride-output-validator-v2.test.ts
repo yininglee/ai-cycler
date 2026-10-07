@@ -239,6 +239,62 @@ test("S6-01 does not treat the Z2 zone name 稳定区间 as a stability assertio
   assert.equal(result.status === "fail" ? result.issues.some((issue) => issue.code === "STABILITY_WITHOUT_VARIANCE") : false, false);
 });
 
+test("S6-01 does not treat the cadence zone name 稳定踏频 as a stability assertion", () => {
+  // Regression (2026-10-07 live run, REPAIR_FAILED diagnosis): "稳定踏频占 7%"
+  // is cadence zone-share reporting translated from claim key
+  // cadence.zone.steady — same class as the PD-AI-22 稳定区间 exemption.
+  const output = baseOutput({
+    dimensions: [
+      {
+        dimensionId: "powerOutput",
+        assertions: [{ text: "本次骑行平均踏频 79 rpm。踏频区间分布为：零踏频占 6%，稳定踏频占 7%，耐力踏频占 48%。", conclusionType: "fact", claimIds: ["c-power-mean"] }],
+      },
+      ...baseOutput().dimensions.slice(1),
+    ],
+  });
+  const result = validateRideModelOutputV2(standardInput(), output);
+  assert.equal(result.status === "fail" ? result.issues.some((issue) => issue.code === "STABILITY_WITHOUT_VARIANCE") : false, false);
+});
+
+test("S6-01 does not treat the zone translation 稳定区 as a stability assertion", () => {
+  // Regression (2026-10-07 second live run): the model translated
+  // cadence.zone.steady as "稳定区" — a third attested translation of the same
+  // zone-share wording, exempted alongside 稳定区间/稳定踏频.
+  const output = baseOutput({
+    dimensions: [
+      {
+        dimensionId: "powerOutput",
+        assertions: [{ text: "踏频区间分布为：零区 6%，稳定区 7%，耐力区 48%，高区 33%。", conclusionType: "fact", claimIds: ["c-power-mean"] }],
+      },
+      ...baseOutput().dimensions.slice(1),
+    ],
+  });
+  const result = validateRideModelOutputV2(standardInput(), output);
+  assert.equal(result.status === "fail" ? result.issues.some((issue) => issue.code === "STABILITY_WITHOUT_VARIANCE") : false, false);
+});
+
+test("S6-01 treats named-segment ordinals (巡航段1) as structural, not data values", () => {
+  // Regression (2026-10-07 live run): "巡航段1（2 分钟）平均速度 29.97 km/h" got
+  // its segment INDEX flagged as NUMBER_NOT_IN_CLAIMS. Business rules 14.5.1
+  // exempt segment ordinals; the span's "2 分钟" is still number-checked.
+  const output = baseOutput({
+    dimensions: [
+      {
+        dimensionId: "powerOutput",
+        assertions: [{ text: "巡航段1（2 分钟）平均速度 29.97 km/h，巡航段2（2 分钟）平均速度 27.96 km/h。", conclusionType: "fact", claimIds: ["c-power-mean"] }],
+      },
+      ...baseOutput().dimensions.slice(1),
+    ],
+  });
+  const result = validateRideModelOutputV2(standardInput(), output);
+  // 29.97 / 27.96 may still be flagged (not in c-power-mean) — but the ordinal
+  // "1" itself must not appear as a standalone failure reason.
+  const ordinalFlag = result.status === "fail"
+    ? result.issues.some((issue) => issue.code === "NUMBER_NOT_IN_CLAIMS" && issue.message.includes("number 1 ") && !issue.message.includes("29"))
+    : false;
+  assert.equal(ordinalFlag, false);
+});
+
 test("S6-01 blocks history wording and historyComparison without comparable history", () => {
   // S2-06: the top-level historyComparison section left the output contract;
   // a non-compliant response that still carries it must be rejected.

@@ -77,7 +77,7 @@ test("S6-01 builds a versioned prompt bound to the schema and output contract ve
   assert.equal(prompt.promptVersion, RIDE_PROMPT_VERSION);
   assert.equal(prompt.outputSchemaVersion, RIDE_OUTPUT_SCHEMA_VERSION);
   assert.equal(prompt.inputSchemaVersion, RIDE_MODEL_INPUT_SCHEMA_VERSION);
-  assert.equal(prompt.promptVersion, "ride-prompt-v2.4.1");
+  assert.equal(prompt.promptVersion, "ride-prompt-v2.5.0");
 });
 
 test("S6-01 prompt embeds the delivered input snapshot with claims and knowledge", () => {
@@ -86,9 +86,19 @@ test("S6-01 prompt embeds the delivered input snapshot with claims and knowledge
   const firstClaimId = input.questions[0].claimIds[0];
   assert.ok(promptText.includes(`"${firstClaimId}"`), "prompt must embed the serialized claim IDs");
   assert.ok(promptText.includes("kb-power-np"), "prompt must embed the knowledge ID");
-  assert.ok(promptText.includes('"analysisRunId"'), "prompt must embed the versioned input JSON");
+  assert.ok(!promptText.includes('"analysisRunId"'), "prompt must strip run metadata (byte-stable for cache hits)");
   assert.ok(promptText.includes(input.questions[0].dimensionId));
   assert.ok(promptText.includes(RIDE_MODEL_INPUT_RULES_VERSION) || promptText.includes(input.evidenceRulesVersion));
+});
+
+test("S6-01 prompt is a model-visible projection: strips traceability and cache-killer fields", () => {
+  const { promptText } = buildRidePromptV2(readyInput());
+  for (const field of ['"sourceRefs"', '"evidenceIds"', '"formulaVersion"', '"provenance"', '"aggregatedFromCount"', '"inputStats"', '"privacyFlags"', '"userScope"', '"analysisRunId"', '"retrievedAt"']) {
+    assert.ok(!promptText.includes(field), `prompt must strip ${field}`);
+  }
+  for (const field of ['"claimId"', '"kind"', '"qualityStatus"', '"displayValue"', '"prohibits"']) {
+    assert.ok(promptText.includes(field), `prompt must keep ${field}`);
+  }
 });
 
 test("S6-01 prompt states the output contract, citation rules, and prohibitions", () => {

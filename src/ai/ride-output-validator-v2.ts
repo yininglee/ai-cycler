@@ -70,9 +70,15 @@ interface ClaimBinding {
   dimensionIds: Set<string>;
 }
 
-// "稳定区间" is the official Z2 cadence/power zone name, not a stability
-// assertion — the negative lookahead keeps zone-share wording legal.
-const stabilityTextPattern = /稳定(?!区间)|平稳|保持良好/;
+// "稳定区间" is the official Z2 cadence/power zone name; "稳定踏频"/"稳定区"/
+// "平稳" are attested live translations of zone names (cadence.zone.steady) —
+// all are zone-share wording, not stability assertions. The negative lookahead
+// keeps zone-share wording legal (user decisions 2026-10-06 PD-AI-22; two
+// 2026-10-07 revisions extended the exemption after live misfires on
+// "稳定踏频占 7%", "稳定区 7%" and "平稳 37%"). The 平稳+N% pattern only
+// matches zone-share reporting (a real stability assertion never carries a
+// percentage immediately after the word).
+const stabilityTextPattern = /稳定(?!区间|踏频|区)|平稳(?=\s*\d+\s*%)|保持良好/;
 const historyTextPattern = /进步|退步|相比之前|相比以往|比之前|长期负荷/;
 const causalTextPattern = /导致|造成|引发/;
 // Plan wording is only forbidden as an assertion ("completed the plan"); goal-
@@ -82,9 +88,16 @@ const recoveryTextPattern = /恢复良好|已恢复|恢复完成|完全恢复/;
 const dataLimitedDisclosurePattern = /有限|不足/;
 const softDisclosurePattern = /部分|缺失|有限/;
 const varianceClaimKeyPattern = /coefficientOfVariation|lastMinusFirst|drift|variance/i;
-// Zone labels (Z1-Z7), ordinal segment markers, and occurrence/frequency
-// wording ("上1次"、"这2次"、"每15分钟") are structural, not data values.
-const structuralNumberPattern = /Z[1-7]|第[一二三四五六七八九十\d]+|上\d+次|这\d+次|近\d+次|前\d+次|每\d+(分钟|小时|天|次|公里|km)/g;
+// Zone labels (Z1-Z7), climb grades (1 级/HC), ordinal segment markers, and
+// occurrence/frequency wording ("上1次"、"这2次"、"每15分钟") are structural,
+// not data values. "段N" (any noun + 段 + digit: 巡航段1、爬坡段2、代表爬升段
+// 1、第3段) is always a segment ordinal in ride interpretation wording — the
+// generic pattern replaced a word-list version (巡航|爬坡|地形段) on 2026-10-07
+// after live runs kept surfacing new translations ("爬升段1", "代表爬升段 1");
+// climb grades ("（1 级）", "（2 级爬升）") are rank codes like Z1-Z7 and were
+// exempted the same day after a live misfire. Business rules 14.5.1 explicitly
+// exempt zone labels and segment ordinals from number checking.
+const structuralNumberPattern = /Z[1-7]|\d+\s*级|第[一二三四五六七八九十\d]+|段\s*\d+|上\d+次|这\d+次|近\d+次|前\d+次|每\d+(分钟|小时|天|次|公里|km)/g;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
