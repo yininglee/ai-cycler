@@ -2,7 +2,7 @@ import type { RideRecord, RideSeriesPoint, SensorKind } from "./ride-schema.ts";
 import { buildRideTimingSummary } from "./ride-timing.ts";
 import type { UserProfile } from "./user-profile.ts";
 
-export const RIDE_ZONE_RULES_VERSION = "ride-zone-rules-v0.1" as const;
+export const RIDE_ZONE_RULES_VERSION = "ride-zone-rules-v0.2" as const;
 
 const MIN_COVERAGE = 0.7;
 const MAX_SAMPLE_INTERVAL_S = 10;

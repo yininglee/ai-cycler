@@ -39,6 +39,16 @@ interface PacketDefinition {
   prohibits: string[];
 }
 
+// PD-AI-30 (user decision 2026-10-07): segment sensor observations follow the
+// sensor's dimension (mirroring the climb precedent — heartRateLoad already
+// carried climb_heart_rate_observation). Cruise/terrain heart-rate, terrain
+// power/cadence and terrain speed observations previously reached only
+// pacing/power via the segment.cruise. key prefix — an implementation accident,
+// not a design choice: the model's intuition "a heart-rate claim belongs in the
+// heart-rate dimension" kept tripping CLAIM_NOT_IN_DIMENSION. The tags below
+// complete the segment×sensor observation matrix; emitted packet.supports stay
+// derived from the actual claims in the packet (no unbacked-tag risk on rides
+// without the corresponding segments).
 const PACKET_DEFINITIONS: readonly PacketDefinition[] = [
   {
     dimensionId: "pacingExecution",
@@ -54,7 +64,7 @@ const PACKET_DEFINITIONS: readonly PacketDefinition[] = [
     question: "What do the qualified climb and terrain segments show?",
     required: ["elevation", "climbing", "timing"],
     optional: ["power", "heartRate", "speedStability", "crossSensorAlignment"],
-    supports: ["ride_distance", "current_ride_timing", "elevation_context", "terrain_segment", "climb_segment", "climb_fact", "climb_power_observation", "climb_heart_rate_observation", "climb_speed_observation", "climb_cadence_observation"],
+    supports: ["ride_distance", "current_ride_timing", "elevation_context", "terrain_segment", "climb_segment", "climb_fact", "climb_power_observation", "climb_heart_rate_observation", "climb_speed_observation", "climb_cadence_observation", "terrain_power_observation", "terrain_heart_rate_observation", "terrain_speed_observation", "terrain_cadence_observation"],
     keyPrefixes: ["elevation.", "timing.", "segment.terrain.", "segment.climb.", "climb."],
     prohibits: ["ability_change", "technical_diagnosis", "causation"],
   },
@@ -63,7 +73,7 @@ const PACKET_DEFINITIONS: readonly PacketDefinition[] = [
     question: "What does the heart-rate level, distribution, and within-ride change show?",
     required: ["heartRate"],
     optional: ["maxHeartRateBaseline", "heartRateZones", "heartRateDrift", "crossSensorAlignment", "timing"],
-    supports: ["heart_rate_level", "heart_rate_stability", "heart_rate_stage_comparison", "heart_rate_zone_baseline", "heart_rate_zone_distribution", "heart_rate_drift", "climb_segment", "climb_heart_rate_observation", "current_ride_timing", "same_window_observation"],
+    supports: ["heart_rate_level", "heart_rate_stability", "heart_rate_stage_comparison", "heart_rate_zone_baseline", "heart_rate_zone_distribution", "heart_rate_drift", "climb_segment", "climb_heart_rate_observation", "current_ride_timing", "same_window_observation", "cruise_segment", "cruise_heart_rate_observation", "terrain_segment", "terrain_heart_rate_observation"],
     keyPrefixes: ["heart_rate.", "heartRate.", "profile.maxHeartRate"],
     prohibits: ["medical_diagnosis", "recovery_complete", "causation"],
   },
@@ -72,7 +82,7 @@ const PACKET_DEFINITIONS: readonly PacketDefinition[] = [
     question: "What do power level, stability, peaks, and qualified segments show?",
     required: ["power", "sensorContinuity"],
     optional: ["powerStability", "powerPeaks", "normalizedPower", "cruise", "crossSensorAlignment"],
-    supports: ["power_level", "power_stability", "power_stage_comparison", "short_duration_power_peak", "normalized_power_output", "cruise_power_observation", "climb_segment", "climb_power_observation", "current_ride_timing", "same_window_observation"],
+    supports: ["power_level", "power_stability", "power_stage_comparison", "short_duration_power_peak", "normalized_power_output", "cruise_power_observation", "climb_segment", "climb_power_observation", "current_ride_timing", "same_window_observation", "terrain_segment", "terrain_power_observation"],
     keyPrefixes: ["power.", "segment.cruise."],
     prohibits: ["ability_change", "causation", "bridge_recording_gap"],
   },
@@ -90,7 +100,7 @@ const PACKET_DEFINITIONS: readonly PacketDefinition[] = [
     question: "What does cadence level, distribution, and sensor alignment show?",
     required: ["cadence", "timing"],
     optional: ["cadenceZones", "crossSensorAlignment", "power", "speed"],
-    supports: ["cadence_level", "cadence_stability", "cadence_stage_comparison", "cadence_zone_distribution", "cruise_segment", "cruise_cadence_observation", "climb_segment", "climb_cadence_observation", "same_window_observation"],
+    supports: ["cadence_level", "cadence_stability", "cadence_stage_comparison", "cadence_zone_distribution", "cruise_segment", "cruise_cadence_observation", "climb_segment", "climb_cadence_observation", "same_window_observation", "terrain_segment", "terrain_cadence_observation"],
     keyPrefixes: ["cadence."],
     prohibits: ["efficiency_without_pairing", "riding_posture_diagnosis", "causation"],
   },

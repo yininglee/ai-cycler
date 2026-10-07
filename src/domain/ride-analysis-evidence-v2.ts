@@ -1,5 +1,10 @@
 export const RIDE_EVIDENCE_SCHEMA_VERSION = "2.0.0" as const;
-export const RIDE_EVIDENCE_RULES_VERSION = "ride-evidence-rules-v2.0.0" as const;
+// v2.1.0 (2026-10-07, PD-AI-30): dimension packets now admit segment sensor
+// observations by sensor ownership (cruise/terrain heart-rate, terrain
+// power/cadence/speed) in addition to the key-prefix routing — completes the
+// segment×sensor observation matrix so model intuition ("a heart-rate claim
+// belongs in the heart-rate dimension") matches the packet boundaries.
+export const RIDE_EVIDENCE_RULES_VERSION = "ride-evidence-rules-v2.1.0" as const;
 
 export const analysisDimensionIds = [
   "pacingExecution", "climbPerformance", "heartRateLoad", "powerOutput",

@@ -150,6 +150,11 @@ export class RideModelClientV2 {
       // deterministic structured output, thinking disabled — the validator +
       // one-shot repair pipeline relies on stable outputs, and chain-of-thought
       // latency (95-105s per call) is not worth unverified quality gains.
+      // PD-AI-23 reserved experiment REJECTED (2026-10-07): with thinking
+      // enabled, 4 of 8 live calls (50%) hung to the full 300s timeout at the
+      // provider — unusable regardless of quality. Restored enable_thinking:
+      // false; remaining mitigation options are few-shot examples or switching
+      // to the GLM-5.2 fallback model.
       temperature: 0.3,
       enable_thinking: false,
       ...(invocation.jsonMode ? { response_format: { type: "json_object" } } : {}),

@@ -30,6 +30,7 @@ export type RideOutputFailureCode =
   | "KNOWLEDGE_NOT_IN_INPUT"
   | "KNOWLEDGE_NOT_IN_DIMENSION"
   | "FACT_WITHOUT_CLAIM"
+  | "INTERPRETATION_WITHOUT_CLAIM"
   | "KNOWLEDGE_REFERENCE_WITHOUT_KNOWLEDGE"
   | "LABEL_CLAIM_REQUIRED"
   | "HIGHLIGHT_CLAIM_REQUIRED"
@@ -90,14 +91,14 @@ const softDisclosurePattern = /部分|缺失|有限/;
 const varianceClaimKeyPattern = /coefficientOfVariation|lastMinusFirst|drift|variance/i;
 // Zone labels (Z1-Z7), climb grades (1 级/HC), ordinal segment markers, and
 // occurrence/frequency wording ("上1次"、"这2次"、"每15分钟") are structural,
-// not data values. "段N" (any noun + 段 + digit: 巡航段1、爬坡段2、代表爬升段
-// 1、第3段) is always a segment ordinal in ride interpretation wording — the
-// generic pattern replaced a word-list version (巡航|爬坡|地形段) on 2026-10-07
-// after live runs kept surfacing new translations ("爬升段1", "代表爬升段 1");
-// climb grades ("（1 级）", "（2 级爬升）") are rank codes like Z1-Z7 and were
-// exempted the same day after a live misfire. Business rules 14.5.1 explicitly
-// exempt zone labels and segment ordinals from number checking.
-const structuralNumberPattern = /Z[1-7]|\d+\s*级|第[一二三四五六七八九十\d]+|段\s*\d+|上\d+次|这\d+次|近\d+次|前\d+次|每\d+(分钟|小时|天|次|公里|km)/g;
+// not data values. Segment ordinals come in two shapes: "第X段" absorbs the
+// 段 character into the match so a real data number directly after it
+// ("第二段 27.96 km/h") stays intact; the bare "段N" shape (巡航段1、爬升段2)
+// must NOT be preceded by 第 (guard: [^第]) — a 2026-10-07 live misfire had
+// "段 27" stripped as an ordinal from "第二段 27.96", leaving ".96" behind as
+// a ghost number. Business rules 14.5.1 explicitly exempt zone labels and
+// segment ordinals from number checking.
+const structuralNumberPattern = /Z[1-7]|\d+\s*级|第[一二三四五六七八九十\d]+段|[^第]段\s*\d+|上\d+次|这\d+次|近\d+次|前\d+次|每\d+(分钟|小时|天|次|公里|km)/g;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -112,15 +113,33 @@ function extractNumbers(text: string): number[] {
   return [...stripped.matchAll(/-?\d+(?:\.\d+)?/g)].map((match) => Number(match[0]));
 }
 
+// PD-AI-28 (2026-10-07): rounding equivalence, migrated from the V1
+// claimNumericVariants parity (addNumericVariants rounded=true). A claim value
+// may be faithfully expressed rounded to 0/1/2 decimals — e.g. IF 0.99 written
+// as "接近 1.0". Rounding is a deterministic single-value presentation form,
+// unlike cross-claim calculations (e.g. "Z5-Z7 合计 24%" = 10+9+5), which stay
+// forbidden: no verification is possible over claim combinations, and model
+// arithmetic cannot be trusted. Derived aggregates belong in the evidence
+// layer as deterministic calculated claims.
+function roundedVariants(value: number): number[] {
+  if (!Number.isFinite(value)) return [];
+  return [0, 1, 2].map((digits) => Number(value.toFixed(digits)));
+}
+
 function claimAllowsNumber(claim: V2AnalysisClaim, number: number): boolean {
   // Sign equivalence: a negative claim value (e.g. lastMinusFirst -31.5 W) is
   // faithfully expressed in natural language as "下降 31.5 W", so the absolute
-  // value is allowed as well.
-  if (typeof claim.value === "number" && (claim.value === number || claim.value === -number)) return true;
-  const sources = [claim.displayValue ?? "", claim.text ?? ""];
-  return sources.some((source) =>
-    extractNumbers(String(source)).some((allowed) => allowed === number || allowed === -number),
-  );
+  // value is allowed as well. Rounding equivalence: see roundedVariants above.
+  const candidates: number[] = [];
+  if (typeof claim.value === "number") {
+    candidates.push(claim.value, ...roundedVariants(claim.value));
+  }
+  for (const source of [claim.displayValue ?? "", claim.text ?? ""]) {
+    for (const allowed of extractNumbers(String(source))) {
+      candidates.push(allowed, ...roundedVariants(allowed));
+    }
+  }
+  return candidates.some((candidate) => candidate === number || candidate === -number);
 }
 
 export function validateRideModelOutputV2(
@@ -254,6 +273,14 @@ export function validateRideModelOutputV2(
     // knowledge IDs and can never act as personal ride facts.
     if (view.conclusionType === "fact" && claimIds.length === 0) {
       issue("FACT_WITHOUT_CLAIM", path, "a fact conclusion must cite at least one claim; knowledge cannot act as a personal ride fact");
+    }
+    // PD-AI-27: interpretation carries the "how was the ride / what it means"
+    // qualitative reading. It must stay grounded in facts (arm A), so it cites
+    // at least one claim of its dimension. Number and causality gates still
+    // apply; stability/history/recovery/plan expression gates are relaxed for
+    // now (isAssertiveConclusion below excludes interpretation).
+    if (view.conclusionType === "interpretation" && claimIds.length === 0) {
+      issue("INTERPRETATION_WITHOUT_CLAIM", path, "an interpretation conclusion must cite at least one claim of its dimension");
     }
     if (view.conclusionType === "knowledgeReference" && knowledgeIds.length === 0) {
       issue("KNOWLEDGE_REFERENCE_WITHOUT_KNOWLEDGE", path, "a knowledgeReference conclusion must cite at least one knowledgeId");

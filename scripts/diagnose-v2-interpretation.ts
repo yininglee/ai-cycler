@@ -1,7 +1,7 @@
 /**
  * V2 骑后解读 REPAIR_FAILED 离线诊断（S2-07 Review 排查用，2026-10-07）。
  *
- * 同一份真实输入跑两个"臂"，其余条件完全一致（同模型、temperature 0.3、关思考链、
+ * 同一份真实输入跑两个"臂"，其余条件完全一致（同模型、temperature 0.3、思考链随生产 provider——2026-10-07 起 PD-AI-23 对比实验开启，
  * 同校验器、同修复编排），唯一变量是首轮 prompt 的输入形态：
  *   A 臂 = 当前生产 prompt（v2.5.0 模型可见投影，剥离追溯字段）
  *   B 臂 = 旧版 prompt（全量 JSON.stringify(input)，v2.4.1 及之前的形态）
@@ -205,36 +205,43 @@ async function main(): Promise<void> {
   const legacyPromptText = `${prefix}${JSON.stringify(input)}`;
 
   console.log(`输入规模：claims=${input.claims.length}, knowledge=${input.knowledge.length}, questions=${input.questions.length}`);
-  console.log(`A 臂 prompt（v2.5.0 投影）字符数: ${prompt.promptText.length}`);
-  console.log(`B 臂 prompt（全量 JSON）字符数: ${legacyPromptText.length}`);
-  console.log("模型:", config.modelId, "| temperature 0.3 | enable_thinking false（与生产一致）");
+  console.log(`A 臂 prompt（投影）字符数: ${prompt.promptText.length}`);
+  console.log("模型:", config.modelId, "| temperature 0.3 | enable_thinking false（生产锁定；PD-AI-23 思考链实验 2026-10-07 否决：8 次中 4 次卡满 300s 超时）");
   console.log("");
 
   await mkdir(OUT_DIR, { recursive: true });
 
+  // 用法：node ... diagnose-v2-interpretation.ts <rideId> [--arm A|B|AB]
+  // 默认只跑 A 臂（生产形态）——B 臂是 S2-07 输入压缩验收时的定责对照，已完成使命；
+  // 现在排查模型侧问题（输出不稳定/思考链对比）不需要重复失败样本。
+  const armArg = process.argv.find((arg) => arg.startsWith("--arm="));
+  const arms = armArg ? armArg.split("=")[1]! : "A";
+
   console.log("=== A 臂：当前生产 prompt（模型可见投影） ===");
-  const armA = await runArm("A-current-v2.5.0", prompt.promptText, prompt.promptVersion, input, client);
+  const armA = await runArm("A-current", prompt.promptText, prompt.promptVersion, input, client);
   console.log(JSON.stringify(armA.outcome, null, 2));
   await writeFile(join(OUT_DIR, `${RIDE_ID}-armA-first-output.txt`), armA.rawFirst, "utf8");
 
-  console.log("");
-  console.log("=== B 臂：旧版 prompt（全量 JSON 输入） ===");
-  const armB = await runArm("B-legacy-full-json", legacyPromptText, "ride-prompt-v2.5.0+legacy-input", input, client);
-  console.log(JSON.stringify(armB.outcome, null, 2));
-  await writeFile(join(OUT_DIR, `${RIDE_ID}-armB-first-output.txt`), armB.rawFirst, "utf8");
+  if (arms.toUpperCase().includes("B")) {
+    console.log("");
+    console.log("=== B 臂：旧版 prompt（全量 JSON 输入，S2-07 定责对照，默认不跑） ===");
+    const armB = await runArm("B-legacy-full-json", legacyPromptText, "ride-prompt-v2.5.0+legacy-input", input, client);
+    console.log(JSON.stringify(armB.outcome, null, 2));
+    await writeFile(join(OUT_DIR, `${RIDE_ID}-armB-first-output.txt`), armB.rawFirst, "utf8");
 
-  console.log("");
-  console.log("=== 诊断结论判定 ===");
-  const aFailed = armA.outcome.orchestrationStage.startsWith("fallback");
-  const bFailed = armB.outcome.orchestrationStage.startsWith("fallback");
-  if (aFailed && !bFailed) {
-    console.log("A 臂失败、B 臂通过 → 高度指向 S2-07 瘦身投影影响模型输出质量");
-  } else if (!aFailed && bFailed) {
-    console.log("A 臂通过、B 臂失败 → 瘦身投影反而更好；失败与 S2-07 无关");
-  } else if (aFailed && bFailed) {
-    console.log("两臂都失败 → 与输入形态无关，指向模型输出不稳定或关思考链（PD-AI-23）的影响");
-  } else {
-    console.log("两臂都通过 → 本次复现未失败，属间歇性问题（与 2026-10-06 已记录的不稳定类别一致）");
+    console.log("");
+    console.log("=== 诊断结论判定 ===");
+    const aFailed = armA.outcome.orchestrationStage.startsWith("fallback");
+    const bFailed = armB.outcome.orchestrationStage.startsWith("fallback");
+    if (aFailed && !bFailed) {
+      console.log("A 臂失败、B 臂通过 → 高度指向 S2-07 瘦身投影影响模型输出质量");
+    } else if (!aFailed && bFailed) {
+      console.log("A 臂通过、B 臂失败 → 瘦身投影反而更好；失败与 S2-07 无关");
+    } else if (aFailed && bFailed) {
+      console.log("两臂都失败 → 与输入形态无关，指向模型输出不稳定或思考链的影响");
+    } else {
+      console.log("两臂都通过 → 本次复现未失败，属间歇性问题（与 2026-10-06 已记录的不稳定类别一致）");
+    }
   }
 }
 

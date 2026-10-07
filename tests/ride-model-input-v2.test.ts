@@ -270,6 +270,44 @@ test("S4-01 reports budget overflow with undeliverable questions instead of trim
   assert.equal(partial.status === "blocked" ? partial.failureCode : "", "INPUT_BUDGET_EXCEEDED");
 });
 
+test("PD-AI-31 budget gate measures the model-visible projection, not the full serialization", () => {
+  // Regression (2026-10-07 live run): a mountain ride measured 168,373 full /
+  // 105,621 model-visible characters and was blocked at the 160,000 budget —
+  // the gate was measuring the traceability-heavy full object while the model
+  // only consumes the slim projection. A budget between the model-visible size
+  // and the full size must now pass without trimming a single claim.
+  const attached = context();
+  const reference = buildRideModelInputV2(attached, { analysisRunId: RUN, userScope: SCOPE, maxInputCharacters: 100_000_000 });
+  assert.equal(reference.status, "ready");
+  if (reference.status !== "ready") return;
+  const { totalCharacters, modelVisibleCharacters } = reference.input.inputStats;
+  assert.ok(modelVisibleCharacters > 0);
+  assert.ok(modelVisibleCharacters < totalCharacters, "projection must be smaller than the full serialization");
+  // A budget the full serialization exceeds but the projection fits must pass.
+  const inBetween = buildRideModelInputV2(attached, {
+    analysisRunId: RUN,
+    userScope: SCOPE,
+    maxInputCharacters: totalCharacters - 1,
+  });
+  assert.equal(inBetween.status, "ready");
+  if (inBetween.status !== "ready") return;
+  // No claim was trimmed; the model-visible volume is reported and stable
+  // (totalCharacters depends on the embedded maxInputCharacters digits, so it
+  // may shift by a few characters between builds — the projection strips
+  // inputStats entirely and must not).
+  assert.equal(inBetween.input.claims.length, reference.input.claims.length);
+  assert.equal(inBetween.input.inputStats.modelVisibleCharacters, modelVisibleCharacters);
+  assert.ok(inBetween.input.inputStats.totalCharacters > inBetween.input.inputStats.modelVisibleCharacters);
+  // The projection size itself still bounds the gate (tight budget blocks).
+  const tight = buildRideModelInputV2(attached, {
+    analysisRunId: RUN,
+    userScope: SCOPE,
+    maxInputCharacters: modelVisibleCharacters - 1,
+  });
+  assert.equal(tight.status === "blocked" ? tight.failureCode : "", "INPUT_BUDGET_EXCEEDED");
+  assert.match(tight.status === "blocked" ? tight.reason : "", /model-visible input needs/);
+});
+
 test("S4-01 blocks assembly when no analysis question has a qualified packet", () => {
   const result = buildRideModelInputV2(emptyContext(), { analysisRunId: RUN, userScope: SCOPE });
   assert.equal(result.status, "blocked");

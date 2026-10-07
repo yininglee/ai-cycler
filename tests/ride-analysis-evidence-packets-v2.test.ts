@@ -114,6 +114,67 @@ test("all qualified cruise segments remain in the problem packet instead of sele
   assert.deepEqual(segmentIds.filter((claimId) => power!.claimIds.includes(claimId)), segmentIds);
 });
 
+test("cruise segment sensor observations follow the sensor's dimension (PD-AI-30)", () => {
+  // Regression (2026-10-07 live run): the model intuitively cited cruise
+  // heart-rate claims in the heart-rate dimension, but heartRateLoad's
+  // supports list only carried the climb precedent — cruise heart-rate
+  // observations reached pacing/power via the segment.cruise. key prefix
+  // only, so CLAIM_NOT_IN_DIMENSION fired on a semantically correct
+  // reference. PD-AI-30 completes the segment×sensor observation matrix.
+  // Synthetic 30-min constant-speed ride with gentle elevation (cruise
+  // detection needs a defined grade) and full sensors.
+  const points: Omit<RideSeriesPoint, "sequence">[] = [{ distanceM: 0, elapsedTimeS: 0, elevationM: 100 }];
+  let elapsedTimeS = 0;
+  let distanceM = 0;
+  let elevationM = 100;
+  for (let index = 0; index < 180; index += 1) {
+    elapsedTimeS += 10;
+    distanceM += 50;
+    elevationM += 0.1;
+    points.push({ distanceM, elapsedTimeS, elevationM, speedMps: 5, powerW: 200, heartRateBpm: 140, cadenceRpm: 85 });
+  }
+  const series = buildRideSeries({ rideId: "s2-02-cruise-hr", sourceKind: "sample", parserVersion: "s2-02-fixture-v1", startTime: START, points });
+  const record: RideRecord = {
+    activity: {
+      schemaVersion: "0.2",
+      rideId: "s2-02-cruise-hr",
+      sport: "cycling",
+      source: { kind: "sample", parserVersion: "s2-02-fixture-v1" },
+      startTime: START,
+      metrics: {},
+      sensorQuality: {
+        gps: { coverage: 1, sampleCount: points.length, invalidSampleCount: 0 },
+        power: { coverage: 1, sampleCount: points.length, invalidSampleCount: 0 },
+        heart_rate: { coverage: 1, sampleCount: points.length, invalidSampleCount: 0 },
+        cadence: { coverage: 1, sampleCount: points.length, invalidSampleCount: 0 },
+      },
+      sourceIssues: [],
+    },
+    series,
+  };
+  const context = buildContext(record);
+  const heartRate = getRideAnalysisEvidencePacketV2(context, "heartRateLoad");
+  assert.ok(heartRate);
+  const cruiseHeartRateIds = context.allowedClaims
+    .filter((claim) => claim.key.startsWith("segment.cruise.") && claim.key.endsWith(".heart_rate.mean"))
+    .map((claim) => claim.claimId);
+  assert.ok(cruiseHeartRateIds.length >= 1);
+  assert.deepEqual(
+    cruiseHeartRateIds.filter((claimId) => heartRate!.claimIds.includes(claimId)),
+    cruiseHeartRateIds,
+  );
+  // Cruise span claims anchor segment duration in the HR dimension too,
+  // mirroring the climb precedent that pairs span + sensor mean.
+  const cruiseSpanIds = context.allowedClaims
+    .filter((claim) => claim.key.startsWith("segment.cruise.") && claim.key.endsWith(".span"))
+    .map((claim) => claim.claimId);
+  assert.ok(cruiseSpanIds.length >= 1);
+  assert.deepEqual(
+    cruiseSpanIds.filter((claimId) => heartRate!.claimIds.includes(claimId)),
+    cruiseSpanIds,
+  );
+});
+
 test("qualified climb claims reach every related problem packet", () => {
   const record = fullRecord();
   const snapshotValue = buildRideCapabilityClaimsV2(record, {

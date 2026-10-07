@@ -19,7 +19,7 @@ import {
 export const RIDE_OUTPUT_REPAIR_RULES_VERSION = "ride-output-repair-v2.0.0" as const;
 // S2-06: v2.1 — the repair contract no longer carries the top-level
 // historyComparison section (removed from the output schema).
-export const RIDE_REPAIR_PROMPT_VERSION = "ride-repair-prompt-v2.1.0" as const;
+export const RIDE_REPAIR_PROMPT_VERSION = "ride-repair-prompt-v2.2.2" as const;
 
 // Business rules 14.6.4 / FR-13: fabricated citations in required content are
 // integrity red lines — they never enter the repair path. When such an issue
@@ -296,12 +296,14 @@ export function buildRideRepairPromptV2(options: {
   "suggestions": [ { ...断言对象, "riskNote": "..." }（可选） ],
   "limitations": [ "..." ]
 }
-断言对象：{ "text": "中文解读文本", "conclusionType": "fact | knowledgeReference | suggestion", "claimIds": ["..."], "knowledgeIds": ["..."] }（knowledgeIds 仅在实际引用知识时提供）。
+断言对象：{ "text": "中文解读文本", "conclusionType": "fact | knowledgeReference | suggestion | interpretation", "claimIds": ["..."], "knowledgeIds": ["..."] }（knowledgeIds 仅在实际引用知识时提供）。
 
 【合同要点】
 - label 必须引用至少一条高置信、非限制类 Claim；overallAssessment 在可用数据不足两类时必须写明"本次可用数据有限"。
-- 事实断言中的每个数字必须来自所引用 Claim 的 value 或 displayValue（区间代号 Z1-Z7、分段序号、次数/频次表达如"上1次、每15分钟"除外）；建议中的操作性数字不受此限。
+- 断言只能引用该维度问题 claimIds 清单内的 Claim——引用清单外的 claimId（即使它在 claims 总清单中且语义相关）会再次触发 CLAIM_NOT_IN_DIMENSION 被拒绝；修复时先核对当前维度问题的 claimIds 再改写引用。
+- 事实断言中的每个数字必须来自所引用 Claim 的 value 或 displayValue（区间代号 Z1-Z7、分段序号、次数/频次表达如"上1次、每15分钟"除外）；建议中的操作性数字不受此限。不得跨 Claim 相加、合并合计（如"Z5-Z7 合计占 24%"无对应单一 Claim 证据，须删改）；四舍五入表达允许（0.99 可写"接近 1.0"）。
 - 知识只能用于解释口径与方法（conclusionType=knowledgeReference 且必须带 knowledgeIds），不得当作个人骑行事实。
+- interpretation 用于"骑得怎么样、意味着什么"的定性解读，必须引用至少一条该维度 Claim（claimIds 非空）；其数字仍须来自所引 Claim、仍禁止因果表述（导致/造成/引发），定性措辞（如"整体配速偏高""中段输出最充分"）可直接表达。label 与 overallAssessment 仍必须用 fact。
 - 没有波动或过程类 Claim 时，禁止在事实断言中使用"稳定、平稳、保持良好"等稳定性表述；单次骑行解读不含历史对比，禁止"进步、退步、相比之前、相比以往、比之前、长期负荷"等历史表述，也不得输出 historyComparison，且不得提及"无历史对比/无长期负荷数据"等未提供信息的缺失——删除这类说明，直接解读已有数据。
 - 禁止因果表述（导致、造成、引发）；禁止"完成了训练计划、按计划执行、达成目标"类断言；禁止"恢复良好、已恢复、恢复完成"等恢复结论。
 - 被解读维度的全部 limitations 必须逐条原文回填到 limitations 字段；限制只能使用输入中出现过的原文。

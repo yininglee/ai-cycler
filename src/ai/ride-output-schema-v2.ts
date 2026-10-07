@@ -13,25 +13,32 @@
 // a defense line: the validator keeps rejecting any output that tries to use
 // it (no history claims can enter the input anymore).
 
-export const RIDE_OUTPUT_SCHEMA_VERSION = "ride-output-v2.1.0" as const;
+export const RIDE_OUTPUT_SCHEMA_VERSION = "ride-output-v2.2.0" as const;
 
 export type RideOutputConclusionType =
   | "fact"
   | "historyComparison"
   | "knowledgeReference"
-  | "suggestion";
+  | "suggestion"
+  | "interpretation";
 
 export const rideOutputConclusionTypes = [
   "fact",
   "historyComparison",
   "knowledgeReference",
   "suggestion",
+  "interpretation",
 ] as const satisfies readonly RideOutputConclusionType[];
 
 // One checkable assertion. "fact" conclusions must cite ride/history claims;
 // "knowledgeReference" conclusions must cite knowledge IDs and may never act as
 // personal ride facts; "historyComparison" requires comparable-history claims;
 // "suggestion" requires a factual anchor claim (see the validator).
+// "interpretation" (PD-AI-27) carries the "how was the ride / what it means"
+// qualitative reading between fact and suggestion; it must cite at least one
+// claim of its dimension (claimIds non-empty, arm A) and stay grounded in
+// facts. Number and causality gates still apply; stability/history/recovery/
+// plan expression gates are relaxed for now (see the validator).
 export interface RideOutputAssertionV2 {
   text: string;
   conclusionType: RideOutputConclusionType;

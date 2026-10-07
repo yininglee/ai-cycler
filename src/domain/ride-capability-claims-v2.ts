@@ -26,7 +26,7 @@ export const RIDE_CAPABILITY_CLAIMS_SCHEMA_VERSION = RIDE_EVIDENCE_SCHEMA_VERSIO
 // aggregate only.
 export const RIDE_CAPABILITY_CLAIMS_RULES_VERSION = "ride-capability-claims-v2.6" as const;
 export const RIDE_CONTIGUOUS_NP_RULES_VERSION = "ride-contiguous-np-v2.1" as const;
-export const RIDE_POWER_ZONE_RULES_VERSION = "ride-power-zone-v2.1" as const;
+export const RIDE_POWER_ZONE_RULES_VERSION = "ride-power-zone-v2.2" as const;
 export const RIDE_INTENSITY_RULES_VERSION = "ride-intensity-v2.1" as const;
 
 const MAX_CONTINUOUS_INTERVAL_S = 10;
@@ -888,6 +888,22 @@ export function buildRideCapabilityClaimsV2(
 
   const heartRateZones = buildHeartRateZoneDistribution(record, profile);
   const heartRateZoneRefs = addZoneClaims(claims, rideId, "heartRate", heartRateZones, derivedSource);
+  // PD-AI-29 (2026-10-07): precomputed high-intensity combined share (Z4+Z5) —
+  // same rationale as the power-zone combined claim (aggregated summaries need
+  // a deterministic calculated supply, not a relaxed number gate).
+  if (!heartRateZones.unavailableReason) {
+    const hrHighBins = heartRateZones.bins.filter((bin) => bin.key === "z4" || bin.key === "z5");
+    const hrHighDurationS = hrHighBins.reduce((sum, bin) => sum + bin.durationS, 0);
+    const hrHighShare = hrHighBins.reduce((sum, bin) => sum + bin.share, 0);
+    if (hrHighDurationS > 0) {
+      const hrHighRefs = [sourceRef(derivedSource, [derivedEvidence(rideId, "heartRate-zones")])];
+      claims.push(claim(rideId, "heartRate.zone.highIntensityCombined", hrHighDurationS, "s", hrHighRefs, {
+        kind: "advanced", formulaVersion: heartRateZones.rulesVersion,
+        supports: ["heart_rate_zone_distribution"], prohibits: ["medical_diagnosis", "causation"],
+        displayValue: compact(hrHighShare * 100, 0), displayUnit: "%",
+      }));
+    }
+  }
   const hrZoneReason = missingDependency(capabilities, ["heartRate", "maxHeartRateBaseline", "timing"]);
   if (!hrZoneReason && heartRateZoneRefs.length) capabilities.set("heartRateZones", availableCapability("heartRateZones",
     ["heartRate", "maxHeartRateBaseline", "timing"], heartRateZoneRefs, heartRateZones.baseline?.source === "system_estimated" ? "soft" : "valid",
@@ -961,6 +977,21 @@ export function buildRideCapabilityClaimsV2(
       claims.push(claim(rideId, `power.zone.${zone.key}`, zone.durationS, "s", refs, {
         kind: "advanced", quality: powerQuality === "valid" ? "valid" : "soft", formulaVersion: RIDE_POWER_ZONE_RULES_VERSION,
         supports: ["power_zone_distribution"], prohibits: ["training_effect"], displayValue: compact(zone.share * 100, 0), displayUnit: "%",
+      }));
+    }
+    // PD-AI-29 (2026-10-07): precomputed high-intensity combined share (Z5+Z6+Z7).
+    // Live failures kept surfacing cross-claim sums ("Z5-Z7 合计占 24%") — the
+    // model has a systematic preference for aggregated summaries, and the
+    // correct supply for that need is a deterministic calculated claim
+    // (PD-AI-28 ③), not a relaxed number gate.
+    const highIntensityZones = zones.filter((zone) => zone.key === "z5" || zone.key === "z6" || zone.key === "z7");
+    const highIntensityDurationS = highIntensityZones.reduce((sum, zone) => sum + zone.durationS, 0);
+    const highIntensityShare = highIntensityZones.reduce((sum, zone) => sum + zone.share, 0);
+    if (highIntensityDurationS > 0) {
+      claims.push(claim(rideId, "power.zone.highIntensityCombined", highIntensityDurationS, "s", refs, {
+        kind: "advanced", quality: powerQuality === "valid" ? "valid" : "soft", formulaVersion: RIDE_POWER_ZONE_RULES_VERSION,
+        supports: ["power_zone_distribution"], prohibits: ["training_effect"],
+        displayValue: compact(highIntensityShare * 100, 0), displayUnit: "%",
       }));
     }
   } else capabilities.set("powerZones", unavailableCapability("powerZones", ["power", "verifiedFtp", "timing"],

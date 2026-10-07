@@ -96,6 +96,7 @@ function makeInput(questions: RideModelInputQuestionV2[]): RideModelInputV2 {
     questions,
     inputStats: {
       totalCharacters: 0,
+      modelVisibleCharacters: 0,
       maxInputCharacters: 160_000,
       questionCount: questions.length,
       claimCount: claimIds.size,

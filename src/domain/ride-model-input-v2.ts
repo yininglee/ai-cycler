@@ -18,10 +18,14 @@ import {
 // into several question packets is referenced by claimId from each packet
 // instead of being inlined again — the same fact is never sent twice.
 
-export const RIDE_MODEL_INPUT_SCHEMA_VERSION = "ride-model-input-v2.3.0" as const;
+export const RIDE_MODEL_INPUT_SCHEMA_VERSION = "ride-model-input-v2.4.0" as const;
 // S2-06: v2.2 — top-level unique claims/knowledge with per-question
 // claimIds/knowledgeIds references (input deduplication).
-export const RIDE_MODEL_INPUT_RULES_VERSION = "ride-model-input-v2.2" as const;
+// PD-AI-31 (2026-10-07): v2.3 — the budget gate now measures the model-visible
+// projection (what the prompt actually sends) instead of the full
+// serialization; inputStats gained modelVisibleCharacters (schema v2.4.0).
+// Traceability fields never reach the model, so they must not consume budget.
+export const RIDE_MODEL_INPUT_RULES_VERSION = "ride-model-input-v2.3" as const;
 export const DEFAULT_RIDE_MODEL_INPUT_MAX_CHARACTERS = 160_000 as const;
 
 const requiredPrivacyFlags = [
@@ -67,6 +71,10 @@ export interface RideModelInputQuestionV2 {
 
 export interface RideModelInputStatsV2 {
   totalCharacters: number;
+  // PD-AI-31 (2026-10-07): the serialized length of the model-visible
+  // projection — the volume the budget gate actually bounds. totalCharacters
+  // keeps reporting the full serialization for audit trails.
+  modelVisibleCharacters: number;
   maxInputCharacters: number;
   questionCount: number;
   claimCount: number;
@@ -173,15 +181,58 @@ function findPrivateField(value: unknown, path: string): string | undefined {
   return undefined;
 }
 
-function serialize(input: RideModelInputV2): string {
-  let length = 0;
-  // totalCharacters digits can change the serialized length; settle to a fixed point.
+// 输入压缩（2026-10-07 用户决策，PD-AI-24；随 PD-AI-31 自 ride-prompt-v2 迁入
+// domain 层，预算门与 prompt 共用同一投影）：模型只消费它推理所需的
+// Claim/知识内容，不消费追溯字段（sourceRefs/evidenceIds/key/formulaVersion/
+// provenance/aggregatedFromCount）与元数据（analysisRunId/userScope/privacyFlags/
+// inputStats/版本号）。这些字段由独立校验器与审计轨迹从内存中的完整
+// RideModelInputV2 读取，不依赖 prompt 文本，因此瘦身投影零质量风险。
+// 同时剥离 analysisRunId 与知识 retrievedAt：二者是"缓存杀手"——同一案例重复
+// 跑时若保留会使 prompt 字节级不一致，导致供应商上下文缓存永远无法命中。
+export function projectModelVisibleRideInputV2(input: RideModelInputV2): object {
+  return {
+    claims: input.claims.map((claim) => ({
+      claimId: claim.claimId,
+      kind: claim.kind,
+      value: claim.value,
+      unit: claim.unit,
+      text: claim.text,
+      confidence: claim.confidence,
+      qualityStatus: claim.qualityStatus,
+      displayValue: claim.displayValue,
+      displayUnit: claim.displayUnit,
+      supports: claim.supports,
+      prohibits: claim.prohibits,
+    })),
+    knowledge: input.knowledge.map((item) => ({
+      knowledgeId: item.knowledgeId,
+      citation: item.citation,
+      explanation: item.explanation,
+      conditions: item.conditions,
+      conclusionStrength: item.conclusionStrength,
+      limitations: item.limitations,
+      safetyBoundaries: item.safetyBoundaries,
+      forbiddenFactKeys: item.forbiddenFactKeys,
+    })),
+    questions: input.questions,
+  };
+}
+
+function serialize(input: RideModelInputV2): { fullCharacters: number; modelVisibleCharacters: number } {
+  // Stats digits can change the serialized length; settle to a fixed point.
+  // The projection strips inputStats entirely, so its length is stable across
+  // iterations — only the full serialization needs the fixed-point loop.
+  let fullCharacters = 0;
+  let modelVisibleCharacters = 0;
   for (let attempt = 0; attempt < 3; attempt += 1) {
-    length = JSON.stringify(input).length;
-    if (input.inputStats.totalCharacters === length) break;
-    input.inputStats.totalCharacters = length;
+    fullCharacters = JSON.stringify(input).length;
+    modelVisibleCharacters = JSON.stringify(projectModelVisibleRideInputV2(input)).length;
+    if (input.inputStats.totalCharacters === fullCharacters
+      && input.inputStats.modelVisibleCharacters === modelVisibleCharacters) break;
+    input.inputStats.totalCharacters = fullCharacters;
+    input.inputStats.modelVisibleCharacters = modelVisibleCharacters;
   }
-  return JSON.stringify(input);
+  return { fullCharacters, modelVisibleCharacters };
 }
 
 export function buildRideModelInputV2(
@@ -271,6 +322,7 @@ export function buildRideModelInputV2(
     questions,
     inputStats: {
       totalCharacters: 0,
+      modelVisibleCharacters: 0,
       maxInputCharacters,
       questionCount: questions.length,
       claimCount: claims.length,
@@ -285,12 +337,18 @@ export function buildRideModelInputV2(
     return blocked("PRIVATE_FIELD_PRESENT", `forbidden input detected at ${privateField}; the model call is blocked`);
   }
 
-  const totalCharacters = serialize(input).length;
-  if (totalCharacters > maxInputCharacters) {
+  // PD-AI-31 (2026-10-07): the budget bounds what the model actually consumes —
+  // the model-visible projection — not the full serialization. Traceability
+  // fields (sourceRefs/evidenceIds/...) never reach the prompt, so they must
+  // not consume budget. A mountain ride measured 168,373 full / 105,621
+  // model-visible characters and blocked here before this fix while its real
+  // model consumption sat at 66% of the budget.
+  const { fullCharacters, modelVisibleCharacters } = serialize(input);
+  if (modelVisibleCharacters > maxInputCharacters) {
     return {
       status: "blocked",
       failureCode: "INPUT_BUDGET_EXCEEDED",
-      reason: `assembled input needs ${totalCharacters} characters but the budget is ${maxInputCharacters}; questions are reported as undeliverable and no claim is trimmed`,
+      reason: `model-visible input needs ${modelVisibleCharacters} characters but the budget is ${maxInputCharacters} (full serialization incl. traceability fields: ${fullCharacters} characters); questions are reported as undeliverable and no claim is trimmed`,
       undeliverableDimensions: questions
         .map((question) => ({ dimensionId: question.dimensionId, characters: JSON.stringify(question).length }))
         .sort((a, b) => b.characters - a.characters),

@@ -113,6 +113,7 @@ function makeInput(questions: RideModelInputQuestionV2[]): RideModelInputV2 {
     questions,
     inputStats: {
       totalCharacters: 0,
+      modelVisibleCharacters: 0,
       maxInputCharacters: 160_000,
       questionCount: questions.length,
       claimCount: claimIds.size,
@@ -661,4 +662,136 @@ test("S6-01 enforces soft-quality disclosure and data-limited assessment", () =>
     overallAssessment: { text: "本次可用数据有限，整体为中等强度耐力训练。", conclusionType: "fact", claimIds: ["c-power-mean"] },
   });
   assert.deepEqual(validateRideModelOutputV2(singleQuestionInput, disclosed), { status: "pass" });
+});
+
+test("PD-AI-27 interpretation must cite at least one claim of its dimension (arm A)", () => {
+  const output = baseOutput({
+    dimensions: [
+      {
+        dimensionId: "powerOutput",
+        assertions: [{ text: "整体功率输出非常充分，节奏控制得当。", conclusionType: "interpretation", claimIds: [] }],
+      },
+      ...baseOutput().dimensions.slice(1),
+    ],
+  });
+  assert.ok(
+    failureCodes(validateRideModelOutputV2(standardInput(), output)).includes("INTERPRETATION_WITHOUT_CLAIM"),
+  );
+});
+
+test("PD-AI-27 interpretation relaxes expression gates but keeps number + causality gates", () => {
+  // 表达门豁免：无波动证据的"稳定"在 interpretation 中放行（先松表达门策略）
+  const relaxed = baseOutput({
+    dimensions: [
+      {
+        dimensionId: "powerOutput",
+        assertions: [{ text: "平均功率 220W，整体输出稳定，节奏控制得当。", conclusionType: "interpretation", claimIds: ["c-power-mean"] }],
+      },
+      ...baseOutput().dimensions.slice(1),
+    ],
+  });
+  assert.deepEqual(validateRideModelOutputV2(standardInput(), relaxed), { status: "pass" });
+
+  // 数字门保留：interpretation 中的数字不在所引 claim 中，仍拦截
+  const fabricatedNumber = baseOutput({
+    dimensions: [
+      {
+        dimensionId: "powerOutput",
+        assertions: [{ text: "平均功率 300W，整体输出充分。", conclusionType: "interpretation", claimIds: ["c-power-mean"] }],
+      },
+      ...baseOutput().dimensions.slice(1),
+    ],
+  });
+  assert.ok(
+    failureCodes(validateRideModelOutputV2(standardInput(), fabricatedNumber)).includes("NUMBER_NOT_IN_CLAIMS"),
+  );
+
+  // 因果门保留：interpretation 中的因果表述仍拦截（全局红线）
+  const causal = baseOutput({
+    dimensions: [
+      {
+        dimensionId: "powerOutput",
+        assertions: [{ text: "前段用力过猛导致后段功率下降。", conclusionType: "interpretation", claimIds: ["c-power-mean"] }],
+      },
+      ...baseOutput().dimensions.slice(1),
+    ],
+  });
+  assert.ok(
+    failureCodes(validateRideModelOutputV2(standardInput(), causal)).includes("CAUSALITY_UPGRADED"),
+  );
+});
+
+test("PD-AI-27 label and overallAssessment must remain fact, not interpretation", () => {
+  const output = baseOutput({
+    label: { text: "整体节奏稳健", conclusionType: "interpretation", claimIds: ["c-power-mean"] },
+  });
+  assert.ok(
+    failureCodes(validateRideModelOutputV2(standardInput(), output)).includes("CONCLUSION_TYPE_INVALID"),
+  );
+});
+
+test("PD-AI-28 allows rounded presentation of a claim value while cross-claim sums stay blocked", () => {
+  // Live misfire (2026-10-07 S2-09 acceptance run): "强度因子接近 1.0" was
+  // blocked because V2 claimAllowsNumber had no rounding equivalence — the V1
+  // claimNumericVariants parity (round to 0/1/2 decimals) was never migrated.
+  const intensityFactor = claim("c-if", {
+    key: "power.intensityFactor",
+    value: 0.9860817388748231,
+    unit: "ratio",
+    displayValue: "0.99",
+  });
+  const ifQuestion = question("powerOutput", [intensityFactor, powerMean]);
+  const input = makeInput([ifQuestion]);
+  const output = (assertionText: string): RideModelOutputV2 =>
+    baseOutput({
+      overallAssessment: { text: "本次可用数据有限，整体为一次高强度输出。", conclusionType: "fact", claimIds: ["c-power-mean"] },
+      dimensions: [
+        {
+          dimensionId: "powerOutput",
+          assertions: [{ text: assertionText, conclusionType: "fact", claimIds: ["c-if", "c-power-mean"] }],
+        },
+      ],
+      suggestions: undefined,
+      limitations: [],
+    });
+
+  // Rounding equivalence: 0.986... expressed as "接近 1.0" passes (round to 0 decimals = 1).
+  const rounded = output("强度因子接近 1.0，平均功率 220W，整体属于高强度输出。");
+  assert.deepEqual(validateRideModelOutputV2(input, rounded), { status: "pass" });
+
+  // Cross-claim sums stay blocked (PD-AI-28 permanent rule): a summed number
+  // with no single-claim basis is still fabrication and must be rejected.
+  const summed = output("强度因子 0.99，平均功率 220W，两者合计 221。");
+  assert.ok(
+    failureCodes(validateRideModelOutputV2(input, summed)).includes("NUMBER_NOT_IN_CLAIMS"),
+  );
+});
+
+test("PD-AI-29 ordinal exemption must not strip real data numbers after 第X段 wording", () => {
+  // Live misfire (2026-10-07 PD-AI-29 trial run): "第二段 27.96 km/h" had
+  // "段 27" stripped as a bare-段 ordinal (the generic 段N pattern), leaving
+  // ".96" behind as a ghost number that failed NUMBER_NOT_IN_CLAIMS. The
+  // ordinal branch now absorbs the 段 character (第X段) and the bare-段 shape
+  // is guarded against a preceding 第, so a real data number directly after
+  // "第X段" stays intact.
+  const cruise0 = claim("c-cruise-0", { key: "segment.cruise.cruise-0.speed.mean", value: 29.97, unit: "km/h", displayValue: "29.97" });
+  const cruise1 = claim("c-cruise-1", { key: "segment.cruise.cruise-1.speed.mean", value: 27.96, unit: "km/h", displayValue: "27.96" });
+  const cruise2 = claim("c-cruise-2", { key: "segment.cruise.cruise-2.speed.mean", value: 29.23, unit: "km/h", displayValue: "29.23" });
+  const pacingQuestion = question("pacingExecution", [cruise0, cruise1, cruise2]);
+  const input = makeInput([pacingQuestion]);
+  const output = baseOutput({
+    label: { text: "一次配速均衡的通勤骑行", conclusionType: "fact", claimIds: ["c-cruise-0"] },
+    overallAssessment: { text: "本次可用数据有限，整体为一次配速均衡的骑行。", conclusionType: "fact", claimIds: ["c-cruise-0"] },
+    dimensions: [
+      {
+        dimensionId: "pacingExecution",
+        assertions: [
+          { text: "巡航段中，第一段速度 29.97 km/h，第二段 27.96 km/h，第三段 29.23 km/h，整体配速较为均衡。", conclusionType: "interpretation", claimIds: ["c-cruise-0", "c-cruise-1", "c-cruise-2"] },
+        ],
+      },
+    ],
+    suggestions: undefined,
+    limitations: [],
+  });
+  assert.deepEqual(validateRideModelOutputV2(input, output), { status: "pass" });
 });
