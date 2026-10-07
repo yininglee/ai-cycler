@@ -60,6 +60,32 @@ function repeatedIntervals(count: number, speedMps: number, options: { grade?: n
   return Array.from({ length: count }, () => ({ durationS: 1, speedMps, ...options }));
 }
 
+// A recording gap whose distance delta is set explicitly (not speed × time),
+// so every point carries the same high instantaneous speed while the gap itself
+// drifts only a few metres — the real device shape behind upload-f95e988a,
+// where the 378s gap moved +7.0m yet its edge points read 7.5 m/s.
+function pointsWithEdgeSpeedGap(options: {
+  leadSeconds: number;
+  trailSeconds: number;
+  gapDurationS: number;
+  gapDistanceDeltaM: number;
+  speedMps: number;
+}): RideSeriesPoint[] {
+  const points: RideSeriesPoint[] = [{ sequence: 0, elapsedTimeS: 0, distanceM: 0, elevationM: 20 }];
+  let elapsedTimeS = 0;
+  let distanceM = 0;
+  let sequence = 1;
+  const push = (durationS: number, distanceDeltaM: number) => {
+    elapsedTimeS += durationS;
+    distanceM += distanceDeltaM;
+    points.push({ sequence: sequence++, elapsedTimeS, distanceM, elevationM: 20, speedMps: options.speedMps });
+  };
+  for (let i = 0; i < options.leadSeconds; i += 1) push(1, options.speedMps);
+  push(options.gapDurationS, options.gapDistanceDeltaM);
+  for (let i = 0; i < options.trailSeconds; i += 1) push(1, options.speedMps);
+  return points;
+}
+
 function rideRecord(
   points: RideSeriesPoint[],
   options: {
@@ -164,6 +190,44 @@ test("trusted FIT timing does not classify a moving long gap as a stop", () => {
   });
   const timing = buildRideTimingSummary(recordWithGap);
 
+  assert.deepEqual(timing.stops, []);
+});
+
+test("a stationary recording gap stays a stop even when its edge points read high speed", () => {
+  // gap drifts only 3.3m (GPS noise) but the edge points carry 5 m/s — the old
+  // edge-speed rule wrongly rejected this, orphaning the whole device stop time
+  // into UNLOCATED_STOP_TIME (upload-f95e988a).
+  const points = pointsWithEdgeSpeedGap({
+    leadSeconds: 10, trailSeconds: 10, gapDurationS: 65, gapDistanceDeltaM: 3.3, speedMps: 5,
+  });
+  const record = rideRecord(points, {
+    sourceKind: "fit",
+    elapsedTimeS: 85,
+    movingTimeS: 20,
+    trustedDeviceTiming: true,
+  });
+  const timing = buildRideTimingSummary(record);
+
+  assert.equal(timing.source, "device_recorded");
+  assert.equal(timing.stoppedTimeS, 65);
+  assert.deepEqual(timing.stops.map((stop) => stop.durationS), [65]);
+});
+
+test("a genuinely moving recording gap is not fabricated into a stop", () => {
+  // gap actually advanced 325m (rider kept moving), so even though the device
+  // reports 65s of stop time, the gap must NOT be placed as a stop.
+  const points = pointsWithEdgeSpeedGap({
+    leadSeconds: 10, trailSeconds: 10, gapDurationS: 65, gapDistanceDeltaM: 325, speedMps: 5,
+  });
+  const record = rideRecord(points, {
+    sourceKind: "fit",
+    elapsedTimeS: 85,
+    movingTimeS: 20,
+    trustedDeviceTiming: true,
+  });
+  const timing = buildRideTimingSummary(record);
+
+  assert.equal(timing.stoppedTimeS, 65);
   assert.deepEqual(timing.stops, []);
 });
 

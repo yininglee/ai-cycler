@@ -15,7 +15,6 @@ const CRUISE_MAX_CV = 0.1;
 const GRADE_WINDOW_M = 100;
 const MIN_GRADE_WINDOW_M = 60;
 const DEVICE_STOP_MAX_DISTANCE_M = 50;
-const DEVICE_STOP_EDGE_SPEED_MPS = 1;
 
 export type RideTimingSource = "device_recorded" | "rule_inferred" | "unavailable";
 
@@ -56,7 +55,6 @@ interface TimedSample {
   startDistanceM?: number;
   endDistanceM?: number;
   speedMps?: number;
-  startSpeedMps?: number;
   elevationStartM?: number;
   elevationEndM?: number;
 }
@@ -105,16 +103,12 @@ function timedSamples(record: RideRecord): TimedSample[] {
     const speedMps = finite(current.speedMps)
       ? current.speedMps
       : finite(distanceDelta) && distanceDelta >= 0 ? distanceDelta / durationS : undefined;
-    const startSpeedMps = finite(previous.speedMps)
-      ? previous.speedMps
-      : finite(distanceDelta) && distanceDelta >= 0 ? distanceDelta / durationS : undefined;
     samples.push({
       startTimeS: previous.elapsedTimeS,
       endTimeS: current.elapsedTimeS,
       ...(finite(previous.distanceM) ? { startDistanceM: previous.distanceM } : {}),
       ...(finite(current.distanceM) ? { endDistanceM: current.distanceM } : {}),
       ...(finite(speedMps) ? { speedMps } : {}),
-      ...(finite(startSpeedMps) ? { startSpeedMps } : {}),
       ...(finite(previous.elevationM) ? { elevationStartM: previous.elevationM } : {}),
       ...(finite(current.elevationM) ? { elevationEndM: current.elevationM } : {}),
     });
@@ -130,13 +124,17 @@ function inferDeviceStops(samples: TimedSample[], stoppedTimeS: number): RideSto
     const distanceDelta = finite(sample.startDistanceM) && finite(sample.endDistanceM)
       ? sample.endDistanceM - sample.startDistanceM
       : undefined;
+    // A near-zero distance delta across a recording gap is the hardest possible
+    // evidence that the rider was stopped during it (GPS drift only moves a few
+    // metres). The old rule ALSO required a low instantaneous speed at the gap's
+    // edge points, but those are "just before decelerating to stop / just after
+    // resuming", so they read high and wrongly rejected a real stop — upload-
+    // f95e988a's 378s gap drifted only +7.0m yet the edge speed was 7.5 m/s,
+    // leaving all 426s of device stop time unlocated (UNLOCATED_STOP_TIME).
     const stationaryGap = durationS > SHORT_GAP_MAX_S
       && finite(distanceDelta)
       && distanceDelta >= -5
-      && distanceDelta <= DEVICE_STOP_MAX_DISTANCE_M
-      && finite(sample.startSpeedMps)
-      && finite(sample.speedMps)
-      && (sample.startSpeedMps < DEVICE_STOP_EDGE_SPEED_MPS || sample.speedMps < DEVICE_STOP_EDGE_SPEED_MPS);
+      && distanceDelta <= DEVICE_STOP_MAX_DISTANCE_M;
     if (stationaryGap) {
       candidates.push({
         startElapsedTimeS: sample.startTimeS,
