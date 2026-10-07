@@ -971,3 +971,46 @@ test("PD-AI-31 ordinal guard still number-checks integer segment data (爬坡段
   });
   assert.ok(failureCodes(validateRideModelOutputV2(input, output)).includes("NUMBER_NOT_IN_CLAIMS"));
 });
+
+test("V21-10 blocks fabricated derived-metric numbers (VI/EF self-computed)", () => {
+  // VI 自算反例：fact 引 powerMean，却写了 claim 里没有的 VI 数字 1.15
+  const viFabricated = baseOutput({
+    dimensions: [
+      {
+        dimensionId: "powerOutput",
+        assertions: [{ text: "本次变速系数 VI 为 1.15，功率波动较大。", conclusionType: "fact", claimIds: ["c-power-mean"] }],
+      },
+      ...baseOutput().dimensions.slice(1),
+    ],
+  });
+  assert.ok(failureCodes(validateRideModelOutputV2(standardInput(), viFabricated)).includes("NUMBER_NOT_IN_CLAIMS"));
+
+  // EF 自算反例：fact 引 powerMean，却写了 claim 里没有的 EF 数字 1.8
+  const efFabricated = baseOutput({
+    dimensions: [
+      {
+        dimensionId: "powerOutput",
+        assertions: [{ text: "效率因子 EF 为 1.8 W/bpm。", conclusionType: "fact", claimIds: ["c-power-mean"] }],
+      },
+      ...baseOutput().dimensions.slice(1),
+    ],
+  });
+  assert.ok(failureCodes(validateRideModelOutputV2(standardInput(), efFabricated)).includes("NUMBER_NOT_IN_CLAIMS"));
+});
+
+test("V21-10 still allows a derived-metric number bound to its own claim", () => {
+  const vi = claim("c-vi", { key: "pacing.variabilityIndex", value: 1.08, unit: "ratio", displayValue: "1.08" });
+  const pacingQ = question("pacingExecution", [vi, powerMean]);
+  const input = makeInput([pacingQ, hrQuestion]);
+  const output: RideModelOutputV2 = {
+    schemaVersion: RIDE_OUTPUT_SCHEMA_VERSION,
+    label: { text: "本次骑行配速执行", conclusionType: "fact", claimIds: ["c-vi"] },
+    overallAssessment: { text: "本次骑行功率与心率数据完整。", conclusionType: "fact", claimIds: ["c-power-mean", "c-hr-mean"] },
+    dimensions: [
+      { dimensionId: "pacingExecution", assertions: [{ text: "本次变速系数 VI 为 1.08，功率波动较小。", conclusionType: "fact", claimIds: ["c-vi"] }] },
+      { dimensionId: "heartRateLoad", assertions: [{ text: "平均心率 150bpm。", conclusionType: "fact", claimIds: ["c-hr-mean"] }] },
+    ],
+    limitations: [],
+  };
+  assert.deepEqual(validateRideModelOutputV2(input, output), { status: "pass" });
+});
