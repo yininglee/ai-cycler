@@ -846,6 +846,31 @@ test("PD-AI-29 ordinal exemption must not strip real data numbers after 第X段 
   assert.deepEqual(validateRideModelOutputV2(input, output), { status: "pass" });
 });
 
+test("spaced 第 N 段 / 第 N 个巡航段 ordinal is stripped as structural, not a data number", () => {
+  // Live misfire (2026-10-08 upload-f95e988a): the model wrote "第 5 段" then
+  // "第 5 个巡航段" for the same cruise segment; the 第X段 branch matched only
+  // a trailing 段 and read the 5 as data -> NUMBER_NOT_IN_CLAIMS. The branch
+  // now strips the 第N prefix regardless of the trailing noun.
+  const span4 = claim("c-span-4", { key: "segment.cruise.cruise-4-1461.span", value: 180, unit: "s", displayValue: "3", displayUnit: "分钟" });
+  const speed4 = claim("c-speed-4", { key: "segment.cruise.cruise-4-1461.speed.mean", value: 31.16, unit: "km/h", displayValue: "31.16" });
+  const input = makeInput([question("pacingExecution", [span4, speed4])]);
+  const output = baseOutput({
+    label: { text: "一次巡航配速较高的骑行", conclusionType: "fact", claimIds: ["c-speed-4"] },
+    overallAssessment: { text: "本次可用数据有限，整体为一次配速较高的骑行。", conclusionType: "fact", claimIds: ["c-speed-4"] },
+    dimensions: [
+      {
+        dimensionId: "pacingExecution",
+        assertions: [
+          { text: "巡航段中，第 5 个巡航段（3 分钟）平均速度 31.16 km/h，为全程最快。", conclusionType: "interpretation", claimIds: ["c-span-4", "c-speed-4"] },
+        ],
+      },
+    ],
+    suggestions: undefined,
+    limitations: [],
+  });
+  assert.deepEqual(validateRideModelOutputV2(input, output), { status: "pass" });
+});
+
 test("PD-AI-31 ordinal guard keeps segment data and strips bare ordinals (段N/坡N)", () => {
   // Regression (2026-10-07 live run + diagnosis): the bare 段N pattern used to
   // strip segment data — "爬坡段 8.1" -> ".1" ghost (NUMBER_NOT_IN_CLAIMS) and

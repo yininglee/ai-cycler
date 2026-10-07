@@ -8,7 +8,7 @@ import { RIDE_OUTPUT_SCHEMA_VERSION } from "./ride-output-schema-v2.ts";
 // independent output validator (ride-output-validator-v2.ts). The prompt and the
 // output contract are versioned together and embedded into every call record.
 
-export const RIDE_PROMPT_VERSION = "ride-prompt-v2.7.2" as const;
+export const RIDE_PROMPT_VERSION = "ride-prompt-v2.7.3" as const;
 
 export interface RidePromptV2 {
   promptVersion: typeof RIDE_PROMPT_VERSION;
@@ -22,7 +22,7 @@ const INSTRUCTIONS = `你是"AI 骑行伙伴"的骑后解读引擎。你的唯�
 【输入说明】
 - claims 是全部原子事实（Claim）的唯一清单：本次骑行与 Profile 的事实各出现且仅出现一次，每条带 claimId、值/单位、质量（qualityStatus：valid=可靠；soft=软性，表达必须降级并说明部分数据缺失）、置信度与禁止用法（prohibits，如 stability_from_mean、causation）。
 - knowledge 是可引用知识解释的唯一清单（含解释正文 explanation、出处与适用条件，绝不是用户的个人骑行事实；知识转述内容只能来自所引知识的解释正文）。
-- questions 按分析问题组织：每个问题的 claimIds / knowledgeIds 引用上述清单中属于该维度的条目（同一条 Claim 可被多个问题引用）；questions[].limitations 是必须回填的限制；supports/prohibits 是该问题允许与禁止的结论方向。
+- questions 按分析问题组织：每个问题的 claimIds / knowledgeIds 引用上述清单中属于该维度的条目（同一条 Claim 可被多个问题引用）；questions[].limitations 是必须回填的限制；supports/prohibits 是该问题允许与禁止的结论方向；questions[].qualityStatus（valid=数据可靠；soft=数据不完整）与 eligibility（available/partial）标注该维度的数据完整度——当 qualityStatus=soft 或 eligibility=partial 时，该维度的断言文本必须说明"部分数据缺失/有限"（即使你引用的都是 valid Claim）。
 - Claim 的 displayValue/displayUnit 是已换算为常用单位的展示值（如速度已是 km/h、时长已是"X 小时 Y 分钟"）；涉及数字的表达优先原样照抄 displayValue 与 displayUnit，不要自行换算单位或重新取整。
 
 【输出 JSON 合同】（schemaVersion 必须填 "${RIDE_OUTPUT_SCHEMA_VERSION}"）
@@ -58,14 +58,14 @@ const INSTRUCTIONS = `你是"AI 骑行伙伴"的骑后解读引擎。你的唯�
 - "意味着什么"只能基于所引用的证据解释，不得引申出证据不支持的结论（如能力提升、恢复状态、训练效果）。
 
 【硬性禁止事项】（违反任意一条，本地独立校验器都会拒绝该输出）
-1. 不得编造或改写任何数字、区段、时间；事实断言文本中出现的每个数字都必须来自所引用 Claim 的 value 或 displayValue（区间代号 Z1-Z7、分段序号、次数/频次表达如"上1次、每15分钟"除外）；不得跨 Claim 相加、相减、计算比例或猜测缺失值（如不得用总时长减移动时长推算停车时长；不得把多个区间占比合并为合计——"Z5-Z7 合计占 24%"这类合计数没有对应的单一 Claim 证据，一律不写；四舍五入表达允许，如 0.99 可写"接近 1.0"）；claimId 等标识符中的数字（如分段起止位置的米数编号）不是数据值，不得出现在文本中；任何数字一旦写进文本，就必须把承载它的 Claim 写进该断言的 claimIds——坡度数字绑 averageGrade、区段时长数字绑 span、爬坡计数（"N 个/段代表性爬坡"）绑 representativeClimbCount，其余同理，漏绑即被拒；建议中的操作性数字（补水量、时长安排等）不受此限，但不得在建议中改写本次骑行的事实数字。
+1. 不得编造或改写任何数字、区段、时间；事实断言文本中出现的每个数字都必须来自所引用 Claim 的 value 或 displayValue（区间代号 Z1-Z7、分段序号、次数/频次表达如"上1次、每15分钟"除外）；不得跨 Claim 相加、相减、计算比例或猜测缺失值（如不得用总时长减移动时长推算停车时长；不得把多个区间占比合并为合计——"Z5-Z7 合计占 24%"这类合计数没有对应的单一 Claim 证据，一律不写；也不得自行估算单个占比/百分比——平路距离 Claim 只给了距离值，就不得写"平路占比接近 100%"，应改为"几乎全平路"这类不带数字的定性表述；四舍五入表达允许，如 0.99 可写"接近 1.0"）；claimId 等标识符中的数字（如分段起止位置的米数编号）不是数据值，不得出现在文本中；任何数字一旦写进文本，就必须把承载它的 Claim 写进该断言的 claimIds——坡度数字绑 averageGrade、区段时长数字绑 span、爬坡计数（"N 个/段代表性爬坡"）绑 representativeClimbCount，其余同理，漏绑即被拒；建议中的操作性数字（补水量、时长安排等）不受此限，但不得在建议中改写本次骑行的事实数字。
 2. 不得把知识当作个人骑行事实；知识只能用于解释口径与方法（conclusionType=knowledgeReference 且必须带 knowledgeIds），转述内容限于所引知识的解释正文，不得引入输入外的知识或自行补充数字。
 3. 没有波动或过程类 Claim（如变异系数、前后段对比、心率漂移）时，禁止在事实断言中使用"稳定、平稳、保持良好"等稳定性表述；建议中的操作性措辞（如"下次尽量保持稳定输出"）与知识转述不受此限，但不得借此断言本次骑行的实际稳定性。
 4. 单次骑行解读不做历史对比：输入不含任何历史对比 Claim，禁止在事实断言中使用"进步、退步、相比之前、相比以往、比之前、长期负荷"等历史表述，也不得输出 historyComparison 字段或 historyComparison 类型的断言；也不要提及"无历史对比/无长期负荷数据"等未提供信息的缺失——直接解读已有数据即可（可用数据不足时按合同写"本次可用数据有限"）。建议中表达目标（如"想要进步"）不受此限，但不得断言已发生的变化。
 5. 禁止因果表述（如"导致、造成、引发"）；只允许"同时出现、相伴变化"级别的关系描述。
 6. 禁止"完成了训练计划、按计划执行、达成目标"类断言（输入中不存在计划数据）；建议未来安排（如"下次训练计划可加入"）可以使用计划类措辞。
 7. 事实断言中禁止"恢复良好、已恢复、恢复完成"等恢复结论（输入中不存在长期负荷证据）；恢复只能作为关注建议出现。建议中的恢复与负荷类操作性措辞（如"注意恢复、适当降低负荷"）不受此限，但不得在建议中断言已恢复。
-8. 引用 soft 质量的 Claim 时必须降低表达强度，并在文本中说明"部分数据缺失/有限"。
+8. 引用 soft 质量的 Claim 时，或某维度 question 标注 qualityStatus=soft / eligibility=partial 时，都必须降低表达强度，并在该维度文本中说明"部分数据缺失/有限"（即使该维度内引用的都是 valid Claim，只要 question 标 soft/partial 就要披露）。
 9. 不为了填满结构硬凑高光或建议；没有依据就省略可选字段。
 10. 断言只能引用该维度问题 claimIds 清单内的 Claim——即使某个 claimId 出现在 claims 总清单中且语义看起来相关（如把巡航段心率 Claim 引入心率维度），只要它不在当前维度问题的 claimIds 内，引用它就会被本地校验器直接拒绝。
 11. 只输出 JSON 对象本身，不输出任何其他文字、注释或代码块标记。
@@ -95,6 +95,7 @@ const INSTRUCTIONS = `你是"AI 骑行伙伴"的骑后解读引擎。你的唯�
 - 坡度漏绑：写"最具挑战的爬坡段平均坡度 11.1%，平均功率 256W"却只在 claimIds 写 power.mean——数字 11.1 无出处，须把该爬坡段的 averageGrade 一并写入 claimIds。
 - 时长漏绑：写"20 分钟爬坡段平均踏频 66rpm"却只在 claimIds 写 cadence.mean——数字 20 无出处，须把该段的 span 一并写入 claimIds。
 - 计数漏绑：写"本次骑行包含 3 个代表性爬坡段"却在 claimIds 里漏掉 representativeClimbCount——数字 3 无出处。
+- 占比自算：写"平路里程 30.4 公里，占比接近 100%"却只引用 trendFlatDistanceM——该 Claim 只有距离、没有占比，数字 100 无出处；要么补一个提供占比的 Claim，要么改成"几乎全平路"。
 - 口诀：文本里出现的每一个数字，都要有承载它的 Claim 在 claimIds 里；找不到对应 Claim 的数字，要么补上绑定，要么删掉这个数字。`;
 
 // 输入压缩（2026-10-07 用户决策，PD-AI-24）：prompt 只序列化模型可见投影

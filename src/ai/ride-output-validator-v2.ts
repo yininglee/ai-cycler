@@ -95,15 +95,19 @@ const recoveryTextPattern = /恢复良好|已恢复|恢复完成|完全恢复/;
 const dataLimitedDisclosurePattern = /有限|不足/;
 const softDisclosurePattern = /部分|缺失|有限/;
 const varianceClaimKeyPattern = /coefficientOfVariation|lastMinusFirst|drift|variance/i;
-// Zone labels (Z1-Z7), climb grades (1 级/HC), ordinal segment markers, and
+// Zone labels (Z1-Z7), climb grades (1 级/HC), ordinal markers, and
 // occurrence/frequency wording ("上1次"、"这2次"、"每15分钟") are structural,
-// not data values. Segment ordinals come in two shapes: "第X段" (第一段/第1段)
-// absorbs the 段 character so a real data number right after it ("第二段
-// 27.96 km/h") stays intact; bare ordinals ("巡航段1"、"代表性爬坡 1") must not
-// be followed by another digit, a decimal point, or a unit — otherwise the
-// number is segment data ("爬坡段 20 公里"、"下坡段 18.3 公里"、"首段 31.5W").
-// The "not a digit/point" guard also stops \d+ backtracking: without it
-// "下坡段 18.3" matches "段 1" and leaves "8.3" behind as a ghost number.
+// not data values. The 第N prefix (第 + 数字/汉字) is ALWAYS an ordinal — the
+// model keeps inventing shapes ("第1段", then "第 5 段", then "第 5 个巡航段",
+// all 2026-10-08 upload-f95e988a), so the branch strips 第N without depending
+// on a trailing noun. The 段 char left behind is then re-guarded by the bare-段
+// branch below: a real data number after it ("第二段 27.96 km/h" -> "段 27.96")
+// survives via the digit/point/unit negative lookahead. Bare ordinals
+// ("巡航段1"、"代表性爬坡 1") must not be followed by another digit, a decimal
+// point, or a unit — otherwise the number is segment data ("爬坡段 20 公里"、
+// "下坡段 18.3 公里"、"首段 31.5W"). The "not a digit/point" guard also stops
+// \d+ backtracking: without it "下坡段 18.3" matches "段 1" and leaves "8.3"
+// behind as a ghost number.
 // Business rules 14.5.1 exempt zone labels and segment ordinals from checking.
 const SEGMENT_DATA_UNITS = "公里|千米|km|米|m|分钟|小时|秒|瓦|W|w|rpm|%|km/h|m/s|bpm|千卡|kcal";
 // A bare ordinal never carries a unit, so a digit followed by one of the above
@@ -111,7 +115,7 @@ const SEGMENT_DATA_UNITS = "公里|千米|km|米|m|分钟|小时|秒|瓦|W|w|rpm
 // remove a false exemption, never create one.
 const SEGMENT_ORDINAL_TAIL = "(?![\\d.]|\\s*(?:" + SEGMENT_DATA_UNITS + "))";
 const structuralNumberPattern = new RegExp(
-  "Z[1-7]|\\d+\\s*级|第[一二三四五六七八九十\\d]+段"
+  "Z[1-7]|\\d+\\s*级|第\\s*[一二三四五六七八九十\\d]+"
   + "|[^第]段\\s*\\d+" + SEGMENT_ORDINAL_TAIL
   + "|爬坡\\s*\\d+" + SEGMENT_ORDINAL_TAIL
   + "|上\\d+次|这\\d+次|近\\d+次|前\\d+次|每\\d+(分钟|小时|天|次|公里|km)",
