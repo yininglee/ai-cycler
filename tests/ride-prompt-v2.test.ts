@@ -77,7 +77,7 @@ test("S6-01 builds a versioned prompt bound to the schema and output contract ve
   assert.equal(prompt.promptVersion, RIDE_PROMPT_VERSION);
   assert.equal(prompt.outputSchemaVersion, RIDE_OUTPUT_SCHEMA_VERSION);
   assert.equal(prompt.inputSchemaVersion, RIDE_MODEL_INPUT_SCHEMA_VERSION);
-  assert.equal(prompt.promptVersion, "ride-prompt-v2.7.1");
+  assert.equal(prompt.promptVersion, "ride-prompt-v2.7.2");
 });
 
 test("S6-01 prompt embeds the delivered input snapshot with claims and knowledge", () => {

@@ -91,14 +91,26 @@ const softDisclosurePattern = /部分|缺失|有限/;
 const varianceClaimKeyPattern = /coefficientOfVariation|lastMinusFirst|drift|variance/i;
 // Zone labels (Z1-Z7), climb grades (1 级/HC), ordinal segment markers, and
 // occurrence/frequency wording ("上1次"、"这2次"、"每15分钟") are structural,
-// not data values. Segment ordinals come in two shapes: "第X段" absorbs the
-// 段 character into the match so a real data number directly after it
-// ("第二段 27.96 km/h") stays intact; the bare "段N" shape (巡航段1、爬升段2)
-// must NOT be preceded by 第 (guard: [^第]) — a 2026-10-07 live misfire had
-// "段 27" stripped as an ordinal from "第二段 27.96", leaving ".96" behind as
-// a ghost number. Business rules 14.5.1 explicitly exempt zone labels and
-// segment ordinals from number checking.
-const structuralNumberPattern = /Z[1-7]|\d+\s*级|第[一二三四五六七八九十\d]+段|[^第]段\s*\d+|上\d+次|这\d+次|近\d+次|前\d+次|每\d+(分钟|小时|天|次|公里|km)/g;
+// not data values. Segment ordinals come in two shapes: "第X段" (第一段/第1段)
+// absorbs the 段 character so a real data number right after it ("第二段
+// 27.96 km/h") stays intact; bare ordinals ("巡航段1"、"代表性爬坡 1") must not
+// be followed by another digit, a decimal point, or a unit — otherwise the
+// number is segment data ("爬坡段 20 公里"、"下坡段 18.3 公里"、"首段 31.5W").
+// The "not a digit/point" guard also stops \d+ backtracking: without it
+// "下坡段 18.3" matches "段 1" and leaves "8.3" behind as a ghost number.
+// Business rules 14.5.1 exempt zone labels and segment ordinals from checking.
+const SEGMENT_DATA_UNITS = "公里|千米|km|米|m|分钟|小时|秒|瓦|W|w|rpm|%|km/h|m/s|bpm|千卡|kcal";
+// A bare ordinal never carries a unit, so a digit followed by one of the above
+// is data, not an ordinal. Keep the unit list generous — adding a unit can only
+// remove a false exemption, never create one.
+const SEGMENT_ORDINAL_TAIL = "(?![\\d.]|\\s*(?:" + SEGMENT_DATA_UNITS + "))";
+const structuralNumberPattern = new RegExp(
+  "Z[1-7]|\\d+\\s*级|第[一二三四五六七八九十\\d]+段"
+  + "|[^第]段\\s*\\d+" + SEGMENT_ORDINAL_TAIL
+  + "|爬坡\\s*\\d+" + SEGMENT_ORDINAL_TAIL
+  + "|上\\d+次|这\\d+次|近\\d+次|前\\d+次|每\\d+(分钟|小时|天|次|公里|km)",
+  "g",
+);
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);

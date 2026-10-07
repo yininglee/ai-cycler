@@ -795,3 +795,54 @@ test("PD-AI-29 ordinal exemption must not strip real data numbers after 第X段 
   });
   assert.deepEqual(validateRideModelOutputV2(input, output), { status: "pass" });
 });
+
+test("PD-AI-31 ordinal guard keeps segment data and strips bare ordinals (段N/坡N)", () => {
+  // Regression (2026-10-07 live run + diagnosis): the bare 段N pattern used to
+  // strip segment data — "爬坡段 8.1" -> ".1" ghost (NUMBER_NOT_IN_CLAIMS) and
+  // "爬坡段 20 公里" -> the 20 vanished (silent under-check). The guard now only
+  // strips a digit not followed by a digit/point/unit, so data stays intact and
+  // bare ordinals (巡航段1 / 代表性爬坡 1) are still treated as structural.
+  const dist = claim("c-climb-dist", { key: "segment.climb.distanceM", value: 20000, unit: "m", displayValue: "20" });
+  const descent = claim("c-descent-dist", { key: "segment.climb.descentDistanceM", value: 18300, unit: "m", displayValue: "18.3" });
+  const grade = claim("c-climb-grade", { key: "segment.climb.averageGrade", value: 0.058, unit: "ratio", displayValue: "5.8", displayUnit: "%" });
+  const delta = claim("c-power-delta", { key: "power.lastMinusFirst", value: -31.5, unit: "W", displayValue: "-31.5" });
+  const input = makeInput([question("powerOutput", [dist, descent, grade, delta])]);
+  const output = baseOutput({
+    label: { text: "一次爬坡为主的骑行", conclusionType: "fact", claimIds: ["c-climb-dist"] },
+    overallAssessment: { text: "本次骑行可用数据有限，整体为一次爬坡为主的骑行。", conclusionType: "fact", claimIds: ["c-climb-dist"] },
+    dimensions: [
+      {
+        dimensionId: "powerOutput",
+        assertions: [
+          { text: "代表性爬坡 1：爬坡段 20 公里，下坡段 18.3 公里，平均坡度 5.8%，末段比首段低 31.5W。", conclusionType: "fact", claimIds: ["c-climb-dist", "c-descent-dist", "c-climb-grade", "c-power-delta"] },
+        ],
+      },
+    ],
+    suggestions: undefined,
+    limitations: [],
+  });
+  assert.deepEqual(validateRideModelOutputV2(input, output), { status: "pass" });
+});
+
+test("PD-AI-31 ordinal guard still number-checks integer segment data (爬坡段 20 公里)", () => {
+  // If the bare 段N pattern still stripped "段 20", a fabricated "20" would
+  // silently disappear and the number gate would under-check. It must stay and
+  // be rejected because no referenced claim carries 20.
+  const dist = claim("c-climb-dist2", { key: "segment.climb.distanceM", value: 25000, unit: "m", displayValue: "25" });
+  const input = makeInput([question("powerOutput", [dist])]);
+  const output = baseOutput({
+    label: { text: "一次爬坡为主的骑行", conclusionType: "fact", claimIds: ["c-climb-dist2"] },
+    overallAssessment: { text: "本次骑行可用数据有限。", conclusionType: "fact", claimIds: ["c-climb-dist2"] },
+    dimensions: [
+      {
+        dimensionId: "powerOutput",
+        assertions: [
+          { text: "爬坡段 20 公里。", conclusionType: "fact", claimIds: ["c-climb-dist2"] },
+        ],
+      },
+    ],
+    suggestions: undefined,
+    limitations: [],
+  });
+  assert.ok(failureCodes(validateRideModelOutputV2(input, output)).includes("NUMBER_NOT_IN_CLAIMS"));
+});
