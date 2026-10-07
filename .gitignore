@@ -10,6 +10,5 @@ test-data/private/
 !.env.example
 .local-data/
 
-# 参考文献 PDF（本地产物，体积大，不入库；如需查阅请单独拷贝）
-doc_V2/15586657.pdf
-doc_V2/042_Cycling_science.pdf
+# doc_V2 下的外部参考文献 PDF 不入库（自产 md 文档正常跟踪）
+doc_V2/*.pdf
