@@ -10,6 +10,7 @@ import {
 } from "../src/domain/ride-capability-claims-v2.ts";
 import { createUserProfile } from "../src/domain/user-profile.ts";
 import { getRideFixture } from "../src/fixtures/rides.ts";
+import { RIDE_TEMPORAL_WINDOWS_RULES_VERSION, type RideTemporalWindowsV2 } from "../src/domain/ride-temporal-windows-v2.ts";
 
 const START = "2026-10-05T06:00:00.000Z";
 
@@ -190,4 +191,43 @@ test("IF and TSS use contiguous NP, confirmed FTP, and eligible power time", () 
   assert.equal(claimValue(snapshot, "power.normalizedW"), 200);
   assert.equal(claimValue(snapshot, "power.intensityFactor"), 0.8);
   assert.equal(claimValue(snapshot, "power.trainingStressScore"), (120 * 200 * 0.8 / (250 * 3_600)) * 100);
+});
+
+test("terrain distance claims survive UNLOCATED_STOP_TIME by sourcing route-shape", () => {
+  // Regression (2026-10-07, upload-f95e988a): the ride had 426s of unplaced stop
+  // time (UNLOCATED_STOP_TIME) so windowsSource was unavailable, yet its
+  // route-shape terrain distances were valid. Terrain distance claims used to
+  // reference windowsSource and were rejected as CLAIM_SOURCE_INVALID, which
+  // made buildRideProfileHistoryV2 throw (a 500 on the analysis route). They
+  // now reference a dedicated route-shape source that stays available.
+  const windows: RideTemporalWindowsV2 = {
+    rideId: "s2-01-ride",
+    rulesVersion: RIDE_TEMPORAL_WINDOWS_RULES_VERSION,
+    unavailableReason: "UNLOCATED_STOP_TIME",
+    powerPeaks: [],
+    segments: [],
+    jointWindows: [],
+    pairAvailability: [],
+    terrainDistances: {
+      rulesVersion: "ride-route-shape-rules-v0.2",
+      climbDistanceM: 0,
+      flatDistanceM: 10_000,
+      descentDistanceM: 0,
+      trendClimbDistanceM: 0,
+      trendFlatDistanceM: 10_000,
+      trendDescentDistanceM: 0,
+      coverageRatio: 0.99,
+      segmentCounts: { climb: 0, flat: 1, descent: 0 },
+      representativeCounts: { climb: 0, flat: 1, descent: 0 },
+      evidenceIds: ["evidence:s2-01-ride:route-shape:ride-route-shape-rules-v0.2"],
+    },
+  };
+  const snapshot = buildRideCapabilityClaimsV2(completeRecord(), { windows });
+  assert.equal(validateRideCapabilityClaimsV2(snapshot).length, 0);
+  const terrainClaims = snapshot.claims.filter((item) => item.key.startsWith("terrain."));
+  assert.ok(terrainClaims.length >= 10);
+  const routeShapeSource = snapshot.sourceInventory.find((item) => item.sourceId.endsWith(":route-shape"));
+  assert.ok(routeShapeSource);
+  assert.equal(routeShapeSource.status, "available");
+  assert.ok(terrainClaims.every((item) => item.sourceRefs.some((ref) => ref.sourceId.endsWith(":route-shape"))));
 });

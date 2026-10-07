@@ -606,7 +606,16 @@ export function buildRideCapabilityClaimsV2(
   windows.powerPeaks.flatMap((item) => item.evidenceIds).forEach((id) => windowsSource.evidenceIds.add(id));
   windows.segments.flatMap((item) => item.evidenceIds).forEach((id) => windowsSource.evidenceIds.add(id));
   windows.jointWindows.flatMap((item) => item.evidenceIds).forEach((id) => windowsSource.evidenceIds.add(id));
-  windows.terrainDistances?.evidenceIds.forEach((id) => windowsSource.evidenceIds.add(id));
+  // route-shape-derived terrain distances are independent of the time axis and
+  // stop placement, so they live on their own source (available whenever
+  // terrainDistances exists) instead of on windowsSource — which flips to
+  // unavailable on UNLOCATED_STOP_TIME and would otherwise orphan these claims
+  // into CLAIM_SOURCE_INVALID (upload-f95e988a, 2026-10-07). Climb/cruise/terrain
+  // segment windows and joint windows stay on windowsSource: their sensor means
+  // genuinely depend on a placed time axis.
+  const routeShapeSource = windows.terrainDistances
+    ? source(rideId, "route-shape", "summary", windows.terrainDistances.rulesVersion)
+    : undefined;
   const profileHasFacts = Boolean(profile && (profile.age || profile.heightCm || profile.weightKg || profile.maxHeartRate || profile.ftp));
   const profileSource = source(rideId, "profile", "profile", profile ? `${profile.schemaVersion}:${profile.updatedAt}` : "profile-v0.1",
     profileHasFacts ? "available" : "missing", profileHasFacts ? undefined : "PROFILE_MISSING_OR_EMPTY");
@@ -797,7 +806,7 @@ export function buildRideCapabilityClaimsV2(
   // page shows — become citable claims for the climb and pacing dimensions.
   if (windows.terrainDistances) {
     const terrain = windows.terrainDistances;
-    const refs = [sourceRef(windowsSource, terrain.evidenceIds)];
+    const refs = [sourceRef(routeShapeSource!, terrain.evidenceIds)];
     const terrainMetricClaims: Array<{
       claimKey: string;
       value: number;
@@ -1044,7 +1053,8 @@ export function buildRideCapabilityClaimsV2(
     capabilities.set(key, unavailableCapability(key, [], "RULE_NOT_IMPLEMENTED_IN_S2_01"));
   }
 
-  const sources = [activitySource, seriesSource, temporalSource, windowsSource, profileSource, derivedSource];
+  const sources = [activitySource, seriesSource, temporalSource, windowsSource, profileSource, derivedSource,
+    ...(routeShapeSource ? [routeShapeSource] : [])];
   return {
     schemaVersion: RIDE_CAPABILITY_CLAIMS_SCHEMA_VERSION,
     rulesVersion: RIDE_CAPABILITY_CLAIMS_RULES_VERSION,
