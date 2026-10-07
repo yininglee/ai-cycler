@@ -274,6 +274,56 @@ test("S6-01 does not treat the zone translation 稳定区 as a stability asserti
   assert.equal(result.status === "fail" ? result.issues.some((issue) => issue.code === "STABILITY_WITHOUT_VARIANCE") : false, false);
 });
 
+test("S6-01 does not treat bare zone name + share 稳定 N% as a stability assertion", () => {
+  // Regression (2026-10-07 STABILITY_WITHOUT_VARIANCE diagnosis, demo-08-20):
+  // the model translated cadence.zone.steady as bare "稳定 7%" with no 踏频/区
+  // suffix. A zone name followed directly by a percentage is zone-share
+  // reporting, not a stability assertion (a real stability assertion never
+  // carries a percentage immediately after the word).
+  const output = baseOutput({
+    dimensions: [
+      {
+        dimensionId: "powerOutput",
+        assertions: [{ text: "平均踏频 79rpm，踏频区间分布：零速 6%、低踏频 6%、稳定 7%、耐力 48%、高踏频 33%。", conclusionType: "fact", claimIds: ["c-power-mean"] }],
+      },
+      ...baseOutput().dimensions.slice(1),
+    ],
+  });
+  const result = validateRideModelOutputV2(standardInput(), output);
+  assert.equal(result.status === "fail" ? result.issues.some((issue) => issue.code === "STABILITY_WITHOUT_VARIANCE") : false, false);
+});
+
+test("S6-01 does not treat 平稳 N% as a stability assertion, but bare 平稳 still is", () => {
+  // Regression (2026-10-07): the 平稳 branch previously used a POSITIVE
+  // lookahead (平稳(?=\s*\d+\s*%)), which inverted the intent — "平稳 37%"
+  // (zone share) was flagged while a bare "平稳" (a real assertion) slipped
+  // through. Both shapes are now covered:
+  //   - 平稳 N% = zone-share reporting → exempt;
+  //   - bare 平稳 = stability assertion → still blocked without a variance claim.
+  const zoneShare = baseOutput({
+    dimensions: [
+      {
+        dimensionId: "powerOutput",
+        assertions: [{ text: "功率分布平稳 37%。", conclusionType: "fact", claimIds: ["c-power-mean"] }],
+      },
+      ...baseOutput().dimensions.slice(1),
+    ],
+  });
+  const zoneShareResult = validateRideModelOutputV2(standardInput(), zoneShare);
+  assert.equal(zoneShareResult.status === "fail" ? zoneShareResult.issues.some((issue) => issue.code === "STABILITY_WITHOUT_VARIANCE") : false, false);
+
+  const bareAssertion = baseOutput({
+    dimensions: [
+      {
+        dimensionId: "powerOutput",
+        assertions: [{ text: "本次输出整体平稳。", conclusionType: "fact", claimIds: ["c-power-mean"] }],
+      },
+      ...baseOutput().dimensions.slice(1),
+    ],
+  });
+  assert.ok(failureCodes(validateRideModelOutputV2(standardInput(), bareAssertion)).includes("STABILITY_WITHOUT_VARIANCE"));
+});
+
 test("S6-01 treats named-segment ordinals (巡航段1) as structural, not data values", () => {
   // Regression (2026-10-07 live run): "巡航段1（2 分钟）平均速度 29.97 km/h" got
   // its segment INDEX flagged as NUMBER_NOT_IN_CLAIMS. Business rules 14.5.1

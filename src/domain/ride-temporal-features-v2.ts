@@ -216,6 +216,21 @@ export function buildRideTemporalFeaturesV2(record: RideRecord): RideTemporalFea
   }) : [];
   const pieces = valid && axis !== "none" ? buildPieces(record, axis, stops) : [];
   const eligibleWeight = pieces.reduce((sum, piece) => sum + (piece.moving === false ? 0 : piece.end - piece.start), 0);
+  // STABILITY_WITHOUT_VARIANCE diagnosis (demo-08-20, 2026-10-07): a gap at the
+  // very start or end of the recording (before the first / after the last moving
+  // sample) must NOT trip CONTINUITY_GAP. The coefficient of variation
+  // (std/mean) does not depend on temporal continuity — an edge gap merely
+  // trims the sampled span without undermining the variance estimate, and the
+  // sample-size / coverage gates above already bound what the estimate is built
+  // on. Only an interior gap (one that cuts across the riding body, potentially
+  // hiding a burst of fluctuation) still disqualifies stability. demo-08-20 has
+  // a 189 s leading gap that previously wiped every coefficientOfVariation claim.
+  const movingPieces = pieces.filter((piece) => piece.moving === true && !piece.gap);
+  const firstMovingS = movingPieces.length ? Math.min(...movingPieces.map((piece) => piece.start)) : undefined;
+  const lastMovingS = movingPieces.length ? Math.max(...movingPieces.map((piece) => piece.end)) : undefined;
+  const interiorGaps = firstMovingS === undefined || lastMovingS === undefined
+    ? gaps
+    : gaps.filter((gap) => gap.endElapsedTimeS > firstMovingS && gap.startElapsedTimeS < lastMovingS);
 
   const series = (Object.keys(SENSOR_FIELDS) as SensorKey[]).map((seriesKey): TemporalSeriesFeatureV2 => {
     const definition = SENSOR_FIELDS[seriesKey];
@@ -271,7 +286,7 @@ export function buildRideTemporalFeaturesV2(record: RideRecord): RideTemporalFea
     });
     const sharedReason: TemporalUnavailableReason | undefined = sourceReason ?? (axisIncomplete ? "AXIS_INCOMPLETE" : allZero ? "ALL_ZERO_SERIES" : axis !== "time" ? "TIME_AXIS_REQUIRED" : !unlocatedStopTolerated ? "UNLOCATED_STOP_TIME" : undefined);
     const stabilityReason: TemporalUnavailableReason | undefined = sharedReason ?? (!stats || validIntervalCount < MIN_STABILITY_INTERVALS || validWeight < MIN_STABILITY_WEIGHT_S
-      ? "INSUFFICIENT_SAMPLES" : coverage < MIN_STABILITY_COVERAGE ? "INSUFFICIENT_COVERAGE" : gaps.length > 0 ? "CONTINUITY_GAP" : undefined);
+      ? "INSUFFICIENT_SAMPLES" : coverage < MIN_STABILITY_COVERAGE ? "INSUFFICIENT_COVERAGE" : interiorGaps.length > 0 ? "CONTINUITY_GAP" : undefined);
     const stageReason: TemporalUnavailableReason | undefined = sharedReason ?? (stages.some((stage) => stage.validIntervalCount < MIN_STAGE_INTERVALS || stage.validWeight < MIN_STAGE_WEIGHT_S)
       ? "INSUFFICIENT_SAMPLES" : stages.some((stage) => stage.coverage < MIN_STAGE_COVERAGE)
       ? "INSUFFICIENT_COVERAGE" : undefined);

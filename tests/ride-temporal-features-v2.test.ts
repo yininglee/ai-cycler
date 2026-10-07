@@ -104,6 +104,36 @@ test("a long gap blocks stability even if overall numeric coverage would pass", 
   assert.equal(speed.stability.reason, "CONTINUITY_GAP");
 });
 
+test("a leading gap does not trip CONTINUITY_GAP when the riding body is well sampled", () => {
+  // Regression (2026-10-07 STABILITY_WITHOUT_VARIANCE diagnosis, demo-08-20):
+  // a 189 s gap before the first moving sample trimmed the sampled span but must
+  // not wipe the coefficient-of-variation claim — CV (std/mean) does not depend
+  // on temporal continuity.
+  const snapshot = buildRideTemporalFeaturesV2(record(intervals([
+    { seconds: 189, speed: 5 },
+    ...Array.from({ length: 60 }, () => ({ seconds: 10, speed: 5 })),
+  ])));
+  const speed = snapshot.series.find((item) => item.seriesKey === "speed")!;
+  assert.equal(snapshot.gaps.length, 1);
+  assert.equal(snapshot.longestGapS, 189);
+  assert.ok(speed.coverage > 0.7);
+  assert.equal(speed.stability.eligible, true);
+  assert.ok(speed.statistics?.coefficientOfVariation !== undefined);
+});
+
+test("a trailing gap does not trip CONTINUITY_GAP when the riding body is well sampled", () => {
+  const snapshot = buildRideTemporalFeaturesV2(record(intervals([
+    ...Array.from({ length: 60 }, () => ({ seconds: 10, speed: 5 })),
+    { seconds: 189, speed: 5 },
+  ])));
+  const speed = snapshot.series.find((item) => item.seriesKey === "speed")!;
+  assert.equal(snapshot.gaps.length, 1);
+  assert.equal(snapshot.longestGapS, 189);
+  assert.ok(speed.coverage > 0.7);
+  assert.equal(speed.stability.eligible, true);
+  assert.ok(speed.statistics?.coefficientOfVariation !== undefined);
+});
+
 test("a device-confirmed stationary gap is a stop, not a moving-data gap", () => {
   const ride = record(intervals([
     ...Array.from({ length: 6 }, () => ({ seconds: 10, speed: 5 })),

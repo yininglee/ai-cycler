@@ -76,10 +76,16 @@ interface ClaimBinding {
 // all are zone-share wording, not stability assertions. The negative lookahead
 // keeps zone-share wording legal (user decisions 2026-10-06 PD-AI-22; two
 // 2026-10-07 revisions extended the exemption after live misfires on
-// "稳定踏频占 7%", "稳定区 7%" and "平稳 37%"). The 平稳+N% pattern only
-// matches zone-share reporting (a real stability assertion never carries a
-// percentage immediately after the word).
-const stabilityTextPattern = /稳定(?!区间|踏频|区)|平稳(?=\s*\d+\s*%)|保持良好/;
+// "稳定踏频占 7%", "稳定区 7%" and "平稳 37%"). A third 2026-10-07 revision
+// (STABILITY_WITHOUT_VARIANCE diagnosis on demo-08-20) extended both branches
+// to also exempt a bare zone name followed directly by a percentage — the model
+// translated cadence.zone.steady as "稳定 7%" with no 踏频/区 suffix. So a real
+// stability assertion never carries a percentage immediately after the word:
+// the "稳定/平稳 + N%" shape is always zone-share reporting. The 平稳 branch is
+// now a NEGATIVE lookahead (平稳 not followed by N%) — the previous positive
+// lookahead was inverted: it flagged "平稳 37%" (zone share) as an assertion
+// while missing a bare "平稳" (a real assertion).
+const stabilityTextPattern = /稳定(?!区间|踏频|区|\s*\d+\s*%)|平稳(?!\s*\d+\s*%)|保持良好/;
 const historyTextPattern = /进步|退步|相比之前|相比以往|比之前|长期负荷/;
 const causalTextPattern = /导致|造成|引发/;
 // Plan wording is only forbidden as an assertion ("completed the plan"); goal-
