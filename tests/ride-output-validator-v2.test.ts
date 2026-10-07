@@ -513,6 +513,56 @@ test("PMC-01 still blocks knowledge-reference numbers absent from the cited know
   assert.ok(failureCodes(validateRideModelOutputV2(standardInput(), output)).includes("NUMBER_NOT_IN_CLAIMS"));
 });
 
+test("V21 allows knowledge-reference numbers inside a benchmark range in the cited knowledge", () => {
+  const rangeKnowledge = knowledge("kb-range", {
+    explanation: "理想负分割：后半程比前半高 2–5%；超过 5% 为正分割。",
+  });
+  const pacingQuestion = question("pacingExecution", [powerMean], {
+    knowledgeIds: [rangeKnowledge.knowledgeId],
+  });
+  const input = makeInput([pacingQuestion, hrQuestion]);
+  const output: RideModelOutputV2 = {
+    schemaVersion: RIDE_OUTPUT_SCHEMA_VERSION,
+    label: { text: "本次骑行配速执行", conclusionType: "fact", claimIds: ["c-power-mean"] },
+    overallAssessment: { text: "本次骑行功率与心率数据完整。", conclusionType: "fact", claimIds: ["c-power-mean", "c-hr-mean"] },
+    dimensions: [
+      {
+        dimensionId: "pacingExecution",
+        assertions: [
+          { text: "理想负分割指后半程比前半高约 3%，属于耐力骑行的理想配速。", conclusionType: "knowledgeReference", claimIds: [], knowledgeIds: ["kb-range"] },
+        ],
+      },
+    ],
+    limitations: [],
+  };
+  assert.deepEqual(validateRideModelOutputV2(input, output), { status: "pass" });
+});
+
+test("V21 still blocks knowledge-reference numbers outside the cited knowledge range", () => {
+  const rangeKnowledge = knowledge("kb-range-2", {
+    explanation: "理想负分割：后半程比前半高 2–5%；超过 5% 为正分割。",
+  });
+  const pacingQuestion = question("pacingExecution", [powerMean], {
+    knowledgeIds: [rangeKnowledge.knowledgeId],
+  });
+  const input = makeInput([pacingQuestion, hrQuestion]);
+  const output: RideModelOutputV2 = {
+    schemaVersion: RIDE_OUTPUT_SCHEMA_VERSION,
+    label: { text: "本次骑行配速执行", conclusionType: "fact", claimIds: ["c-power-mean"] },
+    overallAssessment: { text: "本次骑行功率与心率数据完整。", conclusionType: "fact", claimIds: ["c-power-mean", "c-hr-mean"] },
+    dimensions: [
+      {
+        dimensionId: "pacingExecution",
+        assertions: [
+          { text: "理想负分割指后半程比前半高约 7%。", conclusionType: "knowledgeReference", claimIds: [], knowledgeIds: ["kb-range-2"] },
+        ],
+      },
+    ],
+    limitations: [],
+  };
+  assert.ok(failureCodes(validateRideModelOutputV2(input, output)).includes("NUMBER_NOT_IN_CLAIMS"));
+});
+
 test("S6-01 allows goal-oriented suggestion wording while blocking plan assertions", () => {
   const goalOriented = baseOutput({
     suggestions: [

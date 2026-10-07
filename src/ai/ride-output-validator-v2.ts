@@ -135,6 +135,26 @@ function extractNumbers(text: string): number[] {
   return [...stripped.matchAll(/-?\d+(?:\.\d+)?/g)].map((match) => Number(match[0]));
 }
 
+// V21 knowledge base carries dense sports-science benchmark RANGES ("2–5% 理想
+// 负分割", "0.60–0.70 轻松耐力", "800–1200 训练有素"). extractNumbers splits
+// such a range into its two boundary points, so a model that faithfully
+// paraphrases the midpoint or an interior value ("约 3%", "约 0.8", "约 1000")
+// would be flagged NUMBER_NOT_IN_CLAIMS even though the number lives inside
+// text the knowledge base itself wrote. The range is part of the delivered
+// knowledge text — quoting an interior value is not fabrication. This helper
+// recovers those ranges so the knowledge-side number gate can accept numbers
+// that fall within a cited knowledge range.
+const numberRangePattern = /(\d+(?:\.\d+)?)\s*[-–~]\s*(\d+(?:\.\d+)?)/g;
+
+function extractNumberRanges(text: string): Array<[number, number]> {
+  const stripped = text.replace(structuralNumberPattern, " ");
+  return [...stripped.matchAll(numberRangePattern)].map((match) => {
+    const lo = Number(match[1]);
+    const hi = Number(match[2]);
+    return lo <= hi ? [lo, hi] : [hi, lo];
+  });
+}
+
 // PD-AI-28 (2026-10-07): rounding equivalence, migrated from the V1
 // claimNumericVariants parity (addNumericVariants rounded=true). A claim value
 // may be faithfully expressed rounded to 0/1/2 decimals — e.g. IF 0.99 written
@@ -328,11 +348,12 @@ export function validateRideModelOutputV2(
         const knowledgeHit = knowledgeIds.some((knowledgeId) => {
           const knowledge = knowledgeById.get(knowledgeId);
           if (!knowledge) return false;
-          return [
-            ...extractNumbers(knowledge.citation),
-            ...extractNumbers(knowledge.explanation ?? ""),
-            ...knowledge.conditions.flatMap(extractNumbers),
-          ].some((allowed) => allowed === number);
+          const sources = [knowledge.citation, knowledge.explanation ?? "", ...knowledge.conditions];
+          return sources.some((source) => {
+            const text = source ?? "";
+            if (extractNumbers(text).includes(number)) return true;
+            return extractNumberRanges(text).some(([lo, hi]) => number >= lo && number <= hi);
+          });
         });
         if (!knowledgeHit) {
           issue(
