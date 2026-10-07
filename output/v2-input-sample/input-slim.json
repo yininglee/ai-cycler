@@ -1,0 +1,383 @@
+{
+  "claims": [
+    {
+      "claimId": "claim:current:v2:timing.movingDurationS",
+      "kind": "advanced",
+      "value": 6300,
+      "unit": "s",
+      "confidence": "high",
+      "qualityStatus": "valid",
+      "displayValue": "1 小时 45 分钟",
+      "displayUnit": "duration",
+      "supports": [
+        "current_ride_timing"
+      ],
+      "prohibits": [
+        "training_effect"
+      ]
+    },
+    {
+      "claimId": "claim:current:v2:power.mean",
+      "kind": "feature",
+      "value": 172.1183298828579,
+      "unit": "W",
+      "text": "power weighted mean",
+      "confidence": "high",
+      "qualityStatus": "valid",
+      "displayValue": "172",
+      "displayUnit": "W",
+      "supports": [
+        "power_level"
+      ],
+      "prohibits": [
+        "stability_from_mean",
+        "causation_from_level"
+      ]
+    },
+    {
+      "claimId": "claim:current:v2:power.coefficientOfVariation",
+      "kind": "feature",
+      "value": 0.21327034547921425,
+      "unit": "ratio",
+      "confidence": "high",
+      "qualityStatus": "valid",
+      "displayValue": "21.3",
+      "displayUnit": "%",
+      "supports": [
+        "power_stability"
+      ],
+      "prohibits": [
+        "ability_change",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:current:v2:power.lastMinusFirst",
+      "kind": "feature",
+      "value": 0.030094665184719815,
+      "unit": "W",
+      "confidence": "high",
+      "qualityStatus": "valid",
+      "displayValue": "0",
+      "displayUnit": "W",
+      "supports": [
+        "power_stage_comparison"
+      ],
+      "prohibits": [
+        "trend_beyond_current_ride",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:current:v2:power.peakAverage.10s",
+      "kind": "advanced",
+      "value": 224.8193537109997,
+      "unit": "W",
+      "text": "contiguous 10 s peak average power",
+      "confidence": "high",
+      "qualityStatus": "valid",
+      "displayValue": "225",
+      "displayUnit": "W",
+      "supports": [
+        "short_duration_power_peak"
+      ],
+      "prohibits": [
+        "ability_change",
+        "bridge_recording_gap"
+      ]
+    },
+    {
+      "claimId": "claim:current:v2:power.peakAverage.20s",
+      "kind": "advanced",
+      "value": 224.81566302203572,
+      "unit": "W",
+      "text": "contiguous 20 s peak average power",
+      "confidence": "high",
+      "qualityStatus": "valid",
+      "displayValue": "225",
+      "displayUnit": "W",
+      "supports": [
+        "short_duration_power_peak"
+      ],
+      "prohibits": [
+        "ability_change",
+        "bridge_recording_gap"
+      ]
+    },
+    {
+      "claimId": "claim:current:v2:power.peakAverage.30s",
+      "kind": "advanced",
+      "value": 224.8095122419807,
+      "unit": "W",
+      "text": "contiguous 30 s peak average power",
+      "confidence": "high",
+      "qualityStatus": "valid",
+      "displayValue": "225",
+      "displayUnit": "W",
+      "supports": [
+        "short_duration_power_peak"
+      ],
+      "prohibits": [
+        "ability_change",
+        "bridge_recording_gap"
+      ]
+    },
+    {
+      "claimId": "claim:current:v2:segment.cruise.cruise-0-498.span",
+      "kind": "advanced",
+      "value": 3021.0000000000005,
+      "unit": "s",
+      "confidence": "high",
+      "qualityStatus": "valid",
+      "displayValue": "50 分钟",
+      "displayUnit": "duration",
+      "supports": [
+        "cruise_segment"
+      ],
+      "prohibits": [
+        "ability_change",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:current:v2:segment.cruise.cruise-0-498.power.mean",
+      "kind": "advanced",
+      "value": 168.68054785197978,
+      "unit": "W",
+      "confidence": "high",
+      "qualityStatus": "valid",
+      "displayValue": "169",
+      "displayUnit": "W",
+      "supports": [
+        "cruise_power_observation"
+      ],
+      "prohibits": [
+        "stability_from_mean",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:current:v2:segment.cruise.cruise-1-3916.span",
+      "kind": "advanced",
+      "value": 914,
+      "unit": "s",
+      "confidence": "high",
+      "qualityStatus": "valid",
+      "displayValue": "15 分钟",
+      "displayUnit": "duration",
+      "supports": [
+        "cruise_segment"
+      ],
+      "prohibits": [
+        "ability_change",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:current:v2:segment.cruise.cruise-1-3916.power.mean",
+      "kind": "advanced",
+      "value": 124.9109249828167,
+      "unit": "W",
+      "confidence": "high",
+      "qualityStatus": "valid",
+      "displayValue": "125",
+      "displayUnit": "W",
+      "supports": [
+        "cruise_power_observation"
+      ],
+      "prohibits": [
+        "stability_from_mean",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:current:v2:segment.cruise.cruise-2-5478.span",
+      "kind": "advanced",
+      "value": 815,
+      "unit": "s",
+      "confidence": "high",
+      "qualityStatus": "valid",
+      "displayValue": "14 分钟",
+      "displayUnit": "duration",
+      "supports": [
+        "cruise_segment"
+      ],
+      "prohibits": [
+        "ability_change",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:current:v2:segment.cruise.cruise-2-5478.power.mean",
+      "kind": "advanced",
+      "value": 213.1390624795682,
+      "unit": "W",
+      "confidence": "high",
+      "qualityStatus": "valid",
+      "displayValue": "213",
+      "displayUnit": "W",
+      "supports": [
+        "cruise_power_observation"
+      ],
+      "prohibits": [
+        "stability_from_mean",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:current:v2:power.normalizedW",
+      "kind": "advanced",
+      "value": 182.72815204691722,
+      "unit": "W",
+      "confidence": "high",
+      "qualityStatus": "valid",
+      "displayValue": "183",
+      "displayUnit": "W",
+      "supports": [
+        "normalized_power_output"
+      ],
+      "prohibits": [
+        "if_without_ftp",
+        "tss_without_ftp",
+        "bridge_recording_gap"
+      ]
+    }
+  ],
+  "knowledge": [
+    {
+      "knowledgeId": "kb-b1-tss",
+      "citation": "Glossary of TrainingPeaks Metrics — Training Stress Score — TrainingPeaks (accessed 2026-10-05), https://trainingpeaks.com/learn/articles/glossary-of-trainingpeaks-metrics/",
+      "explanation": "训练压力分数（TSS，Training Stress Score）以“一小时恰好按 FTP 骑行 = 100 分”为基准，把一次骑行的时长与强度（归一化功率与强度系数）折算成单一数字。通常单次 <150 为轻度负荷、150-300 为中度、>300 后恢复需求显著上升。该数字只用于解释负荷量级，用户当次实际 TSS 须以骑行记录计算结果为准。",
+      "conditions": [
+        "功率数据完整的骑行记录",
+        "已具备可信 FTP 基准",
+        "strength:high"
+      ],
+      "conclusionStrength": "high",
+      "limitations": [
+        "TSS 是模型估算而非生理测量",
+        "数值含义依赖 FTP 基准的准确性"
+      ],
+      "safetyBoundaries": [],
+      "forbiddenFactKeys": [
+        "trainingLoad.tss",
+        "power.np",
+        "power.if",
+        "power.mean"
+      ]
+    },
+    {
+      "knowledgeId": "kb-b1-ftp",
+      "citation": "Thresholds 411 & Glossary of TrainingPeaks Metrics — Functional Threshold Power — TrainingPeaks (accessed 2026-10-05), https://www.trainingpeaks.com/learn/articles/thresholds-411/ 及术语表条目",
+      "explanation": "功能性阈值功率（FTP）指骑手约一小时时间内可持续维持的最高功率，是功率区间与负荷计算的锚点。常见测试协议包括 60 分钟全力或 20 分钟平均功率×0.95。知识只解释概念与测试方法；用户当前采用的 FTP 数值属于个人骑行事实，只能来自已验证的记录。",
+      "conditions": [
+        "功率数据完整的骑行记录",
+        "解读涉及强度区间或负荷计算时",
+        "strength:high"
+      ],
+      "conclusionStrength": "high",
+      "limitations": [
+        "20 分钟×0.95 为常用估算协议，个体误差可达数个百分点",
+        "FTP 随训练状态变化需定期复测"
+      ],
+      "safetyBoundaries": [],
+      "forbiddenFactKeys": [
+        "power.ftp",
+        "verifiedFtp",
+        "power.peak20",
+        "power.mean"
+      ]
+    },
+    {
+      "knowledgeId": "kb-b1-power-zones",
+      "citation": "Power Training Levels — Dr. Andrew Coggan — TrainingPeaks (2016（作者原文首发）), https://www.trainingpeaks.com/blog/power-training-levels/",
+      "explanation": "Coggan 七级功率区间以 FTP 为锚：Z1 主动恢复（<55% FTP）、Z2 耐力（56-75%）、Z3 节奏（76-90%）、Z4 阈值（91-105%）、Z5 VO₂max（106-120%）、Z6 无氧能力（121-150%）、Z7 神经肌功率（>150%）。解读功率分布时通常关注 Z2 占比（有氧基础）与 Z4 以上占比（高强度刺激），用户当次落在各区间的时间占比属于骑行事实。",
+      "conditions": [
+        "已具备 FTP 基准",
+        "功率数据完整",
+        "strength:high"
+      ],
+      "conclusionStrength": "high",
+      "limitations": [
+        "区间边界为百分比近似，个体生理转折点存在差异"
+      ],
+      "safetyBoundaries": [],
+      "forbiddenFactKeys": [
+        "power.zones",
+        "power.ftp",
+        "power.mean"
+      ]
+    }
+  ],
+  "questions": [
+    {
+      "dimensionId": "powerOutput",
+      "question": "What do power level, stability, peaks, and qualified segments show?",
+      "eligibility": "available",
+      "qualityStatus": "valid",
+      "claimIds": [
+        "claim:current:v2:timing.movingDurationS",
+        "claim:current:v2:power.mean",
+        "claim:current:v2:power.coefficientOfVariation",
+        "claim:current:v2:power.lastMinusFirst",
+        "claim:current:v2:power.peakAverage.10s",
+        "claim:current:v2:power.peakAverage.20s",
+        "claim:current:v2:power.peakAverage.30s",
+        "claim:current:v2:segment.cruise.cruise-0-498.span",
+        "claim:current:v2:segment.cruise.cruise-0-498.power.mean",
+        "claim:current:v2:segment.cruise.cruise-1-3916.span",
+        "claim:current:v2:segment.cruise.cruise-1-3916.power.mean",
+        "claim:current:v2:segment.cruise.cruise-2-5478.span",
+        "claim:current:v2:segment.cruise.cruise-2-5478.power.mean",
+        "claim:current:v2:power.normalizedW"
+      ],
+      "limitations": [
+        "power.weight:PROFILE_WEIGHT_MISSING",
+        "cruise:DEPENDENCY_UNAVAILABLE:speed",
+        "crossSensorAlignment:NO_COMMON_WINDOW"
+      ],
+      "supports": [
+        "current_ride_timing",
+        "power_level",
+        "power_stability",
+        "power_stage_comparison",
+        "short_duration_power_peak",
+        "cruise_segment",
+        "cruise_power_observation",
+        "normalized_power_output"
+      ],
+      "prohibits": [
+        "ability_change",
+        "causation",
+        "bridge_recording_gap",
+        "training_effect",
+        "stability_from_mean",
+        "causation_from_level",
+        "trend_beyond_current_ride",
+        "if_without_ftp",
+        "tss_without_ftp"
+      ],
+      "knowledgeIds": [
+        "kb-b1-tss",
+        "kb-b1-ftp",
+        "kb-b1-power-zones"
+      ],
+      "recommendationAnchorClaimIds": [
+        "claim:current:v2:timing.movingDurationS",
+        "claim:current:v2:power.mean",
+        "claim:current:v2:power.coefficientOfVariation",
+        "claim:current:v2:power.lastMinusFirst",
+        "claim:current:v2:power.peakAverage.10s",
+        "claim:current:v2:power.peakAverage.20s",
+        "claim:current:v2:power.peakAverage.30s",
+        "claim:current:v2:segment.cruise.cruise-0-498.span",
+        "claim:current:v2:segment.cruise.cruise-0-498.power.mean",
+        "claim:current:v2:segment.cruise.cruise-1-3916.span",
+        "claim:current:v2:segment.cruise.cruise-1-3916.power.mean",
+        "claim:current:v2:segment.cruise.cruise-2-5478.span",
+        "claim:current:v2:segment.cruise.cruise-2-5478.power.mean",
+        "claim:current:v2:power.normalizedW"
+      ]
+    }
+  ]
+}

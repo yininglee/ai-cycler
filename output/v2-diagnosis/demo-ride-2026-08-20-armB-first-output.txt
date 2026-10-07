@@ -1,0 +1,136 @@
+{
+  "schemaVersion": "ride-output-v2.2.0",
+  "label": {
+    "text": "31.1公里骑行，移动时长1小时2分钟",
+    "conclusionType": "fact",
+    "claimIds": ["claim:demo-ride-2026-08-20:v2:metric.distanceM", "claim:demo-ride-2026-08-20:v2:timing.movingDurationS"]
+  },
+  "overallAssessment": {
+    "text": "本次骑行距离31.1公里，移动时长1小时2分钟，平均速度约28.5公里/小时，平均心率约168次/分，整体强度较高；本次可用数据有限。",
+    "conclusionType": "fact",
+    "claimIds": ["claim:demo-ride-2026-08-20:v2:metric.distanceM", "claim:demo-ride-2026-08-20:v2:timing.movingDurationS", "claim:demo-ride-2026-08-20:v2:speed.mean", "claim:demo-ride-2026-08-20:v2:heart_rate.mean"]
+  },
+  "highlights": [
+    {
+      "text": "全程31.1公里，移动时长1小时2分钟，仅1次停车。",
+      "conclusionType": "fact",
+      "claimIds": ["claim:demo-ride-2026-08-20:v2:metric.distanceM", "claim:demo-ride-2026-08-20:v2:timing.movingDurationS", "claim:demo-ride-2026-08-20:v2:stops.count"]
+    },
+    {
+      "text": "心率Z4区间占比58%，骑行强度持续处于较高水平。",
+      "conclusionType": "fact",
+      "claimIds": ["claim:demo-ride-2026-08-20:v2:heartRate.zone.z4"]
+    }
+  ],
+  "dimensions": [
+    {
+      "dimensionId": "pacingExecution",
+      "assertions": [
+        {
+          "text": "本次骑行距离31.1公里，移动时长1小时2分钟，总时长1小时6分钟，途中停止1次。",
+          "conclusionType": "fact",
+          "claimIds": ["claim:demo-ride-2026-08-20:v2:metric.distanceM", "claim:demo-ride-2026-08-20:v2:timing.movingDurationS", "claim:demo-ride-2026-08-20:v2:metric.elapsedDurationS", "claim:demo-ride-2026-08-20:v2:stops.count"]
+        },
+        {
+          "text": "平均速度约28.5公里/小时（部分数据有限），末段速度比开始段高约3.6公里/小时，整体配速前低后高。",
+          "conclusionType": "interpretation",
+          "claimIds": ["claim:demo-ride-2026-08-20:v2:speed.mean", "claim:demo-ride-2026-08-20:v2:speed.lastMinusFirst"]
+        },
+        {
+          "text": "三个巡航段中，第二段速度27.96公里/小时低于第一段29.97公里/小时，但心率174高于第一段159，同时踏频88也高于第一段82，显示该段以更高心率维持相近速度。",
+          "conclusionType": "interpretation",
+          "claimIds": ["claim:demo-ride-2026-08-20:v2:segment.cruise.cruise-1-2102.speed.mean", "claim:demo-ride-2026-08-20:v2:segment.cruise.cruise-0-637.speed.mean", "claim:demo-ride-2026-08-20:v2:segment.cruise.cruise-1-2102.heart_rate.mean", "claim:demo-ride-2026-08-20:v2:segment.cruise.cruise-0-637.heart_rate.mean", "claim:demo-ride-2026-08-20:v2:segment.cruise.cruise-1-2102.cadence.mean", "claim:demo-ride-2026-08-20:v2:segment.cruise.cruise-0-637.cadence.mean"]
+        },
+        {
+          "text": "地形上以平坦路为主，趋势平坦距离29公里，几乎没有爬升（爬升距离0公里），下坡距离1.6公里。",
+          "conclusionType": "fact",
+          "claimIds": ["claim:demo-ride-2026-08-20:v2:terrain.trendFlatDistanceM", "claim:demo-ride-2026-08-20:v2:terrain.trendClimbDistanceM", "claim:demo-ride-2026-08-20:v2:terrain.trendDescentDistanceM"]
+        }
+      ]
+    },
+    {
+      "dimensionId": "heartRateLoad",
+      "assertions": [
+        {
+          "text": "平均心率约168次/分（部分数据有限），末段心率比开始段高约26次/分。",
+          "conclusionType": "fact",
+          "claimIds": ["claim:demo-ride-2026-08-20:v2:heart_rate.mean", "claim:demo-ride-2026-08-20:v2:heart_rate.lastMinusFirst"]
+        },
+        {
+          "text": "心率区间分布中，Z4占58%、Z5占21%，表明本次骑行大部分时间处于较高心率区间。",
+          "conclusionType": "interpretation",
+          "claimIds": ["claim:demo-ride-2026-08-20:v2:heartRate.zone.z4", "claim:demo-ride-2026-08-20:v2:heartRate.zone.z5"]
+        },
+        {
+          "text": "速度与心率在同窗口内同步覆盖率为100%，两者变化高度同步。",
+          "conclusionType": "interpretation",
+          "claimIds": ["claim:demo-ride-2026-08-20:v2:relation.fixed.speed-heart_rate.aggregate"]
+        },
+        {
+          "text": "最大心率200次/分，作为心率区间基准。",
+          "conclusionType": "fact",
+          "claimIds": ["claim:demo-ride-2026-08-20:v2:profile.maxHeartRateBpm"]
+        }
+      ]
+    },
+    {
+      "dimensionId": "cadenceStrategy",
+      "assertions": [
+        {
+          "text": "平均踏频约79转/分（部分数据有限），末段踏频比开始段高约14转/分。",
+          "conclusionType": "fact",
+          "claimIds": ["claim:demo-ride-2026-08-20:v2:cadence.mean", "claim:demo-ride-2026-08-20:v2:cadence.lastMinusFirst"]
+        },
+        {
+          "text": "踏频区间分布中，耐力区占48%，高区占33%，零区占6%。",
+          "conclusionType": "fact",
+          "claimIds": ["claim:demo-ride-2026-08-20:v2:cadence.zone.endurance", "claim:demo-ride-2026-08-20:v2:cadence.zone.high", "claim:demo-ride-2026-08-20:v2:cadence.zone.zero"]
+        },
+        {
+          "text": "三个巡航段踏频分别为82、88、87转/分，后两段略高于第一段，整体处于中高踏频范围。",
+          "conclusionType": "interpretation",
+          "claimIds": ["claim:demo-ride-2026-08-20:v2:segment.cruise.cruise-0-637.cadence.mean", "claim:demo-ride-2026-08-20:v2:segment.cruise.cruise-1-2102.cadence.mean", "claim:demo-ride-2026-08-20:v2:segment.cruise.cruise-2-2334.cadence.mean"]
+        },
+        {
+          "text": "下坡段踏频49转/分，明显低于巡航段，与下坡速度20.25公里/小时同时出现。",
+          "conclusionType": "interpretation",
+          "claimIds": ["claim:demo-ride-2026-08-20:v2:segment.terrain.terrain-descent-412.8-2022.7.cadence.mean", "claim:demo-ride-2026-08-20:v2:segment.terrain.terrain-descent-412.8-2022.7.speed.mean"]
+        }
+      ]
+    },
+    {
+      "dimensionId": "crossSensorCoordination",
+      "assertions": [
+        {
+          "text": "速度与心率在123个窗口中的同窗口同步覆盖率为100%，代表窗口覆盖率分别为100%、100%、70%。",
+          "conclusionType": "fact",
+          "claimIds": ["claim:demo-ride-2026-08-20:v2:relation.fixed.speed-heart_rate.aggregate", "claim:demo-ride-2026-08-20:v2:relation.fixed.speed-heart_rate.rep.2", "claim:demo-ride-2026-08-20:v2:relation.fixed.speed-heart_rate.rep.3", "claim:demo-ride-2026-08-20:v2:relation.fixed.speed-heart_rate.rep.1"]
+        },
+        {
+          "text": "速度与心率的同步覆盖率高，说明两者在时间上紧密关联，但无法判断先后关系。",
+          "conclusionType": "interpretation",
+          "claimIds": ["claim:demo-ride-2026-08-20:v2:relation.fixed.speed-heart_rate.aggregate"]
+        }
+      ]
+    }
+  ],
+  "suggestions": [
+    {
+      "text": "下次骑行可尝试将踏频维持在80-90转/分，以优化骑行经济性。",
+      "conclusionType": "suggestion",
+      "claimIds": ["claim:demo-ride-2026-08-20:v2:cadence.zone.high"],
+      "riskNote": "需结合自身感受和心率反馈调整，避免刻意维持导致心率波动。"
+    },
+    {
+      "text": "本次心率Z5区间占比21%，骑行后注意恢复，未来训练可适当控制高强度区间时长。",
+      "conclusionType": "suggestion",
+      "claimIds": ["claim:demo-ride-2026-08-20:v2:heartRate.zone.z5"],
+      "riskNote": "恢复建议仅为关注项，不代表当前已恢复。"
+    }
+  ],
+  "limitations": [
+    "speedStability:CONTINUITY_GAP",
+    "relation.fixed.speed-heart_rate.aggregate:AGGREGATED_FROM_123_WINDOWS",
+    "power:SERIES_MISSING"
+  ]
+}

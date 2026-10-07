@@ -1,0 +1,4665 @@
+{
+  "schemaVersion": "ride-model-input-v2.3.0",
+  "rulesVersion": "ride-model-input-v2.2",
+  "evidenceRulesVersion": "ride-evidence-rules-v2.1.0",
+  "evidenceSchemaVersion": "2.0.0",
+  "rideId": "demo-ride-2026-07-22",
+  "analysisRunId": "run-export-demo",
+  "userScope": "user-demo",
+  "privacyFlags": [
+    "raw_track_excluded",
+    "precise_coordinates_excluded",
+    "source_filename_excluded",
+    "untrusted_free_text_excluded"
+  ],
+  "claims": [
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:timing.movingDurationS",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "timing.movingDurationS",
+      "value": 23997,
+      "unit": "s",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:capability-claims",
+          "version": "ride-capability-claims-v2.6",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:v2:timing-moving-duration"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:v2:timing-moving-duration"
+      ],
+      "formulaVersion": "ride-timing-rules-v0.2",
+      "displayValue": "6 小时 40 分钟",
+      "displayUnit": "duration",
+      "supports": [
+        "current_ride_timing"
+      ],
+      "prohibits": [
+        "training_effect"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:stops.count",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "stops.count",
+      "value": 14,
+      "unit": "count",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:temporal",
+          "version": "ride-temporal-v2.3",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:v2:temporal-axis"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:v2:temporal-axis"
+      ],
+      "formulaVersion": "ride-temporal-v2.3",
+      "displayValue": "14",
+      "displayUnit": "count",
+      "supports": [
+        "stop_observation"
+      ],
+      "prohibits": [
+        "stop_cause"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:metric.distanceM",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "metric.distanceM",
+      "value": 161831.22,
+      "unit": "m",
+      "confidence": "high",
+      "provenance": "recorded",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:activity",
+          "version": "0.2",
+          "evidenceIds": [
+            "demo-ride-2026-07-22:fit:session:distance"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "demo-ride-2026-07-22:fit:session:distance"
+      ],
+      "displayValue": "161.8",
+      "displayUnit": "km",
+      "supports": [
+        "ride_distance"
+      ],
+      "prohibits": [
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:metric.elapsedDurationS",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "metric.elapsedDurationS",
+      "value": 25297,
+      "unit": "s",
+      "text": "elapsed duration including stops",
+      "confidence": "high",
+      "provenance": "recorded",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:activity",
+          "version": "0.2",
+          "evidenceIds": [
+            "demo-ride-2026-07-22:fit:session:elapsed-time"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "demo-ride-2026-07-22:fit:session:elapsed-time"
+      ],
+      "displayValue": "7 小时 2 分钟",
+      "displayUnit": "duration",
+      "supports": [
+        "current_ride_timing"
+      ],
+      "prohibits": [
+        "training_effect"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:speed.mean",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "feature",
+      "key": "speed.mean",
+      "value": 6.684022017409083,
+      "unit": "m/s",
+      "text": "speed weighted mean",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:temporal",
+          "version": "ride-temporal-v2.3",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:series:speed"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:series:speed"
+      ],
+      "formulaVersion": "ride-temporal-v2.3",
+      "displayValue": "24.06",
+      "displayUnit": "km/h",
+      "supports": [
+        "speed_level"
+      ],
+      "prohibits": [
+        "stability_from_mean",
+        "causation_from_level"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:speed.coefficientOfVariation",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "feature",
+      "key": "speed.coefficientOfVariation",
+      "value": 0.4918191778986732,
+      "unit": "ratio",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:temporal",
+          "version": "ride-temporal-v2.3",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:series:speed"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:series:speed"
+      ],
+      "formulaVersion": "ride-temporal-v2.3",
+      "displayValue": "49.2",
+      "displayUnit": "%",
+      "supports": [
+        "speed_stability"
+      ],
+      "prohibits": [
+        "ability_change",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:speed.lastMinusFirst",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "feature",
+      "key": "speed.lastMinusFirst",
+      "value": 0.7146064820255473,
+      "unit": "m/s",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:temporal",
+          "version": "ride-temporal-v2.3",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:series:speed"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:series:speed"
+      ],
+      "formulaVersion": "ride-temporal-v2.3",
+      "displayValue": "2.57",
+      "displayUnit": "km/h",
+      "supports": [
+        "speed_stage_comparison"
+      ],
+      "prohibits": [
+        "trend_beyond_current_ride",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:segment.cruise.cruise-0-23950.span",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "segment.cruise.cruise-0-23950.span",
+      "value": 129,
+      "unit": "s",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:windows",
+          "version": "ride-temporal-windows-v2.5",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:segment:cruise-0-23950"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:segment:cruise-0-23950"
+      ],
+      "formulaVersion": "ride-timing-rules-v0.2",
+      "displayValue": "2 分钟",
+      "displayUnit": "duration",
+      "supports": [
+        "cruise_segment"
+      ],
+      "prohibits": [
+        "ability_change",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:segment.cruise.cruise-0-23950.speed.mean",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "segment.cruise.cruise-0-23950.speed.mean",
+      "value": 8.1460465116279,
+      "unit": "m/s",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:windows",
+          "version": "ride-temporal-windows-v2.5",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:segment:cruise-0-23950"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:segment:cruise-0-23950"
+      ],
+      "formulaVersion": "ride-capability-claims-v2.6",
+      "displayValue": "29.33",
+      "displayUnit": "km/h",
+      "supports": [
+        "cruise_speed_observation"
+      ],
+      "prohibits": [
+        "stability_from_mean",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:segment.cruise.cruise-0-23950.power.mean",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "segment.cruise.cruise-0-23950.power.mean",
+      "value": 143.1627906976744,
+      "unit": "W",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:windows",
+          "version": "ride-temporal-windows-v2.5",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:segment:cruise-0-23950"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:segment:cruise-0-23950"
+      ],
+      "formulaVersion": "ride-capability-claims-v2.6",
+      "displayValue": "143",
+      "displayUnit": "W",
+      "supports": [
+        "cruise_power_observation"
+      ],
+      "prohibits": [
+        "stability_from_mean",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:segment.cruise.cruise-1-24179.span",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "segment.cruise.cruise-1-24179.span",
+      "value": 140,
+      "unit": "s",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:windows",
+          "version": "ride-temporal-windows-v2.5",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:segment:cruise-1-24179"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:segment:cruise-1-24179"
+      ],
+      "formulaVersion": "ride-timing-rules-v0.2",
+      "displayValue": "2 分钟",
+      "displayUnit": "duration",
+      "supports": [
+        "cruise_segment"
+      ],
+      "prohibits": [
+        "ability_change",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:segment.cruise.cruise-1-24179.speed.mean",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "segment.cruise.cruise-1-24179.speed.mean",
+      "value": 7.415357142857137,
+      "unit": "m/s",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:windows",
+          "version": "ride-temporal-windows-v2.5",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:segment:cruise-1-24179"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:segment:cruise-1-24179"
+      ],
+      "formulaVersion": "ride-capability-claims-v2.6",
+      "displayValue": "26.7",
+      "displayUnit": "km/h",
+      "supports": [
+        "cruise_speed_observation"
+      ],
+      "prohibits": [
+        "stability_from_mean",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:segment.cruise.cruise-1-24179.power.mean",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "segment.cruise.cruise-1-24179.power.mean",
+      "value": 137.03571428571428,
+      "unit": "W",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:windows",
+          "version": "ride-temporal-windows-v2.5",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:segment:cruise-1-24179"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:segment:cruise-1-24179"
+      ],
+      "formulaVersion": "ride-capability-claims-v2.6",
+      "displayValue": "137",
+      "displayUnit": "W",
+      "supports": [
+        "cruise_power_observation"
+      ],
+      "prohibits": [
+        "stability_from_mean",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-flat-7560.97-11010.4.span",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "segment.terrain.terrain-flat-7560.97-11010.4.span",
+      "value": 330,
+      "unit": "s",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:windows",
+          "version": "ride-temporal-windows-v2.5",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:segment:terrain-flat-7560.97-11010.4"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:segment:terrain-flat-7560.97-11010.4"
+      ],
+      "formulaVersion": "ride-route-shape-rules-v0.2",
+      "displayValue": "6 分钟",
+      "displayUnit": "duration",
+      "supports": [
+        "terrain_segment"
+      ],
+      "prohibits": [
+        "ability_change",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-flat-7560.97-11010.4.speed.mean",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "segment.terrain.terrain-flat-7560.97-11010.4.speed.mean",
+      "value": 10.472634920634926,
+      "unit": "m/s",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:windows",
+          "version": "ride-temporal-windows-v2.5",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:segment:terrain-flat-7560.97-11010.4"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:segment:terrain-flat-7560.97-11010.4"
+      ],
+      "formulaVersion": "ride-capability-claims-v2.6",
+      "displayValue": "37.7",
+      "displayUnit": "km/h",
+      "supports": [
+        "terrain_speed_observation"
+      ],
+      "prohibits": [
+        "stability_from_mean",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-flat-7560.97-11010.4.power.mean",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "segment.terrain.terrain-flat-7560.97-11010.4.power.mean",
+      "value": 186.3936507936508,
+      "unit": "W",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:windows",
+          "version": "ride-temporal-windows-v2.5",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:segment:terrain-flat-7560.97-11010.4"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:segment:terrain-flat-7560.97-11010.4"
+      ],
+      "formulaVersion": "ride-capability-claims-v2.6",
+      "displayValue": "186",
+      "displayUnit": "W",
+      "supports": [
+        "terrain_power_observation"
+      ],
+      "prohibits": [
+        "stability_from_mean",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-climb-11010.4-21690.93.span",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "segment.terrain.terrain-climb-11010.4-21690.93.span",
+      "value": 2082,
+      "unit": "s",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:windows",
+          "version": "ride-temporal-windows-v2.5",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:segment:terrain-climb-11010.4-21690.93"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:segment:terrain-climb-11010.4-21690.93"
+      ],
+      "formulaVersion": "ride-route-shape-rules-v0.2",
+      "displayValue": "35 分钟",
+      "displayUnit": "duration",
+      "supports": [
+        "terrain_segment"
+      ],
+      "prohibits": [
+        "ability_change",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-climb-11010.4-21690.93.speed.mean",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "segment.terrain.terrain-climb-11010.4-21690.93.speed.mean",
+      "value": 5.163494461228596,
+      "unit": "m/s",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:windows",
+          "version": "ride-temporal-windows-v2.5",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:segment:terrain-climb-11010.4-21690.93"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:segment:terrain-climb-11010.4-21690.93"
+      ],
+      "formulaVersion": "ride-capability-claims-v2.6",
+      "displayValue": "18.59",
+      "displayUnit": "km/h",
+      "supports": [
+        "terrain_speed_observation"
+      ],
+      "prohibits": [
+        "stability_from_mean",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-climb-11010.4-21690.93.power.mean",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "segment.terrain.terrain-climb-11010.4-21690.93.power.mean",
+      "value": 179.9949647532729,
+      "unit": "W",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:windows",
+          "version": "ride-temporal-windows-v2.5",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:segment:terrain-climb-11010.4-21690.93"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:segment:terrain-climb-11010.4-21690.93"
+      ],
+      "formulaVersion": "ride-capability-claims-v2.6",
+      "displayValue": "180",
+      "displayUnit": "W",
+      "supports": [
+        "terrain_power_observation"
+      ],
+      "prohibits": [
+        "stability_from_mean",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-climb-37935.62-46050.06.span",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "segment.terrain.terrain-climb-37935.62-46050.06.span",
+      "value": 2275,
+      "unit": "s",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:windows",
+          "version": "ride-temporal-windows-v2.5",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:segment:terrain-climb-37935.62-46050.06"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:segment:terrain-climb-37935.62-46050.06"
+      ],
+      "formulaVersion": "ride-route-shape-rules-v0.2",
+      "displayValue": "38 分钟",
+      "displayUnit": "duration",
+      "supports": [
+        "terrain_segment"
+      ],
+      "prohibits": [
+        "ability_change",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-climb-37935.62-46050.06.speed.mean",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "segment.terrain.terrain-climb-37935.62-46050.06.speed.mean",
+      "value": 3.6824693106704447,
+      "unit": "m/s",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:windows",
+          "version": "ride-temporal-windows-v2.5",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:segment:terrain-climb-37935.62-46050.06"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:segment:terrain-climb-37935.62-46050.06"
+      ],
+      "formulaVersion": "ride-capability-claims-v2.6",
+      "displayValue": "13.26",
+      "displayUnit": "km/h",
+      "supports": [
+        "terrain_speed_observation"
+      ],
+      "prohibits": [
+        "stability_from_mean",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-climb-37935.62-46050.06.power.mean",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "segment.terrain.terrain-climb-37935.62-46050.06.power.mean",
+      "value": 185.22237960339945,
+      "unit": "W",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:windows",
+          "version": "ride-temporal-windows-v2.5",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:segment:terrain-climb-37935.62-46050.06"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:segment:terrain-climb-37935.62-46050.06"
+      ],
+      "formulaVersion": "ride-capability-claims-v2.6",
+      "displayValue": "185",
+      "displayUnit": "W",
+      "supports": [
+        "terrain_power_observation"
+      ],
+      "prohibits": [
+        "stability_from_mean",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-descent-62593.25-70758.08.span",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "segment.terrain.terrain-descent-62593.25-70758.08.span",
+      "value": 719,
+      "unit": "s",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:windows",
+          "version": "ride-temporal-windows-v2.5",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:segment:terrain-descent-62593.25-70758.08"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:segment:terrain-descent-62593.25-70758.08"
+      ],
+      "formulaVersion": "ride-route-shape-rules-v0.2",
+      "displayValue": "12 分钟",
+      "displayUnit": "duration",
+      "supports": [
+        "terrain_segment"
+      ],
+      "prohibits": [
+        "ability_change",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-descent-62593.25-70758.08.speed.mean",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "segment.terrain.terrain-descent-62593.25-70758.08.speed.mean",
+      "value": 11.34594326241134,
+      "unit": "m/s",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:windows",
+          "version": "ride-temporal-windows-v2.5",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:segment:terrain-descent-62593.25-70758.08"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:segment:terrain-descent-62593.25-70758.08"
+      ],
+      "formulaVersion": "ride-capability-claims-v2.6",
+      "displayValue": "40.85",
+      "displayUnit": "km/h",
+      "supports": [
+        "terrain_speed_observation"
+      ],
+      "prohibits": [
+        "stability_from_mean",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-descent-62593.25-70758.08.power.mean",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "segment.terrain.terrain-descent-62593.25-70758.08.power.mean",
+      "value": 86.49645390070921,
+      "unit": "W",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:windows",
+          "version": "ride-temporal-windows-v2.5",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:segment:terrain-descent-62593.25-70758.08"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:segment:terrain-descent-62593.25-70758.08"
+      ],
+      "formulaVersion": "ride-capability-claims-v2.6",
+      "displayValue": "86",
+      "displayUnit": "W",
+      "supports": [
+        "terrain_power_observation"
+      ],
+      "prohibits": [
+        "stability_from_mean",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-descent-116056.34-124083.91.span",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "segment.terrain.terrain-descent-116056.34-124083.91.span",
+      "value": 703,
+      "unit": "s",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:windows",
+          "version": "ride-temporal-windows-v2.5",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:segment:terrain-descent-116056.34-124083.91"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:segment:terrain-descent-116056.34-124083.91"
+      ],
+      "formulaVersion": "ride-route-shape-rules-v0.2",
+      "displayValue": "12 分钟",
+      "displayUnit": "duration",
+      "supports": [
+        "terrain_segment"
+      ],
+      "prohibits": [
+        "ability_change",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-descent-116056.34-124083.91.speed.mean",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "segment.terrain.terrain-descent-116056.34-124083.91.speed.mean",
+      "value": 11.356618287373001,
+      "unit": "m/s",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:windows",
+          "version": "ride-temporal-windows-v2.5",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:segment:terrain-descent-116056.34-124083.91"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:segment:terrain-descent-116056.34-124083.91"
+      ],
+      "formulaVersion": "ride-capability-claims-v2.6",
+      "displayValue": "40.88",
+      "displayUnit": "km/h",
+      "supports": [
+        "terrain_speed_observation"
+      ],
+      "prohibits": [
+        "stability_from_mean",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-descent-116056.34-124083.91.power.mean",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "segment.terrain.terrain-descent-116056.34-124083.91.power.mean",
+      "value": 20.949201741654573,
+      "unit": "W",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:windows",
+          "version": "ride-temporal-windows-v2.5",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:segment:terrain-descent-116056.34-124083.91"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:segment:terrain-descent-116056.34-124083.91"
+      ],
+      "formulaVersion": "ride-capability-claims-v2.6",
+      "displayValue": "21",
+      "displayUnit": "W",
+      "supports": [
+        "terrain_power_observation"
+      ],
+      "prohibits": [
+        "stability_from_mean",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-climb-133730.43-140425.71.span",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "segment.terrain.terrain-climb-133730.43-140425.71.span",
+      "value": 1352,
+      "unit": "s",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:windows",
+          "version": "ride-temporal-windows-v2.5",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:segment:terrain-climb-133730.43-140425.71"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:segment:terrain-climb-133730.43-140425.71"
+      ],
+      "formulaVersion": "ride-route-shape-rules-v0.2",
+      "displayValue": "23 分钟",
+      "displayUnit": "duration",
+      "supports": [
+        "terrain_segment"
+      ],
+      "prohibits": [
+        "ability_change",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-climb-133730.43-140425.71.speed.mean",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "segment.terrain.terrain-climb-133730.43-140425.71.speed.mean",
+      "value": 4.906967455621307,
+      "unit": "m/s",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:windows",
+          "version": "ride-temporal-windows-v2.5",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:segment:terrain-climb-133730.43-140425.71"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:segment:terrain-climb-133730.43-140425.71"
+      ],
+      "formulaVersion": "ride-capability-claims-v2.6",
+      "displayValue": "17.67",
+      "displayUnit": "km/h",
+      "supports": [
+        "terrain_speed_observation"
+      ],
+      "prohibits": [
+        "stability_from_mean",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-climb-133730.43-140425.71.power.mean",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "segment.terrain.terrain-climb-133730.43-140425.71.power.mean",
+      "value": 156.51701183431953,
+      "unit": "W",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:windows",
+          "version": "ride-temporal-windows-v2.5",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:segment:terrain-climb-133730.43-140425.71"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:segment:terrain-climb-133730.43-140425.71"
+      ],
+      "formulaVersion": "ride-capability-claims-v2.6",
+      "displayValue": "157",
+      "displayUnit": "W",
+      "supports": [
+        "terrain_power_observation"
+      ],
+      "prohibits": [
+        "stability_from_mean",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-descent-140803.7-150961.19.span",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "segment.terrain.terrain-descent-140803.7-150961.19.span",
+      "value": 896,
+      "unit": "s",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:windows",
+          "version": "ride-temporal-windows-v2.5",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:segment:terrain-descent-140803.7-150961.19"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:segment:terrain-descent-140803.7-150961.19"
+      ],
+      "formulaVersion": "ride-route-shape-rules-v0.2",
+      "displayValue": "15 分钟",
+      "displayUnit": "duration",
+      "supports": [
+        "terrain_segment"
+      ],
+      "prohibits": [
+        "ability_change",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-descent-140803.7-150961.19.speed.mean",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "segment.terrain.terrain-descent-140803.7-150961.19.speed.mean",
+      "value": 11.349841269841255,
+      "unit": "m/s",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:windows",
+          "version": "ride-temporal-windows-v2.5",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:segment:terrain-descent-140803.7-150961.19"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:segment:terrain-descent-140803.7-150961.19"
+      ],
+      "formulaVersion": "ride-capability-claims-v2.6",
+      "displayValue": "40.86",
+      "displayUnit": "km/h",
+      "supports": [
+        "terrain_speed_observation"
+      ],
+      "prohibits": [
+        "stability_from_mean",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-descent-140803.7-150961.19.power.mean",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "segment.terrain.terrain-descent-140803.7-150961.19.power.mean",
+      "value": 39.56575963718821,
+      "unit": "W",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:windows",
+          "version": "ride-temporal-windows-v2.5",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:segment:terrain-descent-140803.7-150961.19"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:segment:terrain-descent-140803.7-150961.19"
+      ],
+      "formulaVersion": "ride-capability-claims-v2.6",
+      "displayValue": "40",
+      "displayUnit": "W",
+      "supports": [
+        "terrain_power_observation"
+      ],
+      "prohibits": [
+        "stability_from_mean",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-flat-150961.19-152174.83.span",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "segment.terrain.terrain-flat-150961.19-152174.83.span",
+      "value": 150,
+      "unit": "s",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:windows",
+          "version": "ride-temporal-windows-v2.5",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:segment:terrain-flat-150961.19-152174.83"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:segment:terrain-flat-150961.19-152174.83"
+      ],
+      "formulaVersion": "ride-route-shape-rules-v0.2",
+      "displayValue": "3 分钟",
+      "displayUnit": "duration",
+      "supports": [
+        "terrain_segment"
+      ],
+      "prohibits": [
+        "ability_change",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-flat-150961.19-152174.83.speed.mean",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "segment.terrain.terrain-flat-150961.19-152174.83.speed.mean",
+      "value": 8.100599999999991,
+      "unit": "m/s",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:windows",
+          "version": "ride-temporal-windows-v2.5",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:segment:terrain-flat-150961.19-152174.83"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:segment:terrain-flat-150961.19-152174.83"
+      ],
+      "formulaVersion": "ride-capability-claims-v2.6",
+      "displayValue": "29.16",
+      "displayUnit": "km/h",
+      "supports": [
+        "terrain_speed_observation"
+      ],
+      "prohibits": [
+        "stability_from_mean",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-flat-150961.19-152174.83.power.mean",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "segment.terrain.terrain-flat-150961.19-152174.83.power.mean",
+      "value": 140.16666666666666,
+      "unit": "W",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:windows",
+          "version": "ride-temporal-windows-v2.5",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:segment:terrain-flat-150961.19-152174.83"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:segment:terrain-flat-150961.19-152174.83"
+      ],
+      "formulaVersion": "ride-capability-claims-v2.6",
+      "displayValue": "140",
+      "displayUnit": "W",
+      "supports": [
+        "terrain_power_observation"
+      ],
+      "prohibits": [
+        "stability_from_mean",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-flat-157015.68-158431.06.span",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "segment.terrain.terrain-flat-157015.68-158431.06.span",
+      "value": 174,
+      "unit": "s",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:windows",
+          "version": "ride-temporal-windows-v2.5",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:segment:terrain-flat-157015.68-158431.06"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:segment:terrain-flat-157015.68-158431.06"
+      ],
+      "formulaVersion": "ride-route-shape-rules-v0.2",
+      "displayValue": "3 分钟",
+      "displayUnit": "duration",
+      "supports": [
+        "terrain_segment"
+      ],
+      "prohibits": [
+        "ability_change",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-flat-157015.68-158431.06.speed.mean",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "segment.terrain.terrain-flat-157015.68-158431.06.speed.mean",
+      "value": 8.146034482758616,
+      "unit": "m/s",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:windows",
+          "version": "ride-temporal-windows-v2.5",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:segment:terrain-flat-157015.68-158431.06"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:segment:terrain-flat-157015.68-158431.06"
+      ],
+      "formulaVersion": "ride-capability-claims-v2.6",
+      "displayValue": "29.33",
+      "displayUnit": "km/h",
+      "supports": [
+        "terrain_speed_observation"
+      ],
+      "prohibits": [
+        "stability_from_mean",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-flat-157015.68-158431.06.power.mean",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "segment.terrain.terrain-flat-157015.68-158431.06.power.mean",
+      "value": 126.41954022988506,
+      "unit": "W",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:windows",
+          "version": "ride-temporal-windows-v2.5",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:segment:terrain-flat-157015.68-158431.06"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:segment:terrain-flat-157015.68-158431.06"
+      ],
+      "formulaVersion": "ride-capability-claims-v2.6",
+      "displayValue": "126",
+      "displayUnit": "W",
+      "supports": [
+        "terrain_power_observation"
+      ],
+      "prohibits": [
+        "stability_from_mean",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:terrain.trendClimbDistanceM",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "terrain.trendClimbDistanceM",
+      "value": 70159.58999999997,
+      "unit": "m",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:windows",
+          "version": "ride-temporal-windows-v2.5",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:route-shape:ride-route-shape-rules-v0.2"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:route-shape:ride-route-shape-rules-v0.2"
+      ],
+      "formulaVersion": "ride-route-shape-rules-v0.2",
+      "displayValue": "70.2",
+      "displayUnit": "km",
+      "supports": [
+        "terrain_segment"
+      ],
+      "prohibits": [
+        "ability_change",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:terrain.trendFlatDistanceM",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "terrain.trendFlatDistanceM",
+      "value": 16069.46000000004,
+      "unit": "m",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:windows",
+          "version": "ride-temporal-windows-v2.5",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:route-shape:ride-route-shape-rules-v0.2"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:route-shape:ride-route-shape-rules-v0.2"
+      ],
+      "formulaVersion": "ride-route-shape-rules-v0.2",
+      "displayValue": "16.1",
+      "displayUnit": "km",
+      "supports": [
+        "terrain_segment"
+      ],
+      "prohibits": [
+        "ability_change",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:terrain.trendDescentDistanceM",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "terrain.trendDescentDistanceM",
+      "value": 73297.89999999998,
+      "unit": "m",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:windows",
+          "version": "ride-temporal-windows-v2.5",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:route-shape:ride-route-shape-rules-v0.2"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:route-shape:ride-route-shape-rules-v0.2"
+      ],
+      "formulaVersion": "ride-route-shape-rules-v0.2",
+      "displayValue": "73.3",
+      "displayUnit": "km",
+      "supports": [
+        "terrain_segment"
+      ],
+      "prohibits": [
+        "ability_change",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:terrain.localClimbDistanceM",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "terrain.localClimbDistanceM",
+      "value": 52245.32000000007,
+      "unit": "m",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:windows",
+          "version": "ride-temporal-windows-v2.5",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:route-shape:ride-route-shape-rules-v0.2"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:route-shape:ride-route-shape-rules-v0.2"
+      ],
+      "formulaVersion": "ride-route-shape-rules-v0.2",
+      "displayValue": "52.2",
+      "displayUnit": "km",
+      "supports": [
+        "terrain_segment"
+      ],
+      "prohibits": [
+        "ability_change",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:terrain.localFlatDistanceM",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "terrain.localFlatDistanceM",
+      "value": 53245.969999999834,
+      "unit": "m",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:windows",
+          "version": "ride-temporal-windows-v2.5",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:route-shape:ride-route-shape-rules-v0.2"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:route-shape:ride-route-shape-rules-v0.2"
+      ],
+      "formulaVersion": "ride-route-shape-rules-v0.2",
+      "displayValue": "53.2",
+      "displayUnit": "km",
+      "supports": [
+        "terrain_segment"
+      ],
+      "prohibits": [
+        "ability_change",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:terrain.localDescentDistanceM",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "terrain.localDescentDistanceM",
+      "value": 54273.80000000011,
+      "unit": "m",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:windows",
+          "version": "ride-temporal-windows-v2.5",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:route-shape:ride-route-shape-rules-v0.2"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:route-shape:ride-route-shape-rules-v0.2"
+      ],
+      "formulaVersion": "ride-route-shape-rules-v0.2",
+      "displayValue": "54.3",
+      "displayUnit": "km",
+      "supports": [
+        "terrain_segment"
+      ],
+      "prohibits": [
+        "ability_change",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:terrain.classifiedCoverageRatio",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "terrain.classifiedCoverageRatio",
+      "value": 0.9985155242155115,
+      "unit": "ratio",
+      "text": "share of moving distance with a classified terrain type",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:windows",
+          "version": "ride-temporal-windows-v2.5",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:route-shape:ride-route-shape-rules-v0.2"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:route-shape:ride-route-shape-rules-v0.2"
+      ],
+      "formulaVersion": "ride-route-shape-rules-v0.2",
+      "displayValue": "100",
+      "displayUnit": "%",
+      "supports": [
+        "terrain_segment"
+      ],
+      "prohibits": [
+        "ability_change",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:terrain.climbRunCount",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "terrain.climbRunCount",
+      "value": 24,
+      "unit": "count",
+      "text": "24 merged climb terrain runs; 3 longest shown as representative segments",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:windows",
+          "version": "ride-temporal-windows-v2.5",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:route-shape:ride-route-shape-rules-v0.2"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:route-shape:ride-route-shape-rules-v0.2"
+      ],
+      "formulaVersion": "ride-route-shape-rules-v0.2",
+      "displayValue": "24",
+      "displayUnit": "count",
+      "aggregatedFromCount": 24,
+      "supports": [
+        "terrain_segment"
+      ],
+      "prohibits": [
+        "ability_change",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:terrain.flatRunCount",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "terrain.flatRunCount",
+      "value": 41,
+      "unit": "count",
+      "text": "41 merged flat terrain runs; 3 longest shown as representative segments",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:windows",
+          "version": "ride-temporal-windows-v2.5",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:route-shape:ride-route-shape-rules-v0.2"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:route-shape:ride-route-shape-rules-v0.2"
+      ],
+      "formulaVersion": "ride-route-shape-rules-v0.2",
+      "displayValue": "41",
+      "displayUnit": "count",
+      "aggregatedFromCount": 41,
+      "supports": [
+        "terrain_segment"
+      ],
+      "prohibits": [
+        "ability_change",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:terrain.descentRunCount",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "terrain.descentRunCount",
+      "value": 22,
+      "unit": "count",
+      "text": "22 merged descent terrain runs; 3 longest shown as representative segments",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:windows",
+          "version": "ride-temporal-windows-v2.5",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:route-shape:ride-route-shape-rules-v0.2"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:route-shape:ride-route-shape-rules-v0.2"
+      ],
+      "formulaVersion": "ride-route-shape-rules-v0.2",
+      "displayValue": "22",
+      "displayUnit": "count",
+      "aggregatedFromCount": 22,
+      "supports": [
+        "terrain_segment"
+      ],
+      "prohibits": [
+        "ability_change",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:metric.elevationGainM",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "metric.elevationGainM",
+      "value": 2924,
+      "unit": "m",
+      "confidence": "high",
+      "provenance": "recorded",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:activity",
+          "version": "0.2",
+          "evidenceIds": [
+            "demo-ride-2026-07-22:fit:session:ascent"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "demo-ride-2026-07-22:fit:session:ascent"
+      ],
+      "displayValue": "2924",
+      "displayUnit": "m",
+      "supports": [
+        "elevation_context"
+      ],
+      "prohibits": [
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:metric.elevationLossM",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "metric.elevationLossM",
+      "value": 2808,
+      "unit": "m",
+      "confidence": "high",
+      "provenance": "recorded",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:activity",
+          "version": "0.2",
+          "evidenceIds": [
+            "demo-ride-2026-07-22:fit:session:descent"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "demo-ride-2026-07-22:fit:session:descent"
+      ],
+      "displayValue": "2808",
+      "displayUnit": "m",
+      "supports": [
+        "elevation_context"
+      ],
+      "prohibits": [
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-37936-46050.span",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "segment.climb.event-climb-37936-46050.span",
+      "value": 2275,
+      "unit": "s",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:windows",
+          "version": "ride-temporal-windows-v2.5",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:segment:event-climb-37936-46050"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:segment:event-climb-37936-46050"
+      ],
+      "formulaVersion": "ride-event-climb-rules-v0.2",
+      "displayValue": "38 分钟",
+      "displayUnit": "duration",
+      "supports": [
+        "climb_segment"
+      ],
+      "prohibits": [
+        "ability_change",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-37936-46050.distanceM",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "segment.climb.event-climb-37936-46050.distanceM",
+      "value": 8114.439999999995,
+      "unit": "m",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:windows",
+          "version": "ride-temporal-windows-v2.5",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:segment:event-climb-37936-46050"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:segment:event-climb-37936-46050"
+      ],
+      "formulaVersion": "ride-event-climb-rules-v0.2",
+      "displayValue": "8.1",
+      "displayUnit": "km",
+      "supports": [
+        "climb_fact"
+      ],
+      "prohibits": [
+        "ability_change",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-37936-46050.netElevationGainM",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "segment.climb.event-climb-37936-46050.netElevationGainM",
+      "value": 466.5,
+      "unit": "m",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:windows",
+          "version": "ride-temporal-windows-v2.5",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:segment:event-climb-37936-46050"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:segment:event-climb-37936-46050"
+      ],
+      "formulaVersion": "ride-event-climb-rules-v0.2",
+      "displayValue": "467",
+      "displayUnit": "m",
+      "supports": [
+        "climb_fact"
+      ],
+      "prohibits": [
+        "ability_change",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-37936-46050.averageGrade",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "segment.climb.event-climb-37936-46050.averageGrade",
+      "value": 0.05749010406140168,
+      "unit": "ratio",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:windows",
+          "version": "ride-temporal-windows-v2.5",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:segment:event-climb-37936-46050"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:segment:event-climb-37936-46050"
+      ],
+      "formulaVersion": "ride-event-climb-rules-v0.2",
+      "displayValue": "5.7",
+      "displayUnit": "%",
+      "supports": [
+        "climb_fact"
+      ],
+      "prohibits": [
+        "ability_change",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-37936-46050.difficultyScore",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "segment.climb.event-climb-37936-46050.difficultyScore",
+      "value": 268.19133544643876,
+      "unit": "score",
+      "text": "climb category 2",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:windows",
+          "version": "ride-temporal-windows-v2.5",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:segment:event-climb-37936-46050"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:segment:event-climb-37936-46050"
+      ],
+      "formulaVersion": "ride-event-climb-rules-v0.2",
+      "displayValue": "268",
+      "displayUnit": "score",
+      "supports": [
+        "climb_fact"
+      ],
+      "prohibits": [
+        "ability_change",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-37936-46050.speed.mean",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "segment.climb.event-climb-37936-46050.speed.mean",
+      "value": 3.6824693106704447,
+      "unit": "m/s",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:windows",
+          "version": "ride-temporal-windows-v2.5",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:segment:event-climb-37936-46050"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:segment:event-climb-37936-46050"
+      ],
+      "formulaVersion": "ride-capability-claims-v2.6",
+      "displayValue": "13.26",
+      "displayUnit": "km/h",
+      "supports": [
+        "climb_speed_observation"
+      ],
+      "prohibits": [
+        "stability_from_mean",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-37936-46050.power.mean",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "segment.climb.event-climb-37936-46050.power.mean",
+      "value": 185.22237960339945,
+      "unit": "W",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:windows",
+          "version": "ride-temporal-windows-v2.5",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:segment:event-climb-37936-46050"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:segment:event-climb-37936-46050"
+      ],
+      "formulaVersion": "ride-capability-claims-v2.6",
+      "displayValue": "185",
+      "displayUnit": "W",
+      "supports": [
+        "climb_power_observation"
+      ],
+      "prohibits": [
+        "stability_from_mean",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-84688-88849.span",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "segment.climb.event-climb-84688-88849.span",
+      "value": 1474,
+      "unit": "s",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:windows",
+          "version": "ride-temporal-windows-v2.5",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:segment:event-climb-84688-88849"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:segment:event-climb-84688-88849"
+      ],
+      "formulaVersion": "ride-event-climb-rules-v0.2",
+      "displayValue": "25 分钟",
+      "displayUnit": "duration",
+      "supports": [
+        "climb_segment"
+      ],
+      "prohibits": [
+        "ability_change",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-84688-88849.distanceM",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "segment.climb.event-climb-84688-88849.distanceM",
+      "value": 4160.9100000000035,
+      "unit": "m",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:windows",
+          "version": "ride-temporal-windows-v2.5",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:segment:event-climb-84688-88849"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:segment:event-climb-84688-88849"
+      ],
+      "formulaVersion": "ride-event-climb-rules-v0.2",
+      "displayValue": "4.2",
+      "displayUnit": "km",
+      "supports": [
+        "climb_fact"
+      ],
+      "prohibits": [
+        "ability_change",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-84688-88849.netElevationGainM",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "segment.climb.event-climb-84688-88849.netElevationGainM",
+      "value": 460,
+      "unit": "m",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:windows",
+          "version": "ride-temporal-windows-v2.5",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:segment:event-climb-84688-88849"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:segment:event-climb-84688-88849"
+      ],
+      "formulaVersion": "ride-event-climb-rules-v0.2",
+      "displayValue": "460",
+      "displayUnit": "m",
+      "supports": [
+        "climb_fact"
+      ],
+      "prohibits": [
+        "ability_change",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-84688-88849.averageGrade",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "segment.climb.event-climb-84688-88849.averageGrade",
+      "value": 0.11055273966512123,
+      "unit": "ratio",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:windows",
+          "version": "ride-temporal-windows-v2.5",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:segment:event-climb-84688-88849"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:segment:event-climb-84688-88849"
+      ],
+      "formulaVersion": "ride-event-climb-rules-v0.2",
+      "displayValue": "11.1",
+      "displayUnit": "%",
+      "supports": [
+        "climb_fact"
+      ],
+      "prohibits": [
+        "ability_change",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-84688-88849.difficultyScore",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "segment.climb.event-climb-84688-88849.difficultyScore",
+      "value": 508.5426024595577,
+      "unit": "score",
+      "text": "climb category 1",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:windows",
+          "version": "ride-temporal-windows-v2.5",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:segment:event-climb-84688-88849"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:segment:event-climb-84688-88849"
+      ],
+      "formulaVersion": "ride-event-climb-rules-v0.2",
+      "displayValue": "509",
+      "displayUnit": "score",
+      "supports": [
+        "climb_fact"
+      ],
+      "prohibits": [
+        "ability_change",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-84688-88849.speed.mean",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "segment.climb.event-climb-84688-88849.speed.mean",
+      "value": 2.751010854816826,
+      "unit": "m/s",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:windows",
+          "version": "ride-temporal-windows-v2.5",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:segment:event-climb-84688-88849"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:segment:event-climb-84688-88849"
+      ],
+      "formulaVersion": "ride-capability-claims-v2.6",
+      "displayValue": "9.9",
+      "displayUnit": "km/h",
+      "supports": [
+        "climb_speed_observation"
+      ],
+      "prohibits": [
+        "stability_from_mean",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-84688-88849.power.mean",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "segment.climb.event-climb-84688-88849.power.mean",
+      "value": 256.3731343283582,
+      "unit": "W",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:windows",
+          "version": "ride-temporal-windows-v2.5",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:segment:event-climb-84688-88849"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:segment:event-climb-84688-88849"
+      ],
+      "formulaVersion": "ride-capability-claims-v2.6",
+      "displayValue": "256",
+      "displayUnit": "W",
+      "supports": [
+        "climb_power_observation"
+      ],
+      "prohibits": [
+        "stability_from_mean",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-110427-115991.span",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "segment.climb.event-climb-110427-115991.span",
+      "value": 1292,
+      "unit": "s",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:windows",
+          "version": "ride-temporal-windows-v2.5",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:segment:event-climb-110427-115991"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:segment:event-climb-110427-115991"
+      ],
+      "formulaVersion": "ride-event-climb-rules-v0.2",
+      "displayValue": "22 分钟",
+      "displayUnit": "duration",
+      "supports": [
+        "climb_segment"
+      ],
+      "prohibits": [
+        "ability_change",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-110427-115991.distanceM",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "segment.climb.event-climb-110427-115991.distanceM",
+      "value": 5563.759999999995,
+      "unit": "m",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:windows",
+          "version": "ride-temporal-windows-v2.5",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:segment:event-climb-110427-115991"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:segment:event-climb-110427-115991"
+      ],
+      "formulaVersion": "ride-event-climb-rules-v0.2",
+      "displayValue": "5.6",
+      "displayUnit": "km",
+      "supports": [
+        "climb_fact"
+      ],
+      "prohibits": [
+        "ability_change",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-110427-115991.netElevationGainM",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "segment.climb.event-climb-110427-115991.netElevationGainM",
+      "value": 270,
+      "unit": "m",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:windows",
+          "version": "ride-temporal-windows-v2.5",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:segment:event-climb-110427-115991"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:segment:event-climb-110427-115991"
+      ],
+      "formulaVersion": "ride-event-climb-rules-v0.2",
+      "displayValue": "270",
+      "displayUnit": "m",
+      "supports": [
+        "climb_fact"
+      ],
+      "prohibits": [
+        "ability_change",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-110427-115991.averageGrade",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "segment.climb.event-climb-110427-115991.averageGrade",
+      "value": 0.04852833335729799,
+      "unit": "ratio",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:windows",
+          "version": "ride-temporal-windows-v2.5",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:segment:event-climb-110427-115991"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:segment:event-climb-110427-115991"
+      ],
+      "formulaVersion": "ride-event-climb-rules-v0.2",
+      "displayValue": "4.9",
+      "displayUnit": "%",
+      "supports": [
+        "climb_fact"
+      ],
+      "prohibits": [
+        "ability_change",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-110427-115991.difficultyScore",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "segment.climb.event-climb-110427-115991.difficultyScore",
+      "value": 131.02650006470458,
+      "unit": "score",
+      "text": "climb category 3",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:windows",
+          "version": "ride-temporal-windows-v2.5",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:segment:event-climb-110427-115991"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:segment:event-climb-110427-115991"
+      ],
+      "formulaVersion": "ride-event-climb-rules-v0.2",
+      "displayValue": "131",
+      "displayUnit": "score",
+      "supports": [
+        "climb_fact"
+      ],
+      "prohibits": [
+        "ability_change",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-110427-115991.speed.mean",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "segment.climb.event-climb-110427-115991.speed.mean",
+      "value": 4.717508503401362,
+      "unit": "m/s",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:windows",
+          "version": "ride-temporal-windows-v2.5",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:segment:event-climb-110427-115991"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:segment:event-climb-110427-115991"
+      ],
+      "formulaVersion": "ride-capability-claims-v2.6",
+      "displayValue": "16.98",
+      "displayUnit": "km/h",
+      "supports": [
+        "climb_speed_observation"
+      ],
+      "prohibits": [
+        "stability_from_mean",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-110427-115991.power.mean",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "segment.climb.event-climb-110427-115991.power.mean",
+      "value": 205.7576530612245,
+      "unit": "W",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:windows",
+          "version": "ride-temporal-windows-v2.5",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:segment:event-climb-110427-115991"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:segment:event-climb-110427-115991"
+      ],
+      "formulaVersion": "ride-capability-claims-v2.6",
+      "displayValue": "206",
+      "displayUnit": "W",
+      "supports": [
+        "climb_power_observation"
+      ],
+      "prohibits": [
+        "stability_from_mean",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:climb.representativeClimbCount",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "climb.representativeClimbCount",
+      "value": 15,
+      "unit": "count",
+      "text": "15 climbs identified; 3 hardest kept as representative segments (ranked by category, difficulty, distance)",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:windows",
+          "version": "ride-temporal-windows-v2.5",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:segment:event-climb-37936-46050",
+            "evidence:demo-ride-2026-07-22:segment:event-climb-84688-88849",
+            "evidence:demo-ride-2026-07-22:segment:event-climb-110427-115991"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:segment:event-climb-37936-46050",
+        "evidence:demo-ride-2026-07-22:segment:event-climb-84688-88849",
+        "evidence:demo-ride-2026-07-22:segment:event-climb-110427-115991"
+      ],
+      "formulaVersion": "ride-temporal-windows-v2.5",
+      "displayValue": "3/15",
+      "displayUnit": "count",
+      "aggregatedFromCount": 15,
+      "supports": [
+        "climb_fact"
+      ],
+      "prohibits": [
+        "ability_change",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:power.mean",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "feature",
+      "key": "power.mean",
+      "value": 150.53413551800648,
+      "unit": "W",
+      "text": "power weighted mean",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:temporal",
+          "version": "ride-temporal-v2.3",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:series:power"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:series:power"
+      ],
+      "formulaVersion": "ride-temporal-v2.3",
+      "displayValue": "151",
+      "displayUnit": "W",
+      "supports": [
+        "power_level"
+      ],
+      "prohibits": [
+        "stability_from_mean",
+        "causation_from_level"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:power.coefficientOfVariation",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "feature",
+      "key": "power.coefficientOfVariation",
+      "value": 0.6610590801270088,
+      "unit": "ratio",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:temporal",
+          "version": "ride-temporal-v2.3",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:series:power"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:series:power"
+      ],
+      "formulaVersion": "ride-temporal-v2.3",
+      "displayValue": "66.1",
+      "displayUnit": "%",
+      "supports": [
+        "power_stability"
+      ],
+      "prohibits": [
+        "ability_change",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:power.lastMinusFirst",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "feature",
+      "key": "power.lastMinusFirst",
+      "value": -31.450192775313653,
+      "unit": "W",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:temporal",
+          "version": "ride-temporal-v2.3",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:series:power"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:series:power"
+      ],
+      "formulaVersion": "ride-temporal-v2.3",
+      "displayValue": "-31.5",
+      "displayUnit": "W",
+      "supports": [
+        "power_stage_comparison"
+      ],
+      "prohibits": [
+        "trend_beyond_current_ride",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:power.peakAverage.10s",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "power.peakAverage.10s",
+      "value": 566,
+      "unit": "W",
+      "text": "contiguous 10 s peak average power",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:windows",
+          "version": "ride-temporal-windows-v2.5",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:series:power"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:series:power"
+      ],
+      "formulaVersion": "ride-temporal-windows-v2.5",
+      "displayValue": "566",
+      "displayUnit": "W",
+      "supports": [
+        "short_duration_power_peak"
+      ],
+      "prohibits": [
+        "ability_change",
+        "bridge_recording_gap"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:power.peakAverage.20s",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "power.peakAverage.20s",
+      "value": 537.5,
+      "unit": "W",
+      "text": "contiguous 20 s peak average power",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:windows",
+          "version": "ride-temporal-windows-v2.5",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:series:power"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:series:power"
+      ],
+      "formulaVersion": "ride-temporal-windows-v2.5",
+      "displayValue": "538",
+      "displayUnit": "W",
+      "supports": [
+        "short_duration_power_peak"
+      ],
+      "prohibits": [
+        "ability_change",
+        "bridge_recording_gap"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:power.peakAverage.30s",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "power.peakAverage.30s",
+      "value": 515.6333333333333,
+      "unit": "W",
+      "text": "contiguous 30 s peak average power",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:windows",
+          "version": "ride-temporal-windows-v2.5",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:series:power"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:series:power"
+      ],
+      "formulaVersion": "ride-temporal-windows-v2.5",
+      "displayValue": "516",
+      "displayUnit": "W",
+      "supports": [
+        "short_duration_power_peak"
+      ],
+      "prohibits": [
+        "ability_change",
+        "bridge_recording_gap"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:relation.fixed.power-speed.aggregate",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "relation",
+      "key": "relation.fixed.power-speed.aggregate",
+      "value": 0.9933657884688813,
+      "unit": "ratio",
+      "text": "aggregated: power-speed relation aggregated across 776 fixed windows (coverage mean 99%, min 77%, max 100%, total shared time 23087 s, thirds coverage mean 99%/100%/100%)",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:windows",
+          "version": "ride-temporal-windows-v2.5",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:series:power",
+            "evidence:demo-ride-2026-07-22:series:speed"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:series:power",
+        "evidence:demo-ride-2026-07-22:series:speed"
+      ],
+      "formulaVersion": "ride-capability-claims-v2.6",
+      "displayValue": "99",
+      "displayUnit": "%",
+      "aggregatedFromCount": 776,
+      "supports": [
+        "same_window_observation"
+      ],
+      "prohibits": [
+        "causation",
+        "response_order",
+        "trend"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:relation.fixed.power-speed.rep.2",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "relation",
+      "key": "relation.fixed.power-speed.rep.2",
+      "value": 1,
+      "unit": "ratio",
+      "text": "power-speed representative window 2 (longest shared time): shared 30 s in the same window",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:windows",
+          "version": "ride-temporal-windows-v2.5",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:series:power",
+            "evidence:demo-ride-2026-07-22:series:speed"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:series:power",
+        "evidence:demo-ride-2026-07-22:series:speed"
+      ],
+      "formulaVersion": "ride-temporal-windows-v2.5",
+      "displayValue": "100",
+      "displayUnit": "%",
+      "supports": [
+        "same_window_observation"
+      ],
+      "prohibits": [
+        "causation",
+        "response_order",
+        "trend"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:relation.fixed.power-speed.rep.3",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "relation",
+      "key": "relation.fixed.power-speed.rep.3",
+      "value": 1,
+      "unit": "ratio",
+      "text": "power-speed representative window 3 (highest common coverage): shared 30 s in the same window",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:windows",
+          "version": "ride-temporal-windows-v2.5",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:series:power",
+            "evidence:demo-ride-2026-07-22:series:speed"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:series:power",
+        "evidence:demo-ride-2026-07-22:series:speed"
+      ],
+      "formulaVersion": "ride-temporal-windows-v2.5",
+      "displayValue": "100",
+      "displayUnit": "%",
+      "supports": [
+        "same_window_observation"
+      ],
+      "prohibits": [
+        "causation",
+        "response_order",
+        "trend"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:relation.fixed.power-speed.rep.159",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "relation",
+      "key": "relation.fixed.power-speed.rep.159",
+      "value": 0.7666666666666667,
+      "unit": "ratio",
+      "text": "power-speed representative window 159 (lowest common coverage): shared 23 s in the same window",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:windows",
+          "version": "ride-temporal-windows-v2.5",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:series:power",
+            "evidence:demo-ride-2026-07-22:series:speed"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:series:power",
+        "evidence:demo-ride-2026-07-22:series:speed"
+      ],
+      "formulaVersion": "ride-temporal-windows-v2.5",
+      "displayValue": "77",
+      "displayUnit": "%",
+      "supports": [
+        "same_window_observation"
+      ],
+      "prohibits": [
+        "causation",
+        "response_order",
+        "trend"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:power.normalizedW",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "power.normalizedW",
+      "value": 197.21634777496462,
+      "unit": "W",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:capability-claims",
+          "version": "ride-capability-claims-v2.6",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:v2:power-normalized-contiguous"
+          ]
+        },
+        {
+          "sourceId": "source:demo-ride-2026-07-22:temporal",
+          "version": "ride-temporal-v2.3",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:series:power"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:v2:power-normalized-contiguous",
+        "evidence:demo-ride-2026-07-22:series:power"
+      ],
+      "formulaVersion": "ride-contiguous-np-v2.1",
+      "displayValue": "197",
+      "displayUnit": "W",
+      "supports": [
+        "normalized_power_output"
+      ],
+      "prohibits": [
+        "if_without_ftp",
+        "tss_without_ftp",
+        "bridge_recording_gap"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:power.normalizedWkg",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "power.normalizedWkg",
+      "value": 2.817376396785209,
+      "unit": "W/kg",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:capability-claims",
+          "version": "ride-capability-claims-v2.6",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:v2:power-normalized-contiguous"
+          ]
+        },
+        {
+          "sourceId": "source:demo-ride-2026-07-22:temporal",
+          "version": "ride-temporal-v2.3",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:series:power"
+          ]
+        },
+        {
+          "sourceId": "source:demo-ride-2026-07-22:profile",
+          "version": "0.1:2026-10-07T11:26:51.416Z",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:v2:profile-weightKg-2026-10-07T11:26:51.416Z"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:v2:power-normalized-contiguous",
+        "evidence:demo-ride-2026-07-22:series:power",
+        "evidence:demo-ride-2026-07-22:v2:profile-weightKg-2026-10-07T11:26:51.416Z"
+      ],
+      "formulaVersion": "ride-contiguous-np-v2.1",
+      "displayValue": "2.82",
+      "displayUnit": "W/kg",
+      "supports": [
+        "relative_power_output"
+      ],
+      "prohibits": [
+        "ability_change"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:power.zone.z1",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "power.zone.z1",
+      "value": 6331,
+      "unit": "s",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:capability-claims",
+          "version": "ride-capability-claims-v2.6",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:v2:power-zones"
+          ]
+        },
+        {
+          "sourceId": "source:demo-ride-2026-07-22:profile",
+          "version": "0.1:2026-10-07T11:26:51.416Z",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T11:26:51.416Z"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:v2:power-zones",
+        "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T11:26:51.416Z"
+      ],
+      "formulaVersion": "ride-power-zone-v2.2",
+      "displayValue": "27",
+      "displayUnit": "%",
+      "supports": [
+        "power_zone_distribution"
+      ],
+      "prohibits": [
+        "training_effect"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:power.zone.z2",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "power.zone.z2",
+      "value": 3285,
+      "unit": "s",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:capability-claims",
+          "version": "ride-capability-claims-v2.6",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:v2:power-zones"
+          ]
+        },
+        {
+          "sourceId": "source:demo-ride-2026-07-22:profile",
+          "version": "0.1:2026-10-07T11:26:51.416Z",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T11:26:51.416Z"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:v2:power-zones",
+        "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T11:26:51.416Z"
+      ],
+      "formulaVersion": "ride-power-zone-v2.2",
+      "displayValue": "14",
+      "displayUnit": "%",
+      "supports": [
+        "power_zone_distribution"
+      ],
+      "prohibits": [
+        "training_effect"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:power.zone.z3",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "power.zone.z3",
+      "value": 4225,
+      "unit": "s",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:capability-claims",
+          "version": "ride-capability-claims-v2.6",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:v2:power-zones"
+          ]
+        },
+        {
+          "sourceId": "source:demo-ride-2026-07-22:profile",
+          "version": "0.1:2026-10-07T11:26:51.416Z",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T11:26:51.416Z"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:v2:power-zones",
+        "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T11:26:51.416Z"
+      ],
+      "formulaVersion": "ride-power-zone-v2.2",
+      "displayValue": "18",
+      "displayUnit": "%",
+      "supports": [
+        "power_zone_distribution"
+      ],
+      "prohibits": [
+        "training_effect"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:power.zone.z4",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "power.zone.z4",
+      "value": 3910,
+      "unit": "s",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:capability-claims",
+          "version": "ride-capability-claims-v2.6",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:v2:power-zones"
+          ]
+        },
+        {
+          "sourceId": "source:demo-ride-2026-07-22:profile",
+          "version": "0.1:2026-10-07T11:26:51.416Z",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T11:26:51.416Z"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:v2:power-zones",
+        "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T11:26:51.416Z"
+      ],
+      "formulaVersion": "ride-power-zone-v2.2",
+      "displayValue": "17",
+      "displayUnit": "%",
+      "supports": [
+        "power_zone_distribution"
+      ],
+      "prohibits": [
+        "training_effect"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:power.zone.z5",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "power.zone.z5",
+      "value": 2287,
+      "unit": "s",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:capability-claims",
+          "version": "ride-capability-claims-v2.6",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:v2:power-zones"
+          ]
+        },
+        {
+          "sourceId": "source:demo-ride-2026-07-22:profile",
+          "version": "0.1:2026-10-07T11:26:51.416Z",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T11:26:51.416Z"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:v2:power-zones",
+        "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T11:26:51.416Z"
+      ],
+      "formulaVersion": "ride-power-zone-v2.2",
+      "displayValue": "10",
+      "displayUnit": "%",
+      "supports": [
+        "power_zone_distribution"
+      ],
+      "prohibits": [
+        "training_effect"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:power.zone.z6",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "power.zone.z6",
+      "value": 2149,
+      "unit": "s",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:capability-claims",
+          "version": "ride-capability-claims-v2.6",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:v2:power-zones"
+          ]
+        },
+        {
+          "sourceId": "source:demo-ride-2026-07-22:profile",
+          "version": "0.1:2026-10-07T11:26:51.416Z",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T11:26:51.416Z"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:v2:power-zones",
+        "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T11:26:51.416Z"
+      ],
+      "formulaVersion": "ride-power-zone-v2.2",
+      "displayValue": "9",
+      "displayUnit": "%",
+      "supports": [
+        "power_zone_distribution"
+      ],
+      "prohibits": [
+        "training_effect"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:power.zone.z7",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "power.zone.z7",
+      "value": 1249,
+      "unit": "s",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:capability-claims",
+          "version": "ride-capability-claims-v2.6",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:v2:power-zones"
+          ]
+        },
+        {
+          "sourceId": "source:demo-ride-2026-07-22:profile",
+          "version": "0.1:2026-10-07T11:26:51.416Z",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T11:26:51.416Z"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:v2:power-zones",
+        "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T11:26:51.416Z"
+      ],
+      "formulaVersion": "ride-power-zone-v2.2",
+      "displayValue": "5",
+      "displayUnit": "%",
+      "supports": [
+        "power_zone_distribution"
+      ],
+      "prohibits": [
+        "training_effect"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:power.zone.highIntensityCombined",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "power.zone.highIntensityCombined",
+      "value": 5685,
+      "unit": "s",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:capability-claims",
+          "version": "ride-capability-claims-v2.6",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:v2:power-zones"
+          ]
+        },
+        {
+          "sourceId": "source:demo-ride-2026-07-22:profile",
+          "version": "0.1:2026-10-07T11:26:51.416Z",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T11:26:51.416Z"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:v2:power-zones",
+        "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T11:26:51.416Z"
+      ],
+      "formulaVersion": "ride-power-zone-v2.2",
+      "displayValue": "24",
+      "displayUnit": "%",
+      "supports": [
+        "power_zone_distribution"
+      ],
+      "prohibits": [
+        "training_effect"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:power.intensityFactor",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "power.intensityFactor",
+      "value": 0.9860817388748231,
+      "unit": "ratio",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:capability-claims",
+          "version": "ride-capability-claims-v2.6",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:v2:power-intensity-factor",
+            "evidence:demo-ride-2026-07-22:v2:power-normalized-contiguous"
+          ]
+        },
+        {
+          "sourceId": "source:demo-ride-2026-07-22:profile",
+          "version": "0.1:2026-10-07T11:26:51.416Z",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T11:26:51.416Z"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:v2:power-intensity-factor",
+        "evidence:demo-ride-2026-07-22:v2:power-normalized-contiguous",
+        "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T11:26:51.416Z"
+      ],
+      "formulaVersion": "ride-intensity-v2.1",
+      "displayValue": "0.99",
+      "displayUnit": "ratio",
+      "supports": [
+        "ride_intensity_factor"
+      ],
+      "prohibits": [
+        "recovery",
+        "health_status",
+        "training_effect"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:power.trainingStressScore",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "power.trainingStressScore",
+      "value": 640.1621637858472,
+      "unit": "score",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:capability-claims",
+          "version": "ride-capability-claims-v2.6",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:v2:power-training-stress",
+            "evidence:demo-ride-2026-07-22:v2:power-normalized-contiguous"
+          ]
+        },
+        {
+          "sourceId": "source:demo-ride-2026-07-22:profile",
+          "version": "0.1:2026-10-07T11:26:51.416Z",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T11:26:51.416Z"
+          ]
+        },
+        {
+          "sourceId": "source:demo-ride-2026-07-22:temporal",
+          "version": "ride-temporal-v2.3",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:v2:temporal-axis"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:v2:power-training-stress",
+        "evidence:demo-ride-2026-07-22:v2:power-normalized-contiguous",
+        "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T11:26:51.416Z",
+        "evidence:demo-ride-2026-07-22:v2:temporal-axis"
+      ],
+      "formulaVersion": "ride-intensity-v2.1",
+      "displayValue": "640.2",
+      "displayUnit": "score",
+      "supports": [
+        "single_ride_training_load"
+      ],
+      "prohibits": [
+        "recovery",
+        "injury_risk",
+        "training_effect"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:power.averageWkg",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "power.averageWkg",
+      "value": 2.150487650257235,
+      "unit": "W/kg",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:temporal",
+          "version": "ride-temporal-v2.3",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:series:power"
+          ]
+        },
+        {
+          "sourceId": "source:demo-ride-2026-07-22:profile",
+          "version": "0.1:2026-10-07T11:26:51.416Z",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:v2:profile-weightKg-2026-10-07T11:26:51.416Z"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:series:power",
+        "evidence:demo-ride-2026-07-22:v2:profile-weightKg-2026-10-07T11:26:51.416Z"
+      ],
+      "formulaVersion": "ride-temporal-v2.3",
+      "displayValue": "2.15",
+      "displayUnit": "W/kg",
+      "supports": [
+        "relative_power_output"
+      ],
+      "prohibits": [
+        "ability_change"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:metric.activityEnergyKcal",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "metric.activityEnergyKcal",
+      "value": 4439,
+      "unit": "kcal",
+      "confidence": "high",
+      "provenance": "recorded",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:activity",
+          "version": "0.2",
+          "evidenceIds": [
+            "demo-ride-2026-07-22:fit:session:total-calories"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "demo-ride-2026-07-22:fit:session:total-calories"
+      ],
+      "displayValue": "4439",
+      "displayUnit": "kcal",
+      "supports": [
+        "activity_energy"
+      ],
+      "prohibits": [
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:profile.verifiedFtpW",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "profile.verifiedFtpW",
+      "value": 200,
+      "unit": "W",
+      "confidence": "high",
+      "provenance": "recorded",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:profile",
+          "version": "0.1:2026-10-07T11:26:51.416Z",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T11:26:51.416Z"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T11:26:51.416Z"
+      ],
+      "displayValue": "200",
+      "displayUnit": "W",
+      "supports": [
+        "ftp_dependent_calculation"
+      ],
+      "prohibits": [
+        "medical_threshold"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:cadence.mean",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "feature",
+      "key": "cadence.mean",
+      "value": 75.66763465015616,
+      "unit": "rpm",
+      "text": "cadence weighted mean",
+      "confidence": "medium",
+      "provenance": "calculated",
+      "qualityStatus": "soft",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:temporal",
+          "version": "ride-temporal-v2.3",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:series:cadence"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:series:cadence"
+      ],
+      "formulaVersion": "ride-temporal-v2.3",
+      "displayValue": "76",
+      "displayUnit": "rpm",
+      "supports": [
+        "cadence_level"
+      ],
+      "prohibits": [
+        "stability_from_mean",
+        "causation_from_level"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:cadence.coefficientOfVariation",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "feature",
+      "key": "cadence.coefficientOfVariation",
+      "value": 0.15277748000779395,
+      "unit": "ratio",
+      "confidence": "medium",
+      "provenance": "calculated",
+      "qualityStatus": "soft",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:temporal",
+          "version": "ride-temporal-v2.3",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:series:cadence"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:series:cadence"
+      ],
+      "formulaVersion": "ride-temporal-v2.3",
+      "displayValue": "15.3",
+      "displayUnit": "%",
+      "supports": [
+        "cadence_stability"
+      ],
+      "prohibits": [
+        "ability_change",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:cadence.lastMinusFirst",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "feature",
+      "key": "cadence.lastMinusFirst",
+      "value": -2.9415019776216695,
+      "unit": "rpm",
+      "confidence": "medium",
+      "provenance": "calculated",
+      "qualityStatus": "soft",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:temporal",
+          "version": "ride-temporal-v2.3",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:series:cadence"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:series:cadence"
+      ],
+      "formulaVersion": "ride-temporal-v2.3",
+      "displayValue": "-2.9",
+      "displayUnit": "rpm",
+      "supports": [
+        "cadence_stage_comparison"
+      ],
+      "prohibits": [
+        "trend_beyond_current_ride",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:cadence.zone.zero",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "cadence.zone.zero",
+      "value": 17,
+      "unit": "s",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:capability-claims",
+          "version": "ride-capability-claims-v2.6",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:v2:cadence-zones"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:v2:cadence-zones"
+      ],
+      "formulaVersion": "ride-zone-rules-v0.2",
+      "displayValue": "0",
+      "displayUnit": "%",
+      "supports": [
+        "cadence_zone_distribution"
+      ],
+      "prohibits": [
+        "medical_diagnosis",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:cadence.zone.low",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "cadence.zone.low",
+      "value": 1344,
+      "unit": "s",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:capability-claims",
+          "version": "ride-capability-claims-v2.6",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:v2:cadence-zones"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:v2:cadence-zones"
+      ],
+      "formulaVersion": "ride-zone-rules-v0.2",
+      "displayValue": "7",
+      "displayUnit": "%",
+      "supports": [
+        "cadence_zone_distribution"
+      ],
+      "prohibits": [
+        "medical_diagnosis",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:cadence.zone.steady",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "cadence.zone.steady",
+      "value": 6856,
+      "unit": "s",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:capability-claims",
+          "version": "ride-capability-claims-v2.6",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:v2:cadence-zones"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:v2:cadence-zones"
+      ],
+      "formulaVersion": "ride-zone-rules-v0.2",
+      "displayValue": "37",
+      "displayUnit": "%",
+      "supports": [
+        "cadence_zone_distribution"
+      ],
+      "prohibits": [
+        "medical_diagnosis",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:cadence.zone.endurance",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "cadence.zone.endurance",
+      "value": 8162,
+      "unit": "s",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:capability-claims",
+          "version": "ride-capability-claims-v2.6",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:v2:cadence-zones"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:v2:cadence-zones"
+      ],
+      "formulaVersion": "ride-zone-rules-v0.2",
+      "displayValue": "44",
+      "displayUnit": "%",
+      "supports": [
+        "cadence_zone_distribution"
+      ],
+      "prohibits": [
+        "medical_diagnosis",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:cadence.zone.high",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "cadence.zone.high",
+      "value": 1952,
+      "unit": "s",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:capability-claims",
+          "version": "ride-capability-claims-v2.6",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:v2:cadence-zones"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:v2:cadence-zones"
+      ],
+      "formulaVersion": "ride-zone-rules-v0.2",
+      "displayValue": "11",
+      "displayUnit": "%",
+      "supports": [
+        "cadence_zone_distribution"
+      ],
+      "prohibits": [
+        "medical_diagnosis",
+        "causation"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:cadence.zone.very-high",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "cadence.zone.very-high",
+      "value": 77,
+      "unit": "s",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:capability-claims",
+          "version": "ride-capability-claims-v2.6",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:v2:cadence-zones"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:v2:cadence-zones"
+      ],
+      "formulaVersion": "ride-zone-rules-v0.2",
+      "displayValue": "0",
+      "displayUnit": "%",
+      "supports": [
+        "cadence_zone_distribution"
+      ],
+      "prohibits": [
+        "medical_diagnosis",
+        "causation"
+      ]
+    }
+  ],
+  "knowledge": [
+    {
+      "knowledgeId": "kb-b1-tss",
+      "citation": "Glossary of TrainingPeaks Metrics — Training Stress Score — TrainingPeaks (accessed 2026-10-05), https://trainingpeaks.com/learn/articles/glossary-of-trainingpeaks-metrics/",
+      "explanation": "训练压力分数（TSS，Training Stress Score）以“一小时恰好按 FTP 骑行 = 100 分”为基准，把一次骑行的时长与强度（归一化功率与强度系数）折算成单一数字。通常单次 <150 为轻度负荷、150-300 为中度、>300 后恢复需求显著上升。该数字只用于解释负荷量级，用户当次实际 TSS 须以骑行记录计算结果为准。",
+      "conditions": [
+        "功率数据完整的骑行记录",
+        "已具备可信 FTP 基准",
+        "strength:high"
+      ],
+      "conclusionStrength": "high",
+      "limitations": [
+        "TSS 是模型估算而非生理测量",
+        "数值含义依赖 FTP 基准的准确性"
+      ],
+      "safetyBoundaries": [],
+      "forbiddenFactKeys": [
+        "trainingLoad.tss",
+        "power.np",
+        "power.if",
+        "power.mean"
+      ],
+      "knowledgeBaseVersion": "ride-kb-batch1-1.0.0",
+      "retrievedAt": "2026-10-06T00:00:00.000Z"
+    },
+    {
+      "knowledgeId": "kb-b1-ftp",
+      "citation": "Thresholds 411 & Glossary of TrainingPeaks Metrics — Functional Threshold Power — TrainingPeaks (accessed 2026-10-05), https://www.trainingpeaks.com/learn/articles/thresholds-411/ 及术语表条目",
+      "explanation": "功能性阈值功率（FTP）指骑手约一小时时间内可持续维持的最高功率，是功率区间与负荷计算的锚点。常见测试协议包括 60 分钟全力或 20 分钟平均功率×0.95。知识只解释概念与测试方法；用户当前采用的 FTP 数值属于个人骑行事实，只能来自已验证的记录。",
+      "conditions": [
+        "功率数据完整的骑行记录",
+        "解读涉及强度区间或负荷计算时",
+        "strength:high"
+      ],
+      "conclusionStrength": "high",
+      "limitations": [
+        "20 分钟×0.95 为常用估算协议，个体误差可达数个百分点",
+        "FTP 随训练状态变化需定期复测"
+      ],
+      "safetyBoundaries": [],
+      "forbiddenFactKeys": [
+        "power.ftp",
+        "verifiedFtp",
+        "power.peak20",
+        "power.mean"
+      ],
+      "knowledgeBaseVersion": "ride-kb-batch1-1.0.0",
+      "retrievedAt": "2026-10-06T00:00:00.000Z"
+    },
+    {
+      "knowledgeId": "kb-b1-power-zones",
+      "citation": "Power Training Levels — Dr. Andrew Coggan — TrainingPeaks (2016（作者原文首发）), https://www.trainingpeaks.com/blog/power-training-levels/",
+      "explanation": "Coggan 七级功率区间以 FTP 为锚：Z1 主动恢复（<55% FTP）、Z2 耐力（56-75%）、Z3 节奏（76-90%）、Z4 阈值（91-105%）、Z5 VO₂max（106-120%）、Z6 无氧能力（121-150%）、Z7 神经肌功率（>150%）。解读功率分布时通常关注 Z2 占比（有氧基础）与 Z4 以上占比（高强度刺激），用户当次落在各区间的时间占比属于骑行事实。",
+      "conditions": [
+        "已具备 FTP 基准",
+        "功率数据完整",
+        "strength:high"
+      ],
+      "conclusionStrength": "high",
+      "limitations": [
+        "区间边界为百分比近似，个体生理转折点存在差异"
+      ],
+      "safetyBoundaries": [],
+      "forbiddenFactKeys": [
+        "power.zones",
+        "power.ftp",
+        "power.mean"
+      ],
+      "knowledgeBaseVersion": "ride-kb-batch1-1.0.0",
+      "retrievedAt": "2026-10-06T00:00:00.000Z"
+    },
+    {
+      "knowledgeId": "kb-b1-pmc",
+      "citation": "The Science of the Performance Manager — Dr. Andrew Coggan — TrainingPeaks (accessed 2026-10-05), https://trainingpeaks.com/learn/articles/the-science-of-the-performance-manager/",
+      "explanation": "表现管理模型（PMC）把每日 TSS 指数加权：约 42 天时间常数得到 CTL（长期负荷，俗称“体能”），约 7 天得到 ATL（短期负荷，俗称“疲劳”），两者之差为 TSB（状态）。TSB 为正通常提示恢复较充分、适合表现出成绩；持续深度为负则提示负荷偏重。模型输出为趋势参考，非个体生理测量；用户实际 CTL/ATL/TSB 数值只能来自其负荷历史计算。",
+      "conditions": [
+        "具备至少数周的训练负荷历史",
+        "解读长期趋势或备赛状态时",
+        "strength:moderate"
+      ],
+      "conclusionStrength": "moderate",
+      "limitations": [
+        "源自 Banister 冲量-响应模型的工程化简化",
+        "个体对负荷的响应差异未被建模"
+      ],
+      "safetyBoundaries": [],
+      "forbiddenFactKeys": [
+        "trainingLoad.ctl",
+        "trainingLoad.atl",
+        "trainingLoad.tsb",
+        "longTermLoad"
+      ],
+      "knowledgeBaseVersion": "ride-kb-batch1-1.0.0",
+      "retrievedAt": "2026-10-06T00:00:00.000Z"
+    },
+    {
+      "knowledgeId": "kb-b1-load-fitness-fatigue",
+      "citation": "《公路车宝典：骑行训练完全手册（第5版）》第 3 章 训练的基本概念 — 人民邮电出版社（原著 Joe Friel, The Cyclist's Training Bible 5th ed., Velopress） (2023 中译本（原著 2018 第 5 版）), 第 3 章 训练的基本概念（训练负荷、体能·疲劳·状态）",
+      "explanation": "每次训练同时产生两种效应：向上的“体能”适应与向下的“疲劳”，两者消退速度不同——疲劳消退快、体能保留久。因此适度训练后短期能力暂时下降属正常现象，经过恢复期后表现超过原有水平（超量补偿）。解读时不应把单日疲劳直接等同于状态下滑，需结合恢复时间与负荷趋势。",
+      "conditions": [
+        "解读单次或周期训练负荷时",
+        "strength:moderate"
+      ],
+      "conclusionStrength": "moderate",
+      "limitations": [
+        "教练经验体系总结，量化参数沿用 TrainingPeaks 口径"
+      ],
+      "safetyBoundaries": [],
+      "forbiddenFactKeys": [
+        "trainingLoad.tss",
+        "trainingLoad.ctl",
+        "longTermLoad"
+      ],
+      "knowledgeBaseVersion": "ride-kb-batch1-1.0.0",
+      "retrievedAt": "2026-10-06T00:00:00.000Z"
+    },
+    {
+      "knowledgeId": "kb-b1-recovery",
+      "citation": "Cycling Science — Chapter 22 Recovery Interventions — Human Kinetics (2017), 第 22 章 Recovery Interventions（恢复干预）",
+      "explanation": "恢复是训练产生适应的必要环节：训练提供刺激，适应发生在恢复期。证据层级上，充足睡眠与基础营养是恢复的基石，主动恢复、按摩等手段作用相对有限。解读连续多日负荷后的数据时，通常把静息心率上升、同等功率下心率偏高、主观疲劳加重视为恢复不足的提示信号，但这些信号本身属于用户生理事实，须由实际记录提供。",
+      "conditions": [
+        "解读连续负荷后的恢复状态时",
+        "存在恢复相关信号（如晨脉、主观疲劳）时",
+        "本条为运动科学知识，不构成医疗建议；持续异常疲劳应咨询医生",
+        "strength:moderate"
+      ],
+      "conclusionStrength": "moderate",
+      "limitations": [
+        "各恢复手段证据强度不一：睡眠证据最强，多数商业化手段证据有限",
+        "结论为人群平均，个体响应差异大"
+      ],
+      "safetyBoundaries": [
+        "本条为运动科学知识，不构成医疗建议；持续异常疲劳应咨询医生"
+      ],
+      "forbiddenFactKeys": [
+        "recoverySignals",
+        "heartRate.resting",
+        "sleep.quality",
+        "hrv.value"
+      ],
+      "knowledgeBaseVersion": "ride-kb-batch1-1.0.0",
+      "retrievedAt": "2026-10-06T00:00:00.000Z"
+    },
+    {
+      "knowledgeId": "kb-b1-overtraining",
+      "citation": "Cycling Science Ch.21 Fatigue and Overtraining；《公路车宝典》第 10 章 训练压力 — Human Kinetics；人民邮电出版社 (2017；2023 中译本), Cycling Science 第 21 章 Fatigue and Overtraining；公路车宝典第 10 章",
+      "explanation": "短期过度训练（过量训练）经数日恢复可逆，判断通常依赖多个信号同时出现：表现持续下滑、晨脉升高、睡眠变差、情绪低落。单一信号不足以下结论，需结合负荷趋势与多日恢复信号纵向对比。知识只解释信号体系与判断逻辑，用户各信号的实际数值属于骑行与生理事实。",
+      "conditions": [
+        "连续多日高强度负荷后的解读",
+        "出现表现持续下滑等信号时",
+        "本条为运动科学知识，不构成医疗诊断；症状持续或加重应就医",
+        "strength:moderate"
+      ],
+      "conclusionStrength": "moderate",
+      "limitations": [
+        "判断需纵向趋势对比，单次数据无法定性",
+        "过度训练综合征属医疗范畴，本条不覆盖诊断"
+      ],
+      "safetyBoundaries": [
+        "本条为运动科学知识，不构成医疗诊断；症状持续或加重应就医"
+      ],
+      "forbiddenFactKeys": [
+        "recoverySignals",
+        "heartRate.resting",
+        "trainingLoad.weekly",
+        "power.mean"
+      ],
+      "knowledgeBaseVersion": "ride-kb-batch1-1.0.0",
+      "retrievedAt": "2026-10-06T00:00:00.000Z"
+    },
+    {
+      "knowledgeId": "kb-b1-hr-drift",
+      "citation": "How to Analyze Heart Rate Drift — TrainingPeaks — TrainingPeaks (accessed 2026-10-05), https://www.trainingpeaks.com/blog/how-to-analyze-heart-rate-drift/ （有氧解耦 Pw:Hr 条目）",
+      "explanation": "长时间骑行中心率随时间逐渐升高而功率不变的现象称为心率漂移。有氧解耦（Pw:Hr）比较骑行前半段与后半段的“功率/心率”比值：通常差值在 5% 以内提示有氧耐力扎实，明显超过则提示有氧基础不足、当日疲劳或脱水/环境因素。该比值解读依赖功率与心率双数据完整，用户当次实际漂移数值属于骑行事实。",
+      "conditions": [
+        "功率与心率数据同时完整的骑行记录",
+        "长时间稳态耐力骑行解读时",
+        "strength:moderate"
+      ],
+      "conclusionStrength": "moderate",
+      "limitations": [
+        "解耦受环境温度、 hydration 状态与疲劳影响，非唯一有氧能力指标",
+        "短时间骑行解耦意义有限"
+      ],
+      "safetyBoundaries": [],
+      "forbiddenFactKeys": [
+        "heartRate.drift",
+        "power.mean",
+        "heartRate.mean"
+      ],
+      "knowledgeBaseVersion": "ride-kb-batch1-1.0.0",
+      "retrievedAt": "2026-10-06T00:00:00.000Z"
+    }
+  ],
+  "questions": [
+    {
+      "dimensionId": "pacingExecution",
+      "question": "How did pacing execution, stops, and within-ride stages behave?",
+      "eligibility": "available",
+      "qualityStatus": "valid",
+      "claimIds": [
+        "claim:demo-ride-2026-07-22:v2:timing.movingDurationS",
+        "claim:demo-ride-2026-07-22:v2:stops.count",
+        "claim:demo-ride-2026-07-22:v2:metric.distanceM",
+        "claim:demo-ride-2026-07-22:v2:metric.elapsedDurationS",
+        "claim:demo-ride-2026-07-22:v2:speed.mean",
+        "claim:demo-ride-2026-07-22:v2:speed.coefficientOfVariation",
+        "claim:demo-ride-2026-07-22:v2:speed.lastMinusFirst",
+        "claim:demo-ride-2026-07-22:v2:segment.cruise.cruise-0-23950.span",
+        "claim:demo-ride-2026-07-22:v2:segment.cruise.cruise-0-23950.speed.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.cruise.cruise-0-23950.power.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.cruise.cruise-1-24179.span",
+        "claim:demo-ride-2026-07-22:v2:segment.cruise.cruise-1-24179.speed.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.cruise.cruise-1-24179.power.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-flat-7560.97-11010.4.span",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-flat-7560.97-11010.4.speed.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-flat-7560.97-11010.4.power.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-climb-11010.4-21690.93.span",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-climb-11010.4-21690.93.speed.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-climb-11010.4-21690.93.power.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-climb-37935.62-46050.06.span",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-climb-37935.62-46050.06.speed.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-climb-37935.62-46050.06.power.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-descent-62593.25-70758.08.span",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-descent-62593.25-70758.08.speed.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-descent-62593.25-70758.08.power.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-descent-116056.34-124083.91.span",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-descent-116056.34-124083.91.speed.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-descent-116056.34-124083.91.power.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-climb-133730.43-140425.71.span",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-climb-133730.43-140425.71.speed.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-climb-133730.43-140425.71.power.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-descent-140803.7-150961.19.span",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-descent-140803.7-150961.19.speed.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-descent-140803.7-150961.19.power.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-flat-150961.19-152174.83.span",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-flat-150961.19-152174.83.speed.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-flat-150961.19-152174.83.power.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-flat-157015.68-158431.06.span",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-flat-157015.68-158431.06.speed.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-flat-157015.68-158431.06.power.mean",
+        "claim:demo-ride-2026-07-22:v2:terrain.trendClimbDistanceM",
+        "claim:demo-ride-2026-07-22:v2:terrain.trendFlatDistanceM",
+        "claim:demo-ride-2026-07-22:v2:terrain.trendDescentDistanceM",
+        "claim:demo-ride-2026-07-22:v2:terrain.localClimbDistanceM",
+        "claim:demo-ride-2026-07-22:v2:terrain.localFlatDistanceM",
+        "claim:demo-ride-2026-07-22:v2:terrain.localDescentDistanceM",
+        "claim:demo-ride-2026-07-22:v2:terrain.classifiedCoverageRatio",
+        "claim:demo-ride-2026-07-22:v2:terrain.climbRunCount",
+        "claim:demo-ride-2026-07-22:v2:terrain.flatRunCount",
+        "claim:demo-ride-2026-07-22:v2:terrain.descentRunCount"
+      ],
+      "limitations": [
+        "terrain.climbRunCount:AGGREGATED_FROM_24_WINDOWS",
+        "terrain.flatRunCount:AGGREGATED_FROM_41_WINDOWS",
+        "terrain.descentRunCount:AGGREGATED_FROM_22_WINDOWS"
+      ],
+      "supports": [
+        "current_ride_timing",
+        "stop_observation",
+        "ride_distance",
+        "speed_level",
+        "speed_stability",
+        "speed_stage_comparison",
+        "cruise_segment",
+        "cruise_speed_observation",
+        "cruise_power_observation",
+        "terrain_segment",
+        "terrain_speed_observation",
+        "terrain_power_observation"
+      ],
+      "prohibits": [
+        "training_plan_completion",
+        "intent",
+        "race_strategy_success",
+        "causation",
+        "training_effect",
+        "stop_cause",
+        "stability_from_mean",
+        "causation_from_level",
+        "ability_change",
+        "trend_beyond_current_ride"
+      ],
+      "knowledgeIds": [],
+      "recommendationAnchorClaimIds": [
+        "claim:demo-ride-2026-07-22:v2:timing.movingDurationS",
+        "claim:demo-ride-2026-07-22:v2:stops.count",
+        "claim:demo-ride-2026-07-22:v2:metric.distanceM",
+        "claim:demo-ride-2026-07-22:v2:metric.elapsedDurationS",
+        "claim:demo-ride-2026-07-22:v2:speed.mean",
+        "claim:demo-ride-2026-07-22:v2:speed.coefficientOfVariation",
+        "claim:demo-ride-2026-07-22:v2:speed.lastMinusFirst",
+        "claim:demo-ride-2026-07-22:v2:segment.cruise.cruise-0-23950.span",
+        "claim:demo-ride-2026-07-22:v2:segment.cruise.cruise-0-23950.speed.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.cruise.cruise-0-23950.power.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.cruise.cruise-1-24179.span",
+        "claim:demo-ride-2026-07-22:v2:segment.cruise.cruise-1-24179.speed.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.cruise.cruise-1-24179.power.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-flat-7560.97-11010.4.span",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-flat-7560.97-11010.4.speed.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-flat-7560.97-11010.4.power.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-climb-11010.4-21690.93.span",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-climb-11010.4-21690.93.speed.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-climb-11010.4-21690.93.power.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-climb-37935.62-46050.06.span",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-climb-37935.62-46050.06.speed.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-climb-37935.62-46050.06.power.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-descent-62593.25-70758.08.span",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-descent-62593.25-70758.08.speed.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-descent-62593.25-70758.08.power.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-descent-116056.34-124083.91.span",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-descent-116056.34-124083.91.speed.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-descent-116056.34-124083.91.power.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-climb-133730.43-140425.71.span",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-climb-133730.43-140425.71.speed.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-climb-133730.43-140425.71.power.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-descent-140803.7-150961.19.span",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-descent-140803.7-150961.19.speed.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-descent-140803.7-150961.19.power.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-flat-150961.19-152174.83.span",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-flat-150961.19-152174.83.speed.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-flat-150961.19-152174.83.power.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-flat-157015.68-158431.06.span",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-flat-157015.68-158431.06.speed.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-flat-157015.68-158431.06.power.mean",
+        "claim:demo-ride-2026-07-22:v2:terrain.trendClimbDistanceM",
+        "claim:demo-ride-2026-07-22:v2:terrain.trendFlatDistanceM",
+        "claim:demo-ride-2026-07-22:v2:terrain.trendDescentDistanceM",
+        "claim:demo-ride-2026-07-22:v2:terrain.localClimbDistanceM",
+        "claim:demo-ride-2026-07-22:v2:terrain.localFlatDistanceM",
+        "claim:demo-ride-2026-07-22:v2:terrain.localDescentDistanceM",
+        "claim:demo-ride-2026-07-22:v2:terrain.classifiedCoverageRatio",
+        "claim:demo-ride-2026-07-22:v2:terrain.climbRunCount",
+        "claim:demo-ride-2026-07-22:v2:terrain.flatRunCount",
+        "claim:demo-ride-2026-07-22:v2:terrain.descentRunCount"
+      ]
+    },
+    {
+      "dimensionId": "climbPerformance",
+      "question": "What do the qualified climb and terrain segments show?",
+      "eligibility": "available",
+      "qualityStatus": "valid",
+      "claimIds": [
+        "claim:demo-ride-2026-07-22:v2:timing.movingDurationS",
+        "claim:demo-ride-2026-07-22:v2:metric.distanceM",
+        "claim:demo-ride-2026-07-22:v2:metric.elevationGainM",
+        "claim:demo-ride-2026-07-22:v2:metric.elevationLossM",
+        "claim:demo-ride-2026-07-22:v2:metric.elapsedDurationS",
+        "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-37936-46050.span",
+        "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-37936-46050.distanceM",
+        "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-37936-46050.netElevationGainM",
+        "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-37936-46050.averageGrade",
+        "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-37936-46050.difficultyScore",
+        "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-37936-46050.speed.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-37936-46050.power.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-84688-88849.span",
+        "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-84688-88849.distanceM",
+        "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-84688-88849.netElevationGainM",
+        "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-84688-88849.averageGrade",
+        "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-84688-88849.difficultyScore",
+        "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-84688-88849.speed.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-84688-88849.power.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-110427-115991.span",
+        "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-110427-115991.distanceM",
+        "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-110427-115991.netElevationGainM",
+        "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-110427-115991.averageGrade",
+        "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-110427-115991.difficultyScore",
+        "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-110427-115991.speed.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-110427-115991.power.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-flat-7560.97-11010.4.span",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-flat-7560.97-11010.4.speed.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-flat-7560.97-11010.4.power.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-climb-11010.4-21690.93.span",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-climb-11010.4-21690.93.speed.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-climb-11010.4-21690.93.power.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-climb-37935.62-46050.06.span",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-climb-37935.62-46050.06.speed.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-climb-37935.62-46050.06.power.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-descent-62593.25-70758.08.span",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-descent-62593.25-70758.08.speed.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-descent-62593.25-70758.08.power.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-descent-116056.34-124083.91.span",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-descent-116056.34-124083.91.speed.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-descent-116056.34-124083.91.power.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-climb-133730.43-140425.71.span",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-climb-133730.43-140425.71.speed.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-climb-133730.43-140425.71.power.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-descent-140803.7-150961.19.span",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-descent-140803.7-150961.19.speed.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-descent-140803.7-150961.19.power.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-flat-150961.19-152174.83.span",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-flat-150961.19-152174.83.speed.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-flat-150961.19-152174.83.power.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-flat-157015.68-158431.06.span",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-flat-157015.68-158431.06.speed.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-flat-157015.68-158431.06.power.mean",
+        "claim:demo-ride-2026-07-22:v2:terrain.trendClimbDistanceM",
+        "claim:demo-ride-2026-07-22:v2:terrain.trendFlatDistanceM",
+        "claim:demo-ride-2026-07-22:v2:terrain.trendDescentDistanceM",
+        "claim:demo-ride-2026-07-22:v2:terrain.localClimbDistanceM",
+        "claim:demo-ride-2026-07-22:v2:terrain.localFlatDistanceM",
+        "claim:demo-ride-2026-07-22:v2:terrain.localDescentDistanceM",
+        "claim:demo-ride-2026-07-22:v2:terrain.classifiedCoverageRatio",
+        "claim:demo-ride-2026-07-22:v2:terrain.climbRunCount",
+        "claim:demo-ride-2026-07-22:v2:terrain.flatRunCount",
+        "claim:demo-ride-2026-07-22:v2:terrain.descentRunCount",
+        "claim:demo-ride-2026-07-22:v2:climb.representativeClimbCount"
+      ],
+      "limitations": [
+        "heartRate:SERIES_MISSING",
+        "terrain.climbRunCount:AGGREGATED_FROM_24_WINDOWS",
+        "terrain.flatRunCount:AGGREGATED_FROM_41_WINDOWS",
+        "terrain.descentRunCount:AGGREGATED_FROM_22_WINDOWS",
+        "climb.representativeClimbCount:AGGREGATED_FROM_15_WINDOWS"
+      ],
+      "supports": [
+        "current_ride_timing",
+        "ride_distance",
+        "elevation_context",
+        "climb_segment",
+        "climb_fact",
+        "climb_speed_observation",
+        "climb_power_observation",
+        "terrain_segment",
+        "terrain_speed_observation",
+        "terrain_power_observation"
+      ],
+      "prohibits": [
+        "ability_change",
+        "technical_diagnosis",
+        "causation",
+        "training_effect",
+        "stability_from_mean"
+      ],
+      "knowledgeIds": [],
+      "recommendationAnchorClaimIds": [
+        "claim:demo-ride-2026-07-22:v2:timing.movingDurationS",
+        "claim:demo-ride-2026-07-22:v2:metric.distanceM",
+        "claim:demo-ride-2026-07-22:v2:metric.elevationGainM",
+        "claim:demo-ride-2026-07-22:v2:metric.elevationLossM",
+        "claim:demo-ride-2026-07-22:v2:metric.elapsedDurationS",
+        "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-37936-46050.span",
+        "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-37936-46050.distanceM",
+        "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-37936-46050.netElevationGainM",
+        "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-37936-46050.averageGrade",
+        "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-37936-46050.difficultyScore",
+        "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-37936-46050.speed.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-37936-46050.power.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-84688-88849.span",
+        "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-84688-88849.distanceM",
+        "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-84688-88849.netElevationGainM",
+        "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-84688-88849.averageGrade",
+        "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-84688-88849.difficultyScore",
+        "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-84688-88849.speed.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-84688-88849.power.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-110427-115991.span",
+        "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-110427-115991.distanceM",
+        "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-110427-115991.netElevationGainM",
+        "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-110427-115991.averageGrade",
+        "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-110427-115991.difficultyScore",
+        "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-110427-115991.speed.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-110427-115991.power.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-flat-7560.97-11010.4.span",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-flat-7560.97-11010.4.speed.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-flat-7560.97-11010.4.power.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-climb-11010.4-21690.93.span",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-climb-11010.4-21690.93.speed.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-climb-11010.4-21690.93.power.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-climb-37935.62-46050.06.span",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-climb-37935.62-46050.06.speed.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-climb-37935.62-46050.06.power.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-descent-62593.25-70758.08.span",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-descent-62593.25-70758.08.speed.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-descent-62593.25-70758.08.power.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-descent-116056.34-124083.91.span",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-descent-116056.34-124083.91.speed.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-descent-116056.34-124083.91.power.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-climb-133730.43-140425.71.span",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-climb-133730.43-140425.71.speed.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-climb-133730.43-140425.71.power.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-descent-140803.7-150961.19.span",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-descent-140803.7-150961.19.speed.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-descent-140803.7-150961.19.power.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-flat-150961.19-152174.83.span",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-flat-150961.19-152174.83.speed.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-flat-150961.19-152174.83.power.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-flat-157015.68-158431.06.span",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-flat-157015.68-158431.06.speed.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-flat-157015.68-158431.06.power.mean",
+        "claim:demo-ride-2026-07-22:v2:terrain.trendClimbDistanceM",
+        "claim:demo-ride-2026-07-22:v2:terrain.trendFlatDistanceM",
+        "claim:demo-ride-2026-07-22:v2:terrain.trendDescentDistanceM",
+        "claim:demo-ride-2026-07-22:v2:terrain.localClimbDistanceM",
+        "claim:demo-ride-2026-07-22:v2:terrain.localFlatDistanceM",
+        "claim:demo-ride-2026-07-22:v2:terrain.localDescentDistanceM",
+        "claim:demo-ride-2026-07-22:v2:terrain.classifiedCoverageRatio",
+        "claim:demo-ride-2026-07-22:v2:terrain.climbRunCount",
+        "claim:demo-ride-2026-07-22:v2:terrain.flatRunCount",
+        "claim:demo-ride-2026-07-22:v2:terrain.descentRunCount",
+        "claim:demo-ride-2026-07-22:v2:climb.representativeClimbCount"
+      ]
+    },
+    {
+      "dimensionId": "powerOutput",
+      "question": "What do power level, stability, peaks, and qualified segments show?",
+      "eligibility": "available",
+      "qualityStatus": "valid",
+      "claimIds": [
+        "claim:demo-ride-2026-07-22:v2:timing.movingDurationS",
+        "claim:demo-ride-2026-07-22:v2:metric.elapsedDurationS",
+        "claim:demo-ride-2026-07-22:v2:power.mean",
+        "claim:demo-ride-2026-07-22:v2:power.coefficientOfVariation",
+        "claim:demo-ride-2026-07-22:v2:power.lastMinusFirst",
+        "claim:demo-ride-2026-07-22:v2:power.peakAverage.10s",
+        "claim:demo-ride-2026-07-22:v2:power.peakAverage.20s",
+        "claim:demo-ride-2026-07-22:v2:power.peakAverage.30s",
+        "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-37936-46050.span",
+        "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-37936-46050.power.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-84688-88849.span",
+        "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-84688-88849.power.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-110427-115991.span",
+        "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-110427-115991.power.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.cruise.cruise-0-23950.span",
+        "claim:demo-ride-2026-07-22:v2:segment.cruise.cruise-0-23950.speed.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.cruise.cruise-0-23950.power.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.cruise.cruise-1-24179.span",
+        "claim:demo-ride-2026-07-22:v2:segment.cruise.cruise-1-24179.speed.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.cruise.cruise-1-24179.power.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-flat-7560.97-11010.4.span",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-flat-7560.97-11010.4.power.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-climb-11010.4-21690.93.span",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-climb-11010.4-21690.93.power.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-climb-37935.62-46050.06.span",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-climb-37935.62-46050.06.power.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-descent-62593.25-70758.08.span",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-descent-62593.25-70758.08.power.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-descent-116056.34-124083.91.span",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-descent-116056.34-124083.91.power.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-climb-133730.43-140425.71.span",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-climb-133730.43-140425.71.power.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-descent-140803.7-150961.19.span",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-descent-140803.7-150961.19.power.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-flat-150961.19-152174.83.span",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-flat-150961.19-152174.83.power.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-flat-157015.68-158431.06.span",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-flat-157015.68-158431.06.power.mean",
+        "claim:demo-ride-2026-07-22:v2:terrain.trendClimbDistanceM",
+        "claim:demo-ride-2026-07-22:v2:terrain.trendFlatDistanceM",
+        "claim:demo-ride-2026-07-22:v2:terrain.trendDescentDistanceM",
+        "claim:demo-ride-2026-07-22:v2:terrain.localClimbDistanceM",
+        "claim:demo-ride-2026-07-22:v2:terrain.localFlatDistanceM",
+        "claim:demo-ride-2026-07-22:v2:terrain.localDescentDistanceM",
+        "claim:demo-ride-2026-07-22:v2:terrain.classifiedCoverageRatio",
+        "claim:demo-ride-2026-07-22:v2:terrain.climbRunCount",
+        "claim:demo-ride-2026-07-22:v2:terrain.flatRunCount",
+        "claim:demo-ride-2026-07-22:v2:terrain.descentRunCount",
+        "claim:demo-ride-2026-07-22:v2:relation.fixed.power-speed.aggregate",
+        "claim:demo-ride-2026-07-22:v2:relation.fixed.power-speed.rep.2",
+        "claim:demo-ride-2026-07-22:v2:relation.fixed.power-speed.rep.3",
+        "claim:demo-ride-2026-07-22:v2:relation.fixed.power-speed.rep.159",
+        "claim:demo-ride-2026-07-22:v2:power.normalizedW",
+        "claim:demo-ride-2026-07-22:v2:power.normalizedWkg",
+        "claim:demo-ride-2026-07-22:v2:power.zone.z1",
+        "claim:demo-ride-2026-07-22:v2:power.zone.z2",
+        "claim:demo-ride-2026-07-22:v2:power.zone.z3",
+        "claim:demo-ride-2026-07-22:v2:power.zone.z4",
+        "claim:demo-ride-2026-07-22:v2:power.zone.z5",
+        "claim:demo-ride-2026-07-22:v2:power.zone.z6",
+        "claim:demo-ride-2026-07-22:v2:power.zone.z7",
+        "claim:demo-ride-2026-07-22:v2:power.zone.highIntensityCombined",
+        "claim:demo-ride-2026-07-22:v2:power.intensityFactor",
+        "claim:demo-ride-2026-07-22:v2:power.trainingStressScore",
+        "claim:demo-ride-2026-07-22:v2:power.averageWkg"
+      ],
+      "limitations": [
+        "terrain.climbRunCount:AGGREGATED_FROM_24_WINDOWS",
+        "terrain.flatRunCount:AGGREGATED_FROM_41_WINDOWS",
+        "terrain.descentRunCount:AGGREGATED_FROM_22_WINDOWS",
+        "relation.fixed.power-speed.aggregate:AGGREGATED_FROM_776_WINDOWS"
+      ],
+      "supports": [
+        "current_ride_timing",
+        "power_level",
+        "power_stability",
+        "power_stage_comparison",
+        "short_duration_power_peak",
+        "climb_segment",
+        "climb_power_observation",
+        "cruise_segment",
+        "cruise_speed_observation",
+        "cruise_power_observation",
+        "terrain_segment",
+        "terrain_power_observation",
+        "same_window_observation",
+        "normalized_power_output",
+        "relative_power_output",
+        "power_zone_distribution",
+        "ride_intensity_factor",
+        "single_ride_training_load"
+      ],
+      "prohibits": [
+        "ability_change",
+        "causation",
+        "bridge_recording_gap",
+        "training_effect",
+        "stability_from_mean",
+        "causation_from_level",
+        "trend_beyond_current_ride",
+        "response_order",
+        "trend",
+        "if_without_ftp",
+        "tss_without_ftp",
+        "recovery",
+        "health_status",
+        "injury_risk"
+      ],
+      "knowledgeIds": [
+        "kb-b1-tss",
+        "kb-b1-ftp",
+        "kb-b1-power-zones"
+      ],
+      "recommendationAnchorClaimIds": [
+        "claim:demo-ride-2026-07-22:v2:timing.movingDurationS",
+        "claim:demo-ride-2026-07-22:v2:metric.elapsedDurationS",
+        "claim:demo-ride-2026-07-22:v2:power.mean",
+        "claim:demo-ride-2026-07-22:v2:power.coefficientOfVariation",
+        "claim:demo-ride-2026-07-22:v2:power.lastMinusFirst",
+        "claim:demo-ride-2026-07-22:v2:power.peakAverage.10s",
+        "claim:demo-ride-2026-07-22:v2:power.peakAverage.20s",
+        "claim:demo-ride-2026-07-22:v2:power.peakAverage.30s",
+        "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-37936-46050.span",
+        "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-37936-46050.power.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-84688-88849.span",
+        "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-84688-88849.power.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-110427-115991.span",
+        "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-110427-115991.power.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.cruise.cruise-0-23950.span",
+        "claim:demo-ride-2026-07-22:v2:segment.cruise.cruise-0-23950.speed.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.cruise.cruise-0-23950.power.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.cruise.cruise-1-24179.span",
+        "claim:demo-ride-2026-07-22:v2:segment.cruise.cruise-1-24179.speed.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.cruise.cruise-1-24179.power.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-flat-7560.97-11010.4.span",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-flat-7560.97-11010.4.power.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-climb-11010.4-21690.93.span",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-climb-11010.4-21690.93.power.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-climb-37935.62-46050.06.span",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-climb-37935.62-46050.06.power.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-descent-62593.25-70758.08.span",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-descent-62593.25-70758.08.power.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-descent-116056.34-124083.91.span",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-descent-116056.34-124083.91.power.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-climb-133730.43-140425.71.span",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-climb-133730.43-140425.71.power.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-descent-140803.7-150961.19.span",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-descent-140803.7-150961.19.power.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-flat-150961.19-152174.83.span",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-flat-150961.19-152174.83.power.mean",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-flat-157015.68-158431.06.span",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-flat-157015.68-158431.06.power.mean",
+        "claim:demo-ride-2026-07-22:v2:terrain.trendClimbDistanceM",
+        "claim:demo-ride-2026-07-22:v2:terrain.trendFlatDistanceM",
+        "claim:demo-ride-2026-07-22:v2:terrain.trendDescentDistanceM",
+        "claim:demo-ride-2026-07-22:v2:terrain.localClimbDistanceM",
+        "claim:demo-ride-2026-07-22:v2:terrain.localFlatDistanceM",
+        "claim:demo-ride-2026-07-22:v2:terrain.localDescentDistanceM",
+        "claim:demo-ride-2026-07-22:v2:terrain.classifiedCoverageRatio",
+        "claim:demo-ride-2026-07-22:v2:terrain.climbRunCount",
+        "claim:demo-ride-2026-07-22:v2:terrain.flatRunCount",
+        "claim:demo-ride-2026-07-22:v2:terrain.descentRunCount",
+        "claim:demo-ride-2026-07-22:v2:relation.fixed.power-speed.aggregate",
+        "claim:demo-ride-2026-07-22:v2:relation.fixed.power-speed.rep.2",
+        "claim:demo-ride-2026-07-22:v2:relation.fixed.power-speed.rep.3",
+        "claim:demo-ride-2026-07-22:v2:relation.fixed.power-speed.rep.159",
+        "claim:demo-ride-2026-07-22:v2:power.normalizedW",
+        "claim:demo-ride-2026-07-22:v2:power.normalizedWkg",
+        "claim:demo-ride-2026-07-22:v2:power.zone.z1",
+        "claim:demo-ride-2026-07-22:v2:power.zone.z2",
+        "claim:demo-ride-2026-07-22:v2:power.zone.z3",
+        "claim:demo-ride-2026-07-22:v2:power.zone.z4",
+        "claim:demo-ride-2026-07-22:v2:power.zone.z5",
+        "claim:demo-ride-2026-07-22:v2:power.zone.z6",
+        "claim:demo-ride-2026-07-22:v2:power.zone.z7",
+        "claim:demo-ride-2026-07-22:v2:power.zone.highIntensityCombined",
+        "claim:demo-ride-2026-07-22:v2:power.intensityFactor",
+        "claim:demo-ride-2026-07-22:v2:power.trainingStressScore",
+        "claim:demo-ride-2026-07-22:v2:power.averageWkg"
+      ]
+    },
+    {
+      "dimensionId": "intensityAndTrainingLoad",
+      "question": "What intensity and single-ride training-load facts are supported?",
+      "eligibility": "available",
+      "qualityStatus": "valid",
+      "claimIds": [
+        "claim:demo-ride-2026-07-22:v2:timing.movingDurationS",
+        "claim:demo-ride-2026-07-22:v2:metric.activityEnergyKcal",
+        "claim:demo-ride-2026-07-22:v2:metric.elapsedDurationS",
+        "claim:demo-ride-2026-07-22:v2:power.mean",
+        "claim:demo-ride-2026-07-22:v2:power.coefficientOfVariation",
+        "claim:demo-ride-2026-07-22:v2:power.lastMinusFirst",
+        "claim:demo-ride-2026-07-22:v2:power.peakAverage.10s",
+        "claim:demo-ride-2026-07-22:v2:power.peakAverage.20s",
+        "claim:demo-ride-2026-07-22:v2:power.peakAverage.30s",
+        "claim:demo-ride-2026-07-22:v2:profile.verifiedFtpW",
+        "claim:demo-ride-2026-07-22:v2:power.normalizedW",
+        "claim:demo-ride-2026-07-22:v2:power.normalizedWkg",
+        "claim:demo-ride-2026-07-22:v2:power.zone.z1",
+        "claim:demo-ride-2026-07-22:v2:power.zone.z2",
+        "claim:demo-ride-2026-07-22:v2:power.zone.z3",
+        "claim:demo-ride-2026-07-22:v2:power.zone.z4",
+        "claim:demo-ride-2026-07-22:v2:power.zone.z5",
+        "claim:demo-ride-2026-07-22:v2:power.zone.z6",
+        "claim:demo-ride-2026-07-22:v2:power.zone.z7",
+        "claim:demo-ride-2026-07-22:v2:power.zone.highIntensityCombined",
+        "claim:demo-ride-2026-07-22:v2:power.intensityFactor",
+        "claim:demo-ride-2026-07-22:v2:power.trainingStressScore",
+        "claim:demo-ride-2026-07-22:v2:power.averageWkg"
+      ],
+      "limitations": [],
+      "supports": [
+        "current_ride_timing",
+        "activity_energy",
+        "power_level",
+        "power_stability",
+        "power_stage_comparison",
+        "short_duration_power_peak",
+        "ftp_dependent_calculation",
+        "normalized_power_output",
+        "relative_power_output",
+        "power_zone_distribution",
+        "ride_intensity_factor",
+        "single_ride_training_load"
+      ],
+      "prohibits": [
+        "recovery",
+        "injury_risk",
+        "training_effect",
+        "ftp_estimate_as_confirmed",
+        "causation",
+        "stability_from_mean",
+        "causation_from_level",
+        "ability_change",
+        "trend_beyond_current_ride",
+        "bridge_recording_gap",
+        "medical_threshold",
+        "if_without_ftp",
+        "tss_without_ftp",
+        "health_status"
+      ],
+      "knowledgeIds": [
+        "kb-b1-tss",
+        "kb-b1-ftp",
+        "kb-b1-power-zones",
+        "kb-b1-pmc",
+        "kb-b1-load-fitness-fatigue",
+        "kb-b1-recovery",
+        "kb-b1-overtraining"
+      ],
+      "recommendationAnchorClaimIds": [
+        "claim:demo-ride-2026-07-22:v2:timing.movingDurationS",
+        "claim:demo-ride-2026-07-22:v2:metric.activityEnergyKcal",
+        "claim:demo-ride-2026-07-22:v2:metric.elapsedDurationS",
+        "claim:demo-ride-2026-07-22:v2:power.mean",
+        "claim:demo-ride-2026-07-22:v2:power.coefficientOfVariation",
+        "claim:demo-ride-2026-07-22:v2:power.lastMinusFirst",
+        "claim:demo-ride-2026-07-22:v2:power.peakAverage.10s",
+        "claim:demo-ride-2026-07-22:v2:power.peakAverage.20s",
+        "claim:demo-ride-2026-07-22:v2:power.peakAverage.30s",
+        "claim:demo-ride-2026-07-22:v2:profile.verifiedFtpW",
+        "claim:demo-ride-2026-07-22:v2:power.normalizedW",
+        "claim:demo-ride-2026-07-22:v2:power.normalizedWkg",
+        "claim:demo-ride-2026-07-22:v2:power.zone.z1",
+        "claim:demo-ride-2026-07-22:v2:power.zone.z2",
+        "claim:demo-ride-2026-07-22:v2:power.zone.z3",
+        "claim:demo-ride-2026-07-22:v2:power.zone.z4",
+        "claim:demo-ride-2026-07-22:v2:power.zone.z5",
+        "claim:demo-ride-2026-07-22:v2:power.zone.z6",
+        "claim:demo-ride-2026-07-22:v2:power.zone.z7",
+        "claim:demo-ride-2026-07-22:v2:power.zone.highIntensityCombined",
+        "claim:demo-ride-2026-07-22:v2:power.intensityFactor",
+        "claim:demo-ride-2026-07-22:v2:power.trainingStressScore",
+        "claim:demo-ride-2026-07-22:v2:power.averageWkg"
+      ]
+    },
+    {
+      "dimensionId": "cadenceStrategy",
+      "question": "What does cadence level, distribution, and sensor alignment show?",
+      "eligibility": "partial",
+      "qualityStatus": "soft",
+      "claimIds": [
+        "claim:demo-ride-2026-07-22:v2:cadence.mean",
+        "claim:demo-ride-2026-07-22:v2:cadence.coefficientOfVariation",
+        "claim:demo-ride-2026-07-22:v2:cadence.lastMinusFirst",
+        "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-37936-46050.span",
+        "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-84688-88849.span",
+        "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-110427-115991.span",
+        "claim:demo-ride-2026-07-22:v2:segment.cruise.cruise-0-23950.span",
+        "claim:demo-ride-2026-07-22:v2:segment.cruise.cruise-1-24179.span",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-flat-7560.97-11010.4.span",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-climb-11010.4-21690.93.span",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-climb-37935.62-46050.06.span",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-descent-62593.25-70758.08.span",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-descent-116056.34-124083.91.span",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-climb-133730.43-140425.71.span",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-descent-140803.7-150961.19.span",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-flat-150961.19-152174.83.span",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-flat-157015.68-158431.06.span",
+        "claim:demo-ride-2026-07-22:v2:terrain.trendClimbDistanceM",
+        "claim:demo-ride-2026-07-22:v2:terrain.trendFlatDistanceM",
+        "claim:demo-ride-2026-07-22:v2:terrain.trendDescentDistanceM",
+        "claim:demo-ride-2026-07-22:v2:terrain.localClimbDistanceM",
+        "claim:demo-ride-2026-07-22:v2:terrain.localFlatDistanceM",
+        "claim:demo-ride-2026-07-22:v2:terrain.localDescentDistanceM",
+        "claim:demo-ride-2026-07-22:v2:terrain.classifiedCoverageRatio",
+        "claim:demo-ride-2026-07-22:v2:terrain.climbRunCount",
+        "claim:demo-ride-2026-07-22:v2:terrain.flatRunCount",
+        "claim:demo-ride-2026-07-22:v2:terrain.descentRunCount",
+        "claim:demo-ride-2026-07-22:v2:relation.fixed.power-speed.aggregate",
+        "claim:demo-ride-2026-07-22:v2:relation.fixed.power-speed.rep.2",
+        "claim:demo-ride-2026-07-22:v2:relation.fixed.power-speed.rep.3",
+        "claim:demo-ride-2026-07-22:v2:relation.fixed.power-speed.rep.159",
+        "claim:demo-ride-2026-07-22:v2:cadence.zone.zero",
+        "claim:demo-ride-2026-07-22:v2:cadence.zone.low",
+        "claim:demo-ride-2026-07-22:v2:cadence.zone.steady",
+        "claim:demo-ride-2026-07-22:v2:cadence.zone.endurance",
+        "claim:demo-ride-2026-07-22:v2:cadence.zone.high",
+        "claim:demo-ride-2026-07-22:v2:cadence.zone.very-high"
+      ],
+      "limitations": [
+        "terrain.climbRunCount:AGGREGATED_FROM_24_WINDOWS",
+        "terrain.flatRunCount:AGGREGATED_FROM_41_WINDOWS",
+        "terrain.descentRunCount:AGGREGATED_FROM_22_WINDOWS",
+        "relation.fixed.power-speed.aggregate:AGGREGATED_FROM_776_WINDOWS"
+      ],
+      "supports": [
+        "cadence_level",
+        "cadence_stability",
+        "cadence_stage_comparison",
+        "climb_segment",
+        "cruise_segment",
+        "terrain_segment",
+        "same_window_observation",
+        "cadence_zone_distribution"
+      ],
+      "prohibits": [
+        "efficiency_without_pairing",
+        "riding_posture_diagnosis",
+        "causation",
+        "stability_from_mean",
+        "causation_from_level",
+        "ability_change",
+        "trend_beyond_current_ride",
+        "response_order",
+        "trend",
+        "medical_diagnosis"
+      ],
+      "knowledgeIds": [],
+      "recommendationAnchorClaimIds": [
+        "claim:demo-ride-2026-07-22:v2:cadence.mean",
+        "claim:demo-ride-2026-07-22:v2:cadence.coefficientOfVariation",
+        "claim:demo-ride-2026-07-22:v2:cadence.lastMinusFirst",
+        "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-37936-46050.span",
+        "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-84688-88849.span",
+        "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-110427-115991.span",
+        "claim:demo-ride-2026-07-22:v2:segment.cruise.cruise-0-23950.span",
+        "claim:demo-ride-2026-07-22:v2:segment.cruise.cruise-1-24179.span",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-flat-7560.97-11010.4.span",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-climb-11010.4-21690.93.span",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-climb-37935.62-46050.06.span",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-descent-62593.25-70758.08.span",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-descent-116056.34-124083.91.span",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-climb-133730.43-140425.71.span",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-descent-140803.7-150961.19.span",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-flat-150961.19-152174.83.span",
+        "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-flat-157015.68-158431.06.span",
+        "claim:demo-ride-2026-07-22:v2:terrain.trendClimbDistanceM",
+        "claim:demo-ride-2026-07-22:v2:terrain.trendFlatDistanceM",
+        "claim:demo-ride-2026-07-22:v2:terrain.trendDescentDistanceM",
+        "claim:demo-ride-2026-07-22:v2:terrain.localClimbDistanceM",
+        "claim:demo-ride-2026-07-22:v2:terrain.localFlatDistanceM",
+        "claim:demo-ride-2026-07-22:v2:terrain.localDescentDistanceM",
+        "claim:demo-ride-2026-07-22:v2:terrain.classifiedCoverageRatio",
+        "claim:demo-ride-2026-07-22:v2:terrain.climbRunCount",
+        "claim:demo-ride-2026-07-22:v2:terrain.flatRunCount",
+        "claim:demo-ride-2026-07-22:v2:terrain.descentRunCount",
+        "claim:demo-ride-2026-07-22:v2:relation.fixed.power-speed.aggregate",
+        "claim:demo-ride-2026-07-22:v2:relation.fixed.power-speed.rep.2",
+        "claim:demo-ride-2026-07-22:v2:relation.fixed.power-speed.rep.3",
+        "claim:demo-ride-2026-07-22:v2:relation.fixed.power-speed.rep.159",
+        "claim:demo-ride-2026-07-22:v2:cadence.zone.zero",
+        "claim:demo-ride-2026-07-22:v2:cadence.zone.low",
+        "claim:demo-ride-2026-07-22:v2:cadence.zone.steady",
+        "claim:demo-ride-2026-07-22:v2:cadence.zone.endurance",
+        "claim:demo-ride-2026-07-22:v2:cadence.zone.high",
+        "claim:demo-ride-2026-07-22:v2:cadence.zone.very-high"
+      ]
+    },
+    {
+      "dimensionId": "crossSensorCoordination",
+      "question": "What same-window relationships are observed across sensors?",
+      "eligibility": "available",
+      "qualityStatus": "valid",
+      "claimIds": [
+        "claim:demo-ride-2026-07-22:v2:relation.fixed.power-speed.aggregate",
+        "claim:demo-ride-2026-07-22:v2:relation.fixed.power-speed.rep.2",
+        "claim:demo-ride-2026-07-22:v2:relation.fixed.power-speed.rep.3",
+        "claim:demo-ride-2026-07-22:v2:relation.fixed.power-speed.rep.159"
+      ],
+      "limitations": [
+        "heartRate:SERIES_MISSING",
+        "relation.fixed.power-speed.aggregate:AGGREGATED_FROM_776_WINDOWS"
+      ],
+      "supports": [
+        "same_window_observation"
+      ],
+      "prohibits": [
+        "causation",
+        "response_order",
+        "trend"
+      ],
+      "knowledgeIds": [
+        "kb-b1-hr-drift"
+      ],
+      "recommendationAnchorClaimIds": [
+        "claim:demo-ride-2026-07-22:v2:relation.fixed.power-speed.aggregate",
+        "claim:demo-ride-2026-07-22:v2:relation.fixed.power-speed.rep.2",
+        "claim:demo-ride-2026-07-22:v2:relation.fixed.power-speed.rep.3",
+        "claim:demo-ride-2026-07-22:v2:relation.fixed.power-speed.rep.159"
+      ]
+    }
+  ],
+  "inputStats": {
+    "totalCharacters": 127709,
+    "maxInputCharacters": 160000,
+    "questionCount": 6,
+    "claimCount": 108,
+    "knowledgeCount": 8,
+    "aggregatedRelationPairCount": 5,
+    "aggregatedRelationWindowCount": 878
+  }
+}

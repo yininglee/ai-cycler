@@ -1,0 +1,456 @@
+{
+  "note": "个人资料相关的 Claim（来自 FTP / 最大心率 / 体重；年龄与身高当前不生成 Claim）",
+  "profileFields": {
+    "ftpWatts": 200,
+    "maxHeartRateBpm": 200,
+    "weightKg": 70,
+    "age": 32,
+    "heightCm": 175
+  },
+  "count": 11,
+  "claims": [
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:power.normalizedWkg",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "power.normalizedWkg",
+      "value": 2.817376396785209,
+      "unit": "W/kg",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:capability-claims",
+          "version": "ride-capability-claims-v2.6",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:v2:power-normalized-contiguous"
+          ]
+        },
+        {
+          "sourceId": "source:demo-ride-2026-07-22:temporal",
+          "version": "ride-temporal-v2.3",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:series:power"
+          ]
+        },
+        {
+          "sourceId": "source:demo-ride-2026-07-22:profile",
+          "version": "0.1:2026-10-07T11:26:51.416Z",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:v2:profile-weightKg-2026-10-07T11:26:51.416Z"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:v2:power-normalized-contiguous",
+        "evidence:demo-ride-2026-07-22:series:power",
+        "evidence:demo-ride-2026-07-22:v2:profile-weightKg-2026-10-07T11:26:51.416Z"
+      ],
+      "formulaVersion": "ride-contiguous-np-v2.1",
+      "displayValue": "2.82",
+      "displayUnit": "W/kg",
+      "supports": [
+        "relative_power_output"
+      ],
+      "prohibits": [
+        "ability_change"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:power.zone.z1",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "power.zone.z1",
+      "value": 6331,
+      "unit": "s",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:capability-claims",
+          "version": "ride-capability-claims-v2.6",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:v2:power-zones"
+          ]
+        },
+        {
+          "sourceId": "source:demo-ride-2026-07-22:profile",
+          "version": "0.1:2026-10-07T11:26:51.416Z",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T11:26:51.416Z"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:v2:power-zones",
+        "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T11:26:51.416Z"
+      ],
+      "formulaVersion": "ride-power-zone-v2.2",
+      "displayValue": "27",
+      "displayUnit": "%",
+      "supports": [
+        "power_zone_distribution"
+      ],
+      "prohibits": [
+        "training_effect"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:power.zone.z2",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "power.zone.z2",
+      "value": 3285,
+      "unit": "s",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:capability-claims",
+          "version": "ride-capability-claims-v2.6",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:v2:power-zones"
+          ]
+        },
+        {
+          "sourceId": "source:demo-ride-2026-07-22:profile",
+          "version": "0.1:2026-10-07T11:26:51.416Z",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T11:26:51.416Z"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:v2:power-zones",
+        "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T11:26:51.416Z"
+      ],
+      "formulaVersion": "ride-power-zone-v2.2",
+      "displayValue": "14",
+      "displayUnit": "%",
+      "supports": [
+        "power_zone_distribution"
+      ],
+      "prohibits": [
+        "training_effect"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:power.zone.z3",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "power.zone.z3",
+      "value": 4225,
+      "unit": "s",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:capability-claims",
+          "version": "ride-capability-claims-v2.6",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:v2:power-zones"
+          ]
+        },
+        {
+          "sourceId": "source:demo-ride-2026-07-22:profile",
+          "version": "0.1:2026-10-07T11:26:51.416Z",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T11:26:51.416Z"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:v2:power-zones",
+        "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T11:26:51.416Z"
+      ],
+      "formulaVersion": "ride-power-zone-v2.2",
+      "displayValue": "18",
+      "displayUnit": "%",
+      "supports": [
+        "power_zone_distribution"
+      ],
+      "prohibits": [
+        "training_effect"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:power.zone.z4",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "power.zone.z4",
+      "value": 3910,
+      "unit": "s",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:capability-claims",
+          "version": "ride-capability-claims-v2.6",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:v2:power-zones"
+          ]
+        },
+        {
+          "sourceId": "source:demo-ride-2026-07-22:profile",
+          "version": "0.1:2026-10-07T11:26:51.416Z",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T11:26:51.416Z"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:v2:power-zones",
+        "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T11:26:51.416Z"
+      ],
+      "formulaVersion": "ride-power-zone-v2.2",
+      "displayValue": "17",
+      "displayUnit": "%",
+      "supports": [
+        "power_zone_distribution"
+      ],
+      "prohibits": [
+        "training_effect"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:power.zone.z5",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "power.zone.z5",
+      "value": 2287,
+      "unit": "s",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:capability-claims",
+          "version": "ride-capability-claims-v2.6",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:v2:power-zones"
+          ]
+        },
+        {
+          "sourceId": "source:demo-ride-2026-07-22:profile",
+          "version": "0.1:2026-10-07T11:26:51.416Z",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T11:26:51.416Z"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:v2:power-zones",
+        "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T11:26:51.416Z"
+      ],
+      "formulaVersion": "ride-power-zone-v2.2",
+      "displayValue": "10",
+      "displayUnit": "%",
+      "supports": [
+        "power_zone_distribution"
+      ],
+      "prohibits": [
+        "training_effect"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:power.zone.z6",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "power.zone.z6",
+      "value": 2149,
+      "unit": "s",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:capability-claims",
+          "version": "ride-capability-claims-v2.6",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:v2:power-zones"
+          ]
+        },
+        {
+          "sourceId": "source:demo-ride-2026-07-22:profile",
+          "version": "0.1:2026-10-07T11:26:51.416Z",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T11:26:51.416Z"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:v2:power-zones",
+        "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T11:26:51.416Z"
+      ],
+      "formulaVersion": "ride-power-zone-v2.2",
+      "displayValue": "9",
+      "displayUnit": "%",
+      "supports": [
+        "power_zone_distribution"
+      ],
+      "prohibits": [
+        "training_effect"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:power.zone.z7",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "power.zone.z7",
+      "value": 1249,
+      "unit": "s",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:capability-claims",
+          "version": "ride-capability-claims-v2.6",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:v2:power-zones"
+          ]
+        },
+        {
+          "sourceId": "source:demo-ride-2026-07-22:profile",
+          "version": "0.1:2026-10-07T11:26:51.416Z",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T11:26:51.416Z"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:v2:power-zones",
+        "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T11:26:51.416Z"
+      ],
+      "formulaVersion": "ride-power-zone-v2.2",
+      "displayValue": "5",
+      "displayUnit": "%",
+      "supports": [
+        "power_zone_distribution"
+      ],
+      "prohibits": [
+        "training_effect"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:power.zone.highIntensityCombined",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "power.zone.highIntensityCombined",
+      "value": 5685,
+      "unit": "s",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:capability-claims",
+          "version": "ride-capability-claims-v2.6",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:v2:power-zones"
+          ]
+        },
+        {
+          "sourceId": "source:demo-ride-2026-07-22:profile",
+          "version": "0.1:2026-10-07T11:26:51.416Z",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T11:26:51.416Z"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:v2:power-zones",
+        "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T11:26:51.416Z"
+      ],
+      "formulaVersion": "ride-power-zone-v2.2",
+      "displayValue": "24",
+      "displayUnit": "%",
+      "supports": [
+        "power_zone_distribution"
+      ],
+      "prohibits": [
+        "training_effect"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:power.intensityFactor",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "power.intensityFactor",
+      "value": 0.9860817388748231,
+      "unit": "ratio",
+      "confidence": "high",
+      "provenance": "calculated",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:capability-claims",
+          "version": "ride-capability-claims-v2.6",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:v2:power-intensity-factor",
+            "evidence:demo-ride-2026-07-22:v2:power-normalized-contiguous"
+          ]
+        },
+        {
+          "sourceId": "source:demo-ride-2026-07-22:profile",
+          "version": "0.1:2026-10-07T11:26:51.416Z",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T11:26:51.416Z"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:v2:power-intensity-factor",
+        "evidence:demo-ride-2026-07-22:v2:power-normalized-contiguous",
+        "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T11:26:51.416Z"
+      ],
+      "formulaVersion": "ride-intensity-v2.1",
+      "displayValue": "0.99",
+      "displayUnit": "ratio",
+      "supports": [
+        "ride_intensity_factor"
+      ],
+      "prohibits": [
+        "recovery",
+        "health_status",
+        "training_effect"
+      ]
+    },
+    {
+      "claimId": "claim:demo-ride-2026-07-22:v2:profile.verifiedFtpW",
+      "rideId": "demo-ride-2026-07-22",
+      "kind": "advanced",
+      "key": "profile.verifiedFtpW",
+      "value": 200,
+      "unit": "W",
+      "confidence": "high",
+      "provenance": "recorded",
+      "qualityStatus": "valid",
+      "sourceRefs": [
+        {
+          "sourceId": "source:demo-ride-2026-07-22:profile",
+          "version": "0.1:2026-10-07T11:26:51.416Z",
+          "evidenceIds": [
+            "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T11:26:51.416Z"
+          ]
+        }
+      ],
+      "evidenceIds": [
+        "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T11:26:51.416Z"
+      ],
+      "displayValue": "200",
+      "displayUnit": "W",
+      "supports": [
+        "ftp_dependent_calculation"
+      ],
+      "prohibits": [
+        "medical_threshold"
+      ]
+    }
+  ]
+}

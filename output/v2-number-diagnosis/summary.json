@@ -1,0 +1,88 @@
+{
+  "samples": [
+    {
+      "id": "demo-ride-2026-07-22",
+      "source": "demo"
+    },
+    {
+      "id": "upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb",
+      "source": "upload"
+    }
+  ],
+  "runs": 5,
+  "summary": [
+    {
+      "sample": "demo-ride-2026-07-22",
+      "run": 1,
+      "totalViolations": 2,
+      "violationCount": 2,
+      "otherIssues": []
+    },
+    {
+      "sample": "demo-ride-2026-07-22",
+      "run": 2,
+      "totalViolations": 0,
+      "violationCount": 0,
+      "otherIssues": []
+    },
+    {
+      "sample": "demo-ride-2026-07-22",
+      "run": 3,
+      "totalViolations": 3,
+      "violationCount": 2,
+      "otherIssues": [
+        "CLAIM_NOT_IN_DIMENSION"
+      ]
+    },
+    {
+      "sample": "demo-ride-2026-07-22",
+      "run": 4,
+      "totalViolations": 1,
+      "violationCount": 1,
+      "otherIssues": []
+    },
+    {
+      "sample": "demo-ride-2026-07-22",
+      "run": 5,
+      "totalViolations": 1,
+      "violationCount": 1,
+      "otherIssues": []
+    },
+    {
+      "sample": "upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb",
+      "run": 1,
+      "totalViolations": 0,
+      "violationCount": 0,
+      "otherIssues": []
+    },
+    {
+      "sample": "upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb",
+      "run": 2,
+      "totalViolations": 3,
+      "violationCount": 3,
+      "otherIssues": []
+    },
+    {
+      "sample": "upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb",
+      "run": 3,
+      "totalViolations": 2,
+      "violationCount": 2,
+      "otherIssues": []
+    },
+    {
+      "sample": "upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb",
+      "run": 4,
+      "totalViolations": 3,
+      "violationCount": 3,
+      "otherIssues": []
+    },
+    {
+      "sample": "upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb",
+      "run": 5,
+      "totalViolations": 4,
+      "violationCount": 4,
+      "otherIssues": []
+    }
+  ],
+  "violationsTotal": 18
+}

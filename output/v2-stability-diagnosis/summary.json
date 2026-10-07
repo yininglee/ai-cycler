@@ -1,0 +1,9 @@
+{
+  "sample": "demo-ride-2026-08-20",
+  "runs": 5,
+  "varianceClaimsAvailable": [
+    "speed.lastMinusFirst",
+    "heart_rate.lastMinusFirst",
+    "cadence.lastMinusFirst"
+  ]
+}

@@ -1,0 +1,561 @@
+{
+  "runId": "EVAL-V2-R01-20261007",
+  "versionStack": {
+    "prompt": "ride-prompt-v2.7.1",
+    "outputSchema": "ride-output-v2.2.0",
+    "inputSchema": "ride-model-input-v2.4.0",
+    "evidenceRules": "ride-evidence-rules-v2.1.0",
+    "model": "deepseek-ai/DeepSeek-V4-Flash",
+    "sampling": {
+      "temperature": 0.3,
+      "enable_thinking": false
+    }
+  },
+  "samples": [
+    "demo-ride-2026-07-22",
+    "demo-ride-2026-08-20",
+    "upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb",
+    "l3-power-preview"
+  ],
+  "runsPerSample": 10,
+  "totals": {
+    "runs": 40,
+    "firstRoundPass": 15,
+    "firstRoundPassRate": "37.5%",
+    "repairPass": 3,
+    "repairPassRate": "7.5%",
+    "finalPass": 18,
+    "finalDegradation": 22,
+    "finalDegradationRate": "55.0%"
+  },
+  "errorDistribution": {
+    "NUMBER_NOT_IN_CLAIMS": 12,
+    "PROVIDER_HTTP_ERROR": 7,
+    "STABILITY_WITHOUT_VARIANCE": 4,
+    "CLAIM_NOT_IN_DIMENSION": 1
+  },
+  "latency": {
+    "p50s": "67.8",
+    "p95s": "317.8",
+    "maxS": "330.1"
+  },
+  "cost": {
+    "promptTokens": 1665055,
+    "completionTokens": 189043
+  },
+  "perSample": {
+    "demo-ride-2026-07-22": {
+      "runs": 10,
+      "firstRoundPass": 2,
+      "degraded": 8,
+      "stages": [
+        "repairFailed",
+        "providerError",
+        "firstPass",
+        "repairFailed",
+        "firstPass",
+        "repairFailed",
+        "providerError",
+        "repairFailed",
+        "repairFailed",
+        "providerError"
+      ],
+      "failureCodes": [
+        "NUMBER_NOT_IN_CLAIMS",
+        "CLAIM_NOT_IN_DIMENSION",
+        "PROVIDER_HTTP_ERROR",
+        "NUMBER_NOT_IN_CLAIMS",
+        "NUMBER_NOT_IN_CLAIMS",
+        "PROVIDER_HTTP_ERROR",
+        "NUMBER_NOT_IN_CLAIMS",
+        "NUMBER_NOT_IN_CLAIMS",
+        "PROVIDER_HTTP_ERROR"
+      ]
+    },
+    "demo-ride-2026-08-20": {
+      "runs": 10,
+      "firstRoundPass": 2,
+      "degraded": 5,
+      "stages": [
+        "firstPass",
+        "deterministicRepairPass",
+        "deterministicRepairPass",
+        "providerError",
+        "providerError",
+        "providerError",
+        "repairFailed",
+        "providerError",
+        "deterministicRepairPass",
+        "firstPass"
+      ],
+      "failureCodes": [
+        "PROVIDER_HTTP_ERROR",
+        "PROVIDER_HTTP_ERROR",
+        "PROVIDER_HTTP_ERROR",
+        "STABILITY_WITHOUT_VARIANCE",
+        "PROVIDER_HTTP_ERROR"
+      ]
+    },
+    "upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb": {
+      "runs": 10,
+      "firstRoundPass": 2,
+      "degraded": 8,
+      "stages": [
+        "repairFailed",
+        "repairFailed",
+        "firstPass",
+        "firstPass",
+        "repairFailed",
+        "repairFailed",
+        "repairFailed",
+        "repairFailed",
+        "repairFailed",
+        "repairFailed"
+      ],
+      "failureCodes": [
+        "NUMBER_NOT_IN_CLAIMS",
+        "NUMBER_NOT_IN_CLAIMS",
+        "NUMBER_NOT_IN_CLAIMS",
+        "STABILITY_WITHOUT_VARIANCE",
+        "NUMBER_NOT_IN_CLAIMS",
+        "STABILITY_WITHOUT_VARIANCE",
+        "NUMBER_NOT_IN_CLAIMS",
+        "STABILITY_WITHOUT_VARIANCE",
+        "NUMBER_NOT_IN_CLAIMS"
+      ]
+    },
+    "l3-power-preview": {
+      "runs": 10,
+      "firstRoundPass": 9,
+      "degraded": 1,
+      "stages": [
+        "firstPass",
+        "firstPass",
+        "firstPass",
+        "firstPass",
+        "repairFailed",
+        "firstPass",
+        "firstPass",
+        "firstPass",
+        "firstPass",
+        "firstPass"
+      ],
+      "failureCodes": [
+        "NUMBER_NOT_IN_CLAIMS"
+      ]
+    }
+  },
+  "thresholds": {
+    "pass": "<= 5% 最终降级率放行",
+    "mixed": "5-15% 定处理方案",
+    "stop": "> 15% 停下换模型/加强提示"
+  },
+  "runOutcomes": [
+    {
+      "sample": "demo-ride-2026-07-22",
+      "run": 1,
+      "source": "b0",
+      "stage": "repairFailed",
+      "failureCodes": [
+        "NUMBER_NOT_IN_CLAIMS",
+        "CLAIM_NOT_IN_DIMENSION"
+      ],
+      "modelCalls": 2,
+      "latencyMs": 138461
+    },
+    {
+      "sample": "demo-ride-2026-07-22",
+      "run": 2,
+      "source": "b0",
+      "stage": "providerError",
+      "failureCodes": [
+        "PROVIDER_HTTP_ERROR"
+      ],
+      "modelCalls": 1,
+      "latencyMs": 70786
+    },
+    {
+      "sample": "demo-ride-2026-07-22",
+      "run": 3,
+      "source": "v2",
+      "stage": "firstPass",
+      "failureCodes": [],
+      "modelCalls": 1,
+      "latencyMs": 84730
+    },
+    {
+      "sample": "demo-ride-2026-07-22",
+      "run": 4,
+      "source": "b0",
+      "stage": "repairFailed",
+      "failureCodes": [
+        "NUMBER_NOT_IN_CLAIMS"
+      ],
+      "modelCalls": 2,
+      "latencyMs": 36185
+    },
+    {
+      "sample": "demo-ride-2026-07-22",
+      "run": 5,
+      "source": "v2",
+      "stage": "firstPass",
+      "failureCodes": [],
+      "modelCalls": 1,
+      "latencyMs": 64826
+    },
+    {
+      "sample": "demo-ride-2026-07-22",
+      "run": 6,
+      "source": "b0",
+      "stage": "repairFailed",
+      "failureCodes": [
+        "NUMBER_NOT_IN_CLAIMS"
+      ],
+      "modelCalls": 2,
+      "latencyMs": 99610
+    },
+    {
+      "sample": "demo-ride-2026-07-22",
+      "run": 7,
+      "source": "b0",
+      "stage": "providerError",
+      "failureCodes": [
+        "PROVIDER_HTTP_ERROR"
+      ],
+      "modelCalls": 1,
+      "latencyMs": 41616
+    },
+    {
+      "sample": "demo-ride-2026-07-22",
+      "run": 8,
+      "source": "b0",
+      "stage": "repairFailed",
+      "failureCodes": [
+        "NUMBER_NOT_IN_CLAIMS"
+      ],
+      "modelCalls": 2,
+      "latencyMs": 50804
+    },
+    {
+      "sample": "demo-ride-2026-07-22",
+      "run": 9,
+      "source": "b0",
+      "stage": "repairFailed",
+      "failureCodes": [
+        "NUMBER_NOT_IN_CLAIMS"
+      ],
+      "modelCalls": 2,
+      "latencyMs": 35082
+    },
+    {
+      "sample": "demo-ride-2026-07-22",
+      "run": 10,
+      "source": "b0",
+      "stage": "providerError",
+      "failureCodes": [
+        "PROVIDER_HTTP_ERROR"
+      ],
+      "modelCalls": 1,
+      "latencyMs": 79829
+    },
+    {
+      "sample": "demo-ride-2026-08-20",
+      "run": 1,
+      "source": "v2",
+      "stage": "firstPass",
+      "failureCodes": [],
+      "modelCalls": 1,
+      "latencyMs": 11444
+    },
+    {
+      "sample": "demo-ride-2026-08-20",
+      "run": 2,
+      "source": "v2",
+      "stage": "deterministicRepairPass",
+      "failureCodes": [],
+      "modelCalls": 1,
+      "latencyMs": 44043
+    },
+    {
+      "sample": "demo-ride-2026-08-20",
+      "run": 3,
+      "source": "v2",
+      "stage": "deterministicRepairPass",
+      "failureCodes": [],
+      "modelCalls": 1,
+      "latencyMs": 33951
+    },
+    {
+      "sample": "demo-ride-2026-08-20",
+      "run": 4,
+      "source": "b0",
+      "stage": "providerError",
+      "failureCodes": [
+        "PROVIDER_HTTP_ERROR"
+      ],
+      "modelCalls": 1,
+      "latencyMs": 65392
+    },
+    {
+      "sample": "demo-ride-2026-08-20",
+      "run": 5,
+      "source": "b0",
+      "stage": "providerError",
+      "failureCodes": [
+        "PROVIDER_HTTP_ERROR"
+      ],
+      "modelCalls": 1,
+      "latencyMs": 140566
+    },
+    {
+      "sample": "demo-ride-2026-08-20",
+      "run": 6,
+      "source": "b0",
+      "stage": "providerError",
+      "failureCodes": [
+        "PROVIDER_HTTP_ERROR"
+      ],
+      "modelCalls": 1,
+      "latencyMs": 219520
+    },
+    {
+      "sample": "demo-ride-2026-08-20",
+      "run": 7,
+      "source": "b0",
+      "stage": "repairFailed",
+      "failureCodes": [
+        "STABILITY_WITHOUT_VARIANCE"
+      ],
+      "modelCalls": 1,
+      "latencyMs": 32809
+    },
+    {
+      "sample": "demo-ride-2026-08-20",
+      "run": 8,
+      "source": "b0",
+      "stage": "providerError",
+      "failureCodes": [
+        "PROVIDER_HTTP_ERROR"
+      ],
+      "modelCalls": 1,
+      "latencyMs": 38000
+    },
+    {
+      "sample": "demo-ride-2026-08-20",
+      "run": 9,
+      "source": "v2",
+      "stage": "deterministicRepairPass",
+      "failureCodes": [],
+      "modelCalls": 1,
+      "latencyMs": 67804
+    },
+    {
+      "sample": "demo-ride-2026-08-20",
+      "run": 10,
+      "source": "v2",
+      "stage": "firstPass",
+      "failureCodes": [],
+      "modelCalls": 1,
+      "latencyMs": 73191
+    },
+    {
+      "sample": "upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb",
+      "run": 1,
+      "source": "b0",
+      "stage": "repairFailed",
+      "failureCodes": [
+        "NUMBER_NOT_IN_CLAIMS"
+      ],
+      "modelCalls": 2,
+      "latencyMs": 271696
+    },
+    {
+      "sample": "upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb",
+      "run": 2,
+      "source": "b0",
+      "stage": "repairFailed",
+      "failureCodes": [
+        "NUMBER_NOT_IN_CLAIMS"
+      ],
+      "modelCalls": 2,
+      "latencyMs": 145253
+    },
+    {
+      "sample": "upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb",
+      "run": 3,
+      "source": "v2",
+      "stage": "firstPass",
+      "failureCodes": [],
+      "modelCalls": 1,
+      "latencyMs": 145011
+    },
+    {
+      "sample": "upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb",
+      "run": 4,
+      "source": "v2",
+      "stage": "firstPass",
+      "failureCodes": [],
+      "modelCalls": 1,
+      "latencyMs": 131500
+    },
+    {
+      "sample": "upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb",
+      "run": 5,
+      "source": "b0",
+      "stage": "repairFailed",
+      "failureCodes": [
+        "NUMBER_NOT_IN_CLAIMS"
+      ],
+      "modelCalls": 2,
+      "latencyMs": 125231
+    },
+    {
+      "sample": "upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb",
+      "run": 6,
+      "source": "b0",
+      "stage": "repairFailed",
+      "failureCodes": [
+        "STABILITY_WITHOUT_VARIANCE"
+      ],
+      "modelCalls": 2,
+      "latencyMs": 112184
+    },
+    {
+      "sample": "upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb",
+      "run": 7,
+      "source": "b0",
+      "stage": "repairFailed",
+      "failureCodes": [
+        "NUMBER_NOT_IN_CLAIMS",
+        "STABILITY_WITHOUT_VARIANCE"
+      ],
+      "modelCalls": 2,
+      "latencyMs": 127312
+    },
+    {
+      "sample": "upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb",
+      "run": 8,
+      "source": "b0",
+      "stage": "repairFailed",
+      "failureCodes": [
+        "NUMBER_NOT_IN_CLAIMS"
+      ],
+      "modelCalls": 2,
+      "latencyMs": 132842
+    },
+    {
+      "sample": "upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb",
+      "run": 9,
+      "source": "b0",
+      "stage": "repairFailed",
+      "failureCodes": [
+        "STABILITY_WITHOUT_VARIANCE"
+      ],
+      "modelCalls": 2,
+      "latencyMs": 330102
+    },
+    {
+      "sample": "upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb",
+      "run": 10,
+      "source": "b0",
+      "stage": "repairFailed",
+      "failureCodes": [
+        "NUMBER_NOT_IN_CLAIMS"
+      ],
+      "modelCalls": 2,
+      "latencyMs": 317788
+    },
+    {
+      "sample": "l3-power-preview",
+      "run": 1,
+      "source": "v2",
+      "stage": "firstPass",
+      "failureCodes": [],
+      "modelCalls": 1,
+      "latencyMs": 40240
+    },
+    {
+      "sample": "l3-power-preview",
+      "run": 2,
+      "source": "v2",
+      "stage": "firstPass",
+      "failureCodes": [],
+      "modelCalls": 1,
+      "latencyMs": 10238
+    },
+    {
+      "sample": "l3-power-preview",
+      "run": 3,
+      "source": "v2",
+      "stage": "firstPass",
+      "failureCodes": [],
+      "modelCalls": 1,
+      "latencyMs": 40841
+    },
+    {
+      "sample": "l3-power-preview",
+      "run": 4,
+      "source": "v2",
+      "stage": "firstPass",
+      "failureCodes": [],
+      "modelCalls": 1,
+      "latencyMs": 53941
+    },
+    {
+      "sample": "l3-power-preview",
+      "run": 5,
+      "source": "b0",
+      "stage": "repairFailed",
+      "failureCodes": [
+        "NUMBER_NOT_IN_CLAIMS"
+      ],
+      "modelCalls": 2,
+      "latencyMs": 91331
+    },
+    {
+      "sample": "l3-power-preview",
+      "run": 6,
+      "source": "v2",
+      "stage": "firstPass",
+      "failureCodes": [],
+      "modelCalls": 1,
+      "latencyMs": 40088
+    },
+    {
+      "sample": "l3-power-preview",
+      "run": 7,
+      "source": "v2",
+      "stage": "firstPass",
+      "failureCodes": [],
+      "modelCalls": 1,
+      "latencyMs": 52478
+    },
+    {
+      "sample": "l3-power-preview",
+      "run": 8,
+      "source": "v2",
+      "stage": "firstPass",
+      "failureCodes": [],
+      "modelCalls": 1,
+      "latencyMs": 10488
+    },
+    {
+      "sample": "l3-power-preview",
+      "run": 9,
+      "source": "v2",
+      "stage": "firstPass",
+      "failureCodes": [],
+      "modelCalls": 1,
+      "latencyMs": 64991
+    },
+    {
+      "sample": "l3-power-preview",
+      "run": 10,
+      "source": "v2",
+      "stage": "firstPass",
+      "failureCodes": [],
+      "modelCalls": 1,
+      "latencyMs": 60357
+    }
+  ]
+}

@@ -9,3 +9,7 @@ test-data/private/
 .env*
 !.env.example
 .local-data/
+
+# 参考文献 PDF（本地产物，体积大，不入库；如需查阅请单独拷贝）
+doc_V2/15586657.pdf
+doc_V2/042_Cycling_science.pdf

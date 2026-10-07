@@ -1,0 +1,271 @@
+{
+  "schemaVersion": "ride-output-v2.2.0",
+  "label": {
+    "text": "本次骑行 161.8 公里，移动时长 6 小时 40 分钟，平均速度 24.06 km/h。",
+    "conclusionType": "fact",
+    "claimIds": [
+      "claim:demo-ride-2026-07-22:v2:metric.distanceM",
+      "claim:demo-ride-2026-07-22:v2:timing.movingDurationS",
+      "claim:demo-ride-2026-07-22:v2:speed.mean"
+    ]
+  },
+  "overallAssessment": {
+    "text": "本次骑行总距离 161.8 公里，移动时长 6 小时 40 分钟，总用时 7 小时 2 分钟，累计爬升 2924 米。整体配速为 24.06 km/h，速度变异系数为 49.2%，速度波动较大。功率平均 151 W，归一化功率 197 W，强度因子 0.99，训练压力指数 640.2，显示这是一次高强度的长距离骑行。本次可用数据有限，部分数据缺失。",
+    "conclusionType": "fact",
+    "claimIds": [
+      "claim:demo-ride-2026-07-22:v2:metric.distanceM",
+      "claim:demo-ride-2026-07-22:v2:timing.movingDurationS",
+      "claim:demo-ride-2026-07-22:v2:metric.elapsedDurationS",
+      "claim:demo-ride-2026-07-22:v2:metric.elevationGainM",
+      "claim:demo-ride-2026-07-22:v2:speed.mean",
+      "claim:demo-ride-2026-07-22:v2:speed.coefficientOfVariation",
+      "claim:demo-ride-2026-07-22:v2:power.mean",
+      "claim:demo-ride-2026-07-22:v2:power.normalizedW",
+      "claim:demo-ride-2026-07-22:v2:power.intensityFactor",
+      "claim:demo-ride-2026-07-22:v2:power.trainingStressScore"
+    ]
+  },
+  "highlights": [
+    {
+      "text": "本次骑行累计爬升 2924 米，包含 24 段爬坡，其中最长爬坡段持续 38 分钟，平均坡度 5.7%。",
+      "conclusionType": "fact",
+      "claimIds": [
+        "claim:demo-ride-2026-07-22:v2:metric.elevationGainM",
+        "claim:demo-ride-2026-07-22:v2:terrain.climbRunCount",
+        "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-37936-46050.span",
+        "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-37936-46050.averageGrade"
+      ]
+    },
+    {
+      "text": "10 秒峰值平均功率达到 566 W，20 秒为 538 W，30 秒为 516 W。",
+      "conclusionType": "fact",
+      "claimIds": [
+        "claim:demo-ride-2026-07-22:v2:power.peakAverage.10s",
+        "claim:demo-ride-2026-07-22:v2:power.peakAverage.20s",
+        "claim:demo-ride-2026-07-22:v2:power.peakAverage.30s"
+      ]
+    }
+  ],
+  "dimensions": [
+    {
+      "dimensionId": "pacingExecution",
+      "assertions": [
+        {
+          "text": "本次骑行移动时长 6 小时 40 分钟，总用时 7 小时 2 分钟，途中停车 14 次。平均速度 24.06 km/h，速度变异系数 49.2%，速度波动较大。",
+          "conclusionType": "fact",
+          "claimIds": [
+            "claim:demo-ride-2026-07-22:v2:timing.movingDurationS",
+            "claim:demo-ride-2026-07-22:v2:metric.elapsedDurationS",
+            "claim:demo-ride-2026-07-22:v2:stops.count",
+            "claim:demo-ride-2026-07-22:v2:speed.mean",
+            "claim:demo-ride-2026-07-22:v2:speed.coefficientOfVariation"
+          ]
+        },
+        {
+          "text": "整体配速波动较大，但后段速度比前段高 2.57 km/h，显示配速分配前慢后快。",
+          "conclusionType": "interpretation",
+          "claimIds": [
+            "claim:demo-ride-2026-07-22:v2:speed.lastMinusFirst",
+            "claim:demo-ride-2026-07-22:v2:speed.coefficientOfVariation"
+          ]
+        },
+        {
+          "text": "地形方面，爬坡段累计 70.2 公里，平路 16.1 公里，下坡 73.3 公里。爬坡段平均速度 18.59 km/h，功率 180 W；下坡段平均速度 40.85 km/h，功率 86 W。",
+          "conclusionType": "fact",
+          "claimIds": [
+            "claim:demo-ride-2026-07-22:v2:terrain.trendClimbDistanceM",
+            "claim:demo-ride-2026-07-22:v2:terrain.trendFlatDistanceM",
+            "claim:demo-ride-2026-07-22:v2:terrain.trendDescentDistanceM",
+            "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-climb-11010.4-21690.93.speed.mean",
+            "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-climb-11010.4-21690.93.power.mean",
+            "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-descent-62593.25-70758.08.speed.mean",
+            "claim:demo-ride-2026-07-22:v2:segment.terrain.terrain-descent-62593.25-70758.08.power.mean"
+          ]
+        }
+      ]
+    },
+    {
+      "dimensionId": "climbPerformance",
+      "assertions": [
+        {
+          "text": "本次骑行累计爬升 2924 米，累计下降 2808 米。识别出 15 段爬坡，其中 3 段作为代表。",
+          "conclusionType": "fact",
+          "claimIds": [
+            "claim:demo-ride-2026-07-22:v2:metric.elevationGainM",
+            "claim:demo-ride-2026-07-22:v2:metric.elevationLossM",
+            "claim:demo-ride-2026-07-22:v2:climb.representativeClimbCount"
+          ]
+        },
+        {
+          "text": "最难的爬坡段（难度评分 509）持续 25 分钟，距离 4.2 公里，平均坡度 11.1%，平均速度 9.9 km/h，平均功率 256 W。",
+          "conclusionType": "fact",
+          "claimIds": [
+            "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-84688-88849.span",
+            "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-84688-88849.distanceM",
+            "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-84688-88849.averageGrade",
+            "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-84688-88849.difficultyScore",
+            "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-84688-88849.speed.mean",
+            "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-84688-88849.power.mean"
+          ]
+        },
+        {
+          "text": "爬坡段功率输出较高，但速度随坡度变化明显，显示爬坡时以功率维持为主。",
+          "conclusionType": "interpretation",
+          "claimIds": [
+            "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-84688-88849.power.mean",
+            "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-84688-88849.speed.mean"
+          ]
+        }
+      ]
+    },
+    {
+      "dimensionId": "powerOutput",
+      "assertions": [
+        {
+          "text": "平均功率 151 W，归一化功率 197 W，功率变异系数 66.1%，功率波动较大。",
+          "conclusionType": "fact",
+          "claimIds": [
+            "claim:demo-ride-2026-07-22:v2:power.mean",
+            "claim:demo-ride-2026-07-22:v2:power.normalizedW",
+            "claim:demo-ride-2026-07-22:v2:power.coefficientOfVariation"
+          ]
+        },
+        {
+          "text": "功率区间分布：Z1 占 27%，Z2 占 14%，Z3 占 18%，Z4 占 17%，Z5 占 10%，Z6 占 9%，Z7 占 5%。高强度区间（Z5-Z7）合计占比 24%。",
+          "conclusionType": "fact",
+          "claimIds": [
+            "claim:demo-ride-2026-07-22:v2:power.zone.z1",
+            "claim:demo-ride-2026-07-22:v2:power.zone.z2",
+            "claim:demo-ride-2026-07-22:v2:power.zone.z3",
+            "claim:demo-ride-2026-07-22:v2:power.zone.z4",
+            "claim:demo-ride-2026-07-22:v2:power.zone.z5",
+            "claim:demo-ride-2026-07-22:v2:power.zone.z6",
+            "claim:demo-ride-2026-07-22:v2:power.zone.z7"
+          ]
+        },
+        {
+          "text": "功率输出整体偏高，但波动较大，后段功率比前段低 31.5 W，显示功率分配前高后低。",
+          "conclusionType": "interpretation",
+          "claimIds": [
+            "claim:demo-ride-2026-07-22:v2:power.mean",
+            "claim:demo-ride-2026-07-22:v2:power.coefficientOfVariation",
+            "claim:demo-ride-2026-07-22:v2:power.lastMinusFirst"
+          ]
+        },
+        {
+          "text": "巡航段平均功率 143 W，速度 29.33 km/h；另一巡航段功率 137 W，速度 26.7 km/h。功率与速度在同一时间窗口内共同变化，聚合窗口覆盖率为 99%。",
+          "conclusionType": "fact",
+          "claimIds": [
+            "claim:demo-ride-2026-07-22:v2:segment.cruise.cruise-0-23950.power.mean",
+            "claim:demo-ride-2026-07-22:v2:segment.cruise.cruise-0-23950.speed.mean",
+            "claim:demo-ride-2026-07-22:v2:segment.cruise.cruise-1-24179.power.mean",
+            "claim:demo-ride-2026-07-22:v2:segment.cruise.cruise-1-24179.speed.mean",
+            "claim:demo-ride-2026-07-22:v2:relation.fixed.power-speed.aggregate"
+          ]
+        }
+      ]
+    },
+    {
+      "dimensionId": "intensityAndTrainingLoad",
+      "assertions": [
+        {
+          "text": "本次骑行平均功率 151 W，平均功率体重比 2.15 W/kg，归一化功率 197 W，归一化功率体重比 2.82 W/kg。",
+          "conclusionType": "fact",
+          "claimIds": [
+            "claim:demo-ride-2026-07-22:v2:power.mean",
+            "claim:demo-ride-2026-07-22:v2:power.averageWkg",
+            "claim:demo-ride-2026-07-22:v2:power.normalizedW",
+            "claim:demo-ride-2026-07-22:v2:power.normalizedWkg"
+          ]
+        },
+        {
+          "text": "强度因子 0.99，训练压力指数 640.2，活动能量消耗 4439 千卡。",
+          "conclusionType": "fact",
+          "claimIds": [
+            "claim:demo-ride-2026-07-22:v2:power.intensityFactor",
+            "claim:demo-ride-2026-07-22:v2:power.trainingStressScore",
+            "claim:demo-ride-2026-07-22:v2:metric.activityEnergyKcal"
+          ]
+        },
+        {
+          "text": "本次骑行强度因子接近 1.0，训练压力指数较高，属于高负荷的单次骑行。",
+          "conclusionType": "interpretation",
+          "claimIds": [
+            "claim:demo-ride-2026-07-22:v2:power.intensityFactor",
+            "claim:demo-ride-2026-07-22:v2:power.trainingStressScore"
+          ]
+        }
+      ]
+    },
+    {
+      "dimensionId": "cadenceStrategy",
+      "assertions": [
+        {
+          "text": "平均踏频 76 rpm，踏频变异系数 15.3%，踏频波动较小。踏频区间分布：低 7%，稳定 37%，耐力 44%，高 11%。",
+          "conclusionType": "fact",
+          "claimIds": [
+            "claim:demo-ride-2026-07-22:v2:cadence.mean",
+            "claim:demo-ride-2026-07-22:v2:cadence.coefficientOfVariation",
+            "claim:demo-ride-2026-07-22:v2:cadence.zone.low",
+            "claim:demo-ride-2026-07-22:v2:cadence.zone.steady",
+            "claim:demo-ride-2026-07-22:v2:cadence.zone.endurance",
+            "claim:demo-ride-2026-07-22:v2:cadence.zone.high"
+          ]
+        },
+        {
+          "text": "踏频数据部分缺失，但整体踏频处于中等水平，波动不大。",
+          "conclusionType": "interpretation",
+          "claimIds": [
+            "claim:demo-ride-2026-07-22:v2:cadence.mean",
+            "claim:demo-ride-2026-07-22:v2:cadence.coefficientOfVariation"
+          ]
+        }
+      ]
+    },
+    {
+      "dimensionId": "crossSensorCoordination",
+      "assertions": [
+        {
+          "text": "功率与速度在同一时间窗口内共同变化，聚合窗口覆盖率为 99%，代表性窗口覆盖率分别为 100%、100%、77%。",
+          "conclusionType": "fact",
+          "claimIds": [
+            "claim:demo-ride-2026-07-22:v2:relation.fixed.power-speed.aggregate",
+            "claim:demo-ride-2026-07-22:v2:relation.fixed.power-speed.rep.2",
+            "claim:demo-ride-2026-07-22:v2:relation.fixed.power-speed.rep.3",
+            "claim:demo-ride-2026-07-22:v2:relation.fixed.power-speed.rep.159"
+          ]
+        }
+      ]
+    }
+  ],
+  "suggestions": [
+    {
+      "text": "本次骑行速度波动较大，下次骑行可以尝试更均匀的配速，避免前慢后快。",
+      "conclusionType": "suggestion",
+      "claimIds": [
+        "claim:demo-ride-2026-07-22:v2:speed.coefficientOfVariation",
+        "claim:demo-ride-2026-07-22:v2:speed.lastMinusFirst"
+      ],
+      "riskNote": "建议基于本次速度波动，但未考虑地形变化。"
+    },
+    {
+      "text": "高强度区间（Z5-Z7）占比 24%，训练压力指数较高，建议后续注意恢复，适当降低负荷。",
+      "conclusionType": "suggestion",
+      "claimIds": [
+        "claim:demo-ride-2026-07-22:v2:power.zone.z5",
+        "claim:demo-ride-2026-07-22:v2:power.zone.z6",
+        "claim:demo-ride-2026-07-22:v2:power.zone.z7",
+        "claim:demo-ride-2026-07-22:v2:power.trainingStressScore"
+      ],
+      "riskNote": "恢复建议基于单次负荷，不涉及长期状态。"
+    }
+  ],
+  "limitations": [
+    "terrain.climbRunCount:AGGREGATED_FROM_24_WINDOWS",
+    "terrain.flatRunCount:AGGREGATED_FROM_41_WINDOWS",
+    "terrain.descentRunCount:AGGREGATED_FROM_22_WINDOWS",
+    "heartRate:SERIES_MISSING",
+    "climb.representativeClimbCount:AGGREGATED_FROM_15_WINDOWS",
+    "relation.fixed.power-speed.aggregate:AGGREGATED_FROM_776_WINDOWS"
+  ]
+}

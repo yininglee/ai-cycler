@@ -1,0 +1,161 @@
+{
+  "schemaVersion": "ride-output-v2.2.0",
+  "label": {
+    "text": "总距离 31.1 公里的骑行，移动时长 1 小时 2 分钟",
+    "conclusionType": "fact",
+    "claimIds": [
+      "claim:demo-ride-2026-08-20:v2:metric.distanceM",
+      "claim:demo-ride-2026-08-20:v2:timing.movingDurationS"
+    ]
+  },
+  "overallAssessment": {
+    "text": "本次可用数据有限。整体为一次以平路为主的骑行，平均速度 28.47 km/h，平均心率 168 bpm，平均踏频 79 rpm。",
+    "conclusionType": "fact",
+    "claimIds": [
+      "claim:demo-ride-2026-08-20:v2:speed.mean",
+      "claim:demo-ride-2026-08-20:v2:heart_rate.mean",
+      "claim:demo-ride-2026-08-20:v2:cadence.mean",
+      "claim:demo-ride-2026-08-20:v2:terrain.trendFlatDistanceM"
+    ]
+  },
+  "highlights": [
+    {
+      "text": "在 48 分钟的平路路段中，平均速度达到 29.29 km/h，是本次骑行速度最快的持续路段。",
+      "conclusionType": "fact",
+      "claimIds": [
+        "claim:demo-ride-2026-08-20:v2:segment.terrain.terrain-flat-6846.2-31056.1.span",
+        "claim:demo-ride-2026-08-20:v2:segment.terrain.terrain-flat-6846.2-31056.1.speed.mean"
+      ]
+    }
+  ],
+  "dimensions": [
+    {
+      "dimensionId": "pacingExecution",
+      "assertions": [
+        {
+          "text": "本次骑行总距离 31.1 公里，移动时长 1 小时 2 分钟，总用时 1 小时 6 分钟，途中停车 1 次。",
+          "conclusionType": "fact",
+          "claimIds": [
+            "claim:demo-ride-2026-08-20:v2:metric.distanceM",
+            "claim:demo-ride-2026-08-20:v2:timing.movingDurationS",
+            "claim:demo-ride-2026-08-20:v2:metric.elapsedDurationS",
+            "claim:demo-ride-2026-08-20:v2:stops.count"
+          ]
+        },
+        {
+          "text": "平均速度 28.47 km/h（部分数据缺失）。巡航段中，第一段平均速度 29.97 km/h，第二段 27.96 km/h，第三段 29.23 km/h，速度呈现先降后升的走势。",
+          "conclusionType": "fact",
+          "claimIds": [
+            "claim:demo-ride-2026-08-20:v2:speed.mean",
+            "claim:demo-ride-2026-08-20:v2:segment.cruise.cruise-0-637.speed.mean",
+            "claim:demo-ride-2026-08-20:v2:segment.cruise.cruise-1-2102.speed.mean",
+            "claim:demo-ride-2026-08-20:v2:segment.cruise.cruise-2-2334.speed.mean"
+          ]
+        },
+        {
+          "text": "地形以平路为主，平路趋势距离 29 km，下坡趋势距离 1.6 km，爬升趋势距离 0 km。",
+          "conclusionType": "fact",
+          "claimIds": [
+            "claim:demo-ride-2026-08-20:v2:terrain.trendFlatDistanceM",
+            "claim:demo-ride-2026-08-20:v2:terrain.trendDescentDistanceM",
+            "claim:demo-ride-2026-08-20:v2:terrain.trendClimbDistanceM"
+          ]
+        },
+        {
+          "text": "整体配速在平路路段表现良好，速度变化与地形起伏相伴出现。",
+          "conclusionType": "interpretation",
+          "claimIds": [
+            "claim:demo-ride-2026-08-20:v2:segment.terrain.terrain-flat-6846.2-31056.1.speed.mean",
+            "claim:demo-ride-2026-08-20:v2:segment.terrain.terrain-descent-412.8-2022.7.speed.mean"
+          ]
+        }
+      ]
+    },
+    {
+      "dimensionId": "heartRateLoad",
+      "assertions": [
+        {
+          "text": "平均心率 168 bpm（部分数据缺失），心率区间分布以 Z4 为主，占比 58%，Z5 占比 21%，Z3 占比 15%，高强度区间（Z5-Z7）合计占比 78%。",
+          "conclusionType": "fact",
+          "claimIds": [
+            "claim:demo-ride-2026-08-20:v2:heart_rate.mean",
+            "claim:demo-ride-2026-08-20:v2:heartRate.zone.z4",
+            "claim:demo-ride-2026-08-20:v2:heartRate.zone.z5",
+            "claim:demo-ride-2026-08-20:v2:heartRate.zone.z3",
+            "claim:demo-ride-2026-08-20:v2:heartRate.zone.highIntensityCombined"
+          ]
+        },
+        {
+          "text": "心率在骑行中段达到较高水平，巡航段第二段平均心率 174 bpm，第三段 175 bpm，后段平路心率维持在 174 bpm，整体负荷偏重。",
+          "conclusionType": "interpretation",
+          "claimIds": [
+            "claim:demo-ride-2026-08-20:v2:segment.cruise.cruise-1-2102.heart_rate.mean",
+            "claim:demo-ride-2026-08-20:v2:segment.cruise.cruise-2-2334.heart_rate.mean",
+            "claim:demo-ride-2026-08-20:v2:segment.terrain.terrain-flat-6846.2-31056.1.heart_rate.mean"
+          ]
+        }
+      ]
+    },
+    {
+      "dimensionId": "cadenceStrategy",
+      "assertions": [
+        {
+          "text": "平均踏频 79 rpm（部分数据缺失）。巡航段踏频分别为 82 rpm、88 rpm、87 rpm，后段平路踏频为 83 rpm。",
+          "conclusionType": "fact",
+          "claimIds": [
+            "claim:demo-ride-2026-08-20:v2:cadence.mean",
+            "claim:demo-ride-2026-08-20:v2:segment.cruise.cruise-0-637.cadence.mean",
+            "claim:demo-ride-2026-08-20:v2:segment.cruise.cruise-1-2102.cadence.mean",
+            "claim:demo-ride-2026-08-20:v2:segment.cruise.cruise-2-2334.cadence.mean",
+            "claim:demo-ride-2026-08-20:v2:segment.terrain.terrain-flat-6846.2-31056.1.cadence.mean"
+          ]
+        },
+        {
+          "text": "踏频区间以 endurance 为主，占比 48%，high 区间占比 33%，整体踏频处于中高水平，骑行节奏较为积极。",
+          "conclusionType": "interpretation",
+          "claimIds": [
+            "claim:demo-ride-2026-08-20:v2:cadence.zone.endurance",
+            "claim:demo-ride-2026-08-20:v2:cadence.zone.high"
+          ]
+        }
+      ]
+    },
+    {
+      "dimensionId": "crossSensorCoordination",
+      "assertions": [
+        {
+          "text": "在 123 个固定窗口中，速度与心率的同窗口覆盖率为 100%，代表性窗口的覆盖率分别为 100%、100%、70%。",
+          "conclusionType": "fact",
+          "claimIds": [
+            "claim:demo-ride-2026-08-20:v2:relation.fixed.speed-heart_rate.aggregate",
+            "claim:demo-ride-2026-08-20:v2:relation.fixed.speed-heart_rate.rep.2",
+            "claim:demo-ride-2026-08-20:v2:relation.fixed.speed-heart_rate.rep.3",
+            "claim:demo-ride-2026-08-20:v2:relation.fixed.speed-heart_rate.rep.1"
+          ]
+        },
+        {
+          "text": "速度与心率在多数时间窗口内同步变化，表明两者关系紧密。",
+          "conclusionType": "interpretation",
+          "claimIds": [
+            "claim:demo-ride-2026-08-20:v2:relation.fixed.speed-heart_rate.aggregate"
+          ]
+        }
+      ]
+    }
+  ],
+  "suggestions": [
+    {
+      "text": "下次骑行可尝试在平路路段保持均匀踏频，以减少心率波动。",
+      "conclusionType": "suggestion",
+      "claimIds": [
+        "claim:demo-ride-2026-08-20:v2:segment.terrain.terrain-flat-6846.2-31056.1.cadence.mean"
+      ],
+      "riskNote": "踏频调整需结合个人感受，避免过度改变节奏。"
+    }
+  ],
+  "limitations": [
+    "speedStability:CONTINUITY_GAP",
+    "relation.fixed.speed-heart_rate.aggregate:AGGREGATED_FROM_123_WINDOWS",
+    "power:SERIES_MISSING"
+  ]
+}

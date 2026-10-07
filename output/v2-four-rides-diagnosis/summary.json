@@ -1,0 +1,19 @@
+{
+  "samples": [
+    {
+      "id": "upload-f95e988a-477e-4703-a2e7-0d1547fbe0b1",
+      "source": "upload"
+    }
+  ],
+  "runs": 1,
+  "summary": [
+    {
+      "sample": "upload-f95e988a-477e-4703-a2e7-0d1547fbe0b1",
+      "run": 1,
+      "pass": false,
+      "issueCodes": [
+        "NUMBER_NOT_IN_CLAIMS"
+      ]
+    }
+  ]
+}

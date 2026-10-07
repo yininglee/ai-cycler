@@ -1,0 +1,115 @@
+{
+  "sample": "demo-ride-2026-07-22",
+  "run": 3,
+  "latencyS": "123.2",
+  "firstRawText": "{\n  \"schemaVersion\": \"ride-output-v2.2.0\",\n  \"label\": {\n    \"text\": \"总距离 161.8 公里的长距离骑行\",\n    \"conclusionType\": \"fact\",\n    \"claimIds\": [\"claim:demo-ride-2026-07-22:v2:metric.distanceM\"]\n  },\n  \"overallAssessment\": {\n    \"text\": \"本次可用数据有限。骑行总距离 161.8 公里，移动时长 6 小时 40 分钟，平均速度 24.06 km/h，平均功率 151W，整体为一次高强度、长距离的骑行。\",\n    \"conclusionType\": \"fact\",\n    \"claimIds\": [\"claim:demo-ride-2026-07-22:v2:metric.distanceM\", \"claim:demo-ride-2026-07-22:v2:timing.movingDurationS\", \"claim:demo-ride-2026-07-22:v2:speed.mean\", \"claim:demo-ride-2026-07-22:v2:power.mean\"]\n  },\n  \"highlights\": [\n    {\n      \"text\": \"本次骑行累计爬升 2924 米，包含 24 段爬坡，其中最具挑战的爬坡段平均坡度 11.1%，难度评分 509。\",\n      \"conclusionType\": \"fact\",\n      \"claimIds\": [\"claim:demo-ride-2026-07-22:v2:metric.elevationGainM\", \"claim:demo-ride-2026-07-22:v2:terrain.climbRunCount\", \"claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-84688-88849.averageGrade\", \"claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-84688-88849.difficultyScore\"]\n    },\n    {\n      \"text\": \"10 秒峰值平均功率达到 566W，显示出较强的短时爆发力。\",\n      \"conclusionType\": \"fact\",\n      \"claimIds\": [\"claim:demo-ride-2026-07-22:v2:power.peakAverage.10s\"]\n    }\n  ],\n  \"dimensions\": [\n    {\n      \"dimensionId\": \"pacingExecution\",\n      \"assertions\": [\n        {\n          \"text\": \"本次骑行移动时长 6 小时 40 分钟，总用时 7 小时 2 分钟，途中停车 14 次。\",\n          \"conclusionType\": \"fact\",\n          \"claimIds\": [\"claim:demo-ride-2026-07-22:v2:timing.movingDurationS\", \"claim:demo-ride-2026-07-22:v2:metric.elapsedDurationS\", \"claim:demo-ride-2026-07-22:v2:stops.count\"]\n        },\n        {\n          \"text\": \"平均速度 24.06 km/h，速度变异系数 49.2%，末段比首段快 2.57 km/h，整体速度波动较大。\",\n          \"conclusionType\": \"fact\",\n          \"claimIds\": [\"claim:demo-ride-2026-07-22:v2:speed.mean\", \"claim:demo-ride-2026-07-22:v2:speed.coefficientOfVariation\", \"claim:demo-ride-2026-07-22:v2:speed.lastMinusFirst\"]\n        },\n        {\n          \"text\": \"巡航段1（2 分钟）平均速度 29.33 km/h、功率 143W；巡航段2（2 分钟）平均速度 26.7 km/h、功率 137W。\",\n          \"conclusionType\": \"fact\",\n          \"claimIds\": [\"claim:demo-ride-2026-07-22:v2:segment.cruise.cruise-0-23950.span\", \"claim:demo-ride-2026-07-22:v2:segment.cruise.cruise-0-23950.speed.mean\", \"claim:demo-ride-2026-07-22:v2:segment.cruise.cruise-0-23950.power.mean\", \"claim:demo-ride-2026-07-22:v2:segment.cruise.cruise-1-24179.span\", \"claim:demo-ride-2026-07-22:v2:segment.cruise.cruise-1-24179.speed.mean\", \"claim:demo-ride-2026-07-22:v2:segment.cruise.cruise-1-24179.power.mean\"]\n        },\n        {\n          \"text\": \"地形分类覆盖率为 100%，其中爬坡段 24 段、平路段 41 段、下坡段 22 段。\",\n          \"conclusionType\": \"fact\",\n          \"claimIds\": [\"claim:demo-ride-2026-07-22:v2:terrain.classifiedCoverageRatio\", \"claim:demo-ride-2026-07-22:v2:terrain.climbRunCount\", \"claim:demo-ride-2026-07-22:v2:terrain.flatRunCount\", \"claim:demo-ride-2026-07-22:v2:terrain.descentRunCount\"]\n        },\n        {\n          \"text\": \"整体配速波动较大，但末段速度高于首段，可能反映了骑行节奏的变化。\",\n          \"conclusionType\": \"interpretation\",\n          \"claimIds\": [\"claim:demo-ride-2026-07-22:v2:speed.coefficientOfVariation\", \"claim:demo-ride-2026-07-22:v2:speed.lastMinusFirst\"]\n        }\n      ]\n    },\n    {\n      \"dimensionId\": \"climbPerformance\",\n      \"assertions\": [\n        {\n          \"text\": \"本次骑行累计爬升 2924 米，累计下降 2808 米，识别出 15 段爬坡，其中 3 段作为代表段。\",\n          \"conclusionType\": \"fact\",\n          \"claimIds\": [\"claim:demo-ride-2026-07-22:v2:metric.elevationGainM\", \"claim:demo-ride-2026-07-22:v2:metric.elevationLossM\", \"claim:demo-ride-2026-07-22:v2:climb.representativeClimbCount\"]\n        },\n        {\n          \"text\": \"代表爬坡段1：长度 8.1 公里，爬升 467 米，平均坡度 5.7%，难度评分 268，用时 38 分钟，平均速度 13.26 km/h，平均功率 185W。\",\n          \"conclusionType\": \"fact\",\n          \"claimIds\": [\"claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-37936-46050.distanceM\", \"claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-37936-46050.netElevationGainM\", \"claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-37936-46050.averageGrade\", \"claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-37936-46050.difficultyScore\", \"claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-37936-46050.span\", \"claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-37936-46050.speed.mean\", \"claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-37936-46050.power.mean\"]\n        },\n        {\n          \"text\": \"代表爬坡段2：长度 4.2 公里，爬升 460 米，平均坡度 11.1%，难度评分 509，用时 25 分钟，平均速度 9.9 km/h，平均功率 256W。\",\n          \"conclusionType\": \"fact\",\n          \"claimIds\": [\"claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-84688-88849.distanceM\", \"claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-84688-88849.netElevationGainM\", \"claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-84688-88849.averageGrade\", \"claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-84688-88849.difficultyScore\", \"claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-84688-88849.span\", \"claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-84688-88849.speed.mean\", \"claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-84688-88849.power.mean\"]\n        },\n        {\n          \"text\": \"代表爬坡段3：长度 5.6 公里，爬升 270 米，平均坡度 4.9%，难度评分 131，用时 22 分钟，平均速度 16.98 km/h，平均功率 206W。\",\n          \"conclusionType\": \"fact\",\n          \"claimIds\": [\"claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-110427-115991.distanceM\", \"claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-110427-115991.netElevationGainM\", \"claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-110427-115991.averageGrade\", \"claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-110427-115991.difficultyScore\", \"claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-110427-115991.span\", \"claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-110427-115991.speed.mean\", \"claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-110427-115991.power.mean\"]\n        },\n        {\n          \"text\": \"在最具挑战的爬坡段（平均坡度 11.1%）上，平均功率 256W，明显高于整体平均功率 151W，显示出上坡时的功率输出增强。\",\n          \"conclusionType\": \"interpretation\",\n          \"claimIds\": [\"claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-84688-88849.power.mean\", \"claim:demo-ride-2026-07-22:v2:power.mean\"]\n        }\n      ]\n    },\n    {\n      \"dimensionId\": \"powerOutput\",\n      \"assertions\": [\n        {\n          \"text\": \"平均功率 151W，归一化功率 197W，平均功率体重比 2.15 W/kg，归一化功率体重比 2.82 W/kg。\",\n          \"conclusionType\": \"fact\",\n          \"claimIds\": [\"claim:demo-ride-2026-07-22:v2:power.mean\", \"claim:demo-ride-2026-07-22:v2:power.normalizedW\", \"claim:demo-ride-2026-07-22:v2:power.averageWkg\", \"claim:demo-ride-2026-07-22:v2:power.normalizedWkg\"]\n        },\n        {\n          \"text\": \"功率变异系数 66.1%，末段比首段低 31.5W，功率输出波动较大。\",\n          \"conclusionType\": \"fact\",\n          \"claimIds\": [\"claim:demo-ride-2026-07-22:v2:power.coefficientOfVariation\", \"claim:demo-ride-2026-07-22:v2:power.lastMinusFirst\"]\n        },\n        {\n          \"text\": \"10 秒峰值平均功率 566W，20 秒峰值平均功率 538W，30 秒峰值平均功率 516W。\",\n          \"conclusionType\": \"fact\",\n          \"claimIds\": [\"claim:demo-ride-2026-07-22:v2:power.peakAverage.10s\", \"claim:demo-ride-2026-07-22:v2:power.peakAverage.20s\", \"claim:demo-ride-2026-07-22:v2:power.peakAverage.30s\"]\n        },\n        {\n          \"text\": \"功率区间分布：Z1 占 27%，Z2 占 14%，Z3 占 18%，Z4 占 17%，Z5 占 10%，Z6 占 9%，Z7 占 5%，高强度区间（Z5-Z7）合计占 24%。\",\n          \"conclusionType\": \"fact\",\n          \"claimIds\": [\"claim:demo-ride-2026-07-22:v2:power.zone.z1\", \"claim:demo-ride-2026-07-22:v2:power.zone.z2\", \"claim:demo-ride-2026-07-22:v2:power.zone.z3\", \"claim:demo-ride-2026-07-22:v2:power.zone.z4\", \"claim:demo-ride-2026-07-22:v2:power.zone.z5\", \"claim:demo-ride-2026-07-22:v2:power.zone.z6\", \"claim:demo-ride-2026-07-22:v2:power.zone.z7\", \"claim:demo-ride-2026-07-22:v2:power.zone.highIntensityCombined\"]\n        },\n        {\n          \"text\": \"功率与速度的同窗口覆盖率为 99%，代表性窗口覆盖率最高 100%、最低 77%，功率与速度数据在时间上高度对齐。\",\n          \"conclusionType\": \"fact\",\n          \"claimIds\": [\"claim:demo-ride-2026-07-22:v2:relation.fixed.power-speed.aggregate\", \"claim:demo-ride-2026-07-22:v2:relation.fixed.power-speed.rep.2\", \"claim:demo-ride-2026-07-22:v2:relation.fixed.power-speed.rep.3\", \"claim:demo-ride-2026-07-22:v2:relation.fixed.power-speed.rep.159\"]\n        },\n        {\n          \"text\": \"整体功率输出波动较大，但高强度区间占比 24%，表明骑行中包含较多高强度努力。\",\n          \"conclusionType\": \"interpretation\",\n          \"claimIds\": [\"claim:demo-ride-2026-07-22:v2:power.coefficientOfVariation\", \"claim:demo-ride-2026-07-22:v2:power.zone.highIntensityCombined\"]\n        }\n      ]\n    },\n    {\n      \"dimensionId\": \"intensityAndTrainingLoad\",\n      \"assertions\": [\n        {\n          \"text\": \"本次骑行强度因子 0.99，训练压力评分 640.2，活动能量消耗 4439 千卡。\",\n          \"conclusionType\": \"fact\",\n          \"claimIds\": [\"claim:demo-ride-2026-07-22:v2:power.intensityFactor\", \"claim:demo-ride-2026-07-22:v2:power.trainingStressScore\", \"claim:demo-ride-2026-07-22:v2:metric.activityEnergyKcal\"]\n        },\n        {\n          \"text\": \"基于验证 FTP 200W，本次骑行强度因子接近 1.0，训练压力评分较高，属于高负荷的单次骑行。\",\n          \"conclusionType\": \"interpretation\",\n          \"claimIds\": [\"claim:demo-ride-2026-07-22:v2:profile.verifiedFtpW\", \"claim:demo-ride-2026-07-22:v2:power.intensityFactor\", \"claim:demo-ride-2026-07-22:v2:power.trainingStressScore\"]\n        }\n      ]\n    },\n    {\n      \"dimensionId\": \"cadenceStrategy\",\n      \"assertions\": [\n        {\n          \"text\": \"平均踏频 76 rpm，踏频变异系数 15.3%，末段比首段低 2.9 rpm。\",\n          \"conclusionType\": \"fact\",\n          \"claimIds\": [\"claim:demo-ride-2026-07-22:v2:cadence.mean\", \"claim:demo-ride-2026-07-22:v2:cadence.coefficientOfVariation\", \"claim:demo-ride-2026-07-22:v2:cadence.lastMinusFirst\"]\n        },\n        {\n          \"text\": \"踏频区间分布：零区间 0%，低区间 7%，平稳区间 37%，耐力区间 44%，高区间 11%，极高区间 0%。\",\n          \"conclusionType\": \"fact\",\n          \"claimIds\": [\"claim:demo-ride-2026-07-22:v2:cadence.zone.zero\", \"claim:demo-ride-2026-07-22:v2:cadence.zone.low\", \"claim:demo-ride-2026-07-22:v2:cadence.zone.steady\", \"claim:demo-ride-2026-07-22:v2:cadence.zone.endurance\", \"claim:demo-ride-2026-07-22:v2:cadence.zone.high\", \"claim:demo-ride-2026-07-22:v2:cadence.zone.very-high\"]\n        },\n        {\n          \"text\": \"踏频数据部分缺失，但平均踏频 76 rpm，主要分布在耐力区间（44%）和平稳区间（37%），整体踏频策略偏向耐力型。\",\n          \"conclusionType\": \"interpretation\",\n          \"claimIds\": [\"claim:demo-ride-2026-07-22:v2:cadence.mean\", \"claim:demo-ride-2026-07-22:v2:cadence.zone.endurance\", \"claim:demo-ride-2026-07-22:v2:cadence.zone.steady\"]\n        }\n      ]\n    },\n    {\n      \"dimensionId\": \"crossSensorCoordination\",\n      \"assertions\": [\n        {\n          \"text\": \"功率与速度的同窗口覆盖率平均为 99%，代表性窗口覆盖率最高 100%、最低 77%，功率与速度数据在时间上高度对齐。\",\n          \"conclusionType\": \"fact\",\n          \"claimIds\": [\"claim:demo-ride-2026-07-22:v2:relation.fixed.power-speed.aggregate\", \"claim:demo-ride-2026-07-22:v2:relation.fixed.power-speed.rep.2\", \"claim:demo-ride-2026-07-22:v2:relation.fixed.power-speed.rep.3\", \"claim:demo-ride-2026-07-22:v2:relation.fixed.power-speed.rep.159\"]\n        },\n        {\n          \"text\": \"功率与速度数据在时间上高度对齐，表明传感器记录同步良好。\",\n          \"conclusionType\": \"interpretation\",\n          \"claimIds\": [\"claim:demo-ride-2026-07-22:v2:relation.fixed.power-speed.aggregate\"]\n        }\n      ]\n    }\n  ],\n  \"suggestions\": [\n    {\n      \"text\": \"本次骑行训练压力评分较高（640.2），建议后续安排适当的恢复时间，避免连续高强度训练。\",\n      \"conclusionType\": \"suggestion\",\n      \"claimIds\": [\"claim:demo-ride-2026-07-22:v2:power.trainingStressScore\"],\n      \"riskNote\": \"恢复建议基于单次负荷，不构成恢复状态断言。\"\n    },\n    {\n      \"text\": \"踏频数据部分缺失，建议下次骑行确保踏频传感器全程记录，以获得更完整的踏频分析。\",\n      \"conclusionType\": \"suggestion\",\n      \"claimIds\": [\"claim:demo-ride-2026-07-22:v2:cadence.mean\"],\n      \"riskNote\": \"踏频数据部分缺失，建议仅供参考。\"\n    }\n  ],\n  \"limitations\": [\n    \"terrain.climbRunCount:AGGREGATED_FROM_24_WINDOWS\",\n    \"terrain.flatRunCount:AGGREGATED_FROM_41_WINDOWS\",\n    \"terrain.descentRunCount:AGGREGATED_FROM_22_WINDOWS\",\n    \"heartRate:SERIES_MISSING\",\n    \"climb.representativeClimbCount:AGGREGATED_FROM_15_WINDOWS\",\n    \"relation.fixed.power-speed.aggregate:AGGREGATED_FROM_776_WINDOWS\"\n  ]\n}",
+  "issues": [
+    {
+      "code": "CLAIM_NOT_IN_DIMENSION",
+      "path": "dimensions[1].assertions[4].claimIds",
+      "message": "claimId \"claim:demo-ride-2026-07-22:v2:power.mean\" belongs to dimension \"powerOutput, intensityAndTrainingLoad\", not \"climbPerformance\""
+    },
+    {
+      "code": "NUMBER_NOT_IN_CLAIMS",
+      "path": "dimensions[1].assertions[4].text",
+      "message": "number 11.1 in the text does not match any referenced claim value/displayValue"
+    },
+    {
+      "code": "NUMBER_NOT_IN_CLAIMS",
+      "path": "dimensions[1].assertions[4].text",
+      "message": "number 151 in the text does not match any referenced claim value/displayValue"
+    }
+  ],
+  "violations": [
+    {
+      "path": "dimensions[1].assertions[4].text",
+      "message": "number 11.1 in the text does not match any referenced claim value/displayValue",
+      "number": 11.1,
+      "text": "在最具挑战的爬坡段（平均坡度 11.1%）上，平均功率 256W，明显高于整体平均功率 151W，显示出上坡时的功率输出增强。",
+      "conclusionType": "interpretation",
+      "claimIds": [
+        "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-84688-88849.power.mean",
+        "claim:demo-ride-2026-07-22:v2:power.mean"
+      ],
+      "knowledgeIds": [],
+      "claims": [
+        {
+          "claimId": "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-84688-88849.power.mean",
+          "key": "segment.climb.event-climb-84688-88849.power.mean",
+          "kind": "advanced",
+          "value": 256.3731343283582,
+          "displayValue": "256",
+          "candidates": [
+            256.3731343283582,
+            256,
+            256.4,
+            256.37
+          ],
+          "nearestCandidate": 256,
+          "nearestDiff": 244.9
+        },
+        {
+          "claimId": "claim:demo-ride-2026-07-22:v2:power.mean",
+          "key": "power.mean",
+          "kind": "feature",
+          "value": 150.53413551800648,
+          "displayValue": "151",
+          "text": "power weighted mean",
+          "candidates": [
+            150.53413551800648,
+            151,
+            150.5,
+            150.53
+          ],
+          "nearestCandidate": 150.5,
+          "nearestDiff": 139.4
+        }
+      ]
+    },
+    {
+      "path": "dimensions[1].assertions[4].text",
+      "message": "number 151 in the text does not match any referenced claim value/displayValue",
+      "number": 151,
+      "text": "在最具挑战的爬坡段（平均坡度 11.1%）上，平均功率 256W，明显高于整体平均功率 151W，显示出上坡时的功率输出增强。",
+      "conclusionType": "interpretation",
+      "claimIds": [
+        "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-84688-88849.power.mean",
+        "claim:demo-ride-2026-07-22:v2:power.mean"
+      ],
+      "knowledgeIds": [],
+      "claims": [
+        {
+          "claimId": "claim:demo-ride-2026-07-22:v2:segment.climb.event-climb-84688-88849.power.mean",
+          "key": "segment.climb.event-climb-84688-88849.power.mean",
+          "kind": "advanced",
+          "value": 256.3731343283582,
+          "displayValue": "256",
+          "candidates": [
+            256.3731343283582,
+            256,
+            256.4,
+            256.37
+          ],
+          "nearestCandidate": 256,
+          "nearestDiff": 105
+        },
+        {
+          "claimId": "claim:demo-ride-2026-07-22:v2:power.mean",
+          "key": "power.mean",
+          "kind": "feature",
+          "value": 150.53413551800648,
+          "displayValue": "151",
+          "text": "power weighted mean",
+          "candidates": [
+            150.53413551800648,
+            151,
+            150.5,
+            150.53
+          ],
+          "nearestCandidate": 151,
+          "nearestDiff": 0
+        }
+      ]
+    }
+  ]
+}

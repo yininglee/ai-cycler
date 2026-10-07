@@ -22,6 +22,7 @@
 
 - 项目评测的**正式一级分层轴是 `split`**：`dev → regression → blind → red-team → product`（决定能否调参、谁可见答案、是否阻断放行）。
 - **"常规 / 边界 / 对抗"不是项目原有词汇**，是难度-覆盖轴的口语化描述，落在 `fixture` 类型、`tier`（L1/L2/L3）与规则分支上。案例文件（如 `eval/advanced-interpretation-v0.1/cases/*.json`）**只有 `split` 字段，没有 `tier`/`difficulty`**。对外陈述时不要让"常规/边界/对抗"看起来像数据集名字。
+- **V2 骑后解读的 claim `kind` 实际只用 3 种**（demo-ride-2026-07-22 实测 107 条：`advanced` 94 / `feature` 9 / `relation` 4）：`feature`=时序统计（默认 kind，如均速/均功率/踏频均值）；`advanced`=确定性规则派生的高阶事实（占绝大多数，带 `formulaVersion`，如距离/时间/爬升/功率区间/强度因子/地形分段）；`relation`=跨传感器关系。枚举里还有 `metric`/`limitation`/`history`，但单次解读里**都是 0**：`metric` 是枚举遗留、`claim()` 默认 kind=feature 且显式从未写 metric；`limitation` 改由 `questions[].limitations` 表达、不生成 claim；`history` 被 S2-06 移出。**区分"记录/计算/估算"靠 `provenance`（recorded/calculated/estimated），不是 `kind`**。对外别把"基础事实"说成 `metric`。
 
 ## 五套冻结集的准确口径（面试/简历/文档统一用这张表）
 

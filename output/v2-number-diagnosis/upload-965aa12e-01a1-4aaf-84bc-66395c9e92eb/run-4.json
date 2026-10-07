@@ -1,0 +1,250 @@
+{
+  "sample": "upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb",
+  "run": 4,
+  "latencyS": "22.6",
+  "firstRawText": "{\n  \"schemaVersion\": \"ride-output-v2.2.0\",\n  \"label\": {\n    \"text\": \"总距离 56 公里、爬升 904 米的骑行\",\n    \"conclusionType\": \"fact\",\n    \"claimIds\": [\n      \"claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:metric.distanceM\",\n      \"claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:metric.elevationGainM\"\n    ]\n  },\n  \"overallAssessment\": {\n    \"text\": \"本次骑行总距离 56 公里，移动时长 2 小时 9 分钟，平均速度 26.1 km/h，平均功率 159W，整体为一次中等强度的耐力骑行。\",\n    \"conclusionType\": \"fact\",\n    \"claimIds\": [\n      \"claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:metric.distanceM\",\n      \"claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:timing.movingDurationS\",\n      \"claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:speed.mean\",\n      \"claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:power.mean\"\n    ]\n  },\n  \"highlights\": [\n    {\n      \"text\": \"本次骑行包含 3 段代表性爬坡，其中最长一段爬坡距离 8.1 公里、平均坡度 5.8%，用时 25 分钟。\",\n      \"conclusionType\": \"fact\",\n      \"claimIds\": [\n        \"claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:segment.climb.event-climb-47924-55979.distanceM\",\n        \"claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:segment.climb.event-climb-47924-55979.averageGrade\",\n        \"claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:segment.climb.event-climb-47924-55979.span\"\n      ]\n    },\n    {\n      \"text\": \"10 秒峰值平均功率达到 417W，显示出较强的短时爆发能力。\",\n      \"conclusionType\": \"fact\",\n      \"claimIds\": [\n        \"claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:power.peakAverage.10s\"\n      ]\n    }\n  ],\n  \"dimensions\": [\n    {\n      \"dimensionId\": \"pacingExecution\",\n      \"assertions\": [\n        {\n          \"text\": \"本次骑行总距离 56 公里，移动时长 2 小时 9 分钟，总用时 2 小时 20 分钟，平均速度 26.1 km/h。\",\n          \"conclusionType\": \"fact\",\n          \"claimIds\": [\n            \"claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:metric.distanceM\",\n            \"claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:timing.movingDurationS\",\n            \"claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:metric.elapsedDurationS\",\n            \"claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:speed.mean\"\n          ]\n        },\n        {\n          \"text\": \"骑行过程中共出现 10 次停车，速度变异系数为 37.6%，速度波动较大。\",\n          \"conclusionType\": \"fact\",\n          \"claimIds\": [\n            \"claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:stops.count\",\n            \"claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:speed.coefficientOfVariation\"\n          ]\n        },\n        {\n          \"text\": \"巡航段 1 平均速度 34.17 km/h，巡航段 2 平均速度 31.01 km/h，两段巡航速度相近，配速执行较为一致。\",\n          \"conclusionType\": \"interpretation\",\n          \"claimIds\": [\n            \"claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:segment.cruise.cruise-0-2397.speed.mean\",\n            \"claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:segment.cruise.cruise-1-3117.speed.mean\"\n          ]\n        },\n        {\n          \"text\": \"地形分类覆盖率为 100%，其中爬坡段累计 24.7 公里，平路段 12.7 公里，下坡段 18.3 公里。\",\n          \"conclusionType\": \"fact\",\n          \"claimIds\": [\n            \"claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:terrain.classifiedCoverageRatio\",\n            \"claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:terrain.trendClimbDistanceM\",\n            \"claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:terrain.trendFlatDistanceM\",\n            \"claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:terrain.trendDescentDistanceM\"\n          ]\n        }\n      ]\n    },\n    {\n      \"dimensionId\": \"climbPerformance\",\n      \"assertions\": [\n        {\n          \"text\": \"本次骑行累计爬升 904 米，下降 414 米，包含 8 段爬坡、8 段下坡和 15 段平路。\",\n          \"conclusionType\": \"fact\",\n          \"claimIds\": [\n            \"claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:metric.elevationGainM\",\n            \"claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:metric.elevationLossM\",\n            \"claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:terrain.climbRunCount\",\n            \"claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:terrain.descentRunCount\",\n            \"claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:terrain.flatRunCount\"\n          ]\n        },\n        {\n          \"text\": \"代表性爬坡中，最长一段爬坡距离 8.1 公里、平均坡度 5.8%、净爬升 467 米，用时 25 分钟，平均功率 284W。\",\n          \"conclusionType\": \"fact\",\n          \"claimIds\": [\n            \"claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:segment.climb.event-climb-47924-55979.distanceM\",\n            \"claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:segment.climb.event-climb-47924-55979.averageGrade\",\n            \"claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:segment.climb.event-climb-47924-55979.netElevationGainM\",\n            \"claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:segment.climb.event-climb-47924-55979.span\",\n            \"claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:segment.climb.event-climb-47924-55979.power.mean\"\n          ]\n        },\n        {\n          \"text\": \"另一段代表性爬坡距离 6.4 公里、平均坡度 4.4%，用时 20 分钟，平均功率 207W，爬坡强度相对适中。\",\n          \"conclusionType\": \"interpretation\",\n          \"claimIds\": [\n            \"claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:segment.climb.event-climb-24698-31062.distanceM\",\n            \"claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:segment.climb.event-climb-24698-31062.averageGrade\",\n            \"claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:segment.climb.event-climb-24698-31062.span\",\n            \"claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:segment.climb.event-climb-24698-31062.power.mean\"\n          ]\n        }\n      ]\n    },\n    {\n      \"dimensionId\": \"powerOutput\",\n      \"assertions\": [\n        {\n          \"text\": \"平均功率 159W，归一化功率 218W，平均功率体重比 2.27 W/kg，强度因子 1.09。\",\n          \"conclusionType\": \"fact\",\n          \"claimIds\": [\n            \"claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:power.mean\",\n            \"claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:power.normalizedW\",\n            \"claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:power.averageWkg\",\n            \"claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:power.intensityFactor\"\n          ]\n        },\n        {\n          \"text\": \"功率区间分布：Z1 占 31%，Z2 占 15%，Z3 占 12%，Z4 占 9%，Z5 占 10%，Z6 占 16%，Z7 占 8%，高强度区间（Z5-Z7）合计占 34%。\",\n          \"conclusionType\": \"fact\",\n          \"claimIds\": [\n            \"claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:power.zone.z1\",\n            \"claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:power.zone.z2\",\n            \"claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:power.zone.z3\",\n            \"claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:power.zone.z4\",\n            \"claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:power.zone.z5\",\n            \"claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:power.zone.z6\",\n            \"claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:power.zone.z7\",\n            \"claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:power.zone.highIntensityCombined\"\n          ]\n        },\n        {\n          \"text\": \"功率变异系数为 66.2%，功率波动较大，这与地形起伏和多次停车相伴出现。\",\n          \"conclusionType\": \"interpretation\",\n          \"claimIds\": [\n            \"claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:power.coefficientOfVariation\"\n          ]\n        },\n        {\n          \"text\": \"10 秒峰值平均功率 417W，20 秒峰值平均功率 377W，30 秒峰值平均功率 349W，短时爆发输出较强。\",\n          \"conclusionType\": \"fact\",\n          \"claimIds\": [\n            \"claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:power.peakAverage.10s\",\n            \"claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:power.peakAverage.20s\",\n            \"claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:power.peakAverage.30s\"\n          ]\n        }\n      ]\n    },\n    {\n      \"dimensionId\": \"intensityAndTrainingLoad\",\n      \"assertions\": [\n        {\n          \"text\": \"本次骑行训练压力指数（TSS）为 253.3，强度因子 1.09，属于较高负荷的单次训练。\",\n          \"conclusionType\": \"fact\",\n          \"claimIds\": [\n            \"claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:power.trainingStressScore\",\n            \"claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:power.intensityFactor\"\n          ]\n        },\n        {\n          \"text\": \"活动消耗能量 1576 千卡，移动时长 2 小时 9 分钟，平均功率 159W。\",\n          \"conclusionType\": \"fact\",\n          \"claimIds\": [\n            \"claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:metric.activityEnergyKcal\",\n            \"claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:timing.movingDurationS\",\n            \"claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:power.mean\"\n          ]\n        },\n        {\n          \"text\": \"高强度区间（Z5-Z7）合计占比 34%，说明本次骑行包含较多高强度输出，训练负荷较高。\",\n          \"conclusionType\": \"interpretation\",\n          \"claimIds\": [\n            \"claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:power.zone.highIntensityCombined\"\n          ]\n        }\n      ]\n    },\n    {\n      \"dimensionId\": \"cadenceStrategy\",\n      \"assertions\": [\n        {\n          \"text\": \"平均踏频 70 rpm（部分数据缺失），踏频区间分布：低踏频 19%，平稳踏频 42%，耐力踏频 35%，高踏频 4%，极高踏频 0%。\",\n          \"conclusionType\": \"fact\",\n          \"claimIds\": [\n            \"claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:cadence.mean\",\n            \"claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:cadence.zone.low\",\n            \"claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:cadence.zone.steady\",\n            \"claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:cadence.zone.endurance\",\n            \"claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:cadence.zone.high\",\n            \"claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:cadence.zone.very-high\"\n          ]\n        },\n        {\n          \"text\": \"巡航段 1 平均踏频 83 rpm，巡航段 2 平均踏频 71 rpm，两段巡航踏频存在差异。\",\n          \"conclusionType\": \"fact\",\n          \"claimIds\": [\n            \"claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:segment.cruise.cruise-0-2397.cadence.mean\",\n            \"claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:segment.cruise.cruise-1-3117.cadence.mean\"\n          ]\n        },\n        {\n          \"text\": \"爬坡段踏频相对较低，如最长爬坡段平均踏频 77 rpm，而平路段踏频在 65-67 rpm 之间，踏频策略随地形变化。\",\n          \"conclusionType\": \"interpretation\",\n          \"claimIds\": [\n            \"claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:segment.climb.event-climb-47924-55979.cadence.mean\",\n            \"claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:segment.terrain.terrain-flat-2048.23-5344.94.cadence.mean\",\n            \"claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:segment.terrain.terrain-flat-5841.41-7729.49.cadence.mean\"\n          ]\n        }\n      ]\n    },\n    {\n      \"dimensionId\": \"crossSensorCoordination\",\n      \"assertions\": [\n        {\n          \"text\": \"功率与速度的同窗口覆盖率为 100%，功率与踏频的同窗口覆盖率为 96%，表明功率、速度、踏频数据在时间上高度对齐。\",\n          \"conclusionType\": \"fact\",\n          \"claimIds\": [\n            \"claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:relation.fixed.power-speed.aggregate\",\n            \"claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:relation.fixed.power-cadence.aggregate\"\n          ]\n        },\n        {\n          \"text\": \"功率与速度、功率与踏频的同窗口覆盖率高，说明各传感器数据同步良好，可支持后续分析。\",\n          \"conclusionType\": \"interpretation\",\n          \"claimIds\": [\n            \"claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:relation.fixed.power-speed.aggregate\",\n            \"claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:relation.fixed.power-cadence.aggregate\"\n          ]\n        }\n      ]\n    }\n  ],\n  \"suggestions\": [\n    {\n      \"text\": \"本次骑行高强度区间占比较高，建议后续安排低强度恢复骑行，以促进恢复。\",\n      \"conclusionType\": \"suggestion\",\n      \"claimIds\": [\n        \"claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:power.zone.highIntensityCombined\"\n      ],\n      \"riskNote\": \"恢复建议基于本次高强度占比，不构成恢复状态断言。\"\n    },\n    {\n      \"text\": \"巡航段踏频差异较大，下次骑行可尝试保持更一致的踏频，以提高骑行经济性。\",\n      \"conclusionType\": \"suggestion\",\n      \"claimIds\": [\n        \"claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:segment.cruise.cruise-0-2397.cadence.mean\",\n        \"claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:segment.cruise.cruise-1-3117.cadence.mean\"\n      ],\n      \"riskNote\": \"踏频数据部分缺失，建议仅供参考。\"\n    }\n  ],\n  \"limitations\": [\n    \"terrain.climbRunCount:AGGREGATED_FROM_8_WINDOWS\",\n    \"terrain.flatRunCount:AGGREGATED_FROM_15_WINDOWS\",\n    \"terrain.descentRunCount:AGGREGATED_FROM_8_WINDOWS\",\n    \"heartRate:SERIES_MISSING\",\n    \"climb.representativeClimbCount:AGGREGATED_FROM_5_WINDOWS\",\n    \"relation.fixed.power-speed.aggregate:AGGREGATED_FROM_249_WINDOWS\",\n    \"relation.fixed.power-cadence.aggregate:AGGREGATED_FROM_196_WINDOWS\"\n  ]\n}",
+  "issues": [
+    {
+      "code": "NUMBER_NOT_IN_CLAIMS",
+      "path": "highlights[0].text",
+      "message": "number 3 in the text does not match any referenced claim value/displayValue"
+    },
+    {
+      "code": "NUMBER_NOT_IN_CLAIMS",
+      "path": "dimensions[0].assertions[3].text",
+      "message": "number 7 in the text does not match any referenced claim value/displayValue"
+    },
+    {
+      "code": "NUMBER_NOT_IN_CLAIMS",
+      "path": "dimensions[0].assertions[3].text",
+      "message": "number 3 in the text does not match any referenced claim value/displayValue"
+    }
+  ],
+  "violations": [
+    {
+      "path": "highlights[0].text",
+      "message": "number 3 in the text does not match any referenced claim value/displayValue",
+      "number": 3,
+      "text": "本次骑行包含 3 段代表性爬坡，其中最长一段爬坡距离 8.1 公里、平均坡度 5.8%，用时 25 分钟。",
+      "conclusionType": "fact",
+      "claimIds": [
+        "claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:segment.climb.event-climb-47924-55979.distanceM",
+        "claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:segment.climb.event-climb-47924-55979.averageGrade",
+        "claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:segment.climb.event-climb-47924-55979.span"
+      ],
+      "knowledgeIds": [],
+      "claims": [
+        {
+          "claimId": "claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:segment.climb.event-climb-47924-55979.distanceM",
+          "key": "segment.climb.event-climb-47924-55979.distanceM",
+          "kind": "advanced",
+          "value": 8054.799999999996,
+          "displayValue": "8.1",
+          "candidates": [
+            8054.799999999996,
+            8055,
+            8054.8,
+            8.1,
+            8
+          ],
+          "nearestCandidate": 8,
+          "nearestDiff": 5
+        },
+        {
+          "claimId": "claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:segment.climb.event-climb-47924-55979.averageGrade",
+          "key": "segment.climb.event-climb-47924-55979.averageGrade",
+          "kind": "advanced",
+          "value": 0.05797785171574717,
+          "displayValue": "5.8",
+          "candidates": [
+            0.05797785171574717,
+            0,
+            0.1,
+            0.06,
+            5.8,
+            6
+          ],
+          "nearestCandidate": 5.8,
+          "nearestDiff": 2.8
+        },
+        {
+          "claimId": "claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:segment.climb.event-climb-47924-55979.span",
+          "key": "segment.climb.event-climb-47924-55979.span",
+          "kind": "advanced",
+          "value": 1516,
+          "displayValue": "25 分钟",
+          "candidates": [
+            1516,
+            25
+          ],
+          "nearestCandidate": 25,
+          "nearestDiff": 22
+        }
+      ]
+    },
+    {
+      "path": "dimensions[0].assertions[3].text",
+      "message": "number 7 in the text does not match any referenced claim value/displayValue",
+      "number": 7,
+      "text": "地形分类覆盖率为 100%，其中爬坡段累计 24.7 公里，平路段 12.7 公里，下坡段 18.3 公里。",
+      "conclusionType": "fact",
+      "claimIds": [
+        "claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:terrain.classifiedCoverageRatio",
+        "claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:terrain.trendClimbDistanceM",
+        "claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:terrain.trendFlatDistanceM",
+        "claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:terrain.trendDescentDistanceM"
+      ],
+      "knowledgeIds": [],
+      "claims": [
+        {
+          "claimId": "claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:terrain.classifiedCoverageRatio",
+          "key": "terrain.classifiedCoverageRatio",
+          "kind": "advanced",
+          "value": 0.9982214746397575,
+          "displayValue": "100",
+          "text": "share of moving distance with a classified terrain type",
+          "candidates": [
+            0.9982214746397575,
+            1,
+            100
+          ],
+          "nearestCandidate": 1,
+          "nearestDiff": 6
+        },
+        {
+          "claimId": "claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:terrain.trendClimbDistanceM",
+          "key": "terrain.trendClimbDistanceM",
+          "kind": "advanced",
+          "value": 24702.859999999993,
+          "displayValue": "24.7",
+          "candidates": [
+            24702.859999999993,
+            24703,
+            24702.9,
+            24702.86,
+            24.7,
+            25
+          ],
+          "nearestCandidate": 24.7,
+          "nearestDiff": 17.7
+        },
+        {
+          "claimId": "claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:terrain.trendFlatDistanceM",
+          "key": "terrain.trendFlatDistanceM",
+          "kind": "advanced",
+          "value": 12719.379999999996,
+          "displayValue": "12.7",
+          "candidates": [
+            12719.379999999996,
+            12719,
+            12719.4,
+            12719.38,
+            12.7,
+            13
+          ],
+          "nearestCandidate": 12.7,
+          "nearestDiff": 5.699999999999999
+        },
+        {
+          "claimId": "claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:terrain.trendDescentDistanceM",
+          "key": "terrain.trendDescentDistanceM",
+          "kind": "advanced",
+          "value": 18303.84000000001,
+          "displayValue": "18.3",
+          "candidates": [
+            18303.84000000001,
+            18304,
+            18303.8,
+            18303.84,
+            18.3,
+            18
+          ],
+          "nearestCandidate": 18,
+          "nearestDiff": 11
+        }
+      ]
+    },
+    {
+      "path": "dimensions[0].assertions[3].text",
+      "message": "number 3 in the text does not match any referenced claim value/displayValue",
+      "number": 3,
+      "text": "地形分类覆盖率为 100%，其中爬坡段累计 24.7 公里，平路段 12.7 公里，下坡段 18.3 公里。",
+      "conclusionType": "fact",
+      "claimIds": [
+        "claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:terrain.classifiedCoverageRatio",
+        "claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:terrain.trendClimbDistanceM",
+        "claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:terrain.trendFlatDistanceM",
+        "claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:terrain.trendDescentDistanceM"
+      ],
+      "knowledgeIds": [],
+      "claims": [
+        {
+          "claimId": "claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:terrain.classifiedCoverageRatio",
+          "key": "terrain.classifiedCoverageRatio",
+          "kind": "advanced",
+          "value": 0.9982214746397575,
+          "displayValue": "100",
+          "text": "share of moving distance with a classified terrain type",
+          "candidates": [
+            0.9982214746397575,
+            1,
+            100
+          ],
+          "nearestCandidate": 1,
+          "nearestDiff": 2
+        },
+        {
+          "claimId": "claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:terrain.trendClimbDistanceM",
+          "key": "terrain.trendClimbDistanceM",
+          "kind": "advanced",
+          "value": 24702.859999999993,
+          "displayValue": "24.7",
+          "candidates": [
+            24702.859999999993,
+            24703,
+            24702.9,
+            24702.86,
+            24.7,
+            25
+          ],
+          "nearestCandidate": 24.7,
+          "nearestDiff": 21.7
+        },
+        {
+          "claimId": "claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:terrain.trendFlatDistanceM",
+          "key": "terrain.trendFlatDistanceM",
+          "kind": "advanced",
+          "value": 12719.379999999996,
+          "displayValue": "12.7",
+          "candidates": [
+            12719.379999999996,
+            12719,
+            12719.4,
+            12719.38,
+            12.7,
+            13
+          ],
+          "nearestCandidate": 12.7,
+          "nearestDiff": 9.7
+        },
+        {
+          "claimId": "claim:upload-965aa12e-01a1-4aaf-84bc-66395c9e92eb:v2:terrain.trendDescentDistanceM",
+          "key": "terrain.trendDescentDistanceM",
+          "kind": "advanced",
+          "value": 18303.84000000001,
+          "displayValue": "18.3",
+          "candidates": [
+            18303.84000000001,
+            18304,
+            18303.8,
+            18303.84,
+            18.3,
+            18
+          ],
+          "nearestCandidate": 18,
+          "nearestDiff": 15
+        }
+      ]
+    }
+  ]
+}
