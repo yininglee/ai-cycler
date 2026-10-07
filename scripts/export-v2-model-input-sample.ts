@@ -24,8 +24,8 @@ import { buildRideTemporalWindowsV2 } from "../src/domain/ride-temporal-windows-
 import { buildRideProfileHistoryV2 } from "../src/domain/ride-profile-history-v2.ts";
 import { buildRideAnalysisEvidencePacketsV2 } from "../src/domain/ride-analysis-evidence-packets-v2.ts";
 import { attachRideKnowledgeEvidenceV2 } from "../src/domain/ride-analysis-knowledge-v2.ts";
-import { rideKnowledgeBaseBatch1V2, RIDE_KNOWLEDGE_BASE_BATCH1_VERSION } from "../src/domain/ride-knowledge-base-batch1-v2.ts";
-import { buildRideModelInputV2, type RideModelInputV2 } from "../src/domain/ride-model-input-v2.ts";
+import { rideKnowledgeBaseV21, RIDE_KNOWLEDGE_BASE_V21_VERSION } from "../src/domain/ride-knowledge-base-v21.ts";
+import { buildRideModelInputV2, projectModelVisibleRideInputV2, type RideModelInputV2 } from "../src/domain/ride-model-input-v2.ts";
 import { buildRidePromptV2 } from "../src/ai/ride-prompt-v2.ts";
 
 const RIDE_ID = process.argv[2] ?? "demo-ride-2026-07-22";
@@ -86,9 +86,9 @@ async function buildInput(): Promise<{ input: RideModelInputV2; ftpWatts: number
     userScope: SCOPE,
   });
   const knowledgeContext = attachRideKnowledgeEvidenceV2(packets, {
-    knowledgeBase: rideKnowledgeBaseBatch1V2,
-    knowledgeBaseVersion: RIDE_KNOWLEDGE_BASE_BATCH1_VERSION,
-    retrievedAt: "2026-10-06T00:00:00.000Z",
+    knowledgeBase: rideKnowledgeBaseV21,
+    knowledgeBaseVersion: RIDE_KNOWLEDGE_BASE_V21_VERSION,
+    retrievedAt: "2026-10-08T00:00:00.000Z",
   });
   const result = buildRideModelInputV2(knowledgeContext, { analysisRunId: RUN, userScope: SCOPE });
   if (result.status !== "ready") {
@@ -97,34 +97,10 @@ async function buildInput(): Promise<{ input: RideModelInputV2; ftpWatts: number
   return { input: result.input, ftpWatts, maxHeartRateBpm };
 }
 
-// 精简投影（仅演示用，不修改生产代码）：剥离模型用不上的追溯/元数据字段。
+// 精简投影：V21-07 起复用生产代码的白名单投影（projectModelVisibleRideInputV2），
+// 与 L7 预算门量的是同一份体积，保证"门量的体积 = 模型实际吃的体积"。
 function slimProject(input: RideModelInputV2): unknown {
-  return {
-    claims: input.claims.map((c) => ({
-      claimId: c.claimId,
-      kind: c.kind,
-      value: c.value,
-      unit: c.unit,
-      text: c.text,
-      confidence: c.confidence,
-      qualityStatus: c.qualityStatus,
-      displayValue: c.displayValue,
-      displayUnit: c.displayUnit,
-      supports: c.supports,
-      prohibits: c.prohibits,
-    })),
-    knowledge: input.knowledge.map((k) => ({
-      knowledgeId: k.knowledgeId,
-      citation: k.citation,
-      explanation: k.explanation,
-      conditions: k.conditions,
-      conclusionStrength: k.conclusionStrength,
-      limitations: k.limitations,
-      safetyBoundaries: k.safetyBoundaries,
-      forbiddenFactKeys: k.forbiddenFactKeys,
-    })),
-    questions: input.questions,
-  };
+  return projectModelVisibleRideInputV2(input);
 }
 
 // 个人资料相关 Claim 判定：直接来自 profile 字段（profile.*），
