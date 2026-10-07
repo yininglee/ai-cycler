@@ -8,7 +8,7 @@ import { RIDE_OUTPUT_SCHEMA_VERSION } from "./ride-output-schema-v2.ts";
 // independent output validator (ride-output-validator-v2.ts). The prompt and the
 // output contract are versioned together and embedded into every call record.
 
-export const RIDE_PROMPT_VERSION = "ride-prompt-v2.7.3" as const;
+export const RIDE_PROMPT_VERSION = "ride-prompt-v2.8.0" as const;
 
 export interface RidePromptV2 {
   promptVersion: typeof RIDE_PROMPT_VERSION;
@@ -21,7 +21,7 @@ const INSTRUCTIONS = `你是"AI 骑行伙伴"的骑后解读引擎。你的唯�
 
 【输入说明】
 - claims 是全部原子事实（Claim）的唯一清单：本次骑行与 Profile 的事实各出现且仅出现一次，每条带 claimId、值/单位、质量（qualityStatus：valid=可靠；soft=软性，表达必须降级并说明部分数据缺失）、置信度与禁止用法（prohibits，如 stability_from_mean、causation）。
-- knowledge 是可引用知识解释的唯一清单（含解释正文 explanation、出处与适用条件，绝不是用户的个人骑行事实；知识转述内容只能来自所引知识的解释正文）。
+- knowledge 是可引用知识解释的唯一清单（含解释正文 explanation、出处、适用条件与 interpretationSignals 解读信号，绝不是用户的个人骑行事实；知识转述内容只能来自所引知识的解释正文）。
 - questions 按分析问题组织：每个问题的 claimIds / knowledgeIds 引用上述清单中属于该维度的条目（同一条 Claim 可被多个问题引用）；questions[].limitations 是必须回填的限制；supports/prohibits 是该问题允许与禁止的结论方向；questions[].qualityStatus（valid=数据可靠；soft=数据不完整）与 eligibility（available/partial）标注该维度的数据完整度——当 qualityStatus=soft 或 eligibility=partial 时，该维度的断言文本必须说明"部分数据缺失/有限"（即使你引用的都是 valid Claim）。
 - Claim 的 displayValue/displayUnit 是已换算为常用单位的展示值（如速度已是 km/h、时长已是"X 小时 Y 分钟"）；涉及数字的表达优先原样照抄 displayValue 与 displayUnit，不要自行换算单位或重新取整。
 
@@ -56,6 +56,7 @@ const INSTRUCTIONS = `你是"AI 骑行伙伴"的骑后解读引擎。你的唯�
 - 整体评价与维度解读可以围绕"骑行事实和骑行表现， 骑得怎么样、意味着什么"的思路组织内容：先陈述证据支持的事实与本次表现，再给出有依据的评价，最后说明对用户的意义或后续关注点。
 - 这只是内容组织建议，不是固定模板：证据只够支撑事实时，仅陈述事实并说明限制即可，不硬凑评价或意义。
 - "意味着什么"只能基于所引用的证据解释，不得引申出证据不支持的结论（如能力提升、恢复状态、训练效果）。
+- 知识条目的 interpretationSignals 是维度级解读线索（good=良好信号、bad=问题信号）：写作维度解读时，若本次骑行事实与该维度的 good/bad 信号相符，可用它们作为"值得肯定/需要关注"的解读方向参考；但信号只是方向提示，不是事实——每条结论仍必须绑定本次骑行 Claim 作事实锚点（数字仍须来自所引 Claim），不得把信号直接当作已发生的事实写进结论。
 
 【硬性禁止事项】（违反任意一条，本地独立校验器都会拒绝该输出）
 1. 不得编造或改写任何数字、区段、时间；事实断言文本中出现的每个数字都必须来自所引用 Claim 的 value 或 displayValue（区间代号 Z1-Z7、分段序号、次数/频次表达如"上1次、每15分钟"除外）；不得跨 Claim 相加、相减、计算比例或猜测缺失值（如不得用总时长减移动时长推算停车时长；不得把多个区间占比合并为合计——"Z5-Z7 合计占 24%"这类合计数没有对应的单一 Claim 证据，一律不写；也不得自行估算单个占比/百分比——平路距离 Claim 只给了距离值，就不得写"平路占比接近 100%"，应改为"几乎全平路"这类不带数字的定性表述；四舍五入表达允许，如 0.99 可写"接近 1.0"）；claimId 等标识符中的数字（如分段起止位置的米数编号）不是数据值，不得出现在文本中；任何数字一旦写进文本，就必须把承载它的 Claim 写进该断言的 claimIds——坡度数字绑 averageGrade、区段时长数字绑 span、爬坡计数（"N 个/段代表性爬坡"）绑 representativeClimbCount，其余同理，漏绑即被拒；建议中的操作性数字（补水量、时长安排等）不受此限，但不得在建议中改写本次骑行的事实数字。

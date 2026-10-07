@@ -22,6 +22,13 @@ export type KnowledgeConclusionStrength = "high" | "moderate" | "limited";
 // V2 business rules 11.2: every knowledge entry records identity, source, version,
 // applicability, strength, limitations, safety boundaries, and the ride-fact keys it
 // must never replace.
+// V21 (design doc §5.3): four-section knowledge adds structured interpretation
+// signals (✅ good / ⚠️ bad) that feed supports/prohibits and Prompt soft-guidance.
+export interface KnowledgeInterpretationSignals {
+  good: string[];
+  bad: string[];
+}
+
 export interface KnowledgeBaseEntryV2 {
   knowledgeId: string;
   category: KnowledgeCategory;
@@ -38,6 +45,8 @@ export interface KnowledgeBaseEntryV2 {
   safetyBoundaries: string[];
   forbiddenFactKeys: string[];
   explanation: string;
+  // V21: structured interpretation signals (optional; batch1 entries omit it).
+  interpretationSignals?: KnowledgeInterpretationSignals;
 }
 
 export interface KnowledgeBaseIssue {
@@ -124,6 +133,14 @@ function knowledgeEvidence(
     limitations: [...entry.limitations],
     safetyBoundaries: [...entry.safetyBoundaries],
     forbiddenFactKeys: [...entry.forbiddenFactKeys],
+    ...(entry.interpretationSignals
+      ? {
+          interpretationSignals: {
+            good: [...entry.interpretationSignals.good],
+            bad: [...entry.interpretationSignals.bad],
+          },
+        }
+      : {}),
   };
 }
 

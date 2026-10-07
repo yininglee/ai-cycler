@@ -104,6 +104,8 @@ export interface V2KnowledgeEvidence {
   limitations?: string[];
   safetyBoundaries?: string[];
   forbiddenFactKeys?: string[];
+  // V21 (design doc §5.3): structured interpretation signals for Prompt soft-guidance.
+  interpretationSignals?: { good: string[]; bad: string[] };
 }
 
 export interface V2EvidenceCoverage {

@@ -6,7 +6,7 @@ import { RideOutputV2DegradedView, RideOutputV2View } from "../../components/rid
 import { buildRideOutputPresentationV2 } from "../../../src/ai/ride-output-presentation-v2";
 import { RIDE_OUTPUT_SCHEMA_VERSION } from "../../../src/ai/ride-output-schema-v2";
 import type { RideModelOutputV2 } from "../../../src/ai/ride-output-schema-v2";
-import { rideKnowledgeBaseBatch1V2 } from "../../../src/domain/ride-knowledge-base-batch1-v2";
+import { rideKnowledgeBaseV21 } from "../../../src/domain/ride-knowledge-base-v21";
 
 /**
  * S6-04 developer demonstration page (OFFLINE · V2).
@@ -28,7 +28,7 @@ const SCENARIOS = [
 type ScenarioId = (typeof SCENARIOS)[number]["id"];
 
 const knowledgeTitles: Record<string, string> = Object.fromEntries(
-  rideKnowledgeBaseBatch1V2.map((entry) => [entry.knowledgeId, entry.title]),
+  rideKnowledgeBaseV21.map((entry) => [entry.knowledgeId, entry.title]),
 );
 
 const fullOutput: RideModelOutputV2 = {

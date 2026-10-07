@@ -29,9 +29,9 @@
 
 **目标**：把 md 知识库落地为代码可用的结构化资产，并冻结"每个关键指标怎么来、能/不能支撑什么"的规格。
 
-- `[ ]` **`V21-01` 新知识库结构化落地**：新增 `src/domain/ride-knowledge-base-v21.ts`（版本 `ride-kb-2.1.0`），把 7 维度四段式内容结构化；新增 `ride-derived-metric-spec-v21.ts`（MetricSpec 目录）；替换 batch1 引用（batch1 转只读归档）。
+- `[ ]` **`V21-01` 新知识库结构化落地**：新增 `src/domain/ride-knowledge-base-v21.ts`（版本 `ride-kb-2.1.0`，7 维度四段式）与 `ride-derived-metric-spec-v21.ts`（MetricSpec 类型 + 目录骨架）；替换 batch1 引用（batch1 转只读归档）。
   - 进入条件：`V2.1-A` 启动 + 新知识库 md 已评审。
-  - 退出条件：新知识库 7 维度四段式全部结构化；`validateRideKnowledgeBaseV2` 合同校验通过；batch1 不再被任何代码引用；typecheck 通过。
+  - 退出条件：新知识库 7 维度四段式全部结构化；`validateRideKnowledgeBaseV2` 合同校验通过；**生产解读链路不再引用 batch1**（batch1 文件保留为只读归档，历史诊断脚本可继续引用作回放）；typecheck 通过。
 - `[ ]` **`V21-02` 指标规格目录冻结**：按 §4.1 生成 7 维度约 40 项 MetricSpec（source 直取/规则计算、依赖、公式、基准分级、supports/prohibits），产出**指标覆盖矩阵**（KB 关键指标 → 直取/计算 → Claim/limitation）。
   - 退出条件：每项关键指标都有 `source` + `dependencies` + `formula`（computed 项）+ `supports/prohibits`；指标覆盖矩阵无遗漏；与设计文档 §2.2 差距表一致。
 

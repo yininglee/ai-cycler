@@ -28,9 +28,9 @@ import {
 import { RIDE_EVIDENCE_RULES_VERSION } from "../domain/ride-analysis-evidence-v2.ts";
 import { attachRideKnowledgeEvidenceV2 } from "../domain/ride-analysis-knowledge-v2.ts";
 import {
-  RIDE_KNOWLEDGE_BASE_BATCH1_VERSION,
-  rideKnowledgeBaseBatch1V2,
-} from "../domain/ride-knowledge-base-batch1-v2.ts";
+  RIDE_KNOWLEDGE_BASE_V21_VERSION,
+  rideKnowledgeBaseV21,
+} from "../domain/ride-knowledge-base-v21.ts";
 import {
   buildRideModelInputV2,
   RIDE_MODEL_INPUT_SCHEMA_VERSION,
@@ -76,7 +76,7 @@ export interface RideInterpretationV2Versions {
   service: typeof RIDE_INTERPRETATION_SERVICE_V2_VERSION;
   evidenceRules: typeof RIDE_EVIDENCE_RULES_VERSION;
   packetRules: typeof RIDE_EVIDENCE_PACKET_BUILDER_RULES_VERSION;
-  knowledgeBase: typeof RIDE_KNOWLEDGE_BASE_BATCH1_VERSION;
+  knowledgeBase: typeof RIDE_KNOWLEDGE_BASE_V21_VERSION;
   inputSchema: typeof RIDE_MODEL_INPUT_SCHEMA_VERSION;
   prompt: typeof RIDE_PROMPT_VERSION;
   outputSchema: typeof RIDE_OUTPUT_SCHEMA_VERSION;
@@ -106,7 +106,7 @@ export type RideInterpretationV2Result =
     };
 
 const KNOWLEDGE_TITLES: Readonly<Record<string, string>> = Object.fromEntries(
-  rideKnowledgeBaseBatch1V2.map((entry) => [entry.knowledgeId, entry.title]),
+  rideKnowledgeBaseV21.map((entry) => [entry.knowledgeId, entry.title]),
 );
 
 function baseVersions(): RideInterpretationV2Versions {
@@ -114,7 +114,7 @@ function baseVersions(): RideInterpretationV2Versions {
     service: RIDE_INTERPRETATION_SERVICE_V2_VERSION,
     evidenceRules: RIDE_EVIDENCE_RULES_VERSION,
     packetRules: RIDE_EVIDENCE_PACKET_BUILDER_RULES_VERSION,
-    knowledgeBase: RIDE_KNOWLEDGE_BASE_BATCH1_VERSION,
+    knowledgeBase: RIDE_KNOWLEDGE_BASE_V21_VERSION,
     inputSchema: RIDE_MODEL_INPUT_SCHEMA_VERSION,
     prompt: RIDE_PROMPT_VERSION,
     outputSchema: RIDE_OUTPUT_SCHEMA_VERSION,
@@ -168,17 +168,11 @@ export async function runRideInterpretationV2(options: RideInterpretationV2Optio
     windows,
   });
 
-  // Knowledge input soft-off (user decision 2026-10-07, PD-AI-25): the batch-1
-  // knowledge base stays frozen and versioned, but its entries are no longer
-  // attached to the model input for single-ride interpretations. Rationale
-  // (diagnosed 2026-10-07): knowledge-reference assertions were the primary
-  // first-round failure source (4/5 issues: missing claimIds) and attached
-  // knowledge got 100% paraphrased into one dimension without adding insight.
-  // The validator defenses stay active — a knowledgeReference assertion without
-  // a delivered knowledgeId is still rejected (KNOWLEDGE_REFERENCE_WITHOUT_
-  // KNOWLEDGE / KNOWLEDGE_NOT_IN_INPUT), so model habit cannot leak through.
-  // Flip to true to restore knowledge attachment (one-line revert).
-  const KNOWLEDGE_INPUT_ENABLED = false;
+  // Knowledge input (user decision 2026-10-07, PD-AI-25, soft-off; reopened in
+  // V21-08 with the four-section V2.1 knowledge base). V2.1 knowledge carries
+  // benchmarks + science (explanation) and structured interpretation signals
+  // for Prompt soft-guidance. Flip to false to restore the soft-off (one-line).
+  const KNOWLEDGE_INPUT_ENABLED = true;
 
   // S2-02: full evidence packets, then S3-02 knowledge attachment.
   const packetsContext = buildRideAnalysisEvidencePacketsV2(profileHistory.capabilityClaims, {
@@ -186,8 +180,8 @@ export async function runRideInterpretationV2(options: RideInterpretationV2Optio
     userScope,
   });
   const knowledgeContext = attachRideKnowledgeEvidenceV2(packetsContext, {
-    knowledgeBase: KNOWLEDGE_INPUT_ENABLED ? rideKnowledgeBaseBatch1V2 : [],
-    knowledgeBaseVersion: RIDE_KNOWLEDGE_BASE_BATCH1_VERSION,
+    knowledgeBase: KNOWLEDGE_INPUT_ENABLED ? rideKnowledgeBaseV21 : [],
+    knowledgeBaseVersion: RIDE_KNOWLEDGE_BASE_V21_VERSION,
     retrievedAt: (options.now ?? new Date()).toISOString(),
   });
 

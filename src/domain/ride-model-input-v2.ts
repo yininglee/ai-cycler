@@ -52,6 +52,8 @@ export interface RideModelInputKnowledgeV2 {
   forbiddenFactKeys?: string[];
   knowledgeBaseVersion?: string;
   retrievedAt?: string;
+  // V21 (design doc §5.3): structured interpretation signals for Prompt soft-guidance.
+  interpretationSignals?: { good: string[]; bad: string[] };
 }
 
 export interface RideModelInputQuestionV2 {
@@ -159,6 +161,12 @@ function copyKnowledge(item: V2KnowledgeEvidence): RideModelInputKnowledgeV2 {
     ...(item.limitations ? { limitations: [...item.limitations] } : {}),
     ...(item.safetyBoundaries ? { safetyBoundaries: [...item.safetyBoundaries] } : {}),
     ...(item.forbiddenFactKeys ? { forbiddenFactKeys: [...item.forbiddenFactKeys] } : {}),
+    ...(item.interpretationSignals ? {
+      interpretationSignals: {
+        good: [...item.interpretationSignals.good],
+        bad: [...item.interpretationSignals.bad],
+      },
+    } : {}),
     ...(item.knowledgeBaseVersion ? { knowledgeBaseVersion: item.knowledgeBaseVersion } : {}),
     ...(item.retrievedAt ? { retrievedAt: item.retrievedAt } : {}),
   };
@@ -189,9 +197,34 @@ function findPrivateField(value: unknown, path: string): string | undefined {
 // RideModelInputV2 读取，不依赖 prompt 文本，因此瘦身投影零质量风险。
 // 同时剥离 analysisRunId 与知识 retrievedAt：二者是"缓存杀手"——同一案例重复
 // 跑时若保留会使 prompt 字节级不一致，导致供应商上下文缓存永远无法命中。
+//
+// V21-07 (design doc §6.3): the model-visible projection is a whitelist of
+// three layers — KB key metrics (pacing./heartRate./power./cadence./crossSensor.
+// derived claims), their prerequisite base facts (metric./timing./profile.
+// speed./power./heart_rate. levels), and the process facts named by
+// interpretation signals (stops./terrain./climb./zone/curve). Everything else
+// (metric.activityEnergyKcal, per-cruise-segment detail) stays in the evidence
+// packet for audit/replay but never reaches the model.
+const V21_MODEL_VISIBLE_CLAIM_PREFIXES = [
+  "metric.distanceM", "metric.elevationGainM", "metric.elevationLossM", "metric.elapsedDurationS",
+  "timing.movingDurationS", "stops.",
+  "speed.", "power.", "heart_rate.", "heartRate.", "cadence.", "terrain.", "climb.",
+  "pacing.", "profile.", "crossSensor.",
+] as const;
+
+export function isModelVisibleClaimKeyV21(key: string): boolean {
+  if (key === "metric.activityEnergyKcal") return false;
+  if (key.startsWith("cruise.")) return false; // per-cruise-segment detail, not named by the KB
+  return V21_MODEL_VISIBLE_CLAIM_PREFIXES.some((prefix) => key.startsWith(prefix));
+}
+
 export function projectModelVisibleRideInputV2(input: RideModelInputV2): object {
-  return {
-    claims: input.claims.map((claim) => ({
+  const visibleClaimIds = new Set(
+    input.claims.filter((claim) => isModelVisibleClaimKeyV21(claim.key)).map((claim) => claim.claimId),
+  );
+  const claims = input.claims
+    .filter((claim) => visibleClaimIds.has(claim.claimId))
+    .map((claim) => ({
       claimId: claim.claimId,
       kind: claim.kind,
       value: claim.value,
@@ -203,7 +236,14 @@ export function projectModelVisibleRideInputV2(input: RideModelInputV2): object 
       displayUnit: claim.displayUnit,
       supports: claim.supports,
       prohibits: claim.prohibits,
-    })),
+    }));
+  const questions = input.questions.map((question) => ({
+    ...question,
+    // Keep each question's claimIds consistent with the whitelisted claim list.
+    claimIds: question.claimIds.filter((id) => visibleClaimIds.has(id)),
+  }));
+  return {
+    claims,
     knowledge: input.knowledge.map((item) => ({
       knowledgeId: item.knowledgeId,
       citation: item.citation,
@@ -213,8 +253,9 @@ export function projectModelVisibleRideInputV2(input: RideModelInputV2): object 
       limitations: item.limitations,
       safetyBoundaries: item.safetyBoundaries,
       forbiddenFactKeys: item.forbiddenFactKeys,
+      interpretationSignals: item.interpretationSignals,
     })),
-    questions: input.questions,
+    questions,
   };
 }
 

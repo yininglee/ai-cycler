@@ -14,6 +14,15 @@ import { buildRideTemporalFeaturesV2, type RideTemporalFeatureSnapshotV2, type T
 import { buildRideTemporalWindowsV2, type JointWindowV2, type RideTemporalWindowsV2, type SegmentWindowV2 } from "./ride-temporal-windows-v2.ts";
 import { buildRideTimingSummary } from "./ride-timing.ts";
 import { buildCadenceZoneDistribution, buildHeartRateZoneDistribution, type ZoneDistribution } from "./ride-zones.ts";
+import {
+  RIDE_DERIVED_METRICS_V21_VERSION,
+  bestAveragePower,
+  efficiencyFactor,
+  negativeSplit,
+  splitDifferencePercent,
+  stoppedTimeSharePercent,
+  variabilityIndex,
+} from "./ride-derived-metrics-v21.ts";
 import type { UserProfile } from "./user-profile.ts";
 
 export const RIDE_CAPABILITY_CLAIMS_SCHEMA_VERSION = RIDE_EVIDENCE_SCHEMA_VERSION;
@@ -1053,6 +1062,20 @@ export function buildRideCapabilityClaimsV2(
     capabilities.set(key, unavailableCapability(key, [], "RULE_NOT_IMPLEMENTED_IN_S2_01"));
   }
 
+  // V21-07: KB-driven derived metric claims (design doc §4.2).
+  const derivedMetrics = buildDerivedMetricClaimsV21({
+    rideId,
+    derivedSource,
+    np,
+    powerMean: power.statistics?.mean,
+    hrMean: heartRate.statistics?.mean,
+    powerSamples: powerSeconds.allValues,
+    powerQuality,
+    record,
+  });
+  claims.push(...derivedMetrics.claims);
+  limitations.push(...derivedMetrics.limitations);
+
   const sources = [activitySource, seriesSource, temporalSource, windowsSource, profileSource, derivedSource,
     ...(routeShapeSource ? [routeShapeSource] : [])];
   return {
@@ -1065,6 +1088,114 @@ export function buildRideCapabilityClaimsV2(
     claims,
     limitations: unique(limitations),
   };
+}
+
+// V21-07: KB-driven derived metric claims (design doc §4.2). Derived metrics
+// reuse the same deterministic sources as the rest of the snapshot; a missing
+// dependency yields a limitation instead of a claim (never zero-filled). Shared
+// metrics (VI/EF) are computed once here and referenced by their dimensions.
+function buildDerivedMetricClaimsV21(params: {
+  rideId: string;
+  derivedSource: SourceSpec;
+  np: number | undefined;
+  powerMean: number | undefined;
+  hrMean: number | undefined;
+  powerSamples: number[];
+  powerQuality: EvidenceQuality;
+  record: RideRecord;
+}): { claims: V2AnalysisClaim[]; limitations: string[] } {
+  const claims: V2AnalysisClaim[] = [];
+  const limitations: string[] = [];
+  const { rideId, derivedSource, np, powerMean, hrMean, powerSamples, powerQuality, record } = params;
+  const quality: V2AnalysisClaim["qualityStatus"] = powerQuality === "valid" ? "valid" : "soft";
+
+  // VI（变速系数 = NP / 平均功率）。同时被配速执行与功率输出（有效功率比）引用。
+  if (finite(np) && finite(powerMean) && powerMean > 0) {
+    const vi = variabilityIndex(np, powerMean);
+    if (vi !== undefined) {
+      const refs = [sourceRef(derivedSource, [derivedEvidence(rideId, "pacing-vi")])];
+      claims.push(claim(rideId, "pacing.variabilityIndex", vi, "ratio", refs, {
+        kind: "advanced", quality, formulaVersion: RIDE_DERIVED_METRICS_V21_VERSION,
+        supports: ["power_variability"], prohibits: ["causation", "ability_change"],
+        displayValue: compact(vi, 2), displayUnit: "ratio",
+      }));
+    }
+  } else {
+    limitations.push("pacing.variabilityIndex:NP_OR_POWER_MISSING");
+  }
+
+  // 停歇时间占比 = 停歇 / 总时间。
+  const timing = buildRideTimingSummary(record);
+  if (finite(timing.stoppedTimeS) && finite(timing.elapsedTimeS) && timing.elapsedTimeS > 0) {
+    const share = stoppedTimeSharePercent(timing.stoppedTimeS, timing.elapsedTimeS);
+    if (share !== undefined) {
+      const refs = [sourceRef(derivedSource, [derivedEvidence(rideId, "pacing-stopped-share")])];
+      claims.push(claim(rideId, "pacing.stoppedTimeShare", share, "ratio", refs, {
+        kind: "advanced", formulaVersion: timing.rulesVersion,
+        supports: ["stop_observation"], prohibits: ["causation", "stop_cause"],
+        displayValue: compact(share, 1), displayUnit: "%",
+      }));
+    }
+  }
+
+  // 功率曲线扩展：5s / 1min / 5min / 20min / 1h 最大滑动窗口平均功率。
+  for (const durationS of [5, 60, 300, 1200, 3600] as const) {
+    const best = bestAveragePower(powerSamples, durationS);
+    if (best === undefined) continue; // 样本不足：不生成，也不伪造
+    const refs = [sourceRef(derivedSource, [derivedEvidence(rideId, `power-curve-${durationS}s`)])];
+    claims.push(claim(rideId, `power.curve.${durationS}s`, best, "W", refs, {
+      kind: "advanced", quality, formulaVersion: RIDE_DERIVED_METRICS_V21_VERSION,
+      supports: ["power_curve"], prohibits: ["causation", "ability_change"],
+      displayValue: compact(best, 0), displayUnit: "W",
+    }));
+  }
+
+  // 前半/后半功率差 + 负分割（用前后半各自 NP，口径照知识库）。
+  if (powerSamples.length >= 60) {
+    const half = Math.floor(powerSamples.length / 2);
+    const firstHalfNp = normalizedPower([powerSamples.slice(0, half)]);
+    const secondHalfNp = normalizedPower([powerSamples.slice(half)]);
+    if (finite(firstHalfNp) && finite(secondHalfNp)) {
+      const differencePct = splitDifferencePercent(firstHalfNp, secondHalfNp);
+      const split = negativeSplit(firstHalfNp, secondHalfNp);
+      if (differencePct !== undefined) {
+        const refs = [sourceRef(derivedSource, [derivedEvidence(rideId, "pacing-split-difference")])];
+        claims.push(claim(rideId, "pacing.splitDifference", differencePct, "ratio", refs, {
+          kind: "advanced", quality, formulaVersion: RIDE_DERIVED_METRICS_V21_VERSION,
+          supports: ["pacing_split"], prohibits: ["causation", "ability_change", "training_plan_completion"],
+          displayValue: compact(differencePct, 1), displayUnit: "%",
+        }));
+      }
+      if (split !== undefined) {
+        const refs = [sourceRef(derivedSource, [derivedEvidence(rideId, "pacing-negative-split")])];
+        claims.push(claim(rideId, "pacing.negativeSplit", split.differencePct, "ratio", refs, {
+          kind: "advanced", quality, formulaVersion: RIDE_DERIVED_METRICS_V21_VERSION,
+          supports: [`pacing_${split.grade}`], prohibits: ["causation", "ability_change", "training_plan_completion"],
+          displayValue: compact(split.differencePct, 1), displayUnit: "%",
+          text: `negative split grade: ${split.grade}`,
+        }));
+      }
+    }
+  } else {
+    limitations.push("pacing.splitDifference:INSUFFICIENT_POWER_SAMPLES");
+  }
+
+  // 效率因子 EF = NP / 平均心率。同时被心率负荷与跨传感器引用。
+  if (finite(np) && finite(hrMean) && hrMean > 0) {
+    const ef = efficiencyFactor(np, hrMean);
+    if (ef !== undefined) {
+      const refs = [sourceRef(derivedSource, [derivedEvidence(rideId, "heartRate-efficiency-factor")])];
+      claims.push(claim(rideId, "heartRate.efficiencyFactor", ef, "W/bpm", refs, {
+        kind: "advanced", quality, formulaVersion: RIDE_DERIVED_METRICS_V21_VERSION,
+        supports: ["aerobic_efficiency"], prohibits: ["causation", "medical_diagnosis", "recovery"],
+        displayValue: compact(ef, 2), displayUnit: "W/bpm",
+      }));
+    }
+  } else {
+    limitations.push("heartRate.efficiencyFactor:NP_OR_HR_MISSING");
+  }
+
+  return { claims, limitations };
 }
 
 export function getEvidenceCapabilityV2(
