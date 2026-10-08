@@ -306,6 +306,42 @@ test("S6-03 semantic exemption revokes a stability false positive and skips repa
   assert.ok(semanticTexts[0]!.includes("稳定"));
 });
 
+test("S6-03 default semantic checker routes to a lite model with slimmed params", async () => {
+  const tracker: CallerTracker = { calls: 0 };
+  const semanticInvocations: RideModelInvocationV2[] = [];
+  // Call 0 = first-round generation (stability wording); call 1 = the default
+  // semantic checker (built from modelCaller when no checker is injected).
+  const caller: RideModelCallerV2 = async (invocation) => {
+    const index = tracker.calls;
+    tracker.calls += 1;
+    if (index === 0) {
+      return {
+        rawText: JSON.stringify(brokenOutputWithStabilityWording(inputFromPrompt(invocation.promptText))),
+        callRecord: fakeCallRecord(invocation),
+      };
+    }
+    semanticInvocations.push(invocation);
+    return { rawText: '{"exempt":true,"reason":"zone-name wording"}', callRecord: fakeCallRecord(invocation) };
+  };
+
+  const result = await runRideInterpretationV2({
+    ...baseOptions(caller),
+    semanticModelId: "THUDM/glm-4-9b-chat",
+  });
+  assert.equal(result.source, "v2");
+  assert.equal(result.stage, "firstPass");
+  assert.equal(result.modelRepairCalls, 0);
+  assert.equal(tracker.calls, 2); // generation + semantic exemption, no repair
+  assert.equal(semanticInvocations.length, 1);
+
+  const semantic = semanticInvocations[0]!;
+  assert.equal(semantic.modelId, "THUDM/glm-4-9b-chat");
+  assert.equal(semantic.maxOutputTokens, 128);
+  assert.equal(semantic.timeoutMs, 10_000);
+  assert.equal(semantic.jsonMode, true);
+  assert.match(semantic.requestId, /:semantic$/);
+});
+
 test("S6-03 parses fenced JSON model responses", async () => {
   const tracker: CallerTracker = { calls: 0 };
   const caller = scriptedCaller(tracker, [

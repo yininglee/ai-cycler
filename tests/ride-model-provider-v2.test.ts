@@ -8,6 +8,7 @@ import {
   RideModelClientV2,
   RideModelErrorV2,
   readRideModelProviderConfigV2,
+  readRideSemanticModelIdV2,
   type RideModelProviderConfigV2,
 } from "../src/ai/ride-model-provider-v2.ts";
 
@@ -271,4 +272,23 @@ test("S5-02 network-level fetch failures map to PROVIDER_HTTP_ERROR without secr
       return true;
     },
   );
+});
+
+test("S5-02 semantic model reader returns undefined when unset, trimmed value when set", () => {
+  assert.equal(readRideSemanticModelIdV2({}), undefined);
+  assert.equal(readRideSemanticModelIdV2({ RIDE_MODEL_V2_SEMANTIC_MODEL_ID: "   " }), undefined);
+  assert.equal(readRideSemanticModelIdV2({ RIDE_MODEL_V2_SEMANTIC_MODEL_ID: "  THUDM/glm-4-9b-chat  " }), "THUDM/glm-4-9b-chat");
+});
+
+test("S5-02 per-invocation modelId overrides the client model and is reflected in the call record", async () => {
+  let capturedBody: Record<string, unknown> | undefined;
+  const client = new RideModelClientV2(config, async (_url, init) => {
+    capturedBody = JSON.parse(String(init?.body)) as Record<string, unknown>;
+    return okResponse('{"exempt":true}');
+  });
+  const result = await client.run(invocation({ modelId: "THUDM/glm-4-9b-chat", maxOutputTokens: 128, timeoutMs: 10_000 }));
+
+  assert.equal(capturedBody?.model, "THUDM/glm-4-9b-chat");
+  assert.equal(capturedBody?.max_tokens, 128);
+  assert.equal(result.callRecord.model, "THUDM/glm-4-9b-chat");
 });

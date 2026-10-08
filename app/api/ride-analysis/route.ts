@@ -17,7 +17,7 @@ import { getRideRepository } from "../../../src/persistence/demo-ride-repository
 import { isDemoRideId } from "../../../src/ui/ride-view-model.ts";
 import { buildRidePageViewModelFromRecord } from "../../../src/ui/ride-view-model.ts";
 import { runRideInterpretationV2 } from "../../../src/ai/ride-interpretation-service-v2.ts";
-import { readRideModelProviderConfigV2, RideModelClientV2 } from "../../../src/ai/ride-model-provider-v2.ts";
+import { readRideModelProviderConfigV2, readRideSemanticModelIdV2, RideModelClientV2 } from "../../../src/ai/ride-model-provider-v2.ts";
 import { bindRideV2DimensionChartsV2 } from "../../../src/ai/ride-output-chart-binding-v2.ts";
 
 export const runtime = "nodejs";
@@ -145,6 +145,7 @@ export async function POST(request: Request): Promise<Response> {
     const profile = session ? await getApplicationRepository().getProfile(session.userId) : null;
     const providerConfig = readRideModelProviderConfigV2(process.env);
     const modelClient = providerConfig ? new RideModelClientV2(providerConfig) : undefined;
+    const semanticModelId = readRideSemanticModelIdV2(process.env);
     const result = await runRideInterpretationV2({
       record,
       profile,
@@ -152,6 +153,7 @@ export async function POST(request: Request): Promise<Response> {
       userScope: session?.userId ?? "anonymous",
       requestId: crypto.randomUUID(),
       modelCaller: modelClient ? (invocation) => modelClient.run(invocation) : undefined,
+      semanticModelId,
     });
     if (result.source === "b0") {
       return finalize(

@@ -40,6 +40,10 @@ export interface RideModelInvocationV2 {
   maxOutputTokens?: number;
   /** Maximum wall time for this invocation; capped by config timeoutMs. */
   timeoutMs?: number;
+  /** Per-invocation model override. Falls back to config.modelId when omitted.
+   * Used to route the cheap semantic-exemption re-check to a lite model while
+   * the main interpretation stays on the configured model. */
+  modelId?: string;
 }
 
 export interface RideModelUsageV2 {
@@ -112,6 +116,14 @@ export function readRideModelProviderConfigV2(
   };
 }
 
+// V2.1-F: model ID for the semantic-exemption re-check (stability / causality /
+// soft-disclosure binary verdict). A lite/cheaper model is enough for this
+// judgment. Unset means the re-check reuses the main interpretation model — the
+// parameter slimming (small maxOutputTokens + short timeout) still applies.
+export function readRideSemanticModelIdV2(environment: ServerEnvironmentV2 = process.env): string | undefined {
+  return environment.RIDE_MODEL_V2_SEMANTIC_MODEL_ID?.trim() || undefined;
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
@@ -139,12 +151,13 @@ export class RideModelClientV2 {
 
   async run(invocation: RideModelInvocationV2): Promise<RideModelProviderResultV2> {
     const startedAt = Date.now();
+    const modelId = invocation.modelId ?? this.config.modelId;
     const timeoutMs = Number.isInteger(invocation.timeoutMs) && invocation.timeoutMs! > 0
       ? Math.min(this.config.timeoutMs, invocation.timeoutMs!)
       : this.config.timeoutMs;
 
     const body = JSON.stringify({
-      model: this.config.modelId,
+      model: modelId,
       messages: [{ role: "user", content: invocation.promptText }],
       // Locked sampling controls (user decision 2026-10-06): low temperature for
       // deterministic structured output, thinking disabled — the validator +
@@ -165,7 +178,7 @@ export class RideModelClientV2 {
       throw new RideModelErrorV2(
         "PROVIDER_REQUEST_TOO_LARGE",
         `Model request body exceeded limit (${requestBytes} > ${this.config.maxRequestBytes} bytes)`,
-        { ...baseCallRecord(invocation, this.config.modelId, startedAt), errorCode: "PROVIDER_REQUEST_TOO_LARGE" },
+        { ...baseCallRecord(invocation, modelId, startedAt), errorCode: "PROVIDER_REQUEST_TOO_LARGE" },
       );
     }
 
@@ -183,7 +196,7 @@ export class RideModelClientV2 {
         cache: "no-store",
         signal: controller.signal,
       });
-      const record = { ...baseCallRecord(invocation, this.config.modelId, startedAt), httpStatus: response.status };
+      const record = { ...baseCallRecord(invocation, modelId, startedAt), httpStatus: response.status };
       const providerRequestId = response.headers.get("x-request-id") ?? response.headers.get("request-id") ?? undefined;
 
       const contentLength = Number(response.headers.get("content-length"));
@@ -234,9 +247,9 @@ export class RideModelClientV2 {
     } catch (error) {
       if (error instanceof RideModelErrorV2) throw error;
       if (controller.signal.aborted) {
-        throw new RideModelErrorV2("AI_TIMEOUT", "Model request timed out", { ...baseCallRecord(invocation, this.config.modelId, startedAt), errorCode: "AI_TIMEOUT" });
+        throw new RideModelErrorV2("AI_TIMEOUT", "Model request timed out", { ...baseCallRecord(invocation, modelId, startedAt), errorCode: "AI_TIMEOUT" });
       }
-      throw new RideModelErrorV2("PROVIDER_HTTP_ERROR", "Model request failed", { ...baseCallRecord(invocation, this.config.modelId, startedAt), errorCode: "PROVIDER_HTTP_ERROR" });
+      throw new RideModelErrorV2("PROVIDER_HTTP_ERROR", "Model request failed", { ...baseCallRecord(invocation, modelId, startedAt), errorCode: "PROVIDER_HTTP_ERROR" });
     } finally {
       clearTimeout(timeout);
     }

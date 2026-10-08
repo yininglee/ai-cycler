@@ -79,6 +79,10 @@ export interface RideInterpretationV2Options {
   // gates. `undefined` = build one from modelCaller (production default);
   // `null` = disable (plain regex hard gate, used by tests and fallback paths).
   semanticChecker?: SemanticExemptionChecker | null;
+  // V2.1-F: model override for the semantic-exemption re-check (a lite/cheaper
+  // model). `undefined` = reuse the main interpretation model. The parameter
+  // slimming (maxOutputTokens + short timeout) always applies regardless.
+  semanticModelId?: string;
   now?: Date;
 }
 
@@ -253,6 +257,10 @@ export async function runRideInterpretationV2(options: RideInterpretationV2Optio
   // Fail-closed: an unparseable or errored semantic verdict keeps the regex
   // issue (never a pass). Absent a model caller, this stays undefined and the
   // regex hard gate behaves exactly as before.
+  // Cost control: the verdict is a tiny {"exempt":bool,"reason":"..."} — cap
+  // output tokens and shorten the timeout; optionally route to a lite model
+  // via semanticModelId (RIDE_MODEL_V2_SEMANTIC_MODEL_ID) while the main
+  // interpretation stays on the configured model.
   const defaultSemanticChecker: SemanticExemptionChecker | undefined = modelCaller
     ? async (request) => {
         const promptText = buildSemanticExemptionPrompt(request);
@@ -262,6 +270,9 @@ export async function runRideInterpretationV2(options: RideInterpretationV2Optio
           promptText,
           promptVersion: SEMANTIC_EXEMPT_PROMPT_VERSION,
           jsonMode: true,
+          maxOutputTokens: 128,
+          timeoutMs: 10_000,
+          ...(options.semanticModelId ? { modelId: options.semanticModelId } : {}),
         });
         if (result.callRecord) callRecords.push(result.callRecord);
         return (

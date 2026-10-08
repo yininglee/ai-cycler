@@ -459,6 +459,19 @@ flowchart TD
 
 > 落地为 V2.1 校验器演进方向，不阻塞 demo 主线（R01→R02）；试点建议从稳定性门起步（改动最小、收益最直接）。
 
+#### 10.4.4 语义校验器的模型与成本控制（V21-13 落地）
+
+语义校验是"校验"不是"生成"，与 PRD FR-13「解读生成 ≤2 次调用」**分开计数**。它只输出一个 `{"exempt":true|false,"reason":"..."}` 的二分类判据，因此用便宜小模型 + 参数瘦身即可，不必复用解读主模型的重型配置：
+
+| 项 | 配置 | 说明 |
+|---|---|---|
+| 模型 | `RIDE_MODEL_V2_SEMANTIC_MODEL_ID`（可选） | 未设则复用解读主模型（`deepseek-ai/DeepSeek-V4-Flash`）；建议 `THUDM/glm-4-9b-chat`（免费）或 `GLM-5.3-Flash`（付费更稳，$0.15/$0.50 较主模型 $0.22/$0.66 约省 25%+） |
+| 参数瘦身 | `maxOutputTokens=128` + `timeoutMs=10s` | **无论换不换模型都生效**——判据极小，无需解读主模型的 300s 超时与无上限输出 |
+| 调用时机 | 仅当正则硬门报出 3 类可豁免错误码时 | `STABILITY_WITHOUT_VARIANCE`/`CAUSALITY_UPGRADED`/`SOFT_QUALITY_NOT_DISCLOSED`；R01 里 20 次仅触发 3 次，实际额外调用很少 |
+| 失败策略 | fail-closed | 小模型 404/超时/不可解析 → 保守保留正则 issue，回退到纯正则硬门行为，不误放行 |
+
+实现落点：`RideModelInvocationV2.modelId`（per-invocation 覆盖）+ `readRideSemanticModelIdV2()`（读 env）+ service `defaultSemanticChecker` 传 `modelId`/`maxOutputTokens`/`timeoutMs`；route.ts 读 env 注入 `semanticModelId`。语义校验的**正确性**（真实模型能否区分"稳定踏频"vs"输出稳定"）需 `EVAL-V21-R02` 复测验证。
+
 ---
 
 ## 11. 心率区间基准对齐（口径一致性专项）
