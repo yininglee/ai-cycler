@@ -241,3 +241,50 @@ test("invalid snapshot or missing packet identity fails closed", () => {
     userScope: "user:s2-02:test",
   }), /analysisRunId/);
 });
+
+test("V21-07 derived metrics land in their owning dimensions (VI/EF shared, split/negativeSplit pacing)", () => {
+  // Regression (2026-10-08): buildDerivedMetricClaimsV21 emits supports values
+  // (power_variability / pacing_split / aerobic_efficiency / power_curve) and
+  // "pacing.*" keys that were absent from PACKET_DEFINITIONS, so VI / split /
+  // negativeSplit were dropped from every packet (and EF only reached
+  // heartRateLoad, never crossSensor). The model then cited them across
+  // dimensions -> CLAIM_NOT_IN_DIMENSION, or quoted a VI number with no claim ->
+  // NUMBER_NOT_IN_CLAIMS. This test pins the dimension assignment.
+  const points: Omit<RideSeriesPoint, "sequence">[] = [{ distanceM: 0, elapsedTimeS: 0 }];
+  let elapsedTimeS = 0;
+  let distanceM = 0;
+  for (let index = 0; index < 70; index += 1) {
+    elapsedTimeS += 10;
+    distanceM += 50;
+    // 后半程功率略高 → 触发 negative_split + splitDifference
+    const powerW = index < 35 ? 190 : 210;
+    points.push({ distanceM, elapsedTimeS, speedMps: 5, powerW, heartRateBpm: 140, cadenceRpm: 85 });
+  }
+  const series = buildRideSeries({ rideId: "s2-02-derived", sourceKind: "sample", parserVersion: "s2-02-fixture-v1", startTime: START, points });
+  const record: RideRecord = {
+    activity: { ...fullRecord().activity, rideId: "s2-02-derived" },
+    series,
+  };
+
+  const context = buildContext(record);
+  const keyById = new Map(context.allowedClaims.map((claim) => [claim.claimId, claim.key]));
+  const has = (dimensionId: string, key: string) => {
+    const packet = getRideAnalysisEvidencePacketV2(context, dimensionId as never);
+    return packet !== undefined && packet.claimIds.some((id) => keyById.get(id) === key);
+  };
+
+  // VI 共享：配速执行 + 功率输出两个维度都能引用（避免跨维度误判）
+  assert.ok(has("pacingExecution", "pacing.variabilityIndex"), "VI 应进入 pacingExecution");
+  assert.ok(has("powerOutput", "pacing.variabilityIndex"), "VI 应进入 powerOutput（共享指标）");
+
+  // split/负分割：配速执行维度
+  assert.ok(has("pacingExecution", "pacing.splitDifference"), "splitDifference 应进入 pacingExecution");
+  assert.ok(has("pacingExecution", "pacing.negativeSplit"), "negativeSplit 应进入 pacingExecution");
+
+  // EF 共享：心率负荷 + 跨传感器配合两个维度都能引用
+  assert.ok(has("heartRateLoad", "heartRate.efficiencyFactor"), "EF 应进入 heartRateLoad");
+  assert.ok(has("crossSensorCoordination", "heartRate.efficiencyFactor"), "EF 应进入 crossSensorCoordination（共享指标）");
+
+  // 功率曲线：功率输出维度（key "power." 前缀）
+  assert.ok(has("powerOutput", "power.curve.5s"), "功率曲线应进入 powerOutput");
+});

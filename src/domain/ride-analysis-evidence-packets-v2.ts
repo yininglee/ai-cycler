@@ -56,7 +56,7 @@ const PACKET_DEFINITIONS: readonly PacketDefinition[] = [
     required: ["distance", "timing", "speed", "sensorContinuity"],
     optional: ["route", "stops", "cruise", "speedStability", "terrain"],
     supports: ["ride_distance", "current_ride_timing", "stop_observation", "cruise_segment", "terrain_segment", "speed_level", "speed_stability", "speed_stage_comparison"],
-    keyPrefixes: ["timing.", "stops.", "speed.", "segment.cruise.", "segment.terrain.", "cruise."],
+    keyPrefixes: ["timing.", "stops.", "speed.", "segment.cruise.", "segment.terrain.", "cruise.", "pacing."],
     prohibits: ["training_plan_completion", "intent", "race_strategy_success", "causation"],
   },
   {
@@ -82,7 +82,7 @@ const PACKET_DEFINITIONS: readonly PacketDefinition[] = [
     question: "What do power level, stability, peaks, and qualified segments show?",
     required: ["power", "sensorContinuity"],
     optional: ["powerStability", "powerPeaks", "normalizedPower", "cruise", "crossSensorAlignment"],
-    supports: ["power_level", "power_stability", "power_stage_comparison", "short_duration_power_peak", "normalized_power_output", "cruise_power_observation", "climb_segment", "climb_power_observation", "current_ride_timing", "same_window_observation", "terrain_segment", "terrain_power_observation"],
+    supports: ["power_level", "power_stability", "power_stage_comparison", "short_duration_power_peak", "normalized_power_output", "power_variability", "cruise_power_observation", "climb_segment", "climb_power_observation", "current_ride_timing", "same_window_observation", "terrain_segment", "terrain_power_observation"],
     keyPrefixes: ["power.", "segment.cruise."],
     prohibits: ["ability_change", "causation", "bridge_recording_gap"],
   },
@@ -112,7 +112,7 @@ const PACKET_DEFINITIONS: readonly PacketDefinition[] = [
     // S2-05 (user decision 2026-10-06, option B): this packet carries the
     // fixed-window relation aggregates (PD-AI-16) only — segment-level relation
     // evidence no longer exists and segment context stays in its own dimensions.
-    supports: ["same_window_observation"],
+    supports: ["same_window_observation", "aerobic_efficiency"],
     keyPrefixes: ["relation.fixed."],
     prohibits: ["causation", "response_order", "trend"],
   },
