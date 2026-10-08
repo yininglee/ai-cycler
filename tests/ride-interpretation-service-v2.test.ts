@@ -109,10 +109,15 @@ function buildPassingOutput(input: RideModelInputV2): RideModelOutputV2 {
 
 function brokenOutputWithStabilityWording(input: RideModelInputV2): RideModelOutputV2 {
   const output = buildPassingOutput(input);
+  const available = input.questions.filter((question) => question.eligibility === "available");
+  // Keep the data-limited disclosure so this breaks ONLY the stability gate;
+  // otherwise a <2-available input also trips DATA_LIMITED_NOT_STATED.
   return {
     ...output,
     overallAssessment: {
-      text: "本次骑行整体输出稳定。",
+      text: available.length < 2
+        ? "本次骑行整体输出稳定，本次可用数据有限。"
+        : "本次骑行整体输出稳定。",
       conclusionType: "fact",
       claimIds: [nonVarianceAnchorClaim(input).claimId],
     },
@@ -252,9 +257,12 @@ test("S6-03 deterministically organizes a fixable output with no extra model cal
 
 test("S6-03 performs exactly one model repair and revalidates the repaired output", async () => {
   const tracker: CallerTracker = { calls: 0 };
-  const result = await runRideInterpretationV2(
-    baseOptions(scriptedCaller(tracker, [stabilityBrokenScript(), passingScript()])),
-  );
+  // semanticChecker: null pins this to the plain regex hard gate (zero regression):
+  // the semantic exemption path adds its own model calls and is covered separately.
+  const result = await runRideInterpretationV2({
+    ...baseOptions(scriptedCaller(tracker, [stabilityBrokenScript(), passingScript()])),
+    semanticChecker: null,
+  });
   assert.equal(result.source, "v2");
   assert.equal(result.stage, "modelRepairPass");
   assert.equal(result.modelRepairCalls, 1);
@@ -266,15 +274,36 @@ test("S6-03 performs exactly one model repair and revalidates the repaired outpu
 
 test("S6-03 degrades to b0 REPAIR_FAILED when the single repair still fails", async () => {
   const tracker: CallerTracker = { calls: 0 };
-  const result = await runRideInterpretationV2(
-    baseOptions(scriptedCaller(tracker, [stabilityBrokenScript(), stabilityBrokenScript()])),
-  );
+  const result = await runRideInterpretationV2({
+    ...baseOptions(scriptedCaller(tracker, [stabilityBrokenScript(), stabilityBrokenScript()])),
+    semanticChecker: null,
+  });
   assert.equal(result.source, "b0");
   assert.equal(result.stage, "repairFailed");
   assert.equal(result.fallbackCode, "REPAIR_FAILED");
   assert.ok(result.failureCodes?.includes("STABILITY_WITHOUT_VARIANCE"));
   assert.equal(tracker.calls, 2);
   assert.equal(result.callRecords.length, 2);
+});
+
+test("S6-03 semantic exemption revokes a stability false positive and skips repair", async () => {
+  const tracker: CallerTracker = { calls: 0 };
+  const semanticTexts: string[] = [];
+  const semanticChecker = async (request: { gate: string; text: string }) => {
+    semanticTexts.push(request.text);
+    return { exempt: true, reason: "zone-name wording" };
+  };
+  const result = await runRideInterpretationV2({
+    ...baseOptions(scriptedCaller(tracker, [stabilityBrokenScript()])),
+    semanticChecker,
+  });
+  assert.equal(result.source, "v2");
+  assert.equal(result.stage, "firstPass");
+  assert.equal(result.modelRepairCalls, 0);
+  // Only the first call: the false positive was revoked, so no repair was needed.
+  assert.equal(tracker.calls, 1);
+  assert.equal(semanticTexts.length, 1);
+  assert.ok(semanticTexts[0]!.includes("稳定"));
 });
 
 test("S6-03 parses fenced JSON model responses", async () => {

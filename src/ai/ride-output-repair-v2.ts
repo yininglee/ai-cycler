@@ -4,7 +4,12 @@ import {
   validateRideModelOutputV2,
   type RideOutputFailureCode,
   type RideOutputIssueV2,
+  type RideOutputValidationResultV2,
 } from "./ride-output-validator-v2.ts";
+import {
+  applySemanticExemption,
+  type SemanticExemptionChecker,
+} from "./ride-semantic-exemption-v2.ts";
 
 // S6-02 (V2 business rules 14.6 / PRD FR-13): output repair orchestration.
 // After the independent validator rejects a first-round model output, this
@@ -92,6 +97,8 @@ export interface RideOutputRepairOptionsV2 {
   repairCaller?: RideOutputRepairCallerV2;
   /** Default true; the caller turns it off when the overall latency/cost budget is spent (business rules 14.6.3). */
   allowModelRepair?: boolean;
+  /** V2.1-F: optional semantic exemption checker (stability/causality/soft-disclosure gates). When absent, the regex hard gate behaves exactly as before (zero regression). */
+  semanticChecker?: SemanticExemptionChecker;
 }
 
 // Issues confined to optional fragments (a highlight entry, a suggestion entry,
@@ -353,6 +360,24 @@ function fallback(
 }
 
 /**
+ * V2.1-F: full validation + optional semantic exemption. When no semantic
+ * checker is injected, this is exactly the plain regex hard gate (zero
+ * regression). With a checker, the three exemptable semantic codes
+ * (stability/causality/soft-disclosure) get a model re-check that may revoke
+ * false-positive issues; deterministic codes are never touched.
+ */
+async function validateWithSemanticExemption(
+  input: RideModelInputV2,
+  output: unknown,
+  checker: SemanticExemptionChecker | undefined,
+): Promise<RideOutputValidationResultV2> {
+  const result = validateRideModelOutputV2(input, output);
+  if (result.status === "pass" || !checker) return result;
+  const issues = await applySemanticExemption(input, output, result.issues, checker);
+  return issues.length ? { status: "fail", issues } : { status: "pass" };
+}
+
+/**
  * Full repair orchestration for one first-round model output:
  * validate → classify (red lines / deterministic / model-repair-eligible) →
  * deterministic organize + full revalidation → at most one constrained model
@@ -364,7 +389,7 @@ export async function orchestrateRideOutputValidationV2(
   const steps: RideOutputRepairDecisionStepV2[] = [];
   const { input, firstOutput } = options;
 
-  const first = validateRideModelOutputV2(input, firstOutput);
+  const first = await validateWithSemanticExemption(input, firstOutput, options.semanticChecker);
   if (first.status === "pass") {
     steps.push({ step: "first_validation", detail: "passed" });
     return { status: "pass", stage: "firstPass", output: firstOutput as RideModelOutputV2, modelRepairCalls: 0, steps };
@@ -391,7 +416,7 @@ export async function orchestrateRideOutputValidationV2(
   const organized = organizeRideOutputDeterministicallyV2(input, firstOutput, first.issues);
   if (organized) {
     steps.push({ step: "deterministic_organize", detail: organized.fixes.join("; ") });
-    const revalidation = validateRideModelOutputV2(input, organized.output);
+    const revalidation = await validateWithSemanticExemption(input, organized.output, options.semanticChecker);
     steps.push({
       step: "post_organize_validation",
       detail: revalidation.status === "pass" ? "passed" : `failed: ${uniqueCodes(revalidation.issues).join(",")}`,
@@ -457,7 +482,7 @@ export async function orchestrateRideOutputValidationV2(
       steps.push({ step: "post_repair_validation", detail: "repair response was not JSON" });
       return fallback("repairFailed", "REPAIR_OUTPUT_UNPARSEABLE", uniqueCodes(currentIssues), steps, 1);
     }
-    const final = validateRideModelOutputV2(input, repaired);
+    const final = await validateWithSemanticExemption(input, repaired, options.semanticChecker);
     steps.push({
       step: "post_repair_validation",
       detail: final.status === "pass" ? "passed" : `failed: ${uniqueCodes(final.issues).join(",")}`,

@@ -51,6 +51,12 @@ import {
 } from "./ride-output-repair-v2.ts";
 import { buildRideOutputPresentationV2, type RideOutputPresentationV2 } from "./ride-output-presentation-v2.ts";
 import { RIDE_OUTPUT_SCHEMA_VERSION, type RideModelOutputV2 } from "./ride-output-schema-v2.ts";
+import {
+  buildSemanticExemptionPrompt,
+  parseSemanticExemptionVerdict,
+  SEMANTIC_EXEMPT_PROMPT_VERSION,
+  type SemanticExemptionChecker,
+} from "./ride-semantic-exemption-v2.ts";
 
 export const RIDE_INTERPRETATION_SERVICE_V2_VERSION = "ride-interpretation-service-v2.2.0" as const;
 
@@ -69,6 +75,10 @@ export interface RideInterpretationV2Options {
   // Undefined means "no provider configured" -> AI_NOT_CONFIGURED b0.
   modelCaller?: RideModelCallerV2;
   allowModelRepair?: boolean;
+  // V2.1-F: semantic exemption checker for the stability/causality/soft-disclosure
+  // gates. `undefined` = build one from modelCaller (production default);
+  // `null` = disable (plain regex hard gate, used by tests and fallback paths).
+  semanticChecker?: SemanticExemptionChecker | null;
   now?: Date;
 }
 
@@ -238,12 +248,42 @@ export async function runRideInterpretationV2(options: RideInterpretationV2Optio
     return { rawText: result.rawText };
   };
 
+  // V2.1-F: semantic exemption checker. Reuses the same model caller to re-check
+  // the three exemptable regex gates (stability / causality / soft-disclosure).
+  // Fail-closed: an unparseable or errored semantic verdict keeps the regex
+  // issue (never a pass). Absent a model caller, this stays undefined and the
+  // regex hard gate behaves exactly as before.
+  const defaultSemanticChecker: SemanticExemptionChecker | undefined = modelCaller
+    ? async (request) => {
+        const promptText = buildSemanticExemptionPrompt(request);
+        const result = await modelCaller({
+          analysisRunId,
+          requestId: `${requestId}:semantic`,
+          promptText,
+          promptVersion: SEMANTIC_EXEMPT_PROMPT_VERSION,
+          jsonMode: true,
+        });
+        if (result.callRecord) callRecords.push(result.callRecord);
+        return (
+          parseSemanticExemptionVerdict(result.rawText) ?? {
+            exempt: false,
+            reason: "unparseable verdict (fail-closed)",
+          }
+        );
+      }
+    : undefined;
+  const semanticChecker: SemanticExemptionChecker | undefined =
+    options.semanticChecker === null
+      ? undefined
+      : (options.semanticChecker ?? defaultSemanticChecker);
+
   const orchestration = await orchestrateRideOutputValidationV2({
     input,
     firstOutput: firstParsed,
     requestId,
     repairCaller,
     allowModelRepair: options.allowModelRepair,
+    semanticChecker: semanticChecker,
   });
 
   if (orchestration.status === "fallback") {
