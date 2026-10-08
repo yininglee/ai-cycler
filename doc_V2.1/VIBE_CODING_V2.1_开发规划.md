@@ -74,6 +74,7 @@
   - 交付：`doc_V2.1/AI解读V2.1测评方案设计.md`（V2.1 测评方案）、`scripts/eval-v21-repair-failure-rate.ts`（量化脚本，断点续跑 + `--report`）、`doc_V2.1/RIDE-AI-V21-R01-失败率量化归因分析.md`、`output/v21-eval/EVAL-V21-R01-20261008/`。
   - 结果：最终降级率 **15.0%（3/20）**（V2 基线 55% 的 1/4）；firstPass 2 / modelRepairPass 15 / repairFailed 3；3 次降级 = 2 错误码（STABILITY_WITHOUT_VARIANCE×2「稳定和耐力区间」并列措辞 + SOFT_QUALITY_NOT_DISCLOSED×1），全部确定性可修。
   - 引出工作：语义校验器两层方案（见 V2.1-F），消掉稳定性门 / 因果门 / soft 披露门的语义误拦截。
+  - **修复闭环（R01 归因 → 修复 → 待复测）**：P0（稳定措辞误拦截）→ `V21-13` 语义豁免已实施；P1（数据缺失维度空 claimIds）→ Prompt v2.8.2 已实施；P2（数字绑定漏绑）→ 待排期。P0/P1 均「已实施待复测」，用 `EVAL-V21-R02`（同一 4 样例 × 5 次）复测验证降级率是否 15% → 个位数。
 - `[ ]` **`V21-12` 新样例集冻结 + 硬门回归 + 双人盲评**：冻结 V2.1 样例集（复用 V2 10 条 + 增补含派生指标/爬坡/跨传感器场景）；跑硬门回归（事实硬门 = 0、四类零容忍 = 0、忠实度 ≥ 基线）；双人盲评；对照发布门决策是否放量。
   - 进入条件：V21-01 ~ V21-09 全部 Done 且用户验收；**且 V21-10（校验器完善）已重启完成**——正式评测须在完整校验链下跑，避免"demo 关校验的结论给放量背书"。
   - 退出条件：发布门全达标 → 申请放量；不达标 → 按失败类型定方案再开新 Run。
@@ -84,18 +85,18 @@
 
 **目标**：把词级正则易误拦截的三个语义门（稳定性 / 因果 / soft 披露）改为「正则预筛 + 大模型语义豁免」，消除 R01 暴露的语义误解误拦截。设计见设计文档 §10.4。**实现模型：正则硬门照旧（保证零回归 + 反例集），语义校验器作为编排层新增的异步复核阶段，对正则报的可豁免错误码做"撤销误判"复核。** 无语义校验器注入时，行为与现状完全一致。
 
-- `[ ]` **`V21-13` 语义豁免骨架 + P0 稳定性门**：新增 `src/ai/ride-semantic-exemption-v2.ts`（语义校验器：对"疑似误拦截"的断言调大模型复核，返回 pass/exempt + reason）；`orchestrateRideOutputValidationV2` 增加可选 `semanticChecker` 注入，在首轮校验后、fallback 决策前插入语义豁免阶段；先接入 `STABILITY_WITHOUT_VARIANCE`（区分"区间名 vs 稳定性断言"）。
-  - 进入条件：V2.1-F 启动；语义校验器模型复用现有 model caller（deepseek-V4-Flash，temperature 0）。
+- `[x]` **`V21-13` 语义豁免骨架 + P0 稳定性门（2026-10-08 代码完成，待 R02 复测验证效果）**：新增 `src/ai/ride-semantic-exemption-v2.ts`（语义校验器：对"疑似误拦截"的断言调大模型复核，返回 pass/exempt + reason）；`orchestrateRideOutputValidationV2` 增加可选 `semanticChecker` 注入，在首轮校验后、fallback 决策前插入语义豁免阶段；先接入 `STABILITY_WITHOUT_VARIANCE`（区分"区间名 vs 稳定性断言"）。
+  - 进入条件：V2.1-F 启动；语义校验器复用现有 model caller（deepseek-V4-Flash，temperature 0.3），可选 `RIDE_MODEL_V2_SEMANTIC_MODEL_ID` 换小模型 + 参数瘦身（maxOutputTokens=128/timeout=10s）。
   - 退出条件：纯正则路径（不注入 semanticChecker）全量测试零回归；注入后「稳定踏频占 37% / 稳定和耐力区间」类误拦截被豁免、真稳定性断言（"输出稳定"）仍拦截；typecheck + 定向测试通过。
-- `[ ]` **`V21-14` P1 因果门 + P2 soft 披露门**：语义豁免扩展到 `CAUSALITY_UPGRADED`（识别"转述知识正文里已被科学依据认可的机制"，如"脱水导致血容量下降"）与 `SOFT_QUALITY_NOT_DISCLOSED`（识别"该维度其实已披露数据有限"的变体措辞）。
+- `[x]` **`V21-14` P1 因果门 + P2 soft 披露门（2026-10-08 代码完成，待 R02 复测验证效果）**：语义豁免扩展到 `CAUSALITY_UPGRADED`（识别"转述知识正文里已被科学依据认可的机制"，如"脱水导致血容量下降"）与 `SOFT_QUALITY_NOT_DISCLOSED`（识别"该维度其实已披露数据有限"的变体措辞）。
   - 退出条件：知识转述"脱水导致…"不误拦、真越权因果仍拦；"采集不全/数据有限"类披露措辞不再误报 SOFT_QUALITY_NOT_DISCLOSED；反例集不回归；typecheck + 定向测试通过。
 
 ---
 
 ## 4. 当前任务与唯一下一步
 
-- 当前：V2.1-A~D 全部 `Done`；V2.1-E `V21-11`（失败率量化 R01）已完成、`V21-12`（正式盲评）`Backlog`；V2.1-F `V21-13`（语义豁免骨架 + P0）为首个待启动任务。
-- 唯一下一步：实现 `V21-13`（语义豁免骨架 + P0 稳定性门），消掉 R01 的 2 次 STABILITY_WITHOUT_VARIANCE 降级；随后 `V21-14`（P1 因果 + P2 soft 披露），再用 `EVAL-V21-R02` 复测验证降级率。
+- 当前：V2.1-A~D 全部 `Done`；V2.1-E `V21-11`（失败率量化 R01）已完成、`V21-12`（正式盲评）`Backlog`；V2.1-F `V21-13`（P0 稳定）/`V21-14`（P1 因果 + P2 soft 披露）代码完成、待 R02 复测验证语义判断效果。
+- 唯一下一步：`EVAL-V21-R02` 复测（同一 4 样例 × 5 次）——验证 P0 语义豁免 + P1 缺失维度 Prompt 引导（v2.8.2）是否把降级率 15% → 个位数；达标后再推进 `V21-12` 正式盲评。
 - 注意：V2 主链的 `RIDE-AI-EVAL-01`（测评方案）与 `RIDE-AI-EVAL-02`（执行）仍在 V2 路线图内进行，V2.1 与 V2 评测存在先后依赖——**建议 V2 发布门评测跑通后，再以 V2.1 指标口径开新 Run**（避免"用旧指标口径的评测结论给新指标口径背书"）。
 
 ## 待决策项（不阻塞启动，在对应切片前拍板即可）
