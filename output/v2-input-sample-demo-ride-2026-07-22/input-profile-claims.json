@@ -36,16 +36,16 @@
         },
         {
           "sourceId": "source:demo-ride-2026-07-22:profile",
-          "version": "0.1:2026-10-07T11:26:51.416Z",
+          "version": "0.1:2026-10-07T19:53:58.816Z",
           "evidenceIds": [
-            "evidence:demo-ride-2026-07-22:v2:profile-weightKg-2026-10-07T11:26:51.416Z"
+            "evidence:demo-ride-2026-07-22:v2:profile-weightKg-2026-10-07T19:53:58.816Z"
           ]
         }
       ],
       "evidenceIds": [
         "evidence:demo-ride-2026-07-22:v2:power-normalized-contiguous",
         "evidence:demo-ride-2026-07-22:series:power",
-        "evidence:demo-ride-2026-07-22:v2:profile-weightKg-2026-10-07T11:26:51.416Z"
+        "evidence:demo-ride-2026-07-22:v2:profile-weightKg-2026-10-07T19:53:58.816Z"
       ],
       "formulaVersion": "ride-contiguous-np-v2.1",
       "displayValue": "2.82",
@@ -77,15 +77,15 @@
         },
         {
           "sourceId": "source:demo-ride-2026-07-22:profile",
-          "version": "0.1:2026-10-07T11:26:51.416Z",
+          "version": "0.1:2026-10-07T19:53:58.816Z",
           "evidenceIds": [
-            "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T11:26:51.416Z"
+            "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T19:53:58.816Z"
           ]
         }
       ],
       "evidenceIds": [
         "evidence:demo-ride-2026-07-22:v2:power-zones",
-        "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T11:26:51.416Z"
+        "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T19:53:58.816Z"
       ],
       "formulaVersion": "ride-power-zone-v2.2",
       "displayValue": "27",
@@ -117,15 +117,15 @@
         },
         {
           "sourceId": "source:demo-ride-2026-07-22:profile",
-          "version": "0.1:2026-10-07T11:26:51.416Z",
+          "version": "0.1:2026-10-07T19:53:58.816Z",
           "evidenceIds": [
-            "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T11:26:51.416Z"
+            "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T19:53:58.816Z"
           ]
         }
       ],
       "evidenceIds": [
         "evidence:demo-ride-2026-07-22:v2:power-zones",
-        "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T11:26:51.416Z"
+        "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T19:53:58.816Z"
       ],
       "formulaVersion": "ride-power-zone-v2.2",
       "displayValue": "14",
@@ -157,15 +157,15 @@
         },
         {
           "sourceId": "source:demo-ride-2026-07-22:profile",
-          "version": "0.1:2026-10-07T11:26:51.416Z",
+          "version": "0.1:2026-10-07T19:53:58.816Z",
           "evidenceIds": [
-            "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T11:26:51.416Z"
+            "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T19:53:58.816Z"
           ]
         }
       ],
       "evidenceIds": [
         "evidence:demo-ride-2026-07-22:v2:power-zones",
-        "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T11:26:51.416Z"
+        "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T19:53:58.816Z"
       ],
       "formulaVersion": "ride-power-zone-v2.2",
       "displayValue": "18",
@@ -197,15 +197,15 @@
         },
         {
           "sourceId": "source:demo-ride-2026-07-22:profile",
-          "version": "0.1:2026-10-07T11:26:51.416Z",
+          "version": "0.1:2026-10-07T19:53:58.816Z",
           "evidenceIds": [
-            "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T11:26:51.416Z"
+            "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T19:53:58.816Z"
           ]
         }
       ],
       "evidenceIds": [
         "evidence:demo-ride-2026-07-22:v2:power-zones",
-        "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T11:26:51.416Z"
+        "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T19:53:58.816Z"
       ],
       "formulaVersion": "ride-power-zone-v2.2",
       "displayValue": "17",
@@ -237,15 +237,15 @@
         },
         {
           "sourceId": "source:demo-ride-2026-07-22:profile",
-          "version": "0.1:2026-10-07T11:26:51.416Z",
+          "version": "0.1:2026-10-07T19:53:58.816Z",
           "evidenceIds": [
-            "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T11:26:51.416Z"
+            "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T19:53:58.816Z"
           ]
         }
       ],
       "evidenceIds": [
         "evidence:demo-ride-2026-07-22:v2:power-zones",
-        "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T11:26:51.416Z"
+        "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T19:53:58.816Z"
       ],
       "formulaVersion": "ride-power-zone-v2.2",
       "displayValue": "10",
@@ -277,15 +277,15 @@
         },
         {
           "sourceId": "source:demo-ride-2026-07-22:profile",
-          "version": "0.1:2026-10-07T11:26:51.416Z",
+          "version": "0.1:2026-10-07T19:53:58.816Z",
           "evidenceIds": [
-            "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T11:26:51.416Z"
+            "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T19:53:58.816Z"
           ]
         }
       ],
       "evidenceIds": [
         "evidence:demo-ride-2026-07-22:v2:power-zones",
-        "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T11:26:51.416Z"
+        "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T19:53:58.816Z"
       ],
       "formulaVersion": "ride-power-zone-v2.2",
       "displayValue": "9",
@@ -317,15 +317,15 @@
         },
         {
           "sourceId": "source:demo-ride-2026-07-22:profile",
-          "version": "0.1:2026-10-07T11:26:51.416Z",
+          "version": "0.1:2026-10-07T19:53:58.816Z",
           "evidenceIds": [
-            "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T11:26:51.416Z"
+            "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T19:53:58.816Z"
           ]
         }
       ],
       "evidenceIds": [
         "evidence:demo-ride-2026-07-22:v2:power-zones",
-        "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T11:26:51.416Z"
+        "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T19:53:58.816Z"
       ],
       "formulaVersion": "ride-power-zone-v2.2",
       "displayValue": "5",
@@ -357,15 +357,15 @@
         },
         {
           "sourceId": "source:demo-ride-2026-07-22:profile",
-          "version": "0.1:2026-10-07T11:26:51.416Z",
+          "version": "0.1:2026-10-07T19:53:58.816Z",
           "evidenceIds": [
-            "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T11:26:51.416Z"
+            "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T19:53:58.816Z"
           ]
         }
       ],
       "evidenceIds": [
         "evidence:demo-ride-2026-07-22:v2:power-zones",
-        "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T11:26:51.416Z"
+        "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T19:53:58.816Z"
       ],
       "formulaVersion": "ride-power-zone-v2.2",
       "displayValue": "24",
@@ -398,16 +398,16 @@
         },
         {
           "sourceId": "source:demo-ride-2026-07-22:profile",
-          "version": "0.1:2026-10-07T11:26:51.416Z",
+          "version": "0.1:2026-10-07T19:53:58.816Z",
           "evidenceIds": [
-            "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T11:26:51.416Z"
+            "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T19:53:58.816Z"
           ]
         }
       ],
       "evidenceIds": [
         "evidence:demo-ride-2026-07-22:v2:power-intensity-factor",
         "evidence:demo-ride-2026-07-22:v2:power-normalized-contiguous",
-        "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T11:26:51.416Z"
+        "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T19:53:58.816Z"
       ],
       "formulaVersion": "ride-intensity-v2.1",
       "displayValue": "0.99",
@@ -434,14 +434,14 @@
       "sourceRefs": [
         {
           "sourceId": "source:demo-ride-2026-07-22:profile",
-          "version": "0.1:2026-10-07T11:26:51.416Z",
+          "version": "0.1:2026-10-07T19:53:58.816Z",
           "evidenceIds": [
-            "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T11:26:51.416Z"
+            "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T19:53:58.816Z"
           ]
         }
       ],
       "evidenceIds": [
-        "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T11:26:51.416Z"
+        "evidence:demo-ride-2026-07-22:v2:profile-ftp-2026-10-07T19:53:58.816Z"
       ],
       "displayValue": "200",
       "displayUnit": "W",
