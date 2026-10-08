@@ -1147,6 +1147,9 @@ function buildDerivedMetricClaimsV21(params: {
       kind: "advanced", quality, formulaVersion: RIDE_DERIVED_METRICS_V21_VERSION,
       supports: ["power_curve"], prohibits: ["causation", "ability_change"],
       displayValue: compact(best, 0), displayUnit: "W",
+      // 时长标签进 text，数字门据此放行"5 秒/60 秒/300 秒"等窗口时长（否则
+      // 时长的数字会被当成数据值拦截 NUMBER_NOT_IN_CLAIMS）。
+      text: `${durationS}s 滑动窗口最大平均功率`,
     }));
   }
 

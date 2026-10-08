@@ -64,7 +64,7 @@ const PACKET_DEFINITIONS: readonly PacketDefinition[] = [
     question: "What do the qualified climb and terrain segments show?",
     required: ["elevation", "climbing", "timing"],
     optional: ["power", "heartRate", "speedStability", "crossSensorAlignment"],
-    supports: ["ride_distance", "current_ride_timing", "elevation_context", "terrain_segment", "climb_segment", "climb_fact", "climb_power_observation", "climb_heart_rate_observation", "climb_speed_observation", "climb_cadence_observation", "terrain_power_observation", "terrain_heart_rate_observation", "terrain_speed_observation", "terrain_cadence_observation"],
+    supports: ["ride_distance", "current_ride_timing", "elevation_context", "terrain_segment", "climb_segment", "climb_fact", "climb_power_observation", "climb_heart_rate_observation", "climb_speed_observation", "climb_cadence_observation", "terrain_power_observation", "terrain_heart_rate_observation", "terrain_speed_observation", "terrain_cadence_observation", "relative_power_output"],
     keyPrefixes: ["elevation.", "timing.", "segment.terrain.", "segment.climb.", "climb."],
     prohibits: ["ability_change", "technical_diagnosis", "causation"],
   },

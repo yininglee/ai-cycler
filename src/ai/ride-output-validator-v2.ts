@@ -130,21 +130,22 @@ function isStringArray(value: unknown): value is string[] {
   return Array.isArray(value) && value.every((item) => typeof item === "string");
 }
 
+// V21 knowledge base carries dense sports-science benchmark RANGES ("2–5% 理想
+// 负分割", "0.60–0.70 轻松耐力", "800–1200 训练有素"). Two helpers cooperate:
+//   - extractNumbers returns only single numbers. It strips the ranges FIRST so
+//     a hyphenated range ("0.96-1.05", "85-95") is not misread as a negative
+//     number ("-1.05", "-95") — that false negative is what previously tripped
+//     NUMBER_NOT_IN_CLAIMS when the model paraphrased an en-dash range with a
+//     plain hyphen.
+//   - extractNumberRanges recovers the ranges themselves, so a number quoted
+//     inside a cited knowledge range ("约 3%", "约 0.8", "约 1000") is accepted
+//     as legitimate paraphrase rather than flagged as fabrication.
+const numberRangePattern = /(\d+(?:\.\d+)?)\s*[-–~]\s*(\d+(?:\.\d+)?)/g;
+
 function extractNumbers(text: string): number[] {
-  const stripped = text.replace(structuralNumberPattern, " ");
+  const stripped = text.replace(structuralNumberPattern, " ").replace(numberRangePattern, " ");
   return [...stripped.matchAll(/-?\d+(?:\.\d+)?/g)].map((match) => Number(match[0]));
 }
-
-// V21 knowledge base carries dense sports-science benchmark RANGES ("2–5% 理想
-// 负分割", "0.60–0.70 轻松耐力", "800–1200 训练有素"). extractNumbers splits
-// such a range into its two boundary points, so a model that faithfully
-// paraphrases the midpoint or an interior value ("约 3%", "约 0.8", "约 1000")
-// would be flagged NUMBER_NOT_IN_CLAIMS even though the number lives inside
-// text the knowledge base itself wrote. The range is part of the delivered
-// knowledge text — quoting an interior value is not fabrication. This helper
-// recovers those ranges so the knowledge-side number gate can accept numbers
-// that fall within a cited knowledge range.
-const numberRangePattern = /(\d+(?:\.\d+)?)\s*[-–~]\s*(\d+(?:\.\d+)?)/g;
 
 function extractNumberRanges(text: string): Array<[number, number]> {
   const stripped = text.replace(structuralNumberPattern, " ");

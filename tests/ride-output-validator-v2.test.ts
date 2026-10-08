@@ -1014,3 +1014,52 @@ test("V21-10 still allows a derived-metric number bound to its own claim", () =>
   };
   assert.deepEqual(validateRideModelOutputV2(input, output), { status: "pass" });
 });
+
+test("V21-10a a hyphenated range in knowledge paraphrase is not read as a negative number", () => {
+  // 模型转述知识正文的 en-dash 范围时常换成 hyphen（"0.96–1.05" -> "0.96-1.05"）。
+  // 修复前 extractNumbers 把 "-1.05" 当成负号 → 假负数 NUMBER_NOT_IN_CLAIMS。
+  const rangeKnowledge = knowledge("kb-if-range", {
+    explanation: "强度因子 IF 分级：0.96–1.05 阈值、1.06–1.20 VO₂max。",
+  });
+  const q = question("intensityAndTrainingLoad", [powerMean], { knowledgeIds: [rangeKnowledge.knowledgeId] });
+  const input = makeInput([q, hrQuestion]);
+  const output: RideModelOutputV2 = {
+    schemaVersion: RIDE_OUTPUT_SCHEMA_VERSION,
+    label: { text: "本次骑行强度", conclusionType: "fact", claimIds: ["c-power-mean"] },
+    overallAssessment: { text: "本次骑行功率与心率数据完整。", conclusionType: "fact", claimIds: ["c-power-mean", "c-hr-mean"] },
+    dimensions: [
+      {
+        dimensionId: "intensityAndTrainingLoad",
+        assertions: [
+          { text: "强度因子 IF 0.96-1.05 对应阈值强度，1.06-1.20 对应 VO₂max。", conclusionType: "knowledgeReference", claimIds: [], knowledgeIds: ["kb-if-range"] },
+        ],
+      },
+    ],
+    limitations: [],
+  };
+  assert.deepEqual(validateRideModelOutputV2(input, output), { status: "pass" });
+});
+
+test("V21-10b power-curve duration labels are exempt from the number gate", () => {
+  // power.curve.5s 的 value 是功率（W），时长标签（5 秒）在 text 里。修复前
+  // 数字门把 "5" 当数据值 → NUMBER_NOT_IN_CLAIMS。
+  const curve5s = claim("c-curve-5s", { key: "power.curve.5s", value: 588, unit: "W", displayValue: "588", text: "5s 滑动窗口最大平均功率" });
+  const curve60s = claim("c-curve-60s", { key: "power.curve.60s", value: 403, unit: "W", displayValue: "403", text: "60s 滑动窗口最大平均功率" });
+  const q = question("powerOutput", [curve5s, curve60s]);
+  const input = makeInput([q, hrQuestion]);
+  const output: RideModelOutputV2 = {
+    schemaVersion: RIDE_OUTPUT_SCHEMA_VERSION,
+    label: { text: "本次骑行功率输出", conclusionType: "fact", claimIds: ["c-curve-5s"] },
+    overallAssessment: { text: "本次骑行功率数据完整。", conclusionType: "fact", claimIds: ["c-curve-5s", "c-hr-mean"] },
+    dimensions: [
+      {
+        dimensionId: "powerOutput",
+        assertions: [
+          { text: "功率曲线显示 5 秒峰值 588 瓦，60 秒 403 瓦。", conclusionType: "fact", claimIds: ["c-curve-5s", "c-curve-60s"] },
+        ],
+      },
+    ],
+    limitations: [],
+  };
+  assert.deepEqual(validateRideModelOutputV2(input, output), { status: "pass" });
+});

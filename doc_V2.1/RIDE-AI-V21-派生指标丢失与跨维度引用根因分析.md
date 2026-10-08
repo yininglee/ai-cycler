@@ -125,3 +125,23 @@ demo-ride-2026-08-20（功率缺失）：
 1. **`NUMBER_NOT_IN_CLAIMS` 是派生指标丢失的"症状"，不是独立根因**——本次修的是上游"指标该进模型却没进"，而不是继续放宽数字门。数字门的范围语义修复（`extractNumberRanges`）属另一个独立缺陷，两条都已收口。
 2. **真实模型复测仍建议做一次**：静态分析 + 离线 dump 已锁定确定性根因，但 demo 效果的最终确认需要真实模型跑通（需 API key，此前余额 402 中断）。
 3. **接线自检教训**：给 `buildDerivedMetricClaimsV21` 增加一条"派生指标 supports/key 必须能被 `claimMatches` 命中"的契约校验，可防同类回归——可作为 V21-11 评测前的加固项。
+
+---
+
+## 9. 实测补充（第二轮，2026-10-08 真实模型跑通后）
+
+静态修复后跑真实模型（`scripts/diagnose-v21-number-not-in-claims.ts`，deepseek-ai/DeepSeek-V4-Flash），首轮 issue 从 **9 → 3**，又定位出三个独立根因并修复：
+
+| # | 根因 | 修复 |
+|---|---|---|
+| 9.1 连字符范围假负号 | 模型把知识正文的 en-dash 范围转成 hyphen（"0.96–1.05" → "0.96-1.05"、"85–95" → "85-95"），`extractNumbers` 的 `-?\d+` 把 "-1.05"、"-95" 误判为负数 → 假 `NUMBER_NOT_IN_CLAIMS` | `extractNumbers` 先剥离 `numberRangePattern`，范围数字只由 `extractNumberRanges` 做区间匹配 |
+| 9.2 功率曲线时长标签 | 模型写"5 秒峰值 588 瓦、60 秒 403 瓦…"，时长 5/60/300/1200/3600 是 claim key（`power.curve.5s`）的一部分，但 claim 的 value 是功率，数字门把时长当数据值拦截 | `power.curve.*` claim 增加 `text`（"5s 滑动窗口最大平均功率"），`claimAllowsNumber` 从 text 提取时长放行 |
+| 9.3 W/kg 跨维度 | 模型在 climbPerformance 引用 `power.averageWkg`（W/kg），但 W/kg 只属 powerOutput + intensityAndTrainingLoad，知识库爬坡条目却讲"爬坡由 W/kg 主导" → `CLAIM_NOT_IN_DIMENSION` | `climbPerformance.supports` 加 `relative_power_output`（W/kg 共享进爬坡维度） |
+
+**修复后剩 3 个 issue，均为模型输出质量问题（非数字门 bug，走模型修复轮、不硬降级）**：
+
+1. `NUMBER_NOT_IN_CLAIMS`（151、1.31）：模型在 `knowledgeReference` 里写"标准化功率 197W 与平均功率 151W 差异大（VI 1.31）"，却只引了 `power.normalizedW`——把**本次骑行事实数字**（151、VI 1.31）混进"知识转述"断言、没绑定对应 claim。根治靠 Prompt 引导（"knowledgeReference 只转述知识正文，不得写本次事实数字；事实数字须 fact 断言 + 绑定 claim"）。
+2. `FACT_WITHOUT_CLAIM`（crossSensorCoordination）：该骑行无心率数据，模型写了 `fact` 断言"缺乏心率数据"但 claimIds 为空。靠 Prompt 引导（"数据缺失维度用 interpretation / knowledgeReference，或引用已有 claim 说明缺失"）。
+
+结论：**确定性 bug 已全部清零；剩余失败是模型低温 0.3 下的引用不完整，属修复轮可收敛的正常范围**。若要进一步压首轮失败率，可选做 Prompt 引导强化（两条，见上）。
+
