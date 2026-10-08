@@ -5,6 +5,7 @@ import type { FormEvent } from "react";
 
 import {
   createUserProfile,
+  demoBaselineProfile,
   parseProfileInput,
   ProfileValidationError,
   updateUserProfile,
@@ -27,14 +28,21 @@ function valuesFromProfile(profile: UserProfile): FormValues {
   };
 }
 
+/**
+ * 演示下首屏即呈现“已填写”，不必等接口返回，也不会出现空表单闪烁。
+ * 时间戳固定，SSR 与客户端一致，不会触发 hydration 不匹配。
+ */
+const demoInitialProfile = demoBaselineProfile();
+const demoInitialValues = valuesFromProfile(demoInitialProfile);
+
 function formatTime(value?: string): string {
   if (!value) return "尚未设置";
   return new Intl.DateTimeFormat("zh-CN", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
 }
 
 export default function ProfileEditor() {
-  const [profile, setProfile] = useState<UserProfile>(() => createUserProfile());
-  const [values, setValues] = useState<FormValues>(emptyValues);
+  const [profile, setProfile] = useState<UserProfile>(demoInitialProfile);
+  const [values, setValues] = useState<FormValues>(demoInitialValues);
   const [hydrated, setHydrated] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -42,7 +50,7 @@ export default function ProfileEditor() {
 
   useEffect(() => {
     fetch("/api/profile", { cache: "no-store" }).then((response) => response.ok ? response.json() : null).then((saved: UserProfile | null) => {
-      const next = saved ?? createUserProfile();
+      const next = saved ?? demoInitialProfile;
       setProfile(next); setValues(valuesFromProfile(next)); setHydrated(true);
     }).catch(() => { setHydrated(true); setError("资料暂时无法读取"); });
   }, []);

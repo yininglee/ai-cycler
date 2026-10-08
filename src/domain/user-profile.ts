@@ -124,6 +124,37 @@ export function createUserProfile(input: ProfileInput = {}, now?: string | Date)
   return updateUserProfile(profile, input, now);
 }
 
+/**
+ * 演示基线（demo baseline）
+ *
+ * 让 demo 打开即呈现“已填写”的个人资料，不必每次演示前手填一遍。
+ * 全部字段按用户主动填写记录（maxHeartRate 为 user_provided、ftp 为
+ * user_confirmed），因此界面会显示“你已手动填写”，而不是“系统估算”。
+ */
+export const DEMO_PROFILE_BASELINE_INPUT: ProfileInput = {
+  age: 28,
+  heightCm: 175,
+  weightKg: 72,
+  maxHeartRateBpm: 192,
+  ftpWatts: 220,
+};
+
+/**
+ * 固定时间戳 = 2026-10-08 12:37 (UTC+8)。演示中“更新于”保持稳定，
+ * 截图与页面可以逐次对齐；需要动态时间时传入 now 覆盖即可。
+ */
+export const DEMO_PROFILE_BASELINE_TIMESTAMP = "2026-10-08T04:37:10.707Z";
+
+export function demoBaselineProfile(now?: string | Date): UserProfile {
+  return createUserProfile(DEMO_PROFILE_BASELINE_INPUT, now ?? DEMO_PROFILE_BASELINE_TIMESTAMP);
+}
+
+/** 是否至少记录了一项事实。用于区分“从未填写”与“有资料”。 */
+export function hasAnyProfileFact(profile: UserProfile | null | undefined): boolean {
+  if (!profile) return false;
+  return Boolean(profile.age || profile.heightCm || profile.weightKg || profile.maxHeartRate || profile.ftp);
+}
+
 export function updateUserProfile(profile: UserProfile, input: ProfileInput, now?: string | Date): UserProfile {
   const timestamp = isoNow(now);
   const next: UserProfile = structuredClone(profile);

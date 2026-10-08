@@ -2,11 +2,14 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
+  DEMO_PROFILE_BASELINE_TIMESTAMP,
   MAX_HEART_RATE_FORMULA_VERSION,
   ProfileValidationError,
   createUserProfile,
+  demoBaselineProfile,
   deserializeUserProfile,
   estimateMaxHeartRate,
+  hasAnyProfileFact,
   parseProfileInput,
   serializeUserProfile,
   updateUserProfile,
@@ -82,4 +85,28 @@ test("form values preserve blank optional fields as null", () => {
     maxHeartRateBpm: null,
     ftpWatts: 240,
   });
+});
+
+test("demo baseline is fully filled, user-provided and stable", () => {
+  const profile = demoBaselineProfile();
+  assert.equal(profile.age?.value, 28);
+  assert.equal(profile.heightCm?.value, 175);
+  assert.equal(profile.weightKg?.value, 72);
+  // 192 is not the 220 − 28 estimate path: it is recorded as the user's own value.
+  assert.equal(profile.maxHeartRate?.valueBpm, 192);
+  assert.equal(profile.maxHeartRate?.source, "user_provided");
+  assert.equal(profile.ftp?.valueWatts, 220);
+  assert.equal(profile.ftp?.trustStatus, "user_confirmed");
+  assert.equal(profile.updatedAt, DEMO_PROFILE_BASELINE_TIMESTAMP);
+  // Stable across calls: the demo page must not drift between renders.
+  assert.deepEqual(demoBaselineProfile(), profile);
+  // An explicit timestamp still wins, so the demo page can opt into "just now".
+  assert.equal(demoBaselineProfile(T0).updatedAt, T0);
+});
+
+test("an empty profile is distinguishable from a recorded one", () => {
+  assert.equal(hasAnyProfileFact(null), false);
+  assert.equal(hasAnyProfileFact(createUserProfile({}, T0)), false);
+  assert.equal(hasAnyProfileFact(createUserProfile({ age: 28 }, T0)), true);
+  assert.equal(hasAnyProfileFact(demoBaselineProfile()), true);
 });

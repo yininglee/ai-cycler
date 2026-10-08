@@ -1,15 +1,30 @@
 import { AuthConfigurationError, getRequestSession, resolveOrCreateRequestSession, sessionCookieHeader } from "../../../src/auth/session.ts";
 import { getApplicationRepository } from "../../../src/persistence/application-repository.ts";
-import { createUserProfile, updateUserProfile, ProfileValidationError, type ProfileInput } from "../../../src/domain/user-profile.ts";
+import { createUserProfile, demoBaselineProfile, hasAnyProfileFact, updateUserProfile, ProfileValidationError, type ProfileInput } from "../../../src/domain/user-profile.ts";
 
 export const runtime = "nodejs";
 const headers = { "Cache-Control": "no-store" };
 
+/**
+ * 演示模式下的个人资料预置：新会话首次读取时写入一份演示基线
+ * （28 岁 / 175cm / 72kg / 192bpm / FTP 220），使 demo 不再需要手填。
+ * 设置 DEMO_PROFILE_SEED=off 可关闭，恢复“未填写即为空”的原始行为。
+ */
+function demoSeedEnabled(): boolean {
+  return process.env.DEMO_PROFILE_SEED !== "off";
+}
+
 export async function GET(request: Request): Promise<Response> {
   try {
     const session = resolveOrCreateRequestSession(request);
-    const profile = await getApplicationRepository().getProfile(session.userId);
-    return Response.json(profile ?? createUserProfile(), { headers: { ...headers, ...sessionCookieHeader(session) } });
+    const repository = getApplicationRepository();
+    const stored = await repository.getProfile(session.userId);
+    if (!hasAnyProfileFact(stored) && demoSeedEnabled()) {
+      const seeded = demoBaselineProfile();
+      await repository.saveProfile(session.userId, seeded);
+      return Response.json(seeded, { headers: { ...headers, ...sessionCookieHeader(session) } });
+    }
+    return Response.json(stored ?? createUserProfile(), { headers: { ...headers, ...sessionCookieHeader(session) } });
   } catch (error) {
     return Response.json({ error: error instanceof AuthConfigurationError ? error.code : "PROFILE_READ_FAILED" }, { status: 503, headers });
   }
