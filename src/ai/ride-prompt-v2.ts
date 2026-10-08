@@ -8,7 +8,7 @@ import { RIDE_OUTPUT_SCHEMA_VERSION } from "./ride-output-schema-v2.ts";
 // independent output validator (ride-output-validator-v2.ts). The prompt and the
 // output contract are versioned together and embedded into every call record.
 
-export const RIDE_PROMPT_VERSION = "ride-prompt-v2.8.1" as const;
+export const RIDE_PROMPT_VERSION = "ride-prompt-v2.8.2" as const;
 
 export interface RidePromptV2 {
   promptVersion: typeof RIDE_PROMPT_VERSION;
@@ -42,6 +42,7 @@ const INSTRUCTIONS = `你是"AI 骑行伙伴"的骑后解读引擎。你的唯�
 - overallAssessment：整体评价。可用数据不足两类时，文本必须写明"本次可用数据有限"；但不得解释缺少哪些数据——数据缺失只能通过 limitations 字段的原文回填体现，不得把"缺少XX数据""无法评估XX"写入整体评价或任何断言文本。
 - highlights：本次骑行高光。每条必须引用高置信的本次骑行 Claim；没有依据就省略，不硬凑。
 - dimensions：dimensionId 必须来自输入 questions；断言只能引用该维度问题 claimIds 内的 Claim 与其 knowledgeIds 内的知识；区段观测（巡航/地形/爬坡的心率、功率、踏频、速度）已按传感器归属分发到对应维度的问题包——写作每个维度前，先浏览该维度问题的 claimIds 清单，所有可用证据都在那里；被解读维度 questions 内的全部 limitations 必须逐条原文回填到 limitations 字段。
+- 数据缺失维度（question 标 eligibility=partial 或 qualityStatus=soft，且该维度问题 claimIds 内没有任何可引用的有效 Claim）：**不得写 claimIds 为空的 fact/interpretation 断言**——"缺少某数据""无法评估某指标"这类信息只能通过该维度 questions[].limitations 的原文回填到 limitations 字段表达，不作为断言输出；若该维度仍有部分可用 Claim，可以继续解读，但每条断言都必须绑定其中至少一条可用 Claim（claimIds 非空），不得空引。
 - suggestions：建议。每条必须绑定至少一条骑行 Claim 作为事实锚点，可附 riskNote。
 - limitations：只能使用输入中出现过的限制原文，不得改写或编造。
 

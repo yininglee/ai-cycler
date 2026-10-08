@@ -77,7 +77,7 @@ test("S6-01 builds a versioned prompt bound to the schema and output contract ve
   assert.equal(prompt.promptVersion, RIDE_PROMPT_VERSION);
   assert.equal(prompt.outputSchemaVersion, RIDE_OUTPUT_SCHEMA_VERSION);
   assert.equal(prompt.inputSchemaVersion, RIDE_MODEL_INPUT_SCHEMA_VERSION);
-  assert.equal(prompt.promptVersion, "ride-prompt-v2.8.1");
+  assert.equal(prompt.promptVersion, "ride-prompt-v2.8.2");
 });
 
 test("S6-01 prompt embeds the delivered input snapshot with claims and knowledge", () => {
@@ -116,6 +116,9 @@ test("S6-01 prompt states the output contract, citation rules, and prohibitions"
   assert.ok(promptText.includes("导致、造成"));
   assert.ok(promptText.includes("训练计划"));
   assert.ok(promptText.includes("进步、退步"));
+  // P1 (R01 structure issues): missing-data dimensions must not emit empty-claim
+  // fact/interpretation assertions — missing info goes to limitations verbatim.
+  assert.ok(promptText.includes("不得写 claimIds 为空的 fact/interpretation 断言"));
 });
 
 test("S6-01 prompt construction is deterministic for the same input", () => {
