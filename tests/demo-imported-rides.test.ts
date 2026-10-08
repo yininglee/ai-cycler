@@ -38,13 +38,22 @@ test("清单里的每条演示记录都能从 FIT 解析出通过校验的记录
   }
 });
 
-test("演示记录分别覆盖功率与心率两类形态，足以支撑演示", async () => {
+test("演示记录覆盖功率与心率两类形态，并按骑行时间倒序排列", async () => {
   const rides = await loadDemoImportedRides();
   const withPower = rides.filter((ride) => Number.isFinite(ride.record.activity.metrics.avgPowerW?.value));
   const withHeartRate = rides.filter((ride) => Number.isFinite(ride.record.activity.metrics.avgHeartRateBpm?.value));
-  assert.equal(rides.length, 2, "演示记录应正好两条");
+  // 2026-10-08 用户决策：固定四条演示记录（10/5 心率 / 8/20 通勤心率 /
+  // 7/22 长途功率 / 7/18 起伏功率），列表按骑行时间倒序、10/5 排最前。
+  assert.equal(rides.length, 4, "演示记录应正好四条");
   assert.ok(withPower.length >= 1, "至少需要一条带功率的记录");
   assert.ok(withHeartRate.length >= 1, "至少需要一条带心率的记录");
+  const stamps = rides.map((ride) => ride.storedAt);
+  assert.deepEqual(
+    stamps,
+    [...stamps].sort((left, right) => right.localeCompare(left)),
+    "清单必须按骑行开始时间倒序（10/5 最前）",
+  );
+  assert.equal(rides[0]!.rideId, "demo-ride-2026-10-05", "10/5 骑行必须排最前");
 });
 
 test("loadDemoImportedRides 进程内只解析一次（返回同一份缓存）", async () => {

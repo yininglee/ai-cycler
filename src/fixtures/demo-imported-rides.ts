@@ -6,7 +6,7 @@
  * 因此这些演示记录在详情页、AI 解读、聊天聚合里的表现与真实导入完全一致。
  *
  * 代价与取舍：
- * - 原始 FIT 合计约 620 KB，解析后记录约 4.6 MB（含完整轨迹点）。
+ * - 原始 FIT 合计约 0.9 MB，解析后记录约 7 MB（含完整轨迹点）。
  * - 解析结果在模块级缓存，进程内只解析一次（实测 16–99 ms / 条）。
  * - 数据只存在于内存，不写入 .local-data，也不属于任何会话，因此零存储成本、
  *   重启不丢失、任何访客看到的内容完全一致。
@@ -86,7 +86,7 @@ export async function getDemoImportedRide(rideId: string): Promise<DemoImportedR
  * 供仓储装饰器合并进 listRides 使用。
  *
  * 这里返回结构化克隆：缓存是进程级共享的，而 FileApplicationRepository.listRides
- * 也返回克隆，调用方因此可以假定自己独占返回的对象。克隆 2 条记录约 4.6 MB，
+ * 也返回克隆，调用方因此可以假定自己独占返回的对象。克隆 4 条记录约 7 MB，
  * 单次页面渲染只发生一到两次，代价可接受；换来的是任何下游误改都不会污染缓存。
  */
 export async function listDemoImportedRideEntries(): Promise<Array<{ record: RideRecord; storedAt: string }>> {
