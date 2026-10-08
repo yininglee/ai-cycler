@@ -224,6 +224,50 @@ test("S6-01 blocks stability wording without a variance claim", () => {
   assert.ok(failureCodes(validateRideModelOutputV2(standardInput(), output)).includes("STABILITY_WITHOUT_VARIANCE"));
 });
 
+test("V21-15 P2: power-curve claims anchor stability wording (长时耐力输出相对平稳)", () => {
+  // Regression (R02 demo-07-22 #3, REPAIR_FAILED): the power curve (max
+  // average power per duration) is process data — the gradient across
+  // 5s/60s/300s/1200s/3600s IS the within-ride output structure, so
+  // "长时耐力输出相对平稳" anchored on curve claims is evidence-backed.
+  // The curve claim carries its duration label in text (时长标签进 text) so
+  // the "5 秒" duration number passes the number gate.
+  const curveClaim = claim("c-power-curve-5s", {
+    key: "power.curve.5s",
+    kind: "advanced",
+    value: 588,
+    unit: "W",
+    displayValue: "588",
+    text: "5s 滑动窗口最大平均功率",
+  });
+  const curveQuestion = question("powerOutput", [curveClaim]);
+  const input = makeInput([curveQuestion, hrQuestion]);
+  const output = baseOutput({
+    label: { text: "本次骑行功率曲线梯度分明", conclusionType: "fact", claimIds: ["c-power-curve-5s"] },
+    overallAssessment: {
+      text: "本次可用数据有限，短时爆发力突出。",
+      conclusionType: "fact",
+      claimIds: ["c-power-curve-5s"],
+    },
+    dimensions: [
+      {
+        dimensionId: "powerOutput",
+        assertions: [
+          { text: "功率曲线显示 5 秒最大平均功率 588W，短时爆发力突出，长时耐力输出相对平稳。", conclusionType: "fact", claimIds: ["c-power-curve-5s"] },
+        ],
+      },
+      {
+        dimensionId: "heartRateLoad",
+        assertions: [{ text: "平均心率 150bpm。", conclusionType: "fact", claimIds: ["c-hr-mean"] }],
+      },
+    ],
+    suggestions: [
+      { text: "下一次骑行可关注长时间输出的可重复性。", conclusionType: "suggestion", claimIds: ["c-power-curve-5s"] },
+    ],
+  });
+  const result = validateRideModelOutputV2(input, output);
+  assert.equal(result.status === "fail" ? result.issues.some((issue) => issue.code === "STABILITY_WITHOUT_VARIANCE") : false, false);
+});
+
 test("S6-01 does not treat the Z2 zone name 稳定区间 as a stability assertion", () => {
   // Regression (2026-10-06 live run): quoting the official cadence/power zone
   // name and its share is faithful zone reporting, not a stability claim.

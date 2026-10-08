@@ -94,7 +94,13 @@ const planAssertionTextPattern = /完成了?(训练)?计划|按计划(完成|执
 const recoveryTextPattern = /恢复良好|已恢复|恢复完成|完全恢复/;
 const dataLimitedDisclosurePattern = /有限|不足/;
 const softDisclosurePattern = /部分|缺失|有限/;
-const varianceClaimKeyPattern = /coefficientOfVariation|lastMinusFirst|drift|variance/i;
+// V21-15 P2 (2026-10-08): power.curve.* (max average power per duration —
+// 5s/60s/300s/1200s/3600s) is process data by construction: the curve's
+// gradient across durations IS the within-ride output structure, so wording
+// like "长时耐力输出相对平稳" anchored on curve claims is evidence-backed, not a
+// bare mean claim (R02 demo-07-22 #3 misfire). A mean claim (power.mean)
+// still never satisfies the stability gate.
+const varianceClaimKeyPattern = /coefficientOfVariation|lastMinusFirst|drift|variance|power\.curve/i;
 // Zone labels (Z1-Z7), climb grades (1 级/HC), ordinal markers, and
 // occurrence/frequency wording ("上1次"、"这2次"、"每15分钟") are structural,
 // not data values. The 第N prefix (第 + 数字/汉字) is ALWAYS an ordinal — the

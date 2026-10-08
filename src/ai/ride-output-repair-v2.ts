@@ -24,7 +24,10 @@ import {
 export const RIDE_OUTPUT_REPAIR_RULES_VERSION = "ride-output-repair-v2.0.0" as const;
 // S2-06: v2.1 — the repair contract no longer carries the top-level
 // historyComparison section (removed from the output schema).
-export const RIDE_REPAIR_PROMPT_VERSION = "ride-repair-prompt-v2.2.4" as const;
+// V21-15 (2026-10-08): v2.2.5 — the number-gate guidance no longer says
+// "Z5-Z7 合计" has no claim (the precomputed zone-group claims now cover it),
+// and names the two climb-count claims so the repair round cannot mix them.
+export const RIDE_REPAIR_PROMPT_VERSION = "ride-repair-prompt-v2.2.5" as const;
 
 // Business rules 14.6.4 / FR-13: fabricated citations in required content are
 // integrity red lines — they never enter the repair path. When such an issue
@@ -177,6 +180,36 @@ export function organizeRideOutputDeterministicallyV2(
     }
   }
 
+  // V21-15 P1 (2026-10-08): drop dimensions whose assertions are an EMPTY
+  // array. R02 showed the model systematically emits `"assertions": []` for
+  // data-missing dimensions (a Prompt v2.8.2 side effect) — the validator
+  // does not require full dimension coverage, so deleting an empty dimension
+  // is lossless and idempotent, and it saves the single model repair call for
+  // the real issues (in R02 the repair call often fixed only this code and
+  // missed the number-gate issue alongside it). Dimensions whose assertions
+  // are missing or not an array are NOT deleted — those are structural
+  // damage and still go to the repair call.
+  if (codes.has("FIELD_TYPE_INVALID") && Array.isArray(next.dimensions)) {
+    const flaggedEmptyDimensionIndexes = new Set(
+      issues
+        .filter((issue) => issue.code === "FIELD_TYPE_INVALID" && /^dimensions\[(\d+)\]\.assertions$/.test(issue.path))
+        .map((issue) => Number(issue.path.match(/^dimensions\[(\d+)\]\.assertions$/)![1])),
+    );
+    if (flaggedEmptyDimensionIndexes.size) {
+      const beforeDimensions = (next.dimensions as unknown[]).length;
+      next.dimensions = (next.dimensions as unknown[]).filter((dimension, index) => {
+        if (!flaggedEmptyDimensionIndexes.has(index)) return true;
+        // Only an exactly-empty array is safe to drop; missing/non-array
+        // assertions stay for the model repair call.
+        return !(isRecord(dimension) && Array.isArray(dimension.assertions) && dimension.assertions.length === 0);
+      });
+      const removedDimensions = beforeDimensions - (next.dimensions as unknown[]).length;
+      if (removedDimensions > 0) {
+        fixes.push(`${removedDimensions} empty dimension${removedDimensions === 1 ? "" : "s"} deleted (assertions: [])`);
+      }
+    }
+  }
+
   const fragmentIssues = issues.filter((issue) => isUnrecordablePath(issue.path));
   if (fragmentIssues.length) {
     for (const field of ["highlights", "suggestions"] as const) {
@@ -308,7 +341,7 @@ export function buildRideRepairPromptV2(options: {
 【合同要点】
 - label 必须引用至少一条高置信、非限制类 Claim；overallAssessment 在可用数据不足两类时必须写明"本次可用数据有限"。
 - 断言只能引用该维度问题 claimIds 清单内的 Claim——引用清单外的 claimId（即使它在 claims 总清单中且语义相关）会再次触发 CLAIM_NOT_IN_DIMENSION 被拒绝；修复时先核对当前维度问题的 claimIds 再改写引用。
-- 事实断言中的每个数字必须来自所引用 Claim 的 value 或 displayValue（区间代号 Z1-Z7、分段序号、次数/频次表达如"上1次、每15分钟"除外）；文本里出现坡度数字就要绑 averageGrade、出现区段时长数字就要绑 span、出现爬坡计数（"N 个/段代表性爬坡"）就要绑 representativeClimbCount，其余同理——漏绑就把对应 Claim 补进 claimIds，或删掉这个数字；建议中的操作性数字不受此限。不得跨 Claim 相加、合并合计（如"Z5-Z7 合计占 24%"无对应单一 Claim 证据，须删改），也不得自行估算单个占比/百分比（平路距离 Claim 只给距离，就不得写"平路占比接近 100%"，改为"几乎全平路"这类不带数字的定性表述）；四舍五入表达允许（0.99 可写"接近 1.0"）。
+- 事实断言中的每个数字必须来自所引用 Claim 的 value 或 displayValue（区间代号 Z1-Z7、分段序号、次数/频次表达如"上1次、每15分钟"除外）；文本里出现坡度数字就要绑 averageGrade、出现区段时长数字就要绑 span、出现爬坡计数（"N 个/段代表性爬坡"）就要绑 representativeClimbCount，其余同理——漏绑就把对应 Claim 补进 claimIds，或删掉这个数字；建议中的操作性数字不受此限。区间合并份额（"高强度区间合计占比""耐力区间合计"等）直接引用预计算的分组 Claim（highIntensityCombined / enduranceCombined / lowIntensityCombined / thresholdPlusCombined），不得自行把多个区间占比相加；爬坡段数量有两个口径——climb.representativeClimbCount（事件爬坡识别）与 terrain.climbRunCount（地形分段，数值可能不同）——写哪个口径的数字就绑哪条 Claim。不得跨 Claim 相加、合并合计（无对应单一 Claim 证据的合计须删改），也不得自行估算单个占比/百分比（平路距离 Claim 只给距离，就不得写"平路占比接近 100%"，改为"几乎全平路"这类不带数字的定性表述）；四舍五入表达允许（0.99 可写"接近 1.0"）。
 - 知识只能用于解释口径与方法（conclusionType=knowledgeReference 且必须带 knowledgeIds），不得当作个人骑行事实。
 - interpretation 用于"骑得怎么样、意味着什么"的定性解读，必须引用至少一条该维度 Claim（claimIds 非空）；其数字仍须来自所引 Claim、仍禁止因果表述（导致/造成/引发），定性措辞（如"整体配速偏高""中段输出最充分"）可直接表达。label 与 overallAssessment 仍必须用 fact。
 - 没有波动或过程类 Claim 时，禁止在事实断言中使用"稳定、平稳、保持良好"等稳定性表述；单次骑行解读不含历史对比，禁止"进步、退步、相比之前、相比以往、比之前、长期负荷"等历史表述，也不得输出 historyComparison，且不得提及"无历史对比/无长期负荷数据"等未提供信息的缺失——删除这类说明，直接解读已有数据。

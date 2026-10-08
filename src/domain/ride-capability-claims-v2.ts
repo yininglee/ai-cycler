@@ -854,7 +854,12 @@ export function buildRideCapabilityClaimsV2(
         supports: ["terrain_segment"], prohibits: ["ability_change", "causation"],
         displayValue: String(definition.total), displayUnit: "count",
         ...(definition.total > definition.shown ? { aggregatedFromCount: definition.total } : {}),
-        text: `${definition.total} merged ${definition.label} terrain runs; ${definition.shown} longest shown as representative segments`,
+        // V21-15 P0-B (2026-10-08): the two climb-count claims use different
+        // detection algorithms and often different numbers (terrain runs vs
+        // event climbs). R02 showed the model mixing both counts in one
+        // assertion while citing only one claim — the text now names the
+        // algorithm so the two counts cannot be read as one metric.
+        text: `${definition.total} merged ${definition.label} terrain runs (terrain classification, distinct from event-climb detection); ${definition.shown} longest shown as representative segments`,
       }));
     }
   }
@@ -871,9 +876,11 @@ export function buildRideCapabilityClaimsV2(
       supports: ["climb_fact"], prohibits: ["ability_change", "causation"],
       displayValue: `${counts.representativeClimbs}/${counts.totalClimbs}`, displayUnit: "count",
       ...(counts.totalClimbs > counts.representativeClimbs ? { aggregatedFromCount: counts.totalClimbs } : {}),
+      // V21-15 P0-B: "event-climb detection" names the algorithm so this count
+      // cannot be conflated with terrain.climbRunCount (terrain classification).
       text: counts.totalClimbs > counts.representativeClimbs
-        ? `${counts.totalClimbs} climbs identified; ${counts.representativeClimbs} hardest kept as representative segments (ranked by category, difficulty, distance)`
-        : `${counts.totalClimbs} climbs identified; all kept as segment windows`,
+        ? `${counts.totalClimbs} climbs identified by event-climb detection; ${counts.representativeClimbs} hardest kept as representative segments (ranked by category, difficulty, distance)`
+        : `${counts.totalClimbs} climbs identified by event-climb detection; all kept as segment windows`,
     }));
   }
 
@@ -997,20 +1004,32 @@ export function buildRideCapabilityClaimsV2(
         supports: ["power_zone_distribution"], prohibits: ["training_effect"], displayValue: compact(zone.share * 100, 0), displayUnit: "%",
       }));
     }
-    // PD-AI-29 (2026-10-07): precomputed high-intensity combined share (Z5+Z6+Z7).
-    // Live failures kept surfacing cross-claim sums ("Z5-Z7 合计占 24%") — the
-    // model has a systematic preference for aggregated summaries, and the
-    // correct supply for that need is a deterministic calculated claim
-    // (PD-AI-28 ③), not a relaxed number gate.
-    const highIntensityZones = zones.filter((zone) => zone.key === "z5" || zone.key === "z6" || zone.key === "z7");
-    const highIntensityDurationS = highIntensityZones.reduce((sum, zone) => sum + zone.durationS, 0);
-    const highIntensityShare = highIntensityZones.reduce((sum, zone) => sum + zone.share, 0);
-    if (highIntensityDurationS > 0) {
-      claims.push(claim(rideId, "power.zone.highIntensityCombined", highIntensityDurationS, "s", refs, {
-        kind: "advanced", quality: powerQuality === "valid" ? "valid" : "soft", formulaVersion: RIDE_POWER_ZONE_RULES_VERSION,
-        supports: ["power_zone_distribution"], prohibits: ["training_effect"],
-        displayValue: compact(highIntensityShare * 100, 0), displayUnit: "%",
-      }));
+    // PD-AI-29 (2026-10-07) + V21-15 P0-A (2026-10-08): precomputed semantic
+    // zone-group shares. Live failures kept surfacing cross-claim sums
+    // ("Z5-Z7 合计占 24%", "Z1-Z3 合计 71%") — the model has a systematic
+    // preference for aggregated summaries, and the correct supply for that
+    // need is a deterministic calculated claim (PD-AI-28 ③), not a relaxed
+    // number gate. The groups mirror the KB interpretation logic: high
+    // intensity (Z5-Z7), endurance base (Z1-Z3), and the 80/20 polarized ends
+    // (Z1-Z2 low, Z4-Z7 threshold+). Heart-rate zones keep their single
+    // high-intensity combined claim until a live failure demands parity.
+    const powerZoneGroups: Array<{ key: string; zoneKeys: string[] }> = [
+      { key: "power.zone.highIntensityCombined", zoneKeys: ["z5", "z6", "z7"] },
+      { key: "power.zone.enduranceCombined", zoneKeys: ["z1", "z2", "z3"] },
+      { key: "power.zone.lowIntensityCombined", zoneKeys: ["z1", "z2"] },
+      { key: "power.zone.thresholdPlusCombined", zoneKeys: ["z4", "z5", "z6", "z7"] },
+    ];
+    for (const group of powerZoneGroups) {
+      const groupZones = zones.filter((zone) => group.zoneKeys.includes(zone.key));
+      const groupDurationS = groupZones.reduce((sum, zone) => sum + zone.durationS, 0);
+      const groupShare = groupZones.reduce((sum, zone) => sum + zone.share, 0);
+      if (groupDurationS > 0) {
+        claims.push(claim(rideId, group.key, groupDurationS, "s", refs, {
+          kind: "advanced", quality: powerQuality === "valid" ? "valid" : "soft", formulaVersion: RIDE_POWER_ZONE_RULES_VERSION,
+          supports: ["power_zone_distribution"], prohibits: ["training_effect"],
+          displayValue: compact(groupShare * 100, 0), displayUnit: "%",
+        }));
+      }
     }
   } else capabilities.set("powerZones", unavailableCapability("powerZones", ["power", "verifiedFtp", "timing"],
     powerZoneDependency ?? "SOURCE_UNAVAILABLE"));

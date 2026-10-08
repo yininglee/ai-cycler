@@ -67,6 +67,66 @@ function claimValue(snapshot: ReturnType<typeof buildRideCapabilityClaimsV2>, ke
   return snapshot.claims.find((item) => item.key === key)?.value;
 }
 
+function claimByKey(snapshot: ReturnType<typeof buildRideCapabilityClaimsV2>, key: string) {
+  return snapshot.claims.find((item) => item.key === key);
+}
+
+test("V21-15 P0-A: power zones carry the semantic zone-group combined claims", () => {
+  // R02 demo-07-22 #5 (NUMBER_NOT_IN_CLAIMS "71"): the model summed
+  // Z1+Z2+Z3 on its own because only the high-intensity group had a
+  // precomputed claim. All four KB-named groups must now exist as
+  // deterministic calculated claims (PD-AI-28 ③), with displayValue in %.
+  // Three power levels (100/200/300W vs FTP 250 → Z1/Z3/Z5, each 1/3 of
+  // the ride) make every group non-empty.
+  const rows = [
+    ...Array.from({ length: 4 }, () => ({ seconds: 10, speed: 5, power: 100, heartRate: 120, cadence: 80 })),
+    ...Array.from({ length: 4 }, () => ({ seconds: 10, speed: 5, power: 200, heartRate: 150, cadence: 85 })),
+    ...Array.from({ length: 4 }, () => ({ seconds: 10, speed: 5, power: 300, heartRate: 175, cadence: 90 })),
+  ];
+  const snapshot = buildRideCapabilityClaimsV2(record(rows), {
+    profile: createUserProfile({ ftpWatts: 250 }, START),
+  });
+  for (const key of [
+    "power.zone.highIntensityCombined",
+    "power.zone.enduranceCombined",
+    "power.zone.lowIntensityCombined",
+    "power.zone.thresholdPlusCombined",
+  ]) {
+    const groupClaim = claimByKey(snapshot, key);
+    assert.ok(groupClaim, `${key} must exist`);
+    assert.equal(groupClaim.kind, "advanced");
+    assert.ok(groupClaim.displayUnit === "%", `${key} displayUnit must be %`);
+    assert.ok(groupClaim.formulaVersion, `${key} must be versioned`);
+  }
+  // Consistency with the single-zone claims: 100W thirds in Z1 and Z3 give
+  // enduranceCombined (Z1+Z2+Z3) = 67%, lowIntensityCombined (Z1+Z2) = 33%,
+  // highIntensityCombined (Z5-Z7) = 33%, thresholdPlusCombined (Z4-Z7) = 33%.
+  assert.equal(claimByKey(snapshot, "power.zone.enduranceCombined")!.displayValue, "67");
+  assert.equal(claimByKey(snapshot, "power.zone.lowIntensityCombined")!.displayValue, "33");
+  assert.equal(claimByKey(snapshot, "power.zone.highIntensityCombined")!.displayValue, "33");
+  assert.equal(claimByKey(snapshot, "power.zone.thresholdPlusCombined")!.displayValue, "33");
+});
+
+test("V21-15 P0-B: the two climb-count claims name their detection algorithm", () => {
+  // R02 upload-0312e501 #1 (NUMBER_NOT_IN_CLAIMS "8"): climb.representativeClimbCount
+  // (event-climb detection) and terrain.climbRunCount (terrain classification)
+  // had overlapping semantics and different numbers — the text now names the
+  // algorithm so the two counts cannot be read as one metric.
+  const fixture = getRideFixture("l3-power-preview");
+  const snapshot = buildRideCapabilityClaimsV2(structuredClone(fixture) as RideRecord, {});
+  const eventClimbCount = snapshot.claims.find((item) => item.key === "climb.representativeClimbCount");
+  const terrainClimbCount = snapshot.claims.find((item) => item.key === "terrain.climbRunCount");
+  if (eventClimbCount) {
+    assert.ok(eventClimbCount.text?.includes("event-climb detection"), "event-climb count must name its algorithm");
+  }
+  if (terrainClimbCount) {
+    assert.ok(
+      terrainClimbCount.text?.includes("terrain classification") && terrainClimbCount.text?.includes("distinct from event-climb detection"),
+      "terrain run count must name its algorithm and the distinction",
+    );
+  }
+});
+
 test("S2-01 produces the complete capability set and traceable atomic claims", () => {
   const profile = createUserProfile({ age: 35, weightKg: 70, ftpWatts: 250 }, START);
   const snapshot = buildRideCapabilityClaimsV2(completeRecord(), { profile });

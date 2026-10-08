@@ -184,6 +184,66 @@ test("S6-02 passes a first-round valid output with zero repair work", async () =
   assert.equal(counter.count, 0);
 });
 
+test("V21-15 P1: an empty-assertions dimension is deleted deterministically (no repair call)", async () => {
+  // Regression (R02 live failure amplifier): the model emitted
+  // `"assertions": []` for the data-missing cross-sensor dimension (a Prompt
+  // v2.8.2 side effect). The validator does not require full dimension
+  // coverage, so deleting the empty dimension is lossless — and it must not
+  // consume the single model repair call.
+  const counter: CallCounter = { count: 0 };
+  const output = baseOutput({
+    dimensions: [
+      { dimensionId: "powerOutput", assertions: [] },
+      {
+        dimensionId: "heartRateLoad",
+        assertions: [{ text: "平均心率 150bpm。", conclusionType: "fact", claimIds: ["c-hr-mean"] }],
+      },
+    ],
+  });
+  const result = await orchestrateRideOutputValidationV2({
+    input: standardInput(),
+    firstOutput: output,
+    requestId: "req-empty-dimension",
+    repairCaller: repairCallerReturning(baseOutput(), counter),
+  });
+  assert.equal(result.status, "pass");
+  assert.equal(result.stage, "deterministicRepairPass");
+  assert.equal(result.modelRepairCalls, 0);
+  assert.equal(counter.count, 0);
+  assert.equal(
+    result.steps.some((step) => step.step === "deterministic_organize" && step.detail.includes("empty dimension")),
+    true,
+  );
+  // The emptied powerOutput dimension is gone; heartRateLoad survives.
+  const dimensions = (result.output as unknown as { dimensions: Array<{ dimensionId: string }> }).dimensions;
+  assert.deepEqual(dimensions.map((dimension) => dimension.dimensionId), ["heartRateLoad"]);
+});
+
+test("V21-15 P1: a dimension whose assertions are missing (not an empty array) still goes to the repair call", async () => {
+  // Only the exactly-empty array is safe to drop; a dimension with missing /
+  // non-array assertions is structural damage and must reach the model
+  // repair call instead of being silently deleted.
+  const counter: CallCounter = { count: 0 };
+  const output = baseOutput({
+    dimensions: [
+      { dimensionId: "powerOutput" } as unknown as RideModelOutputV2["dimensions"][number],
+      {
+        dimensionId: "heartRateLoad",
+        assertions: [{ text: "平均心率 150bpm。", conclusionType: "fact", claimIds: ["c-hr-mean"] }],
+      },
+    ],
+  });
+  const result = await orchestrateRideOutputValidationV2({
+    input: standardInput(),
+    firstOutput: output,
+    requestId: "req-broken-dimension",
+    repairCaller: repairCallerReturning(baseOutput(), counter),
+  });
+  assert.equal(result.status, "pass");
+  assert.equal(result.stage, "modelRepairPass");
+  assert.equal(counter.count, 1);
+});
+
 test("S6-02 deterministically fixes schema version and limitation backfill, then fully revalidates", async () => {
   const counter: CallCounter = { count: 0 };
   const broken = baseOutput({

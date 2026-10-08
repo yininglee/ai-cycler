@@ -94,19 +94,21 @@
 
 ### V2.1-F′：R02 归因修复（数字门供给 + 空维度 + 功率曲线）
 
-- `[ ]` **`V21-15` R02 归因修复（P0-A/P0-B/P1/P2，2026-10-08 立项）**：R02 复测降级率 15% 持平 R01，归因见 [R02 归因分析](RIDE-AI-V21-R02-失败率量化归因分析.md)。四件套：
-  - **P0-A 私自求和**：补 `power.zone.enduranceCombined`（Z1–Z3 合计）预计算 claim，与 `power.zone.highIntensityCombined`（Z5–Z7）对称——模型"以 Z1-Z3 为主（合计 71%）"因缺该 claim 而自算 29+21+21，被数字门"不可计算"拦截。
-  - **P0-B 爬坡段口径混淆**：`climb.representativeClimbCount`（event-climb：totalClimbs=5/representative=3）与 `terrain.climbRunCount`（地形分类：total=8）两套口径数值冲突，模型混用且只绑其一 → 数字 8 无出处。供给侧 text/displayValue 标注口径 + Prompt 加"两口径不得混用"。
-  - **P1 空维度**：Prompt v2.8.2 的"数据缺失进 limitations"引导被模型理解成"输出 `assertions: []` 空维度"，触发高频 `FIELD_TYPE_INVALID` 并消耗唯一修复轮配额。改 Prompt v2.8.3：数据缺失维度**从 dimensions 省略**（校验器本就不要求维度全覆盖，不动校验规则）。
-  - **P2 功率曲线过程数据**：`varianceSupported` 判定补 `power.curve.*`（多时长最大平均功率 = 过程数据，可支撑"平稳/衰减"形态描述），消掉「长时耐力输出相对平稳」误拦。
-  - 退出条件：四件套实现 + 定向测试；复测 `EVAL-V21-R03` 降级率 15% → 个位数。
+- `[x]` **`V21-15` R02 归因修复（P0-A/P0-B/P1/P2，2026-10-08 实施完成，待 R03 复测）**：R02 复测降级率 15% 持平 R01，归因见 [R02 归因分析](RIDE-AI-V21-R02-失败率量化归因分析.md)。四件套（全部落地）：
+  - **P0-A 私自求和 → 一组语义区间分组 claim**（用户决策：不放开区间计算——模型算术不可信、"不可计算"是数字门基石、组合爆炸；供给按知识库解读逻辑点名的分组一次补齐）：`power.zone` 补 3 个新分组 claim——`enduranceCombined`（Z1-Z3 耐力基础）/`lowIntensityCombined`（Z1-Z2，80/20 低端）/`thresholdPlusCombined`（Z4-Z7，80/20 高端），与既有 `highIntensityCombined`（Z5-Z7）构成四组；`power.` 前缀自动投递 powerOutput 与 intensityAndTrainingLoad 两维度。心率区间保持既有单分组（无失败证据不预补）。
+  - **P0-B 爬坡段口径混淆**：`climb.representativeClimbCount` text 标注 "event-climb detection"、`terrain.climbRunCount` text 标注 "terrain classification, distinct from event-climb detection"；Prompt 反例区新增「爬坡计数混口径」（写哪个口径的数字就绑哪条 Claim）。
+  - **P1 空维度（双保险）**：① Prompt v2.8.3 把 v2.8.2 的"不写空 claimIds 断言"升级为"数据缺失维度**整个从 dimensions 省略**"（空 assertions 数组会被结构校验拒绝，输出结构不要求维度全覆盖）；② 确定性收敛层新增"删空维度"（仅 `assertions` 恰为空数组且被校验器标记的情形，幂等无损）——不消耗唯一修复轮配额，修复轮专心修真 issue。
+  - **P2 功率曲线过程数据**：`varianceClaimKeyPattern` 补 `power\.curve`——多时长最大平均功率（5s/60s/300s/1200s/3600s 滑动窗口）本身就是过程数据，功率曲线梯度形态描述（"长时耐力输出相对平稳"）有据可依；只绑 power.mean 的"输出稳定"仍拦。
+  - 附带：修复 Prompt 升 v2.2.5——原"Z5-Z7 合计无对应单一 Claim 证据须删改"表述已过时（P0-A 后有分组 Claim），改为引导直取分组 Claim + 爬坡两口径说明。
+  - 验证：typecheck 通过；定向测试新增 5 条（P0-A 分组存在性+数值一致性 / P0-B 口径标注 / P1 空维度确定性删除 + 非空数组仍走修复轮 / P2 功率曲线稳定性表述放行）全过；全量测试零回归。
+  - 退出条件：复测 `EVAL-V21-R03` 降级率 15% → 个位数。
 
 ---
 
 ## 4. 当前任务与唯一下一步
 
-- 当前：V2.1-A~D 全部 `Done`；V2.1-E `V21-11`（失败率量化 R01）已完成、`V21-12`（正式盲评）`Backlog`；V2.1-F `V21-13`/`V21-14`（语义豁免 P0–P2）代码完成、**R02 已复测验证（语义豁免生效，但降级率仍 15%）**；V2.1-F′ `V21-15`（R02 归因修复四件套）`Backlog`。
-- 唯一下一步：`V21-15`（补 Z1-Z3 合计 claim + 爬坡段口径消歧 + 空维度省略引导 v2.8.3 + power.curve 过程数据）→ `EVAL-V21-R03` 复测验证降级率 15% → 个位数；达标后再推进 `V21-12` 正式盲评。
+- 当前：V2.1-A~D 全部 `Done`；V2.1-E `V21-11`（失败率量化 R01）已完成、`V21-12`（正式盲评）`Backlog`；V2.1-F `V21-13`/`V21-14`（语义豁免 P0–P2）R02 复测验证完成（语义豁免生效，但降级率仍 15%）；V2.1-F′ `V21-15`（R02 归因修复四件套）**实施完成、待 R03 复测**。
+- 唯一下一步：`EVAL-V21-R03` 复测（同一 4 样例 × 5 次）——验证 V21-15 四件套是否把降级率 15% → 个位数；达标后再推进 `V21-12` 正式盲评。
 - 注意：V2 主链的 `RIDE-AI-EVAL-01`（测评方案）与 `RIDE-AI-EVAL-02`（执行）仍在 V2 路线图内进行，V2.1 与 V2 评测存在先后依赖——**建议 V2 发布门评测跑通后，再以 V2.1 指标口径开新 Run**（避免"用旧指标口径的评测结论给新指标口径背书"）。
 
 ## 待决策项（不阻塞启动，在对应切片前拍板即可）

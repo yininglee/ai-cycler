@@ -8,7 +8,7 @@ import { RIDE_OUTPUT_SCHEMA_VERSION } from "./ride-output-schema-v2.ts";
 // independent output validator (ride-output-validator-v2.ts). The prompt and the
 // output contract are versioned together and embedded into every call record.
 
-export const RIDE_PROMPT_VERSION = "ride-prompt-v2.8.2" as const;
+export const RIDE_PROMPT_VERSION = "ride-prompt-v2.8.3" as const;
 
 export interface RidePromptV2 {
   promptVersion: typeof RIDE_PROMPT_VERSION;
@@ -42,7 +42,7 @@ const INSTRUCTIONS = `你是"AI 骑行伙伴"的骑后解读引擎。你的唯�
 - overallAssessment：整体评价。可用数据不足两类时，文本必须写明"本次可用数据有限"；但不得解释缺少哪些数据——数据缺失只能通过 limitations 字段的原文回填体现，不得把"缺少XX数据""无法评估XX"写入整体评价或任何断言文本。
 - highlights：本次骑行高光。每条必须引用高置信的本次骑行 Claim；没有依据就省略，不硬凑。
 - dimensions：dimensionId 必须来自输入 questions；断言只能引用该维度问题 claimIds 内的 Claim 与其 knowledgeIds 内的知识；区段观测（巡航/地形/爬坡的心率、功率、踏频、速度）已按传感器归属分发到对应维度的问题包——写作每个维度前，先浏览该维度问题的 claimIds 清单，所有可用证据都在那里；被解读维度 questions 内的全部 limitations 必须逐条原文回填到 limitations 字段。
-- 数据缺失维度（question 标 eligibility=partial 或 qualityStatus=soft，且该维度问题 claimIds 内没有任何可引用的有效 Claim）：**不得写 claimIds 为空的 fact/interpretation 断言**——"缺少某数据""无法评估某指标"这类信息只能通过该维度 questions[].limitations 的原文回填到 limitations 字段表达，不作为断言输出；若该维度仍有部分可用 Claim，可以继续解读，但每条断言都必须绑定其中至少一条可用 Claim（claimIds 非空），不得空引。
+- 数据缺失维度（question 标 eligibility=partial 或 qualityStatus=soft，且该维度问题 claimIds 内没有任何可引用的有效 Claim）：**整个从 dimensions 数组中省略该维度**——输出结构不要求覆盖全部维度，"assertions" 为空数组的维度对象会被结构校验直接拒绝；"缺少某数据""无法评估某指标"这类信息只能通过该维度 questions[].limitations 的原文回填到 limitations 字段表达，不作为断言输出。若该维度仍有部分可用 Claim，可以继续解读，但每条断言都必须绑定其中至少一条可用 Claim（claimIds 非空），不得空引。
 - suggestions：建议。每条必须绑定至少一条骑行 Claim 作为事实锚点，可附 riskNote。
 - limitations：只能使用输入中出现过的限制原文，不得改写或编造。
 
@@ -91,12 +91,13 @@ const INSTRUCTIONS = `你是"AI 骑行伙伴"的骑后解读引擎。你的唯�
   ],
   "limitations": ["power.coverage:90%"]
 }
-示例要点：①"高强度区间合计占比"直接引用预计算的 highIntensityCombined 类 Claim（输入已提供区间合并份额），绝不自行把多个区间占比相加；②interpretation 断言的 claimIds 指向它所解读的事实依据；③建议中的操作性数字（如 10 分钟）合法，但不得改写本次骑行的事实数字；④每条断言的 claimIds 只引用该维度问题包内的 Claim。
+示例要点：①"高强度区间合计占比""耐力区间合计"这类区间合并份额直接引用预计算的分组 Claim（输入已提供 highIntensityCombined / enduranceCombined / lowIntensityCombined / thresholdPlusCombined 等区间合并份额），绝不自行把多个区间占比相加；②interpretation 断言的 claimIds 指向它所解读的事实依据；③建议中的操作性数字（如 10 分钟）合法，但不得改写本次骑行的事实数字；④每条断言的 claimIds 只引用该维度问题包内的 Claim。
 
 【常见违规反例】（以下写法会被本地校验器拒绝，务必避免）
 - 坡度漏绑：写"最具挑战的爬坡段平均坡度 11.1%，平均功率 256W"却只在 claimIds 写 power.mean——数字 11.1 无出处，须把该爬坡段的 averageGrade 一并写入 claimIds。
 - 时长漏绑：写"20 分钟爬坡段平均踏频 66rpm"却只在 claimIds 写 cadence.mean——数字 20 无出处，须把该段的 span 一并写入 claimIds。
 - 计数漏绑：写"本次骑行包含 3 个代表性爬坡段"却在 claimIds 里漏掉 representativeClimbCount——数字 3 无出处。
+- 爬坡计数混口径：输入存在两套爬坡段计数——climb.representativeClimbCount（事件爬坡识别，value=识别总数、displayValue="代表性/总数"）与 terrain.climbRunCount（地形分段口径，算法不同、数值可能不同）——写哪个口径的数字就绑哪条 Claim，不得把两个口径的数字写进同一条断言却只绑其一（写"共识别 8 个爬坡段"就必须绑 terrain.climbRunCount）。
 - 占比自算：写"平路里程 30.4 公里，占比接近 100%"却只引用 trendFlatDistanceM——该 Claim 只有距离、没有占比，数字 100 无出处；要么补一个提供占比的 Claim，要么改成"几乎全平路"。
 - 口诀：文本里出现的每一个数字，都要有承载它的 Claim 在 claimIds 里；找不到对应 Claim 的数字，要么补上绑定，要么删掉这个数字。`;
 

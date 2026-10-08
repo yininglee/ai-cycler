@@ -77,7 +77,7 @@ test("S6-01 builds a versioned prompt bound to the schema and output contract ve
   assert.equal(prompt.promptVersion, RIDE_PROMPT_VERSION);
   assert.equal(prompt.outputSchemaVersion, RIDE_OUTPUT_SCHEMA_VERSION);
   assert.equal(prompt.inputSchemaVersion, RIDE_MODEL_INPUT_SCHEMA_VERSION);
-  assert.equal(prompt.promptVersion, "ride-prompt-v2.8.2");
+  assert.equal(prompt.promptVersion, "ride-prompt-v2.8.3");
 });
 
 test("S6-01 prompt embeds the delivered input snapshot with claims and knowledge", () => {
@@ -116,9 +116,14 @@ test("S6-01 prompt states the output contract, citation rules, and prohibitions"
   assert.ok(promptText.includes("导致、造成"));
   assert.ok(promptText.includes("训练计划"));
   assert.ok(promptText.includes("进步、退步"));
-  // P1 (R01 structure issues): missing-data dimensions must not emit empty-claim
-  // fact/interpretation assertions — missing info goes to limitations verbatim.
-  assert.ok(promptText.includes("不得写 claimIds 为空的 fact/interpretation 断言"));
+  // P1 (R01 structure issues → v2.8.3 revision): missing-data dimensions are
+  // omitted from dimensions entirely (an "assertions": [] object is rejected);
+  // missing info goes to limitations verbatim. V21-15 P0-A: zone-group shares
+  // cite the precomputed combined claims. V21-15 P0-B: the two climb-count
+  // claims must not be mixed.
+  assert.ok(promptText.includes("整个从 dimensions 数组中省略该维度"));
+  assert.ok(promptText.includes("enduranceCombined / lowIntensityCombined / thresholdPlusCombined"));
+  assert.ok(promptText.includes("爬坡计数混口径"));
 });
 
 test("S6-01 prompt construction is deterministic for the same input", () => {

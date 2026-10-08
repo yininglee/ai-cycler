@@ -60,15 +60,17 @@
 
 ## 5. 可修清单（按优先级）
 
-| 优先级      | 问题                          | 修复方向                                                                                                                                                                                                         | 预期收益                     |
+| 优先级      | 问题                          | 修复方向                                                                                                                                                                                                         | 状态                     |
 | -------- | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------ |
-| **P0-A** | 私自求和（Z1-Z3 合计无 claim）       | 补 `power.zone.enduranceCombined`（Z1–Z3 合计）预计算 claim，与 `highIntensityCombined` 对称；Prompt 无需再改（已有"不得自行求和"引导，缺的是供给）                                                                                             | 消 1/3 降级                 |
-| **P0-B** | 两套爬坡段数量口径混淆                 | ① 供给消歧：`climb.representativeClimbCount` 与 `terrain.climbRunCount` 的 text/displayValue 明确标注口径（event-climb vs terrain 分类）；② Prompt 加"爬坡段数量有两个口径，写数字须绑对应 claim，不得混用"。。。。R01 P2「爬坡组 claim 分散漏绑」的**具体化--看R01 P2** | 消 1/3 降级                 |
-| **P1**   | 空维度 `FIELD_TYPE_INVALID` 高频 | Prompt v2.8.3：数据缺失维度**从 dimensions 省略**（不输出空 assertions），缺失信息统一进 limitations；不动校验规则（校验器本就不要求维度全覆盖）                                                                                                           | 消除最高频伴随 issue，间接降低修复轮失手率 |
-| **P2**   | 功率曲线"相对平稳"数据供给 gap          | `varianceSupported` 判定补 `power.curve.*`（多时长最大平均功率 = 过程数据），或语义豁免 stability 门增"功率曲线梯度/衰减形态描述"豁免场景                                                                                                              | 消 1/3 降级                 |
+| **P0-A** | 私自求和（Z1-Z3 合计无 claim）       | **不放开区间计算**（用户决策：模型算术不可信 PD-AI-28/29、"不可计算"是数字门基石、任意子集组合爆炸 vs 有限语义分组），改为补**一组语义区间分组 claim**：`enduranceCombined`（Z1-Z3）/`lowIntensityCombined`（Z1-Z2）/`thresholdPlusCombined`（Z4-Z7），与既有 `highIntensityCombined`（Z5-Z7）构成四组，按知识库解读逻辑点名的分组一次补齐；`power.` 前缀自动投递 powerOutput + intensityAndTrainingLoad                                                                                             | ✅ 已实施（V21-15）                 |
+| **P0-B** | 两套爬坡段数量口径混淆                 | 供给消歧：`climb.representativeClimbCount` text 标注 "event-climb detection"、`terrain.climbRunCount` text 标注 "terrain classification, distinct from event-climb detection"（terrain.climbRunCount 经 supports=terrain_segment 已投递 climbPerformance）；Prompt 反例区加「爬坡计数混口径」（写哪个口径的数字就绑哪条 Claim）。R01 P2「爬坡组 claim 分散漏绑」的**具体化**——看 R01 P2 | ✅ 已实施（V21-15）                 |
+| **P1**   | 空维度 `FIELD_TYPE_INVALID` 高频 | **双保险**：① Prompt v2.8.3 数据缺失维度**从 dimensions 整个省略**（空 assertions 数组会被结构校验拒绝）；② 确定性收敛层新增"删空维度"（仅空数组情形，幂等无损，不耗唯一修复轮配额）                                                                                                           | ✅ 已实施（V21-15） |
+| **P2**   | 功率曲线"相对平稳"数据供给 gap          | `varianceClaimKeyPattern` 补 `power\.curve`（多时长最大平均功率 = 过程数据，梯度形态描述有据）；只绑 power.mean 的"输出稳定"仍拦（选确定性正则方案，不用语义豁免——零成本可测）                                                                                                              | ✅ 已实施（V21-15）                 |
+
+**附带修复**：修复 Prompt v2.2.4 → v2.2.5——原文"Z5-Z7 合计无对应单一 Claim 证据须删改"在 P0-A 后已过时（会误导修复轮删掉正确表述），改为直取分组 Claim 引导 + 爬坡两口径说明。
 
 ## 6. 结论与下一步
 
 1. **R02 结论**：降级率 15%（与 R01 持平），语义豁免器生效但三类新根因接住了降级——两处数字门（私自求和、两套口径混淆）+ 一处稳定性门数据供给 gap，另有一处 P1 修复副作用（空维度）作隐性放大器。全部确定性可修，**不做 STOP**，再修一轮（`V21-15`）后复测 `EVAL-V21-R03`。
-2. **下一步**：① P0-A（补 Z1-Z3 合计 claim）+ P0-B（爬坡段口径消歧）+ P1（空维度省略引导）+ P2（power.curve 过程数据）落地为 `V21-15`；② 用同一 4 样例复测（开新 Run `EVAL-V21-R03`，不续跑 R02）；③ 复测仍 >15% 再考虑校验器射程调整或 few-shot。
+2. **下一步**：① ~~P0-A + P0-B + P1 + P2 落地为 `V21-15`~~ **已全部实施（2026-10-08，见 §5 状态列与进度账本 `V21-15` 条目）**；② 用同一 4 样例复测（开新 Run `EVAL-V21-R03`，不续跑 R02）；③ 复测仍 >15% 再考虑校验器射程调整或 few-shot。
 3. 正式放量仍走 `V21-12` 完整盲评 Run（冻结样例 + 四项指标 + 发布门），R02 只作 demo 阶段决策依据。
