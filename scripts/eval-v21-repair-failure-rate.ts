@@ -1,15 +1,20 @@
 /**
- * EVAL-V21-R01：REPAIR_FAILED 失败率量化（2026-10-08）。
+ * EVAL-V21-R02：REPAIR_FAILED 失败率复测（2026-10-08）。
+ *
+ * 在 R01 归因 → P0/P1 修复之后复测：P0（稳定措辞误拦截）已由语义校验器
+ * 两层方案豁免、P1（数据缺失维度空 claimIds）已由 Prompt v2.8.2 引导。
+ * 本脚本与生产链一致地**启用语义豁免**（注入 semanticChecker，复用同一
+ * model caller），验证降级率能否从 R01 的 15% 压到个位数。
  *
  * 4 条样例 × 5 次 = 20 次真实模型调用，走完整生产链路（与
  * runRideInterpretationV2 / app/api/ride-analysis?engine=v2 完全一致）：
  *   首轮调用 → 独立校验（记录 issue 全文 + 违规断言原文）
- *   → orchestrateRideOutputValidationV2（确定性收敛 → 至多一次模型修复 → 全量重验）
+ *   → orchestrateRideOutputValidationV2（语义豁免 → 确定性收敛 → 至多一次模型修复 → 全量重验）
  *   → firstPass / deterministicRepairPass / modelRepairPass / REPAIR_FAILED。
  *
  * 诊断留痕（每次调用立即落盘，支持断点续跑）：
- *   output/v21-eval/EVAL-V21-R01-20261008/raw/<rideId>-run<k>.json
- *   output/v21-eval/EVAL-V21-R01-20261008/raw/<rideId>-run<k>-first-output.txt
+ *   output/v21-eval/EVAL-V21-R02-20261008/raw/<rideId>-run<k>.json
+ *   output/v21-eval/EVAL-V21-R02-20261008/raw/<rideId>-run<k>-first-output.txt
  * 汇总：--report 重新生成 summary.json + report.md。
  *
  * 用法：
@@ -33,11 +38,17 @@ import { attachRideKnowledgeEvidenceV2 } from "../src/domain/ride-analysis-knowl
 import { rideKnowledgeBaseV21, RIDE_KNOWLEDGE_BASE_V21_VERSION } from "../src/domain/ride-knowledge-base-v21.ts";
 import { buildRideModelInputV2, type RideModelInputV2 } from "../src/domain/ride-model-input-v2.ts";
 import { buildRidePromptV2 } from "../src/ai/ride-prompt-v2.ts";
-import { readRideModelProviderConfigV2, RideModelClientV2, type RideModelCallRecordV2 } from "../src/ai/ride-model-provider-v2.ts";
+import { readRideModelProviderConfigV2, readRideSemanticModelIdV2, RideModelClientV2, type RideModelCallRecordV2 } from "../src/ai/ride-model-provider-v2.ts";
 import { validateRideModelOutputV2 } from "../src/ai/ride-output-validator-v2.ts";
 import { orchestrateRideOutputValidationV2 } from "../src/ai/ride-output-repair-v2.ts";
+import {
+  buildSemanticExemptionPrompt,
+  parseSemanticExemptionVerdict,
+  SEMANTIC_EXEMPT_PROMPT_VERSION,
+  type SemanticExemptionChecker,
+} from "../src/ai/ride-semantic-exemption-v2.ts";
 
-const RUN_ID = "EVAL-V21-R01-20261008";
+const RUN_ID = "EVAL-V21-R02-20261008";
 const OUT_DIR = join(process.cwd(), "output", "v21-eval", RUN_ID);
 const RAW_DIR = join(OUT_DIR, "raw");
 const REPEATS = 5;
@@ -190,6 +201,7 @@ async function runOnce(
   client: RideModelClientV2,
   rideId: string,
   runIndex: number,
+  semanticModelId: string | undefined,
 ): Promise<RunOutcome> {
   const startedAt = new Date().toISOString();
   const { record, profile } = await loadRecordAndProfile(rideId);
@@ -235,6 +247,29 @@ async function runOnce(
     return { rawText: result.rawText };
   };
 
+  // R02 关键：与生产链一致地启用语义豁免（P0/P1/P2 三门），复用同一 client。
+  // 语义校验的额外调用也记录进 callRecords，反映真实调用次数与成本。
+  const semanticCallRecords: Array<{ latencyMs: number; usage?: unknown; errorCode?: string }> = [];
+  const semanticChecker: SemanticExemptionChecker | undefined = firstParsed === undefined
+    ? undefined
+    : async (request) => {
+        const promptText = buildSemanticExemptionPrompt(request);
+        const result = await client.run({
+          analysisRunId: `eval-${RUN_ID}`,
+          requestId: `${RUN_ID}-${rideId}-run${runIndex}:semantic`,
+          promptText,
+          promptVersion: SEMANTIC_EXEMPT_PROMPT_VERSION,
+          jsonMode: true,
+          maxOutputTokens: 128,
+          timeoutMs: 10_000,
+          ...(semanticModelId ? { modelId: semanticModelId } : {}),
+        });
+        if (result.callRecord) {
+          semanticCallRecords.push({ latencyMs: result.callRecord.latencyMs, usage: result.callRecord.usage, errorCode: result.callRecord.errorCode });
+        }
+        return parseSemanticExemptionVerdict(result.rawText) ?? { exempt: false, reason: "unparseable verdict (fail-closed)" };
+      };
+
   let orchestration: Awaited<ReturnType<typeof orchestrateRideOutputValidationV2>> | undefined;
   let providerError: string | undefined;
   if (firstParsed !== undefined) {
@@ -244,13 +279,14 @@ async function runOnce(
         firstOutput: firstParsed,
         requestId: `${RUN_ID}-${rideId}-run${runIndex}`,
         ...(repairCaller ? { repairCaller } : {}),
+        semanticChecker,
       });
     } catch (error) {
       providerError = error instanceof Error ? error.message : String(error);
     }
   }
 
-  callRecords.push(...repairCallRecords);
+  callRecords.push(...repairCallRecords, ...semanticCallRecords);
 
   let status: RunOutcome["status"];
   let fallbackCode: string | undefined;
@@ -415,6 +451,7 @@ async function main(): Promise<void> {
   const config = readRideModelProviderConfigV2(env);
   if (!config) { console.error("未找到 SILICONFLOW_API_TOKEN"); process.exit(1); }
   const client = new RideModelClientV2(config);
+  const semanticModelId = readRideSemanticModelIdV2(env);
   await mkdir(RAW_DIR, { recursive: true });
 
   const targetRide = process.argv[2];
@@ -428,7 +465,7 @@ async function main(): Promise<void> {
       }
       console.log(`[${new Date().toISOString()}] ${rideId} run${runIndex} 开始…`);
       try {
-        const outcome = await runOnce(client, rideId, runIndex);
+        const outcome = await runOnce(client, rideId, runIndex, semanticModelId);
         await writeFile(rawPath, JSON.stringify(outcome, null, 2), "utf8");
         console.log(`  → ${outcome.status}${outcome.failureCodes?.length ? ` [${outcome.failureCodes.join(",")}]` : ""}（首轮 issue ${outcome.firstRound.issueCount}）`);
       } catch (error) {
