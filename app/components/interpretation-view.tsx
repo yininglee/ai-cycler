@@ -298,6 +298,19 @@ export function InterpretationView({
             <p>重新调用 AI 解读链路，生成最新结果。</p>
           </div>
         )}
+
+        {/* 2026-10-14 用户要求：链路说明与演示标注统一放「重新解读」按钮之后，
+            不打断解读正文阅读流；仅 V2 结果显示。 */}
+        {state.kind === "ok" && state.data.source === "v2" && state.data.v2Candidate && (
+          <div className="candidate-engine-notes">
+            <p className="candidate-demo-hint">V2 解读链路（证据体系重构版）·本次输出已通过全部校验后展示。</p>
+            {state.data.v2Candidate.presentation.demoBypassNotice && (
+              <p className="candidate-demo-hint">
+                {state.data.v2Candidate.presentation.demoBypassNotice}——此输出未经过校验拦截，不代表正式产品质量。
+              </p>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -483,7 +496,6 @@ function V2Body({
 }) {
   return (
     <>
-      <p className="candidate-demo-hint">V2 解读链路（证据体系重构版）·本次输出已通过全部校验后展示。</p>
       <RideOutputV2View presentation={candidate.presentation} charts={candidate.charts} />
       <FeedbackButtons feedback={feedback} onSubmit={onFeedback} />
     </>
