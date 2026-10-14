@@ -69,12 +69,6 @@ export function RideOutputV2View({
           <span>{presentation.repairOutcomeLabel}——展示前已通过完整重验。</span>
         </div>
       )}
-      {presentation.demoBypassNotice && (
-        <div className="v2-repair-note" role="status">
-          <strong>演示标注</strong>
-          <span>{presentation.demoBypassNotice}——此输出未经过校验拦截，不代表正式产品质量。</span>
-        </div>
-      )}
 
       <section className="candidate-label-band">
         <span>一句话标签</span>
@@ -189,6 +183,15 @@ export function RideOutputV2View({
             ))}
           </ol>
         </section>
+      )}
+
+      {/* 演示标注放页面最底（2026-10-14 用户要求）：不打断解读正文阅读流，
+          同时保留"此输出未经过校验拦截"的可见性。 */}
+      {presentation.demoBypassNotice && (
+        <div className="v2-repair-note" role="status">
+          <strong>演示标注</strong>
+          <span>{presentation.demoBypassNotice}——此输出未经过校验拦截，不代表正式产品质量。</span>
+        </div>
       )}
     </div>
   );
