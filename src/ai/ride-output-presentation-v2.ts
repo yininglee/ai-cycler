@@ -75,12 +75,18 @@ export interface RideOutputPresentationV2 {
   // Repair trace label ("本地整理后通过" / "模型修复后通过") when the shown
   // output passed validation only after the S6-02 repair pipeline.
   repairOutcomeLabel: string | null;
+  // DEMO-VALIDATION-BYPASS (user decision 2026-10-14): demo-only notice shown
+  // when the output was displayed WITHOUT validation enforcement. Distinct
+  // from repairOutcomeLabel on purpose — that label asserts the output passed
+  // full revalidation, which a bypassed output never did.
+  demoBypassNotice: string | null;
 }
 
 export interface BuildRideOutputPresentationV2Options {
   // knowledgeId -> human-readable source title, used to render footnotes.
   knowledgeTitles?: Readonly<Record<string, string>>;
   repairOutcomeLabel?: string;
+  demoBypassNotice?: string;
 }
 
 export function buildRideOutputPresentationV2(
@@ -148,5 +154,6 @@ export function buildRideOutputPresentationV2(
     limitations: [...output.limitations],
     knowledgeFootnotes,
     repairOutcomeLabel: options.repairOutcomeLabel ?? null,
+    demoBypassNotice: options.demoBypassNotice ?? null,
   };
 }

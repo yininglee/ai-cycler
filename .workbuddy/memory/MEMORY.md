@@ -81,5 +81,7 @@
 ## 演示环境（demo）约定
 
 - **演示端口归属**：`localhost:3000` = m4 工作树，`localhost:3001` = m6 工作树。演示前先确认端口属于哪个工作树，改错了不会生效（worktree 各自独立 `node_modules` 与 `.local-data`）。
+- **演示记录（2026-10-08 扩为四条）**：`demo-ride-2026-10-05`（30.4km 心率）/ `08-20`（31.1km 通勤心率）/ `07-22`（161.8km 长途功率）/ `07-18`（56km 起伏功率），随仓库分发（`test-data/demo-imported-rides/*.fit`），按骑行时间倒序；R01/R02 用的 upload-* 样例已从 .local-data 清理（备份 `application-state.backup-before-demo-rides-cleanup.json`），**R03 脚本须改用 demo-ride id**。
+- **校验旁路开关（2026-10-14 用户决策，仅限 demo）**：`.env.local` 置 `DEMO_VALIDATION_BYPASS=on` → V2 解读首轮输出直接展示（无收敛/修复/语义豁免/降级），校验器仍跑并记录 issue（响应 `v2Candidate.bypassedIssueCodes` + 前端"演示标注"角标，**演示即失败率探针**）。**校验门设计不变**（validator/repair/语义豁免零改动）；缺省 off 行为与正式链路逐字节一致；**评测脚本（R03/V21-12）永不读此开关**，旁路结论不给放量背书。背景：R02 firstPass 仅 5%、95% 靠修复轮（60–142s 二次调用），demo 体感差的真实根因。
 - **个人资料演示基线（2026-10-08 落地）**：`/api/profile` GET 在会话无任何资料时 seed 一份基线并落盘 —— 28 岁 / 175cm / 72kg / 192bpm（`user_provided`）/ FTP 220（`user_confirmed`），时间戳固定 `2026-10-08T04:37:10.707Z`（北京 12:37）。前端初始 state 同源，首屏不闪空表。关闭开关：`DEMO_PROFILE_SEED=off`。
 - 语义边界：这是**演示默认值**，不是产品行为；已有的真实资料不会被覆盖（只判"完全没资料"才 seed）。"清除当前资料"会真清空，刷新后按 seed 规则恢复。

@@ -69,6 +69,12 @@ export function RideOutputV2View({
           <span>{presentation.repairOutcomeLabel}——展示前已通过完整重验。</span>
         </div>
       )}
+      {presentation.demoBypassNotice && (
+        <div className="v2-repair-note" role="status">
+          <strong>演示标注</strong>
+          <span>{presentation.demoBypassNotice}——此输出未经过校验拦截，不代表正式产品质量。</span>
+        </div>
+      )}
 
       <section className="candidate-label-band">
         <span>一句话标签</span>

@@ -353,3 +353,55 @@ test("S6-03 parses fenced JSON model responses", async () => {
   assert.equal(result.source, "v2");
   assert.equal(result.stage, "firstPass");
 });
+
+test("DEMO-VALIDATION-BYPASS displays a violating first-round output as-is and records the issues", async () => {
+  // User decision 2026-10-14: demo-only switch. The validator still runs and
+  // records what it found, but nothing is enforced — no repair call, no
+  // semantic exemption, no b0 fallback. Demo usage doubles as a live
+  // failure-rate probe.
+  const tracker: CallerTracker = { calls: 0 };
+  const result = await runRideInterpretationV2({
+    ...baseOptions(scriptedCaller(tracker, [stabilityBrokenScript()])),
+    semanticChecker: null,
+    demoValidationBypass: true,
+  });
+  assert.equal(result.source, "v2");
+  assert.equal(tracker.calls, 1, "bypass must never trigger a repair or semantic call");
+  if (result.source !== "v2") throw new Error("unreachable");
+  assert.equal(result.demoValidationBypass, true);
+  assert.ok((result.bypassedIssueCount ?? 0) >= 1);
+  assert.ok(result.bypassedIssueCodes?.includes("STABILITY_WITHOUT_VARIANCE"));
+  assert.ok(result.presentation.demoBypassNotice?.includes("校验旁路"));
+  assert.equal(result.presentation.repairOutcomeLabel, null);
+});
+
+test("DEMO-VALIDATION-BYPASS records zero issues for a compliant output (still bypassed)", async () => {
+  const tracker: CallerTracker = { calls: 0 };
+  const result = await runRideInterpretationV2({
+    ...baseOptions(scriptedCaller(tracker, [passingScript()])),
+    demoValidationBypass: true,
+  });
+  assert.equal(result.source, "v2");
+  if (result.source !== "v2") throw new Error("unreachable");
+  assert.equal(result.demoValidationBypass, true);
+  assert.equal(result.bypassedIssueCount, 0);
+  assert.ok(result.presentation.demoBypassNotice?.includes("零 issue"));
+});
+
+test("DEMO-VALIDATION-BYPASS off (default) keeps the enforcing pipeline byte-identical", async () => {
+  // Zero-regression lock: the SAME violating output that bypass displays must
+  // still go through repair (and degrade when repair fails) when the switch
+  // is absent, and the result must carry no bypass markers.
+  const tracker: CallerTracker = { calls: 0 };
+  const result = await runRideInterpretationV2({
+    ...baseOptions(scriptedCaller(tracker, [stabilityBrokenScript(), passingScript()])),
+    semanticChecker: null,
+  });
+  assert.equal(result.source, "v2");
+  assert.equal(result.stage, "modelRepairPass");
+  assert.equal(tracker.calls, 2, "the enforcing pipeline consumes one repair call");
+  if (result.source !== "v2") throw new Error("unreachable");
+  assert.equal(result.demoValidationBypass, undefined);
+  assert.equal(result.bypassedIssueCodes, undefined);
+  assert.equal(result.presentation.demoBypassNotice, null);
+});

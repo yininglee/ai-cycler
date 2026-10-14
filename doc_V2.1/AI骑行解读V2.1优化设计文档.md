@@ -472,6 +472,23 @@ flowchart TD
 
 实现落点：`RideModelInvocationV2.modelId`（per-invocation 覆盖）+ `readRideSemanticModelIdV2()`（读 env）+ service `defaultSemanticChecker` 传 `modelId`/`maxOutputTokens`/`timeoutMs`；route.ts 读 env 注入 `semanticModelId`。语义校验的**正确性**（真实模型能否区分"稳定踏频"vs"输出稳定"）需 `EVAL-V21-R02` 复测验证。
 
+#### 10.4.5 演示模式校验旁路 `DEMO_VALIDATION_BYPASS`（2026-10-14 用户决策，demo 专用）
+
+**背景**：R02 复测后 demo 试用体感"解读失败率非常高"——真实结构是 firstPass 仅 5%、95% 依赖修复轮（每次 60–142 秒二次调用），叠加 V21-15 修复未复测（R03 未跑）、演示 profile 与 R02 测评 profile 口径不同。demo 阶段需要"能正常演示"。
+
+**决策**：方案 C「校验照跑、只旁路拦截」——**校验门设计原样不动**（validator / 修复编排 / 语义豁免代码零修改），开关只存在于 service 编排层：
+
+| 项 | 设计 |
+|---|---|
+| 开关 | `DEMO_VALIDATION_BYPASS=on`（env，默认 off；route.ts 读取传给 service，对齐 `DEMO_PROFILE_SEED` 模式） |
+| 行为 | on 时首轮输出**直接展示**：不进确定性收敛、不进模型修复、不做语义豁免、不因校验降级；输入门（L7）**不旁路**（无可解读数据的骑行本来就没有输出可展示）；JSON 解析失败的首轮仍走原链路（无可展示内容，修复轮可能救回） |
+| 观测（关键设计） | 校验器**仍执行一次**并记录 issue：响应 `v2Candidate.bypassedIssueCount / bypassedIssueCodes` + 前端"演示标注"角标显示 issue 数——**演示即失败率探针**，为 R03 归因供数；不选"完全跳过校验"正是为了保住这条观测通道 |
+| 角标 | `presentation.demoBypassNotice`（独立字段，**不复用** `repairOutcomeLabel`——后者断言"已通过完整重验"，旁路输出从未通过，借用即误导）；前端注明"未经过校验拦截，不代表正式产品质量" |
+| 纪律边界 | 评测脚本（R03 / `V21-12` 盲评）**永远不读此开关**，旁路演示结论不给放量背书；正式链路缺省行为与现状逐字节一致（零回归测试锁定） |
+| 已知代价 | 展示的是未修复首轮输出：R02 数据说明首轮大概率带小 issue（多为漏绑/披露缺失），重大编造占比低但不为零——演示需角标提示，且不能作为质量证据引用 |
+
+实现落点：`ride-interpretation-service-v2.ts` v2.3.0（`demoValidationBypass` 选项 + 记录式校验分支 + `bypassedIssueCodes` 返回字段）、`ride-output-presentation-v2.ts`（`demoBypassNotice`）、`route.ts`（env 注入 + 响应透传）、`ride-output-v2-view.tsx`（角标）。测试 3 条：旁路展示违规输出且记录 issue（零额外调用）/ 合规输出零 issue / **缺省路径零回归**（同一违规输出照旧走修复轮且无 bypass 标记）。
+
 ---
 
 ## 11. 心率区间基准对齐（口径一致性专项）

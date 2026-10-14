@@ -146,6 +146,10 @@ export async function POST(request: Request): Promise<Response> {
     const providerConfig = readRideModelProviderConfigV2(process.env);
     const modelClient = providerConfig ? new RideModelClientV2(providerConfig) : undefined;
     const semanticModelId = readRideSemanticModelIdV2(process.env);
+    // DEMO-VALIDATION-BYPASS=on (user decision 2026-10-14): demo-only. The
+    // validator still runs and records issues, but nothing is enforced — no
+    // repair, no fallback. Default off; eval scripts never set it.
+    const demoValidationBypass = process.env.DEMO_VALIDATION_BYPASS?.trim().toLowerCase() === "on";
     const result = await runRideInterpretationV2({
       record,
       profile,
@@ -154,6 +158,7 @@ export async function POST(request: Request): Promise<Response> {
       requestId: crypto.randomUUID(),
       modelCaller: modelClient ? (invocation) => modelClient.run(invocation) : undefined,
       semanticModelId,
+      ...(demoValidationBypass ? { demoValidationBypass: true } : {}),
     });
     if (result.source === "b0") {
       return finalize(
@@ -184,6 +189,11 @@ export async function POST(request: Request): Promise<Response> {
           charts,
           stage: result.stage,
           modelRepairCalls: result.modelRepairCalls,
+          ...(result.demoValidationBypass ? {
+            demoValidationBypass: true,
+            bypassedIssueCount: result.bypassedIssueCount,
+            bypassedIssueCodes: result.bypassedIssueCodes,
+          } : {}),
           versions: result.versions,
         },
         versions: result.versions,

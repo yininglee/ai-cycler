@@ -49,6 +49,7 @@ import {
   type RideOutputOrchestrationStageV2,
   type RideOutputRepairCallerV2,
 } from "./ride-output-repair-v2.ts";
+import { validateRideModelOutputV2 } from "./ride-output-validator-v2.ts";
 import { buildRideOutputPresentationV2, type RideOutputPresentationV2 } from "./ride-output-presentation-v2.ts";
 import { RIDE_OUTPUT_SCHEMA_VERSION, type RideModelOutputV2 } from "./ride-output-schema-v2.ts";
 import {
@@ -58,7 +59,7 @@ import {
   type SemanticExemptionChecker,
 } from "./ride-semantic-exemption-v2.ts";
 
-export const RIDE_INTERPRETATION_SERVICE_V2_VERSION = "ride-interpretation-service-v2.2.0" as const;
+export const RIDE_INTERPRETATION_SERVICE_V2_VERSION = "ride-interpretation-service-v2.3.0" as const;
 
 // Adapts RideModelClientV2.run (or a test double) to the service. callRecord is
 // optional so tests can inject minimal fakes; production always returns one.
@@ -83,6 +84,16 @@ export interface RideInterpretationV2Options {
   // model). `undefined` = reuse the main interpretation model. The parameter
   // slimming (maxOutputTokens + short timeout) always applies regardless.
   semanticModelId?: string;
+  // DEMO-VALIDATION-BYPASS (user decision 2026-10-14): demo-only switch. When
+  // true, the first-round output is displayed as-is: the validator still runs
+  // once and its issues are RECORDED (never enforced) so demo usage doubles
+  // as a live failure-rate probe, but there is no deterministic organize, no
+  // model repair, no semantic exemption, no b0 fallback on validation grounds.
+  // The switch lives in this service layer ONLY — the validator, the repair
+  // orchestrator and the semantic-exemption layer are untouched, and the eval
+  // scripts never set it (V21-12 / R03 always run the pristine chain, so a
+  // bypassed demo can never back a release gate).
+  demoValidationBypass?: boolean;
   now?: Date;
 }
 
@@ -107,6 +118,12 @@ export type RideInterpretationV2Result =
       presentation: RideOutputPresentationV2;
       callRecords: RideModelCallRecordV2[];
       versions: RideInterpretationV2Versions;
+      // Present only when demoValidationBypass was on: the shown output was
+      // NOT validation-enforced. bypassedIssueCodes records what the (still
+      // executed) validator found on the first-round output.
+      demoValidationBypass?: true;
+      bypassedIssueCount?: number;
+      bypassedIssueCodes?: string[];
     }
   | {
       source: "b0";
@@ -251,6 +268,35 @@ export async function runRideInterpretationV2(options: RideInterpretationV2Optio
     if (result.callRecord) callRecords.push(result.callRecord);
     return { rawText: result.rawText };
   };
+
+  // DEMO-VALIDATION-BYPASS: record-only validation, zero repair pipeline. An
+  // unparseable first round (firstParsed undefined) still falls through to the
+  // normal pipeline — there is nothing to display, and the repair call may yet
+  // save it. The input gate (L7) is NOT bypassed: a ride without deliverable
+  // questions has nothing to interpret either way.
+  if (options.demoValidationBypass && firstParsed !== undefined) {
+    const validation = validateRideModelOutputV2(input, firstParsed);
+    const bypassedIssues = validation.status === "fail" ? validation.issues : [];
+    const bypassedIssueCodes = [...new Set(bypassedIssues.map((issue) => issue.code))];
+    const presentation = buildRideOutputPresentationV2(firstParsed as RideModelOutputV2, {
+      knowledgeTitles: KNOWLEDGE_TITLES,
+      demoBypassNotice: bypassedIssues.length > 0
+        ? `演示模式：校验旁路——首轮输出直接展示，未拦截 ${bypassedIssues.length} 项校验 issue（${bypassedIssueCodes.join(", ")}）`
+        : "演示模式：校验旁路——首轮输出直接展示（本轮零 issue）",
+    });
+    return {
+      source: "v2",
+      stage: "firstPass",
+      modelRepairCalls: 0,
+      output: firstParsed as RideModelOutputV2,
+      presentation,
+      callRecords,
+      versions: { ...versions, model: callRecords[0]?.model },
+      demoValidationBypass: true,
+      bypassedIssueCount: bypassedIssues.length,
+      bypassedIssueCodes,
+    };
+  }
 
   // V2.1-F: semantic exemption checker. Reuses the same model caller to re-check
   // the three exemptable regex gates (stability / causality / soft-disclosure).
