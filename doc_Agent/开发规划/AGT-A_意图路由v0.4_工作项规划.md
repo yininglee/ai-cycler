@@ -75,7 +75,7 @@ flowchart LR
 | 分类器运行模式 | shadow / active 双模式（`CHAT_CLASSIFIER_MODE`） | **单一启用语义** | **D-A5**：`CHAT_CLASSIFIER_MODE` 退役、shadow 分支删除；`CHAT_CLASSIFIER_ENABLED=true` 即分类器接管主路由；未启用 = 规则基线（开发/未升级环境兜底，P1 业务正则保留为其主路径）；影子观测职责移交 demo-events 遥测（AGT-E） |
 | 启用态失败分支 | 分类器失败 → P1 业务正则兜底（CHAT-12"不劣于规则基线"） | **"模型暂不可用"降级** | **D-A2 修订**：`resolveActiveChatRouting` 失败/超时/限流不再降级正则，统一降级模板 + 新事件码；L0 快路径保留为正常路径 |
 
-> 预计标注集总量 ≈ 78 例（38 + ≥40）。粗规划/需求分析中"~50 例"与"各 ≥8 例"存在张力，**以"各 ≥8 例"硬口径为准**。
+> 预计标注集总量 ≈ 78 例（38 + ≥40）。粗规划/需求分析中"~50 例"与"各 ≥8 例"存在张力，**以"各 ≥8 例"硬口径为准**。**AGT-A2 实际交付 83 例**（dev 13 / blind 60 / red-team 10，5 个新意图各 8 例），逐条清单见 `eval/ride-chat-classifier-v0.4/CHANGES.md`。
 
 ## 4. 工作项（7 项）
 

@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import test from "node:test";
 
 import {
@@ -87,11 +88,11 @@ test("classifier client sends the code-hosted prompt with a de-identified classi
   assert.equal(body.temperature, 0.3);
   assert.equal(body.enable_thinking, false);
   assert.equal(body.response_format.type, "json_object");
-  // Prompt 从代码库发送：system = v0.3 常量（版本归档于 chat-classifier-prompt.ts）。
+  // Prompt 从代码库发送：system = v0.4 常量（版本归档于 chat-classifier-prompt.ts）。
   assert.equal(body.messages.length, 2);
   assert.equal(body.messages[0]?.role, "system");
   assert.equal(body.messages[0]?.content, CHAT_CLASSIFIER_SYSTEM_PROMPT);
-  assert.equal(CHAT_CLASSIFIER_PROMPT_VERSION, "ride-chat-classifier-prompt-v0.3");
+  assert.equal(CHAT_CLASSIFIER_PROMPT_VERSION, "ride-chat-classifier-prompt-v0.4");
 
   const userContent = body.messages[1]?.content ?? "";
   const requestTag = /<classify_request>\n([\s\S]*?)\n<\/classify_request>/.exec(userContent)?.[1] ?? "";
@@ -150,5 +151,33 @@ test("classifier accepts valid completion output and rejects contract violations
     () => malformed.classify({ requestId: "request", text: "你好" }),
     (error: unknown) => error instanceof ChatProviderError && error.code === "MODEL_INVALID_RESPONSE",
   );
+});
+
+// AGT-A3（Prompt v0.4）：16 意图合同的 Prompt 侧自证——意图枚举全在、schema 版本已升、
+// 归档副本与代码常量逐字一致（消除"文档与代码双版本"的漂移面）。
+test("classifier prompt v0.4 declares the 16-intent contract and its archived copy stays identical", () => {
+  const prompt = CHAT_CLASSIFIER_SYSTEM_PROMPT;
+  for (const intent of CHAT_CLASSIFIER_INTENTS) {
+    assert.match(prompt, new RegExp(`\\b${intent}\\b`), `prompt does not declare intent ${intent}`);
+  }
+  assert.match(prompt, /"schemaVersion": "chat-classifier-v0\.2"/);
+  assert.match(prompt, /16 个标签/);
+  assert.match(prompt, /"intent": "safety_stop \| privacy_boundary \| injection_stop/);
+
+  const archived = readFileSync(new URL("../prompts/ride-chat-classifier-v0.2.md", import.meta.url), "utf8");
+  const archivedPrompt = /```text\n([\s\S]*?)\n```/.exec(archived)?.[1];
+  assert.ok(archivedPrompt, "archived prompt block missing");
+  assert.equal(archivedPrompt, prompt, "archived copy drifted from code constant");
+});
+
+// AGT-A2/A3 防泄漏：few-shot 只允许取自 dev split——blind/red-team 例句不得出现在 Prompt 中。
+test("classifier prompt never quotes blind or red-team cases from the frozen dataset", () => {
+  const raw = readFileSync(new URL("../eval/ride-chat-classifier-v0.4/cases.json", import.meta.url), "utf8");
+  const payload = JSON.parse(raw) as { cases: Array<{ caseId: string; split: string; input: string }> };
+  const heldOut = payload.cases.filter((item) => item.split !== "dev");
+  assert.ok(heldOut.length > 0);
+  for (const item of heldOut) {
+    assert.equal(CHAT_CLASSIFIER_SYSTEM_PROMPT.includes(item.input), false, `held-out case leaked into prompt: ${item.caseId}`);
+  }
 });
 

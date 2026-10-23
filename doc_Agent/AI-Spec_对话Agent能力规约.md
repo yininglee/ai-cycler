@@ -74,13 +74,14 @@
 
 | Prompt | 版本 | 事实源位置 | 归档副本 | 状态 |
 | --- | --- | --- | --- | --- |
-| 意图分类器 | `ride-chat-classifier-prompt-v0.4` | `src/chat/` prompt 模块版本化常量（AGT-A3 写入） | `prompts/ride-chat-classifier-v0.2.md`（文档用途） | AGT-A 交付 |
+| 意图分类器 | `ride-chat-classifier-prompt-v0.4` | `src/chat/chat-classifier-prompt.ts`（`CHAT_CLASSIFIER_SYSTEM_PROMPT` 常量，AGT-A3 已写入，随请求直发硅基流动） | `prompts/ride-chat-classifier-v0.2.md`（归档副本，单测断言逐字一致） | ✅ AGT-A3 交付 |
 | 主对话 | `ride-chat-workflow` v0.1 → 硅基流动版 | `src/chat/`（AGT-A0 原样搬运，语义演进挂 AGT-C） | `prompts/ride-chat-workflow-v0.1.md` | AGT-A0 搬运 |
 | 分析叙事 / 水平评估 / KB 问答 / 陪伴 | 待定 | 待定（AGT-C 落地，按任务簇分模板） | — | AGT-C 并入 |
 | 训练计划生成 | 待定 | 待定（AGT-F，附结构化输出格式约束 + few-shot 计划样例） | — | AGT-F 并入 |
 | 监督反馈 | 待定 | 待定（AGT-G，两档输出：安全自动 / 需确认） | — | AGT-G 并入 |
 
-> ⚠️ 已知坑（AGT-A 消除）：`prompts/ride-chat-classifier-v0.1.md` 文件名按 schema 版本、内容是 prompt-v0.3，两套版本号并存——v0.4 起代码常量为唯一事实源，归档副本只标 prompt 版本。
+> ⚠️ 已知坑（AGT-A3 已消除）：旧文件 `prompts/ride-chat-classifier-v0.1.md` 文件名按 schema 版本、内容是 prompt-v0.3，两套版本号并存。v0.4 起：代码常量为唯一事实源，归档副本 `prompts/ride-chat-classifier-v0.2.md` 只承载 prompt 版本，一致性由 `tests/chat-classifier.test.ts` 断言、`npm run prompt:classifier:sync` 一键对齐。
+> 评测纪律（AGT-A3 新增）：few-shot 只取标注集 `dev` split；意图定义中的示例一律用泛化说法，不照抄任何 `blind`/`red-team` 原句（有机械断言），避免 blind 通过率因"见过原句"虚高。
 
 ## 6. 上下文输入规约（I/O 之 I）
 
@@ -136,6 +137,8 @@
 | 日期 | 里程碑 | 增补内容 | 状态 |
 | --- | --- | --- | --- |
 | 2026-10-23 | — | 骨架版建立：合同模板/现役工具索引/Prompt 版本索引/P0 条款；3.2/3.3/5/6 留占位 | ✅ |
+| 2026-10-23 | AGT-A2 | 标注集 v0.4：83 例（dev 13 / blind 60 / red-team 10，16 意图全覆盖，SHA `414e0d31…` 冻结候选）；覆盖策略写入 manifest、`eval:classifier:preflight` 重写为 v0.4 并新增跨 split 防泄漏校验 | ✅（冻结待用户批准） |
+| 2026-10-23 | AGT-A3 | 分类器 Prompt v0.4 写入代码常量（16 意图定义 + 顺序判断规则 + 13 条 dev-only few-shot）；归档副本 `prompts/ride-chat-classifier-v0.2.md` + 同步脚本 + 一致性/防泄漏单测 | ✅ |
 | 待补 | AGT-B | 5 新工具完整参数/返回 schema、白名单与预算重标定值、catalog 精简口径 | 占位 |
 | 待补 | AGT-C | 4 生成任务簇 prompt 版本索引、KB 引用校验规则细则 | 占位 |
 | 待补 | AGT-D | 分层混合上下文细则、校验器白名单扩展口径（P8 拍板后） | 占位 |

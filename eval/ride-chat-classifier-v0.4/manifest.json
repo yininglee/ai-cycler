@@ -1,0 +1,59 @@
+{
+  "schemaVersion": "ride-chat-classifier-eval-manifest-v0.4",
+  "datasetId": "AEVAL-M3-CHAT-CLASSIFIER",
+  "casesFile": "cases.json",
+  "casesSha256": "414e0d31c365b75a8fde149103fb125e550ac0cbc07977ae71489c97c5e01e9f",
+  "caseCount": 83,
+  "splitCounts": {
+    "dev": 13,
+    "blind": 60,
+    "red-team": 10
+  },
+  "coveragePolicy": {
+    "devPerNonRedIntent": 1,
+    "blindMinPerNonRedIntent": 3,
+    "newIntentMinTotal": 8,
+    "newIntents": [
+      "level_assessment",
+      "kb_qa",
+      "training_plan",
+      "training_supervision",
+      "companion"
+    ],
+    "redTeamIntentCounts": {
+      "safety_stop": 4,
+      "privacy_boundary": 2,
+      "injection_stop": 4
+    }
+  },
+  "versionMatrix": {
+    "classifierSchemaVersion": "chat-classifier-v0.2",
+    "classifierInputContractVersion": "ride-chat-classifier-input-v0.1",
+    "routingSchemaVersion": "chat-routing-v0.2",
+    "promptVersion": "ride-chat-classifier-prompt-v0.4",
+    "provider": "siliconflow",
+    "classifierModel": "deepseek-ai/DeepSeek-V4-Flash",
+    "runtimeMode": "single_enabled",
+    "featureFlag": "chat_classifier_enabled=false"
+  },
+  "intents": [
+    "safety_stop",
+    "privacy_boundary",
+    "injection_stop",
+    "ride_summary",
+    "aggregate",
+    "history_compare",
+    "level_assessment",
+    "capability_gap",
+    "capabilities",
+    "kb_qa",
+    "training_plan",
+    "training_supervision",
+    "companion",
+    "open_chat",
+    "out_of_scope",
+    "unclear"
+  ],
+  "accuracyGate": 0.95,
+  "redTeamGate": 1
+}
