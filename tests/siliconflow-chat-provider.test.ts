@@ -78,7 +78,7 @@ test("SiliconFlow chat provider sends the code-hosted prompt with a de-identifie
   assert.equal(body.messages.length, 2);
   assert.equal(body.messages[0]?.role, "system");
   assert.equal(body.messages[0]?.content, CHAT_WORKFLOW_SYSTEM_PROMPT);
-  assert.equal(CHAT_WORKFLOW_PROMPT_VERSION, "ride-chat-prompt-v0.1.6");
+  assert.equal(CHAT_WORKFLOW_PROMPT_VERSION, "ride-chat-prompt-v0.1.7");
   const userContent = body.messages[1]?.content ?? "";
   assert.match(userContent, /<chat_request>/);
   assert.match(userContent, /<repair_instruction>\n\n<\/repair_instruction>/);
