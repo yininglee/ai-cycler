@@ -81,10 +81,19 @@
 
 ## 分支与工作树结构（git worktree，每个里程碑一个平级目录）
 
-- 主目录 `AI骑行伙伴-指导版_0827`（`main`）+ 各里程碑独立目录：m2 `codex/m2-prd-ai-riding-partner`、m3 `codex/m3-prd-ai-riding-partner`、m4 `codex/m4-refactor-agent-capabilities`、m5 `codex/m5-m3-optimization`（基于 m3）、**m6 `codex/m6-m4-optimization`（基于 m4，2026-10-08 建，用途 = M4 能力优化）、**m7 `codex/m7-agent-autonomy`（基于 m6，2026-10-23 建，用途 = 对话 Agent 自主化改造，`doc_Agent/` 需求分析落地）**。
+- 主目录 `AI骑行伙伴-指导版_0827`（`main`）+ 各里程碑独立目录：m2 `codex/m2-prd-ai-riding-partner`、m3 `codex/m3-prd-ai-riding-partner`、m4 `codex/m4-refactor-agent-capabilities`、m5 `codex/m5-m3-optimization`（基于 m3）、m6 `codex/m6-m4-optimization`（基于 m4，2026-10-08 建，用途 = M4 能力优化）、**m7 `codex/m7-agent-autonomy`（基于 m6，2026-10-23 建，用途 = 对话 Agent 自主化改造，`doc_Agent/` 需求分析落地）**。
 - 命名约定：目录 `AI骑行伙伴-指导版_0827-m<N>-<主题>`，分支 `codex/m<N>-<主题>`。
 - **worktree 之间不共享未跟踪文件**：新工作树无 `node_modules`（需各自 `npm install`；本机 pnpm 受沙箱限制不可用），大文件（如参考文献 PDF）需手动拷贝或入库。
 - 拉新工作树前必须先把源分支改动提交干净，新工作树才会带上这些成果。
+- **新建工作树的固定补齐清单**：`.env.local`、`.env.production`、`.local-data`（演示数据）三项从源工作树拷过来，再 `npm install` + `NODE_DISABLE_COMPILE_CACHE=1 npx tsc --noEmit` 验证（沙箱会拦 Node 编译缓存的临时文件删除，不加该变量会让 tsc 报一堆 `[sandbox] 命令被沙箱拦截` 假错）。
+- **端口分配**：3000 = m4，3001 = m6，m7 起用 3002。
+
+## 环境故障：safe-delete 守卫死锁（2026-10-23 实际踩过）
+
+- **症状**：任何删除/覆盖操作都失败，报 `[safe-delete][SAFE_DELETE_BULK_GUARD_ERROR] state lock timeout`；连带 `git add` 写索引后 `index.lock` 删不掉 → `git commit` 报 `Unable to create ...index.lock: File exists`。`mv`、Python `os.rename`、`git update-ref` 同样被拦（覆盖已有 ref/文件也算删除）。
+- **根因**：`/private/var/folders/.../T/codebuddy-safe-delete-bulk/<hash>/` 下 `.lock` 变成了**空目录**（守卫 mkdir 锁时误判「已有持锁者」），且 `state.json` 只剩 `state.json.<pid>.tmp`、正名丢失。**重启客户端无效**（坏的是磁盘状态，不是内存）。
+- **修法**：在系统终端（非会话内 Bash）`rm -rf` 掉那个 hash 目录让守卫重建，再清残留锁：各 worktree 的 `index.lock` / `HEAD.lock`、`.git/refs/heads/<branch>.lock`。清完 `find .git -name "*.lock"` 应为空。
+- **判定要点**：见 `SAFE_DELETE_BULK_GUARD_ERROR` 就不要在会话内反复试删除或找 git 绕行方案（commit-tree/mktree/update-ref 都被覆盖拦截），直接请用户到终端处理，两条命令即可恢复。
 
 ## 演示环境（demo）约定
 
