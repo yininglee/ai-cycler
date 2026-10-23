@@ -17,9 +17,9 @@
 | 项目 | 当前值 |
 |---|---|
 | 当前里程碑 | **AGT-A 意图路由 v0.4 + Provider 迁移**（7 工作项 A0~A6，D-A1~A6 全部拍板） |
-| 当前主任务 | `AGT-A2` 标注集 v0.4：**实施完成，`Review`（2026-10-23，commit 9cacb5f）**——等待抽检与冻结批准；`AGT-A3` Prompt v0.4 已实施并自检全过（`In Progress`，按串行评审纪律排队） |
-| 阻塞 | 无（A2 的"用户批准冻结"、A5 的真实 Run 是授权门） |
-| 唯一下一步 | 用户抽检 `eval/ride-chat-classifier-v0.4/CHANGES.md` 并**批准冻结** → `AGT-A4` 评测脚本适配 → `AGT-A5` 全新 Run（需授权） |
+| 当前主任务 | `AGT-A2` 标注集 v0.4：**`Review`**——三处张力已由用户裁决（2026-10-24），数据集零改动、哈希仍 `9a4c242f…`，**唯一待决动作 = 冻结批准**；`AGT-A3`（Prompt v0.4）与 `AGT-A4`（评测脚本适配）**实施与自检均已完成**，标 `Blocked` 表示验收被 A2 冻结门阻塞（不是没做），随冻结批准同批转 `Done` |
+| 阻塞 | `AGT-A3`/`AGT-A4` 的验收等待 A2 冻结批准；A5 真实 Run 另需授权 |
+| 唯一下一步 | 用户批准冻结 → 同批验收 A2/A3/A4 → `AGT-A5` 全新 Run（需授权，~83 次真实调用）→ `AGT-A6` 收口 |
 
 ## 2. 里程碑看板
 
@@ -71,10 +71,11 @@
   - **版本口径修正**：目录/内部 schemaVersion 统一到标注集 v0.4（旧目录名 v0.1 与内容 v0.3 交错的坑消除）；`mode: shadow` 字段随 D-A5 退役，改记 `runtimeMode: single_enabled`。
   - **验证结果**：`node scripts/preflight-ride-chat-classifier-eval.ts` → `preflight pass`（83 例 / sha256 `9a4c242f…` / 16 意图全覆盖 / 契约版本与源码一致 / kind 分组计数一致 / 9 组对抗对两侧齐备且各含 boundary 例 / 零模型调用）；新增跨 split 重复正文检测（dev 例会被 few-shot 使用，重复即泄漏）。tsc 通过；全量测试 702/702。
   - **口径偏差**：细规划估 ≈78 例，实际 83 例——差额来自两处必要修补（capability_gap 改标归零须补 4；open_chat dev 归零须补 2），"新增 ≥40 例"硬口径满足（45）。
-  - **用户检查清单**：① 读 `README.md`（用例说明：三条轴、9 组对抗对判据、§7 已知局限）；② 抽检 `CHANGES.md` §3 改标 6 例与 §4 五类新增例的边界标注；③ **确认 9 组对抗对是否就是你认为的切线**（`manifest.boundaryPairs`，任一对判据不对都可改）；④ 对 §6 三处张力给出裁决（`level_assessment` vs `history_compare` 的 BLIND-26、`training_supervision` vs `training_plan` 的 BLIND-45、`companion` vs `out_of_scope` 的 BLIND-31）；⑤ **批准冻结**（批准后 manifest 哈希锁定，任何改动须重算并重跑全新 Run）。
+  - **三处张力已裁决（2026-10-24 用户确认）**：`BLIND-26` → `level_assessment`（看落点不看词汇：比较词只修饰，落点是"体能在哪个阶段"）；`BLIND-45` → `training_supervision`（依据是既往执行，句中"调整安排"不算要新计划）；`BLIND-31` → `companion`（判据是"是否落在骑行话题内"，非严格问候/情绪白名单）。三条裁定与现有标注一致 → **数据集零改动，`casesSha256` 保持 `9a4c242f…`**；三条判据已回写进 Prompt 判断规则（第 2、4 条），smoke 复跑仍 8/8。
+  - **用户检查清单**：① 读 `README.md`（用例说明：三条轴、9 组对抗对判据、§7 已知局限）；② 抽检 `CHANGES.md` §3 改标 6 例与 §4 五类新增例的边界标注；③ **确认 9 组对抗对是否就是你认为的切线**（`manifest.boundaryPairs`，任一对判据不对都可改）；④ 对 §6 三处张力给出裁决（✅ 已于 2026-10-24 完成）；⑤ **批准冻结**（批准后 manifest 哈希锁定，任何改动须重算并重跑全新 Run）。
 - 用户验收：（待确认）
 
-### AGT-A3 · 分类器 Prompt v0.4 · `In Progress`（2026-10-23，commit 9cacb5f｜实施与自检已完成，按串行评审纪律排队）
+### AGT-A3 · 分类器 Prompt v0.4 · `Blocked`（2026-10-23，commit 9cacb5f｜实施与自检已完成，验收被 A2 冻结门阻塞）
 
 - 目标：意图定义与判断规则按 §2 边界迁移重写 + 5 新意图 few-shot（取自 dev 例，避免 blind 泄漏）+ 输出 schema 升 `chat-classifier-v0.2`；**Prompt 以版本化常量写入 `src/chat/` 并随请求直发硅基流动（代码库为唯一事实源）**，`prompts/ride-chat-classifier-v0.2.md` 为归档副本（A0/D-A6 已取消 Coze workflow 维护，原卡"Coze 试运行"口径随之失效）。
 - 进入条件：A0 完成（已满足）+ A2 数据集定稿（few-shot 选例依赖）。退出条件：定向单测（messages 合同）+ 真实调用 smoke 输出符合 v0.2 schema + 归档副本与代码内 prompt 逐字一致。
@@ -87,11 +88,20 @@
   - **用户检查清单**：① 通读 `chat-classifier-prompt.ts` 的 16 条意图定义与 7 条判断规则（特别是 §2 边界迁移的四组：训练计划 vs 域外训练、计划 vs 监督、水平评估 vs 历史比较、知识 vs 产品能力）；② 确认几个占位口径：`training_supervision` 允许句中出现"调整下周安排"、`companion` 覆盖"骑行生活感受分享"；③ 认可 smoke 结果仅作可用性证据（准确率结论留给 A5）。
 - 用户验收：（待确认）
 
-### AGT-A4 · 评测脚本适配 · `Backlog`
+### AGT-A4 · 评测脚本适配 · `Blocked`（2026-10-24｜实施与自检已完成，验收被 A2 冻结门阻塞）
 
 - 目标：`eval-classifier-accuracy.ts` / `preflight` 指向 v0.4 数据集，意图集从代码导入防漂移。
 - 进入条件：A1 + A2 完成。退出条件：preflight 四项检查通过。
-- 验收汇报：（进入 Review 后填写）
+- **验收汇报（2026-10-24，汇报先行）**：
+  - **变更清单**：`scripts/eval-classifier-accuracy.ts` 重定向到 `eval/ride-chat-classifier-v0.4/`，并新增三项——
+    ① **kind 分组归因**（positive/boundary/ambiguous 各自 correct/total，写进 run 记录 `result.kinds`，只归因不放宽门槛）；
+    ② **kind 冻结一致性校验**（cases 实际分组数与 manifest `kindCounts` 不符则直接报错，防"资产已改却按旧统计归因"）；
+    ③ run 记录升 `ride-chat-classifier-run-v0.2`（`mode` → `runtimeMode: single_enabled`，补 `datasetVersion`/`casesSha256`/`contracts`/`signOffReady`）；
+    `scripts/preflight-ride-chat-classifier-eval.ts` 已在 A2 重写为 v0.4 版（哈希/结构/意图覆盖/kind/对抗对/防泄漏）。
+  - **验证结果**：`tsc` 0 error；`eval:classifier:preflight` pass（83 例 / 9 组对抗对 / 零模型调用）；`eval-classifier-accuracy.ts` 在 `CHAT_CLASSIFIER_ENABLED=false` 下正确 **exit 2 并拒绝执行**（`CLASSIFIER_NOT_CONFIGURED`，零模型调用——守门有效）；全量测试 702/702。
+  - **未做（属 A5 范围）**：真实全量 Run。需用户授权 + 先把 `CHAT_CLASSIFIER_ENABLED` 置 `true`（或运行期临时注入）。
+  - **用户检查清单**：确认归因口径（kind 分组只是诊断，不参与 PASS/FAIL 判定；`signOffReady` 才是签收信号）。
+- 用户验收：（待确认）
 
 ### AGT-A5 · 全新 Run 重评 · `Backlog`（需用户授权）
 

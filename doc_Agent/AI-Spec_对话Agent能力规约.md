@@ -141,6 +141,8 @@
 | 2026-10-23 | — | 骨架版建立：合同模板/现役工具索引/Prompt 版本索引/P0 条款；3.2/3.3/5/6 留占位 | ✅ |
 | 2026-10-23 | AGT-A2 | 标注集 v0.4：83 例（dev 13 / blind 60 / red-team 10，16 意图全覆盖，SHA `9a4c242f…` 冻结候选）；覆盖策略 + **难度轴 `kind`（positive 53 / boundary 26 / ambiguous 4）** + **9 组对抗对**写入 manifest；`eval:classifier:preflight` 重写为 v0.4（含跨 split 防泄漏、kind 耦合、对抗对覆盖三重新增校验）；新增 `eval/ride-chat-classifier-v0.4/README.md` 用例说明 | ✅（冻结待用户批准） |
 | 2026-10-23 | AGT-A3 | 分类器 Prompt v0.4 写入代码常量（16 意图定义 + 顺序判断规则 + 13 条 dev-only few-shot）；归档副本 `prompts/ride-chat-classifier-v0.2.md` + 同步脚本 + 一致性/防泄漏单测 | ✅ |
+| 2026-10-24 | AGT-A2 | 三处边界张力经用户裁决（level_assessment BLIND-26 / training_supervision BLIND-45 / companion BLIND-31），与现有标注一致 → 数据集零改动、哈希不变；三条判据回写进 Prompt 判断规则第 2、4 条 | ✅ |
+| 2026-10-24 | AGT-A4 | 评测脚本指向 v0.4：kind 分组归因（只诊断不放宽门槛）、kind 冻结一致性校验、run 记录升 v0.2（`runtimeMode`/`contracts`/`signOffReady`） | ✅ |
 | 待补 | AGT-B | 5 新工具完整参数/返回 schema、白名单与预算重标定值、catalog 精简口径 | 占位 |
 | 待补 | AGT-C | 4 生成任务簇 prompt 版本索引、KB 引用校验规则细则 | 占位 |
 | 待补 | AGT-D | 分层混合上下文细则、校验器白名单扩展口径（P8 拍板后） | 占位 |
