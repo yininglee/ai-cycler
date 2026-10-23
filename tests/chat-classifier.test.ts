@@ -3,30 +3,28 @@ import test from "node:test";
 
 import {
   CHAT_CLASSIFIER_INTENTS,
-  COZE_CHAT_CLASSIFIER_INPUT_VARIABLES,
-  CozeChatClassifierClient,
   classifierAgreesWithRule,
+  DEFAULT_SILICONFLOW_CLASSIFIER_MODEL_ID,
   intentToRoutingDecision,
   parseClassifierResult,
   readChatClassifierMode,
-  readCozeChatClassifierConfig,
+  readSiliconFlowClassifierConfig,
   resolveActiveChatRouting,
   routingEventAttributes,
   runChatClassifierShadow,
   shadowClassifierAttributes,
+  SiliconFlowClassifierClient,
   type ChatClassifierClient,
-  type CozeChatClassifierConfig,
+  type SiliconFlowClassifierConfig,
 } from "../src/chat/chat-classifier.ts";
+import { CHAT_CLASSIFIER_PROMPT_VERSION, CHAT_CLASSIFIER_SYSTEM_PROMPT } from "../src/chat/chat-classifier-prompt.ts";
 import { ChatProviderError } from "../src/chat/chat-agent.ts";
 
-const config: CozeChatClassifierConfig = {
-  apiUrl: "https://api.coze.cn/v1/workflow/run",
-  workflowName: "ride_chat_classifier_v1",
-  workflowId: "classifier-workflow-test",
-  workflowVersion: "v0.1.0",
+const config: SiliconFlowClassifierConfig = {
+  apiUrl: "https://api.siliconflow.cn/v1/chat/completions",
   apiToken: "chat-token",
-  modelId: "chat-model",
-  timeoutMs: 5_000,
+  modelId: "deepseek-ai/DeepSeek-V4-Flash",
+  timeoutMs: 8_000,
   maxResponseBytes: 16 * 1_024,
 };
 
@@ -36,102 +34,100 @@ const classifierOutput = {
   needsClarification: false,
 };
 
-test("classifier configuration is gated by its own flag, reuses chat credentials, and never reads ride-analysis settings", () => {
-  assert.equal(readCozeChatClassifierConfig({
+function completionEnvelope(rawText: string): string {
+  return JSON.stringify({ choices: [{ message: { role: "assistant", content: rawText } }] });
+}
+
+test("classifier configuration is gated by its own flag, shares the SiliconFlow token, and never reads ride-analysis settings", () => {
+  assert.equal(readSiliconFlowClassifierConfig({
     CHAT_CLASSIFIER_ENABLED: "true",
-    COZE_API_URL: "https://must-not-be-used.example.test",
-    COZE_WORKFLOW_ID: "ride-analysis-workflow",
-    COZE_API_TOKEN: "ride-analysis-token",
+    RIDE_MODEL_V2_MODEL_ID: "must-not-be-used",
+    RIDE_INTERPRETATION_ENGINE: "V2",
   }), undefined);
-  assert.equal(readCozeChatClassifierConfig({
+  assert.equal(readSiliconFlowClassifierConfig({
     CHAT_CLASSIFIER_ENABLED: "false",
-    COZE_CHAT_CLASSIFIER_WORKFLOW_ID: "classifier-workflow-id",
-    COZE_CHAT_CLASSIFIER_WORKFLOW_VERSION: "v0.1.0",
-    COZE_CHAT_API_URL: "https://api.coze.cn/v1/workflow/run",
-    COZE_CHAT_API_TOKEN: "chat-token",
+    SILICONFLOW_API_TOKEN: "chat-token",
   }), undefined);
-  assert.equal(readCozeChatClassifierConfig({
+  const loaded = readSiliconFlowClassifierConfig({
     CHAT_CLASSIFIER_ENABLED: "true",
-    COZE_CHAT_API_URL: "https://api.coze.cn/v1/workflow/run",
-    COZE_CHAT_API_TOKEN: "chat-token",
-  }), undefined);
-  const loaded = readCozeChatClassifierConfig({
-    CHAT_CLASSIFIER_ENABLED: "true",
-    COZE_CHAT_CLASSIFIER_WORKFLOW_ID: "classifier-workflow-id",
-    COZE_CHAT_CLASSIFIER_WORKFLOW_VERSION: "v0.1.0",
-    COZE_CHAT_API_URL: "https://api.coze.cn/v1/workflow/run",
-    COZE_CHAT_API_TOKEN: "chat-token",
-    COZE_CHAT_MODEL_ID: "chat-model",
-    COZE_CHAT_CLASSIFIER_TIMEOUT_MS: "99999",
+    SILICONFLOW_API_TOKEN: "chat-token",
+    SILICONFLOW_CLASSIFIER_TIMEOUT_MS: "99999",
   });
   assert.ok(loaded);
-  assert.equal(loaded.workflowId, "classifier-workflow-id");
-  assert.equal(loaded.apiToken, "chat-token");
-  assert.equal(loaded.modelId, "chat-model");
-  assert.equal(loaded.workflowName, "ride_chat_classifier_v1");
+  assert.equal(loaded.apiUrl, "https://api.siliconflow.cn/v1/chat/completions");
+  assert.equal(loaded.modelId, DEFAULT_SILICONFLOW_CLASSIFIER_MODEL_ID);
   assert.equal(loaded.timeoutMs, 25_000);
-  const overridden = readCozeChatClassifierConfig({
+  const overridden = readSiliconFlowClassifierConfig({
     CHAT_CLASSIFIER_ENABLED: "true",
-    COZE_CHAT_CLASSIFIER_WORKFLOW_ID: "classifier-workflow-id",
-    COZE_CHAT_CLASSIFIER_WORKFLOW_VERSION: "v0.1.0",
-    COZE_CHAT_CLASSIFIER_API_URL: "https://override.example.test/run",
-    COZE_CHAT_CLASSIFIER_API_TOKEN: "classifier-token",
+    SILICONFLOW_API_TOKEN: "chat-token",
+    SILICONFLOW_CLASSIFIER_MODEL_ID: "Qwen/Qwen3.5-9B",
+    SILICONFLOW_CLASSIFIER_TIMEOUT_MS: "5000",
   });
   assert.ok(overridden);
-  assert.equal(overridden.apiUrl, "https://override.example.test/run");
-  assert.equal(overridden.apiToken, "classifier-token");
+  assert.equal(overridden.modelId, "Qwen/Qwen3.5-9B");
+  assert.equal(overridden.timeoutMs, 5_000);
 });
 
-test("classifier client sends a single de-identified variable and parses nested workflow output", async () => {
+test("classifier client sends the code-hosted prompt with a de-identified classify_request and parses completion output", async () => {
   const requests: RequestInit[] = [];
-  const client = new CozeChatClassifierClient(config, async (_url, init) => {
+  const client = new SiliconFlowClassifierClient(config, async (_url, init) => {
     requests.push(init ?? {});
-    return new Response(JSON.stringify({ code: 0, data: { classifier_output: JSON.stringify(classifierOutput) } }), { status: 200 });
+    return new Response(completionEnvelope(JSON.stringify(classifierOutput)), { status: 200 });
   });
   const result = await client.classify({ requestId: "request", text: "本次骑行平均功率是多少？" });
   assert.deepEqual(result, classifierOutput);
   assert.equal((requests[0]?.headers as Record<string, string>).Authorization, "Bearer chat-token");
-  const body = JSON.parse(String(requests[0]?.body)) as { workflow_id: string; workflow_version: string; is_async: boolean; parameters: Record<string, string> };
-  assert.equal(body.workflow_id, "classifier-workflow-test");
-  assert.equal(body.workflow_version, "v0.1.0");
-  assert.deepEqual(Object.keys(body.parameters), [...COZE_CHAT_CLASSIFIER_INPUT_VARIABLES]);
-  const request = JSON.parse(body.parameters.classify_request) as Record<string, unknown>;
+
+  const body = JSON.parse(String(requests[0]?.body)) as {
+    model: string;
+    temperature: number;
+    enable_thinking: boolean;
+    response_format: { type: string };
+    messages: Array<{ role: string; content: string }>;
+  };
+  assert.equal(body.model, "deepseek-ai/DeepSeek-V4-Flash");
+  assert.equal(body.temperature, 0.3);
+  assert.equal(body.enable_thinking, false);
+  assert.equal(body.response_format.type, "json_object");
+  // Prompt 从代码库发送：system = v0.3 常量（版本归档于 chat-classifier-prompt.ts）。
+  assert.equal(body.messages.length, 2);
+  assert.equal(body.messages[0]?.role, "system");
+  assert.equal(body.messages[0]?.content, CHAT_CLASSIFIER_SYSTEM_PROMPT);
+  assert.equal(CHAT_CLASSIFIER_PROMPT_VERSION, "ride-chat-classifier-prompt-v0.3");
+
+  const userContent = body.messages[1]?.content ?? "";
+  const requestTag = /<classify_request>\n([\s\S]*?)\n<\/classify_request>/.exec(userContent)?.[1] ?? "";
+  const request = JSON.parse(requestTag) as Record<string, unknown>;
   assert.equal(request.agent, "ride_chat_v1");
   assert.equal(request.classifierVersion, "chat-classifier-v0.1");
   assert.equal(request.text, "本次骑行平均功率是多少？");
   assert.doesNotMatch(JSON.stringify(request), /ownerId|rideId|chat-token|toolContext/);
 });
 
-test("classifier accepts Object-form output and string-in-string envelopes", async () => {
-  const objectForm = new CozeChatClassifierClient(config, async () => new Response(JSON.stringify({
-    code: 0,
-    data: { classifier_output: { schemaVersion: "chat-classifier-v0.1", intent: "unclear", needsClarification: true } },
-  }), { status: 200 }));
-  assert.deepEqual(await objectForm.classify({ requestId: "request", text: "那这个呢？" }), {
+test("classifier accepts valid completion output and rejects contract violations", async () => {
+  const unclear = new SiliconFlowClassifierClient(config, async () => new Response(completionEnvelope(JSON.stringify({
+    schemaVersion: "chat-classifier-v0.1",
+    intent: "unclear",
+    needsClarification: true,
+  })), { status: 200 }));
+  assert.deepEqual(await unclear.classify({ requestId: "request", text: "那这个呢？" }), {
     schemaVersion: "chat-classifier-v0.1",
     intent: "unclear",
     needsClarification: true,
   });
-  const stringForm = new CozeChatClassifierClient(config, async () => new Response(JSON.stringify({
-    code: 0,
-    data: JSON.stringify({ classifier_output: JSON.stringify({ schemaVersion: "chat-classifier-v0.1", intent: "aggregate", needsClarification: false }) }),
-  }), { status: 200 }));
-  assert.equal((await stringForm.classify({ requestId: "request", text: "我总共骑了多少？" })).intent, "aggregate");
-});
-
-test("invalid classifier output and provider failures map to stable error codes", async () => {
-  const invalidIntent = new CozeChatClassifierClient(config, async () => new Response(JSON.stringify({
-    code: 0,
-    data: { classifier_output: JSON.stringify({ schemaVersion: "chat-classifier-v0.1", intent: "chitchat", needsClarification: false }) },
-  }), { status: 200 }));
+  const invalidIntent = new SiliconFlowClassifierClient(config, async () => new Response(completionEnvelope(JSON.stringify({
+    schemaVersion: "chat-classifier-v0.1",
+    intent: "chitchat",
+    needsClarification: false,
+  })), { status: 200 }));
   await assert.rejects(
     () => invalidIntent.classify({ requestId: "request", text: "你好" }),
     (error: unknown) => error instanceof ChatProviderError && error.code === "MODEL_INVALID_RESPONSE",
   );
-  const missingFlag = new CozeChatClassifierClient(config, async () => new Response(JSON.stringify({
-    code: 0,
-    data: { classifier_output: JSON.stringify({ schemaVersion: "chat-classifier-v0.1", intent: "social" }) },
-  }), { status: 200 }));
+  const missingFlag = new SiliconFlowClassifierClient(config, async () => new Response(completionEnvelope(JSON.stringify({
+    schemaVersion: "chat-classifier-v0.1",
+    intent: "social",
+  })), { status: 200 }));
   await assert.rejects(
     () => missingFlag.classify({ requestId: "request", text: "你好" }),
     (error: unknown) => error instanceof ChatProviderError && error.code === "MODEL_INVALID_RESPONSE",
@@ -146,12 +142,12 @@ test("invalid classifier output and provider failures map to stable error codes"
     () => parseClassifierResult(JSON.stringify({ schemaVersion: "chat-classifier-v0.1", intent: "aggregate", needsClarification: true })),
     (error: unknown) => error instanceof ChatProviderError && error.code === "MODEL_INVALID_RESPONSE",
   );
-  const rateLimited = new CozeChatClassifierClient(config, async () => new Response("{}", { status: 429 }));
+  const rateLimited = new SiliconFlowClassifierClient(config, async () => new Response("{}", { status: 429 }));
   await assert.rejects(
     () => rateLimited.classify({ requestId: "request", text: "你好" }),
     (error: unknown) => error instanceof ChatProviderError && error.code === "MODEL_RATE_LIMITED",
   );
-  const malformed = new CozeChatClassifierClient(config, async () => new Response(JSON.stringify({ code: 0, data: {} }), { status: 200 }));
+  const malformed = new SiliconFlowClassifierClient(config, async () => new Response(JSON.stringify({ choices: [] }), { status: 200 }));
   await assert.rejects(
     () => malformed.classify({ requestId: "request", text: "你好" }),
     (error: unknown) => error instanceof ChatProviderError && error.code === "MODEL_INVALID_RESPONSE",

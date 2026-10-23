@@ -2,29 +2,28 @@
 
 > 仅记录跨会话仍有效的项目事实与约定。日常流水见同目录 `YYYY-MM-DD.md`。
 
-## 盲评分歧处置口径（**"修锚点→重评"在项目里已设计、未执行**）
+## 当前主线：M7 对话 Agent 自主化（`doc_Agent/`，分支 `codex/m7-agent-autonomy`）
 
-- 分歧分三类，处置不同：**锚点歧义**（同一风格恒定偏移 → 改评审指南锚点示例，输出可复用）／**案例歧义**（答案键不唯一 → 案例改文·改标·替换，必须重跑）／**样本级真实分歧**（取更贴近 Rubric 的口径 + 结论稳健性检验，不进重评链路）。
-- 六步链路：归因 → 修评估资产（指南补锚点示例、案例改文/替换，版本递增）→ 判定是否触及产品侧 → 重新冻结(B) + 全新 Run(C) → 重开盲评(D) → 重新签署(E)、旧结论标 `supersede`。制度原文：计划 §3「任何修改都进入新版本，不能回写旧输出」；盲评指南 §4「不续跑历史 Run，使用全新 Run ID」。
-- **重评判据**：动了评估资产（指南/案例）或产品资产（Prompt/规则/允许 Claim 集）**就必须重新盲评**；唯一不重跑模型的情形 = 只改指南锚点且产品与数据集未变（项目从未执行过）。
-- 时效事实：T001-B2 分差 ≥2 项 = 0（未触发）；T002-V04 的 10 项锚点差异**只记录未回炉重评**，2 项样本级走稳健性检验；NO-GO 后修复→复评循环 2026-09-07 置 **`Paused`**。**唯一走通的完整重评闭环是意图分类器**（v0.2 `CHAT-13` 重评 38/38；v0.3 `CHAT-17` 重评 Run 待授权）。
-- 三处缺口：旧评分"作废 or 并列"无记录机制；"一致性过低"无量化阈值（T002 语气 kappa 0.175 未触发任何动作）；4.2「先修锚点」与指南 Phase 4「锚点歧义 → STOP-RETHINK」表述张力。
+- **需求结论**：✅ 优先引入 AI，但正确落地 = **L1 扩工具面 + 训练监督单点升 L2**，不上 L3/L4。`src/chat/` CHAT-17 L2b 已是受限单 Agent，改造是扩面非范式革命；"自主"的真实需求 = 工具自主编排（已有）+ 主动性（新，属调度基础设施）。六任务簇：问答/分析/水平评估/训练规划/训练监督/情绪价值。
+- 训练规划+监督 = 中低容错 P0：处方数值走 `claimNumericVariants` 等价类硬门 + 计划确认制 + `safety_stop`；放行四阶段（影子→只读全自动→计划人机协作→监督自动化）。
+- 新工具映射：`get_health_profile`(user-profile) / `get_training_load`(ride-pmc-load-v2 的 CTL/ATL/TSB) / `search_knowledge_base`(ride-knowledge-base-v21) / `get_ride_history`（**需放开 30 天冻结窗口**，须开新 Run）/ `get_route_overview`；计划实体+打卡为全新（第一个写操作工具）。派生指标仍由规则函数算、LLM 只叙事。
+- **目录约定**：需求分析与调研留 `doc_Agent/` 根；粗规划、各里程碑细规划、进度统一放 `doc_Agent/开发规划/`。执行事实源 = `开发规划/Agent改造开发进度.md`，**验收汇报直接写在进度文档对应工作项下**（区别于 V2.1 写规划文档的惯例）。
+- 粗规划 `VIBE_CODING_Agent_开发规划.md`：前缀 **`AGT`**，七里程碑 A（意图路由 v0.4）→ B（只读工具面 + L2b 扩展、放开 30 天窗口）→ C（生成层：分析/评估/KB问答 RAG/陪伴）→ E（影子轨 + 阶段1 放行）；D（上下文与记忆三层，前置隐私口径）可与 C 后半并行 → F（训练规划 + 写路径，阶段2）→ G（训练监督 + 主动性，阶段3）。
+- **P1/P2/P5 已拍板（10-23）**：地图录像 = 轨迹回放纯前端渲染（不进本期工具面）、定位 = 个人 demo + portfolio、skills = 领域工具面（不做通用注册框架）。
+- AGT-A 细规划：**7 工作项 A0~A6**（A5 全新 Run 需用户授权）。意图 11→**16**、路由 12→16（+4 新路由，`companion` 复用 `social`）；边界迁移：训练计划 `out_of_scope`→`training_plan`、水平评估 `capability_gap`→`level_assessment`（收窄保留）、新增 `training_supervision`/`kb_qa`、**open_chat 拆出 companion**（闲聊→social，open_chat 收窄为跨记录检索）。新路由在 A 阶段只到确定性占位模板、分类器未启用态规则基线。
+- **D-A1~D-A6 已全部拍板（10-23）**。D-A1 = v0.3 待授权 Run 合并进 v0.4 Run（一次授权）；D-A3 = 旧 capability_gap 水平评估例改标 level_assessment；D-A4 = open_chat v0.4 顺手拆。**D-A2 = 移除启用态 P1 业务正则兜底**（用户修订）：分类器失败/超时/限流统一"模型暂不可用"降级模板 + 事件码；L0 快路径（红线/聚合/身份/问候）保留为零模型正常路径；CHAT-12"不劣于规则基线"承诺修订为"诚实失败优于错误猜测"。**D-A5 = 取消 shadow/active 双模式**（用户提出"无线上概念"）：`CHAT_CLASSIFIER_MODE` 退役，`CHAT_CLASSIFIER_ENABLED=true` 即分类器接管（单一启用语义）；未启用 = 规则基线（P1 业务正则保留为其主路径）；A5 全对后启用、无灰度中间态；原 AGT-E"切 active"步骤消失（**AGT-E 影子轨仅指新工具 trace 观测，另一层概念**）。**D-A6 = 对话链路 LLM provider 全迁硅基流动（Coze 退役）**：分类器 + 主对话走 OpenAI 兼容 API（`https://api.siliconflow.cn/v1`），**Prompt 迁入代码库为单一事实源**（新增前置工作项 AGT-A0：客户端 + prompt v0.3/v0.1 原样搬运 + env 切 `SILICONFLOW_*`）；骑后解读链路**维持 Coze 不动**（V2.1 冻结结论继续有效，迁移须独立立项重跑验证门）；模型 = 分类器 `deepseek-ai/DeepSeek-V4-Flash`、主对话 `deepseek-ai/DeepSeek-V3.2`（推荐制，实施时以硅基流动可用列表锁定）；主对话换模型 → M3 固定集 v0.5 历史结论（27/27）不再适用新链路，重验挂 AGT-C 评测新 Run。
+- 12 路由 11 意图**全部保留、无删除项**；远期重审点：`history_compare` 与通用循环分工、`aggregate` 窗口口径（均 AGT-B）、`capabilities` 清单（AGT-B/C）。
+- 标注集 v0.4 总量 ≈**78** 例（"各新意图 ≥8 + companion ≥8"硬口径压倒"~50 例"表述）；签收 = 全量全对，gate 0.95 只是底线。
+- 坑：`prompts/ride-chat-classifier-v0.1.md` 文件名按 schema 版本、内容是 prompt-v0.3，两套版本号并存。
+- **文档体系补缺已拍板（10-23）**：① 业务交互 PRD **挂 AGT-F 细规划前置产出**（A~E 阶段无新前端交互面不提前写；F/G 的计划确认/打卡/推送交互在进入 F 细规划时作前置输入，与 P6 同步）；② **AI-Spec 骨架版已建** = `doc_Agent/AI-Spec_对话Agent能力规约.md`（集中合同：工具合同 schema/生成约束/硬门/评测索引 + §11 按里程碑增补记录）。**最高原则：Prompt 正文唯一事实源 = 代码库**（D-A6），AI-Spec 只做版本索引不内嵌 Prompt；各里程碑细规划定稿后把规约并入 AI-Spec 对应章节。
 
-## 硬门校验机制的准确口径（**不要称"正则验证"**）
+## 可复用资产：四级交付流水线 skill（2026-10-23 建，用户级）
 
-- 运行时校验器 = `src/ai/ride-interpretation-output-v04-candidate.ts`（校验/等价类）+ `src/ai/ride-interpretation-service-v04-candidate.ts`（收敛/修复/降级编排）。
-- 四段：① 解析与结构归一 → ② 合同硬门（类型/枚举/计数/子集/去重/引用越界；约 35 校验点、约 50 错误码，全为集合运算）→ ③ 数值忠实（正则**仅分词**，判定用 `claimNumericVariants` 数值等价类集合比对：舍入 0/1/2 位、`m/s↔km/h`、`m↔km`、`s↔min/h`、`ratio↔%`、负值绝对值；可换单位可舍入但**不可计算**）→ ④ 语言越界（9 组 **22 条**正则）。
-- 处置链：不通过 → **确定性收敛优先**（补证据绑定 / 删越权句 / 丢非法高光 / Claim 事实或证明安全模板兜底）→ 仍不过 → **唯一一次受限修复**（每槽上限 2 次调用）→ 仍不过 → **B0 硬降级**（槽位 failure，Run 退出码非 0）。
-- `81/81 零降级`（`AEVAL-RUN-20260906-955`）= 首轮 75 + 修复 6 + B0 0；**首次通过率 92.6%，"零降级"≠"无抖动"**。
-- 短板须认领：确定性收敛吸收了模型部分引用错误，81/81 **不等于"模型自身引用正确率 100%"**。
+- `~/.workbuddy/skills/requirement-to-delivery-pipeline/`，已注册。四级 = 需求分析 → 粗规划 → 里程碑细规划 → 进度文档，5 道交接门，附四份模板 + 一致性校验脚本。
+- 用法：`python3 <skill>/scripts/check_delivery_docs.py <项目根> --docs-dir doc_Agent`，0 FAIL 才算自洽。
+- 与 `ai-requirement-analysis`（阶段1 主体）、`plan-vibe-coding-project`、`orchestrate-ai-product-delivery`（英文三文档）的分工写在 SKILL.md；同时使用时**以本流水线的进度文档为唯一事实源，禁止双台账**。
 
-## 术语校正（对外陈述前必看）
-
-- 项目评测的**正式一级分层轴是 `split`**：`dev → regression → blind → red-team → product`（决定能否调参、谁可见答案、是否阻断放行）。
-- **"常规 / 边界 / 对抗"不是项目原有词汇**，是难度-覆盖轴的口语化描述，落在 `fixture` 类型、`tier`（L1/L2/L3）与规则分支上。案例文件（如 `eval/advanced-interpretation-v0.1/cases/*.json`）**只有 `split` 字段，没有 `tier`/`difficulty`**。对外陈述时不要让"常规/边界/对抗"看起来像数据集名字。
-- **V2 骑后解读的 claim `kind` 实际只用 3 种**（demo-ride-2026-07-22 实测 107 条：`advanced` 94 / `feature` 9 / `relation` 4）：`feature`=时序统计（默认 kind，如均速/均功率/踏频均值）；`advanced`=确定性规则派生的高阶事实（占绝大多数，带 `formulaVersion`，如距离/时间/爬升/功率区间/强度因子/地形分段）；`relation`=跨传感器关系。枚举里还有 `metric`/`limitation`/`history`，但单次解读里**都是 0**：`metric` 是枚举遗留、`claim()` 默认 kind=feature 且显式从未写 metric；`limitation` 改由 `questions[].limitations` 表达、不生成 claim；`history` 被 S2-06 移出。**区分"记录/计算/估算"靠 `provenance`（recorded/calculated/estimated），不是 `kind`**。对外别把"基础事实"说成 `metric`。
-
-## 五套冻结集的准确口径（面试/简历/文档统一用这张表）
+## 评测口径（对外陈述前必看）
 
 | 链路 | 数据集 | 案例数 | 每例重复 | 槽位 |
 |---|---|---:|---:|---:|
@@ -34,72 +33,46 @@
 | 对话 Agent · M3 固定集 | `AEVAL-M3-CHAT` | 27（v0.5）／现 34（v0.6） | 1 | 27／34 |
 | 意图分类器 · 标注集 | v0.3 | 38（含 red-team 6） | 1 | 38 |
 
-- **「27 × 3 = 81」不存在**：27 是 M3 对话固定集 v0.5 全量且每例 1 次；两处 81 槽分别来自 `9×9` 与 `15 例 A/B`。
-- 重复次数的理由统一表述为「把二值通过变成可观测失败率，按随机性敏感度定」；**不要用"避免概率事件"**（n=3 在 p=20% 时检出率仅 48.8%，会被反证）。
-- 时效：M3 固定集 v0.5（27 例，SHA `789c713f…`）已升 v0.6（34 例，SHA `9a837ccc…`），**v0.6 真实模型 Run 未执行**，`27/27` 属 v0.5 历史结论，须主动交代。
-- 简历口径以 `AI岗位简历改写建议_2026-09-13.md` 为准（分类器 38 例 38/38、M3 固定集 27/27），本表须与之始终一致。
+- **「27 × 3 = 81」不存在**：27 是 M3 固定集 v0.5 全量、每例 1 次；两处 81 槽分别来自 `9×9` 与 `15 例 A/B`。
+- 重复次数的统一表述：「把二值通过变成可观测失败率，按随机性敏感度定」。**不要说"避免概率事件"**（n=3 在 p=20% 时检出率仅 48.8%，会被反证）。
+- v0.5（27 例，SHA `789c713f…`）已升 v0.6（34 例，SHA `9a837ccc…`），**v0.6 真实模型 Run 未执行**；`27/27` 属 v0.5 历史结论，须主动交代。简历口径以 `AI岗位简历改写建议_2026-09-13.md` 为准。
+- **A/B 是上游事实输入的对照，不是两版 Prompt/模型**：A 臂剥离 `kind:"advanced"` 高阶 Claim（仅留基础），B 臂完整输入；同案例、同 Prompt/模型/重复次数，唯一变量 = 上游是否提供高阶事实。槽位 = 12×(A3+B3) + 3×B3 = 81。对抗案例只在 B 臂跑。该批次 D 硬门 **FAILED**（`-892`，合同通过 22/81 = 27.2%），失败聚类推动「确定性收口」路线，最终骑后 `FORMAL-08`（`AEVAL-RUN-20260906-955`）81/81 零降级首过门。⚠️ **两个 81 槽不可混讲**。
+- **claim `kind` 实际只用 3 种**（demo-ride-2026-07-22 实测 107 条：`advanced` 94 / `feature` 9 / `relation` 4）。`metric` 是枚举遗留（`claim()` 默认 feature，从未显式写 metric）；`limitation` 改由 `questions[].limitations` 表达；`history` 被 S2-06 移出。**记录/计算/估算靠 `provenance`（recorded/calculated/estimated），不是 `kind`**。
+- 一级分层轴是 **`split`**：`dev → regression → blind → red-team → product`。「常规/边界/对抗」不是项目词汇，是难度-覆盖轴的口语化描述；案例文件只有 `split`，没有 `tier`/`difficulty`。
+- **硬门校验不叫"正则验证"**：四段 = 解析归一 → 合同硬门（约 35 校验点/50 错误码，全为集合运算）→ 数值忠实（正则仅分词，判定用 `claimNumericVariants` 等价类：舍入、`m/s↔km/h`、`s↔min/h`、`ratio↔%`；可换单位可舍入但**不可计算**）→ 语言越界（9 组 22 条正则）。处置链：确定性收敛优先 → 唯一一次受限修复（每槽 ≤2 次）→ B0 硬降级。`81/81 零降级` = 首轮 75 + 修复 6 + B0 0，**首次通过率 92.6%，"零降级"≠"无抖动"**；也不等于"模型自身引用正确率 100%"（收敛吸收了部分引用错误）。
+- **盲评分歧处置**：分三类——锚点歧义（改指南锚点示例）／案例歧义（改文·改标·替换，必须重跑）／样本级真实分歧（取更贴近 Rubric 的口径 + 稳健性检验）。动了评估资产或产品资产**就必须全新 Run、不续跑历史 Run、旧结论标 `supersede`**；只有"仅改指南锚点且产品与数据集未变"才可只修不重跑（**项目从未执行过**）。时效：T002-V04 的 10 项锚点差异只记录未回炉；NO-GO 后修复→复评循环 2026-09-07 置 `Paused`；**唯一走通的完整重评闭环是意图分类器**（v0.2 `CHAT-13` 38/38；v0.3 `CHAT-17` 待授权）。
+- **已知短板（被追问主动认领）**：① 稳定性门 9 案例与盲评样本同源，不是两条独立证据；② 盲评集内无 red-team，安全兜底全由机器硬门承担；③ 测评计划 §5.1 把用途轴与难度轴写在同一张表；④ 第三视角仲裁条款为"或"关系，实际两轮盲评均由维护者裁定。
 
-## 「高阶 A/B 冻结集」的准确语义（易被讲错）
+## V2.1 指标规范化（M6，设计定稿未实施）
 
-- **A/B 是上游事实输入的对照，不是两版 Prompt 或两版模型**：A 臂 = 对照臂（剥离 `kind: "advanced"` 高阶 Claim，仅留基础 `metric`/`feature`）；B 臂 = 实验臂（基础 + 高阶 Claim 完整输入）。同案例、同 Prompt/Workflow/模型、同重复次数，唯一变量 = 上游是否提供高阶事实。
-- 槽位：12 个非对抗案例 × (A 3 + B 3) + 3 个对抗案例 × B 3 = **81 槽**。授权原文见 `eval/runs/AEVAL-RUN-20260831-138.json` → `authorization.scope`。
-- 对抗案例只在 B 臂跑：红队问的是「接入高阶事实后安全兜底是否守住」，A 臂无验证价值。
-- A 臂必须仍能过资格门，为此每例补齐基础 Claim 后才重新冻结（`开发进度.md` 2026-08-31 CHECKPOINT-B-REFREEZE）。
-- **结果不是说成"通过"**：该批次 D 硬门 `FAILED`（`-892` 合同通过 22/81 = 27.2%）；失败聚类推动「确定性收口」路线，最终骑后 `FORMAL-08`（`AEVAL-RUN-20260906-955`）81/81 零降级首过门。
-- ⚠️ **两个 81 槽不可混讲**：高阶 A/B（15 案例 × 双臂，当时未通过）vs 骑后稳定性门（9 案例 × 9 次，首过）。
+- 目的：明确各维度指标 + 换用维度化知识库。三条要求：模型输入以新 KB 关键指标为准（直取或规则计算）；旧库 batch1 换 `doc_V2.1/cycling_science_knowledge_base.md`；其余原则不变。
+- 新 KB 7 维度 = V2 `analysisDimensionIds` 前 7 个，一一对应；V2 缺约 20 个派生指标（VI/EF/VAM/爬坡 Wkg/Pw:Hr 解耦/负分割/RS/踏频 CV 等），共享指标 VI/EF 只算一次。
+- 两处口径冲突已定：心率区间对齐为「LTHR 优先、maxHR 降级、provenance 标注」；输入准绳由「详情页字段覆盖矩阵」切为「KB 关键指标覆盖矩阵」（字段矩阵降级为审计索引、不回退）。
+- 架构增量：`ride-derived-metric-spec-v21.ts` + `ride-derived-metrics-v21.ts` + `ride-knowledge-base-v21.ts`（`ride-kb-2.1.0` 替换 `ride-kb-batch1-1.0.0`）。交付在 `doc_V2.1/`，任务前缀 `V21`。
+- 口径：心率恢复指标"有停表后数据才算、无则进 limitation、不新开开关"；V2.1 评测须在 V2 发布门评测之后开新 Run。
 
-## 已知短板（被追问时主动认领，好过被指出）
+## 分支与工作树
 
-1. 稳定性门 9 案例与盲评样本**同源**，不能当两条独立证据。
-2. 盲评集内**无 red-team**：安全兜底全由机器硬门承担，人在回路只覆盖质量维度。
-3. 分层表在 `AI_AGENT_测评计划与记录.md` §5.1 把「用途轴」与「难度轴」写在同一张表，易被误读为同一维度。
-4. 第三视角仲裁条款为「或」关系，实际两轮盲评均由维护者裁定，未启用第三人。
+- 主目录 `AI骑行伙伴-指导版_0827`（`main`）+ m2~m7 平级目录：m2 prd-ai-riding-partner、m3 prd-ai-riding-partner、m4 refactor-agent-capabilities、m5 m3-optimization、m6 m4-optimization（V2.1）、**m7 agent-autonomy（基于 m6，10-23 建）**。
+- 命名：目录 `AI骑行伙伴-指导版_0827-m<N>-<主题>`，分支 `codex/m<N>-<主题>`。
+- worktree 不共享未跟踪文件：新树须从源树拷 `.env.local`、`.env.production`、`.local-data`，再 `npm install`（**本机 pnpm 不可用**）+ `NODE_DISABLE_COMPILE_CACHE=1 npx tsc --noEmit`（不加该变量会被沙箱拦编译缓存删除，报假错）。拉新树前源分支必须先提交干净。
+- 端口：3000 = m4，3001 = m6，m7 用 3002。
 
-## V2.1 指标规范化与知识库优化（2026-10-08 立项，M6 分支，设计定稿未实施）
+## 环境故障：safe-delete 守卫死锁（10-23 实踩）
 
-- **优化目的**：明确各解读维度指标 + 换用维度化运动科学知识库，提升解读专业度与口径一致性。
-- **三条要求**：① 模型输入不再强制 = 详情页数据，改为以新知识库关键指标为准（直取 or 规则计算）；② 旧知识库 batch1 替换为新版（`doc_V2.1/cycling_science_knowledge_base.md`），按新版重设计知识库使用；③ 其余设计原则不变。
-- **关键事实**：新知识库 7 维度 = V2 `analysisDimensionIds` 前 7 个，一一对应；V2 现有指标缺约 20 个派生指标（VI/EF/VAM/爬坡Wkg/Pw:Hr解耦/负分割/功率曲线扩展/RS/踏频CV 等），共享指标 VI/EF 只算一次。
-- **两处口径冲突**：① 心率区间 KB 用 LTHR 5 区、代码用 maxHR 5 区 → 对齐为「LTHR 优先、maxHR 降级、provenance 标注」；② 输入口径准绳由「详情页字段覆盖矩阵」切为「KB 关键指标覆盖矩阵」（字段覆盖矩阵降级为审计索引、不回退）。
-- **架构增量**：`ride-derived-metric-spec-v21.ts`（MetricSpec）+ `ride-derived-metrics-v21.ts`（派生指标纯函数）+ `ride-knowledge-base-v21.ts`（7 维度四段式，版本 `ride-kb-2.1.0` 替换 `ride-kb-batch1-1.0.0`）。
-- **交付**（`doc_V2.1/`）：`AI骑行解读V2.1优化设计文档.md`、`VIBE_CODING_V2.1_开发规划.md`（5 里程碑 11 切片 V21-01~11）、`V2.1_开发进度.md`。任务 ID 前缀 `V21`（与 V2 的 `RIDE-AI-*` 不冲突）。
-- **口径记忆**：心率恢复指标"有停表后数据才算、无则进 limitation、不新开开关"；FTP 有效期纳入 TSS/IF 能力依赖；V2.1 评测须在 V2 发布门评测之后开新 Run（避免旧指标口径结论给新口径背书）。
+- 症状：任何删除/覆盖都报 `[safe-delete][SAFE_DELETE_BULK_GUARD_ERROR] state lock timeout`，连带 `git add/commit` 报 `index.lock: File exists`；`mv`、`os.rename`、`git update-ref` 同样被拦。
+- 根因：守卫目录下 `.lock` 变成了**空目录**，且 `state.json` 只剩 `.tmp` 版。**重启客户端无效**（坏的是磁盘状态）。
+- 修法：到系统终端 `rm -rf` 守卫 hash 目录让它重建，再清各树的 `index.lock`/`HEAD.lock`/`refs/heads/*.lock`。见 `SAFE_DELETE_BULK_GUARD_ERROR` 就不要再在会话内试删除或找 git 绕行，直接请用户去终端。
 
-## 对话 Agent 自主化改造（2026-10-23 需求分析立项，`doc_Agent/`）
+## 演示与发布
 
-- 用户想把对话改造成"自主 Agent"（多源工具 + 问答/分析/水平评估/训练规划/监督/情绪价值六任务簇）。需求分析结论：**✅ 优先引入 AI，但正确落地 = L1 扩工具面 + 训练监督单点升 L2，不上 L3/L4**。当前 `src/chat/` CHAT-17 L2b 已是受限单 Agent，改造是扩面非范式革命；"自主"真实需求 = 工具自主编排（已有）+ 主动性（新，属调度基础设施）。
-- **训练规划/监督 = 中低容错 P0**：处方数值走 `claimNumericVariants` 等价类硬门 + 计划确认制 + safety_stop；放行四阶段（影子→只读全自动→计划人机协作→监督自动化）。
-- 新工具映射现有模块：`get_health_profile`(user-profile) / `get_training_load`(ride-pmc-load-v2 的 CTL/ATL/TSB) / `search_knowledge_base`(ride-knowledge-base-v21) / `get_ride_history`(**需放开 30 天冻结窗口**，评测须开新 Run) / `get_route_overview`；计划实体+打卡为全新（第一个写操作工具）。派生指标计算仍由规则函数承担、LLM 只叙事。
-- 评测挂靠现有体系：意图集 v0.4（12→~16 路由，新增 training_plan/training_supervision/level_assessment/kb_qa）；训练监督需全新「时序情景」评测形态。
-- 报告：`doc_Agent/2026-10-23_骑行伙伴自主Agent改造_需求分析.md`（含原始需求归档）。**未确认项**：地图录像语义（轨迹回放 vs 真实录像多模态）、监督主动性边界（应答 vs 主动推送）、skills 具体所指、健康数据范围。
+- 演示记录四条（`test-data/demo-imported-rides/*.fit`，按骑行时间倒序）：`demo-ride-2026-10-05`(30.4km 心率) / `08-20`(31.1km 通勤) / `07-22`(161.8km 长途功率) / `07-18`(56km 起伏功率)。R03 脚本须用 demo-ride id。
+- **校验旁路开关（仅 demo）**：`.env.local` 置 `DEMO_VALIDATION_BYPASS=on` → 首轮输出直接展示（校验器仍跑并记 issue，前端显示演示角标，**演示即失败率探针**）。缺省 off 与正式链路逐字节一致；**评测脚本永不读此开关**。背景：R02 firstPass 仅 5%、95% 靠修复轮（60–142s）。
+- 线上 `https://ai-cycling-buddy.app.workbuddy.host/`。重部署要点：`domainPrefix="ai-cycling-buddy"` 必填（复用 app、链接不变）、`startCmd="npm run build && npm start"`（`.next` 被排除上传，build 必须并入）、部署前移出 `.local-data` 部署后还原；`.env.production` 含全部密钥 + `DEMO_VALIDATION_BYPASS=on`（与 `.env.local` 双份，local 优先）。云端是临时文件存储，重新发布清空线上数据（每会话 seed 基线）。
+- 个人资料演示基线：`/api/profile` 在无资料时 seed 28 岁/175cm/72kg/192bpm/FTP 220，时间戳固定 `2026-10-08T04:37:10.707Z`；关闭用 `DEMO_PROFILE_SEED=off`。这是演示默认值，非产品行为，不覆盖已有真实资料。
 
 ## 文档约定
 
-- 图示统一用 Mermaid 代码块，不嵌截图。
-- 任务相关的提示词与原始需求归档到项目文件夹。
-- `doc_V2/*.pdf`（外部参考文献，单份可达 25–52MB）**不入库**，自产 md 正常跟踪。
-
-## 分支与工作树结构（git worktree，每个里程碑一个平级目录）
-
-- 主目录 `AI骑行伙伴-指导版_0827`（`main`）+ 各里程碑独立目录：m2 `codex/m2-prd-ai-riding-partner`、m3 `codex/m3-prd-ai-riding-partner`、m4 `codex/m4-refactor-agent-capabilities`、m5 `codex/m5-m3-optimization`（基于 m3）、m6 `codex/m6-m4-optimization`（基于 m4，2026-10-08 建，用途 = M4 能力优化）、**m7 `codex/m7-agent-autonomy`（基于 m6，2026-10-23 建，用途 = 对话 Agent 自主化改造，`doc_Agent/` 需求分析落地）**。
-- 命名约定：目录 `AI骑行伙伴-指导版_0827-m<N>-<主题>`，分支 `codex/m<N>-<主题>`。
-- **worktree 之间不共享未跟踪文件**：新工作树无 `node_modules`（需各自 `npm install`；本机 pnpm 受沙箱限制不可用），大文件（如参考文献 PDF）需手动拷贝或入库。
-- 拉新工作树前必须先把源分支改动提交干净，新工作树才会带上这些成果。
-- **新建工作树的固定补齐清单**：`.env.local`、`.env.production`、`.local-data`（演示数据）三项从源工作树拷过来，再 `npm install` + `NODE_DISABLE_COMPILE_CACHE=1 npx tsc --noEmit` 验证（沙箱会拦 Node 编译缓存的临时文件删除，不加该变量会让 tsc 报一堆 `[sandbox] 命令被沙箱拦截` 假错）。
-- **端口分配**：3000 = m4，3001 = m6，m7 起用 3002。
-
-## 环境故障：safe-delete 守卫死锁（2026-10-23 实际踩过）
-
-- **症状**：任何删除/覆盖操作都失败，报 `[safe-delete][SAFE_DELETE_BULK_GUARD_ERROR] state lock timeout`；连带 `git add` 写索引后 `index.lock` 删不掉 → `git commit` 报 `Unable to create ...index.lock: File exists`。`mv`、Python `os.rename`、`git update-ref` 同样被拦（覆盖已有 ref/文件也算删除）。
-- **根因**：`/private/var/folders/.../T/codebuddy-safe-delete-bulk/<hash>/` 下 `.lock` 变成了**空目录**（守卫 mkdir 锁时误判「已有持锁者」），且 `state.json` 只剩 `state.json.<pid>.tmp`、正名丢失。**重启客户端无效**（坏的是磁盘状态，不是内存）。
-- **修法**：在系统终端（非会话内 Bash）`rm -rf` 掉那个 hash 目录让守卫重建，再清残留锁：各 worktree 的 `index.lock` / `HEAD.lock`、`.git/refs/heads/<branch>.lock`。清完 `find .git -name "*.lock"` 应为空。
-- **判定要点**：见 `SAFE_DELETE_BULK_GUARD_ERROR` 就不要在会话内反复试删除或找 git 绕行方案（commit-tree/mktree/update-ref 都被覆盖拦截），直接请用户到终端处理，两条命令即可恢复。
-
-## 演示环境（demo）约定
-
-- **演示端口归属**：`localhost:3000` = m4 工作树，`localhost:3001` = m6 工作树。演示前先确认端口属于哪个工作树，改错了不会生效（worktree 各自独立 `node_modules` 与 `.local-data`）。
-- **演示记录（2026-10-08 扩为四条）**：`demo-ride-2026-10-05`（30.4km 心率）/ `08-20`（31.1km 通勤心率）/ `07-22`（161.8km 长途功率）/ `07-18`（56km 起伏功率），随仓库分发（`test-data/demo-imported-rides/*.fit`），按骑行时间倒序；R01/R02 用的 upload-* 样例已从 .local-data 清理（备份 `application-state.backup-before-demo-rides-cleanup.json`），**R03 脚本须改用 demo-ride id**。
-- **校验旁路开关（2026-10-14 用户决策，仅限 demo）**：`.env.local` 置 `DEMO_VALIDATION_BYPASS=on` → V2 解读首轮输出直接展示（无收敛/修复/语义豁免/降级），校验器仍跑并记录 issue（响应 `v2Candidate.bypassedIssueCodes` + 前端"演示标注"角标，**演示即失败率探针**）。**校验门设计不变**（validator/repair/语义豁免零改动）；缺省 off 行为与正式链路逐字节一致；**评测脚本（R03/V21-12）永不读此开关**，旁路结论不给放量背书。背景：R02 firstPass 仅 5%、95% 靠修复轮（60–142s 二次调用），demo 体感差的真实根因。
-- **线上部署（发布为应用，2026-10-08 首发 / 10-14 更新）**：链接 `https://ai-cycling-buddy.app.workbuddy.host/`。重新部署 `workbuddy_sites_deploy` 要点——`domainPrefix="ai-cycling-buddy"` 必填（复用同一 app、链接不变）、`startCmd="npm run build && npm start"`（`.next` 属构建产物被排除上传，build 必须并入）、部署前移出 `.local-data`（测试数据不上云）部署后还原；`.env.production` 含全部密钥 + `DEMO_VALIDATION_BYPASS=on`（与 `.env.local` 双份上传，`.env.local` 优先）。云端是临时沙箱文件存储，重新发布清空线上数据（每会话 seed 演示基线）。管理入口「设置—数据管理—应用」。
-- **个人资料演示基线（2026-10-08 落地）**：`/api/profile` GET 在会话无任何资料时 seed 一份基线并落盘 —— 28 岁 / 175cm / 72kg / 192bpm（`user_provided`）/ FTP 220（`user_confirmed`），时间戳固定 `2026-10-08T04:37:10.707Z`（北京 12:37）。前端初始 state 同源，首屏不闪空表。关闭开关：`DEMO_PROFILE_SEED=off`。
-- 语义边界：这是**演示默认值**，不是产品行为；已有的真实资料不会被覆盖（只判"完全没资料"才 seed）。"清除当前资料"会真清空，刷新后按 seed 规则恢复。
+- 图示统一 Mermaid 代码块，不嵌截图；补充图表只输出图形本身。
+- 任务相关提示词与原始需求归档到项目文件夹。
+- `doc_V2/*.pdf`（25–52MB 外部文献）不入库，自产 md 正常跟踪。

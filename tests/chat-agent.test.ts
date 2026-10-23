@@ -542,18 +542,21 @@ test("HTTP provider carries L2b toolCatalog and toolResults in the request body 
   assert.equal(body.toolResults?.[0]?.call, 1);
 });
 
-test("Chat provider selects the dedicated Coze Workflow adapter without reading ride-analysis configuration", () => {
+test("Chat provider selects the SiliconFlow adapter by default and no longer reads ride-analysis configuration", () => {
   const provider = createChatProvider({
     CHAT_MODEL_ENABLED: "true",
-    CHAT_PROVIDER_KIND: "coze_workflow",
-    COZE_CHAT_API_URL: "https://api.coze.cn/v1/workflow/run",
-    COZE_CHAT_WORKFLOW_NAME: "ride_chat_v1",
-    COZE_CHAT_WORKFLOW_ID: "chat-workflow-id",
-    COZE_CHAT_WORKFLOW_VERSION: "v0.1.0",
-    COZE_CHAT_API_TOKEN: "chat-token",
-    COZE_API_URL: "https://ride-analysis.example.test",
-    COZE_API_TOKEN: "ride-analysis-token",
+    CHAT_PROVIDER_KIND: "siliconflow",
+    SILICONFLOW_API_TOKEN: "chat-token",
+    SILICONFLOW_CHAT_MODEL_ID: "deepseek-ai/DeepSeek-V3.2",
+    RIDE_MODEL_V2_MODEL_ID: "must-not-be-used",
   });
   assert.ok(provider);
-  assert.equal(provider.constructor.name, "CozeChatWorkflowClient");
+  assert.equal(provider.constructor.name, "SiliconFlowChatProvider");
+  // AGT-A0（D-A6）：coze_workflow kind 已退役——即使残留 Coze 环境变量也不再装配。
+  assert.equal(createChatProvider({
+    CHAT_MODEL_ENABLED: "true",
+    CHAT_PROVIDER_KIND: "coze_workflow",
+    COZE_CHAT_WORKFLOW_ID: "chat-workflow-id",
+    COZE_CHAT_API_TOKEN: "chat-token",
+  }), undefined);
 });

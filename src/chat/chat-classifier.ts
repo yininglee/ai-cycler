@@ -1,4 +1,5 @@
 import { ChatProviderError, type ChatProviderErrorCode } from "./chat-agent.ts";
+import { buildChatClassifierUserPrompt, CHAT_CLASSIFIER_SYSTEM_PROMPT } from "./chat-classifier-prompt.ts";
 import { classifyChatInputL0, makeChatDecision, type ChatRoute, type ChatRoutingDecision } from "./chat-routing.ts";
 
 // CHAT-12 P2（CHAT-ADR-08 / 架构设计 v0.4 第 4.2.1 节）：L1 LLM 语义分类器——影子模式合同。
@@ -10,7 +11,8 @@ import { classifyChatInputL0, makeChatDecision, type ChatRoute, type ChatRouting
 //   混合架构任何时刻不劣于纯规则基线。
 export const CHAT_CLASSIFIER_SCHEMA_VERSION = "chat-classifier-v0.1" as const;
 export const CHAT_CLASSIFIER_INPUT_CONTRACT_VERSION = "ride-chat-classifier-input-v0.1" as const;
-export const COZE_CHAT_CLASSIFIER_INPUT_VARIABLES = ["classify_request"] as const;
+export const SILICONFLOW_CLASSIFIER_PROVIDER_VERSION = "siliconflow-classifier-provider-v0.1" as const;
+export const DEFAULT_SILICONFLOW_CLASSIFIER_MODEL_ID = "deepseek-ai/DeepSeek-V4-Flash" as const;
 
 export const CHAT_CLASSIFIER_INTENTS = [
   // 红线类（L0 规则层在 P3 仍先拦截；分类器标注用于纵深防御验证）
@@ -40,11 +42,12 @@ export type ChatClassifierClient = {
   classify(input: { requestId: string; text: string }): Promise<ChatClassifierResult>;
 };
 
-export type CozeChatClassifierConfig = {
+// AGT-A0（D-A6）：分类器 LLM 调用从 Coze workflow（ride_chat_classifier_v1）退役，改为硅基流动
+// OpenAI 兼容 chat completions 直连。Prompt v0.3 原样迁入 `chat-classifier-prompt.ts` 并随请求发送
+// （换管道不换语义，v0.4 语义变更留给 AGT-A3）；classify_request 输入合同不变。
+
+export type SiliconFlowClassifierConfig = {
   apiUrl: string;
-  workflowName: string;
-  workflowId: string;
-  workflowVersion: string;
   apiToken: string;
   modelId: string;
   timeoutMs: number;
@@ -62,14 +65,6 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-function parseJsonString(value: string): unknown {
-  try {
-    return JSON.parse(value);
-  } catch {
-    return value;
-  }
-}
-
 function isValidClassifierResult(value: unknown): value is ChatClassifierResult {
   return isRecord(value)
     && value.schemaVersion === CHAT_CLASSIFIER_SCHEMA_VERSION
@@ -78,25 +73,6 @@ function isValidClassifierResult(value: unknown): value is ChatClassifierResult 
     && typeof value.needsClarification === "boolean"
     // 合同冻结：needsClarification 当且仅当 unclear——澄清话术一等路径由该耦合触发。
     && value.needsClarification === (value.intent === "unclear");
-}
-
-function extractClassifierOutput(value: unknown, depth = 0): string | undefined {
-  if (depth > 4) return undefined;
-  if (typeof value === "string") {
-    const trimmed = value.trim();
-    if (!trimmed) return undefined;
-    const parsed = parseJsonString(trimmed);
-    return parsed === trimmed ? trimmed : extractClassifierOutput(parsed, depth + 1);
-  }
-  if (!isRecord(value)) return undefined;
-  if (isValidClassifierResult(value)) return JSON.stringify(value);
-  for (const key of ["classifier_output", "classifierOutput", "output", "text", "data"]) {
-    if (value[key] !== undefined) {
-      const output = extractClassifierOutput(value[key], depth + 1);
-      if (output) return output;
-    }
-  }
-  return undefined;
 }
 
 export function parseClassifierResult(rawText: string): ChatClassifierResult {
@@ -112,46 +88,57 @@ export function parseClassifierResult(rawText: string): ChatClassifierResult {
   return parsed;
 }
 
-// 影子模式开关独立于 CHAT_MODEL_ENABLED：分类器可在对话模型未配置时单独验证。
-// URL/Token/模型默认复用 COZE_CHAT_*（同一扣子账号），可用 COZE_CHAT_CLASSIFIER_* 覆盖；
-// 绝不读取骑后解读的 COZE_*（不含 _CHAT_）配置。
-export function readCozeChatClassifierConfig(
+// CHAT_CLASSIFIER_ENABLED 总开关语义沿用；凭据与骑后解读链路共用 SILICONFLOW_API_TOKEN，
+// 但本模块只读取自己的命名空间（SILICONFLOW_CLASSIFIER_* / SILICONFLOW_API_URL），互不越界。
+// Returns undefined when not configured so callers keep the existing not_configured fallback.
+export function readSiliconFlowClassifierConfig(
   environment: Readonly<Record<string, string | undefined>> = process.env,
-): CozeChatClassifierConfig | undefined {
+): SiliconFlowClassifierConfig | undefined {
   if (environment.CHAT_CLASSIFIER_ENABLED !== "true") return undefined;
-  const workflowId = environment.COZE_CHAT_CLASSIFIER_WORKFLOW_ID?.trim();
-  const workflowVersion = environment.COZE_CHAT_CLASSIFIER_WORKFLOW_VERSION?.trim();
-  if (!workflowId || !workflowVersion) return undefined;
-  const apiUrl = environment.COZE_CHAT_CLASSIFIER_API_URL?.trim() || environment.COZE_CHAT_API_URL?.trim();
-  const apiToken = environment.COZE_CHAT_CLASSIFIER_API_TOKEN?.trim() || environment.COZE_CHAT_API_TOKEN?.trim();
-  if (!apiUrl || !apiToken) return undefined;
+  const apiToken = environment.SILICONFLOW_API_TOKEN?.trim();
+  if (!apiToken) return undefined;
 
+  const apiUrl = environment.SILICONFLOW_API_URL?.trim() || "https://api.siliconflow.cn/v1/chat/completions";
   const parsedUrl = new URL(apiUrl);
   if (parsedUrl.protocol !== "https:" && parsedUrl.hostname !== "localhost" && parsedUrl.hostname !== "127.0.0.1") {
-    throw new Error("COZE_CHAT_CLASSIFIER_API_URL must use HTTPS unless it targets localhost");
+    throw new Error("SILICONFLOW_API_URL must use HTTPS unless it targets localhost");
   }
   return {
     apiUrl: parsedUrl.toString(),
-    workflowName: environment.COZE_CHAT_CLASSIFIER_WORKFLOW_NAME?.trim() || "ride_chat_classifier_v1",
-    workflowId,
-    workflowVersion,
     apiToken,
-    modelId: environment.COZE_CHAT_CLASSIFIER_MODEL_ID?.trim() || environment.COZE_CHAT_MODEL_ID?.trim() || "unrecorded",
-    timeoutMs: positiveInteger(environment.COZE_CHAT_CLASSIFIER_TIMEOUT_MS, 5_000, 25_000),
-    maxResponseBytes: positiveInteger(environment.COZE_CHAT_CLASSIFIER_MAX_RESPONSE_BYTES, 16 * 1_024, 262_144),
+    modelId: environment.SILICONFLOW_CLASSIFIER_MODEL_ID?.trim() || DEFAULT_SILICONFLOW_CLASSIFIER_MODEL_ID,
+    timeoutMs: positiveInteger(environment.SILICONFLOW_CLASSIFIER_TIMEOUT_MS, 8_000, 25_000),
+    maxResponseBytes: positiveInteger(environment.SILICONFLOW_CLASSIFIER_MAX_RESPONSE_BYTES, 16 * 1_024, 262_144),
   };
 }
 
-export class CozeChatClassifierClient implements ChatClassifierClient {
-  private readonly config: CozeChatClassifierConfig;
+export class SiliconFlowClassifierClient implements ChatClassifierClient {
+  private readonly config: SiliconFlowClassifierConfig;
   private readonly fetchImpl: typeof fetch;
 
-  constructor(config: CozeChatClassifierConfig, fetchImpl: typeof fetch = fetch) {
+  constructor(config: SiliconFlowClassifierConfig, fetchImpl: typeof fetch = fetch) {
     this.config = config;
     this.fetchImpl = fetchImpl;
   }
 
   async classify(input: { requestId: string; text: string }): Promise<ChatClassifierResult> {
+    const classifyRequest = JSON.stringify({
+      agent: "ride_chat_v1",
+      classifierVersion: CHAT_CLASSIFIER_SCHEMA_VERSION,
+      text: input.text,
+    });
+    const body = JSON.stringify({
+      model: this.config.modelId,
+      messages: [
+        { role: "system", content: CHAT_CLASSIFIER_SYSTEM_PROMPT },
+        { role: "user", content: buildChatClassifierUserPrompt(classifyRequest) },
+      ],
+      temperature: 0.3,
+      enable_thinking: false,
+      response_format: { type: "json_object" },
+      max_tokens: 256,
+    });
+
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), this.config.timeoutMs);
     try {
@@ -162,18 +149,7 @@ export class CozeChatClassifierClient implements ChatClassifierClient {
           "Content-Type": "application/json",
           "X-Client-Request-Id": input.requestId,
         },
-        body: JSON.stringify({
-          workflow_id: this.config.workflowId,
-          workflow_version: this.config.workflowVersion,
-          is_async: false,
-          parameters: {
-            classify_request: JSON.stringify({
-              agent: "ride_chat_v1",
-              classifierVersion: CHAT_CLASSIFIER_SCHEMA_VERSION,
-              text: input.text,
-            }),
-          },
-        }),
+        body,
         cache: "no-store",
         signal: controller.signal,
       });
@@ -197,10 +173,10 @@ export class CozeChatClassifierClient implements ChatClassifierClient {
       if (!isRecord(envelopeValue)) {
         throw new ChatProviderError("MODEL_INVALID_RESPONSE", "Classifier response envelope was invalid");
       }
-      if (typeof envelopeValue.code === "number" && envelopeValue.code !== 0) {
-        throw new ChatProviderError("MODEL_TEMPORARY_UNAVAILABLE", "Classifier provider rejected request");
-      }
-      const rawText = extractClassifierOutput(envelopeValue.data ?? envelopeValue);
+      const choices = Array.isArray(envelopeValue.choices) ? envelopeValue.choices : undefined;
+      const first = choices !== undefined && isRecord(choices[0]) ? choices[0] : undefined;
+      const message = isRecord(first?.message) ? first!.message : undefined;
+      const rawText = typeof message?.content === "string" && message.content.trim() ? message.content : undefined;
       if (!rawText) throw new ChatProviderError("MODEL_INVALID_RESPONSE", "Classifier response did not contain classifier output");
       return parseClassifierResult(rawText);
     } catch (error) {
@@ -216,8 +192,8 @@ export class CozeChatClassifierClient implements ChatClassifierClient {
 export function createChatClassifier(
   environment: Readonly<Record<string, string | undefined>> = process.env,
 ): ChatClassifierClient | undefined {
-  const config = readCozeChatClassifierConfig(environment);
-  return config ? new CozeChatClassifierClient(config) : undefined;
+  const config = readSiliconFlowClassifierConfig(environment);
+  return config ? new SiliconFlowClassifierClient(config) : undefined;
 }
 
 // 影子执行结果：ok 携带分类标签；error 携带稳定错误码（含配置错误）。两者都不影响主链路回复。

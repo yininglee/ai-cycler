@@ -118,10 +118,7 @@ test("chat route records only redacted observability metadata", async () => {
 test("chat route records shadow classifier attributes without changing the rule-based reply", async () => {
   const environment = {
     CHAT_CLASSIFIER_ENABLED: "true",
-    COZE_CHAT_CLASSIFIER_WORKFLOW_ID: "classifier-workflow-test",
-    COZE_CHAT_CLASSIFIER_WORKFLOW_VERSION: "v0.1.0",
-    COZE_CHAT_API_URL: "https://api.coze.cn/v1/workflow/run",
-    COZE_CHAT_API_TOKEN: "chat-token",
+    SILICONFLOW_API_TOKEN: "chat-token",
   };
   const previous = Object.fromEntries(Object.keys(environment).map((key) => [key, process.env[key]]));
   Object.assign(process.env, environment);
@@ -130,8 +127,7 @@ test("chat route records shadow classifier attributes without changing the rule-
   globalThis.fetch = (async (_input: RequestInfo | URL, init?: RequestInit) => {
     classifierCalls.push(init ?? {});
     return new Response(JSON.stringify({
-      code: 0,
-      data: { classifier_output: JSON.stringify({ schemaVersion: "chat-classifier-v0.1", intent: "open_chat", needsClarification: false }) },
+      choices: [{ message: { role: "assistant", content: JSON.stringify({ schemaVersion: "chat-classifier-v0.1", intent: "open_chat", needsClarification: false }) } }],
     }), { status: 200 });
   }) as typeof fetch;
   try {
@@ -174,10 +170,7 @@ test("active mode lets the classifier reroute an unclear question to the clarifi
   const environment = {
     CHAT_CLASSIFIER_MODE: "active",
     CHAT_CLASSIFIER_ENABLED: "true",
-    COZE_CHAT_CLASSIFIER_WORKFLOW_ID: "classifier-workflow-test",
-    COZE_CHAT_CLASSIFIER_WORKFLOW_VERSION: "v0.1.0",
-    COZE_CHAT_API_URL: "https://api.coze.cn/v1/workflow/run",
-    COZE_CHAT_API_TOKEN: "chat-token",
+    SILICONFLOW_API_TOKEN: "chat-token",
   };
   const previous = Object.fromEntries(Object.keys(environment).map((key) => [key, process.env[key]]));
   Object.assign(process.env, environment);
@@ -186,8 +179,7 @@ test("active mode lets the classifier reroute an unclear question to the clarifi
   globalThis.fetch = (async (_input: RequestInfo | URL, init?: RequestInit) => {
     classifierCalls.push(init ?? {});
     return new Response(JSON.stringify({
-      code: 0,
-      data: { classifier_output: JSON.stringify({ schemaVersion: "chat-classifier-v0.1", intent: "unclear", needsClarification: true }) },
+      choices: [{ message: { role: "assistant", content: JSON.stringify({ schemaVersion: "chat-classifier-v0.1", intent: "unclear", needsClarification: true }) } }],
     }), { status: 200 });
   }) as typeof fetch;
   try {
@@ -226,10 +218,7 @@ test("active mode answers L0 aggregate inputs without calling the classifier (CH
   const environment = {
     CHAT_CLASSIFIER_MODE: "active",
     CHAT_CLASSIFIER_ENABLED: "true",
-    COZE_CHAT_CLASSIFIER_WORKFLOW_ID: "classifier-workflow-test",
-    COZE_CHAT_CLASSIFIER_WORKFLOW_VERSION: "v0.1.0",
-    COZE_CHAT_API_URL: "https://api.coze.cn/v1/workflow/run",
-    COZE_CHAT_API_TOKEN: "chat-token",
+    SILICONFLOW_API_TOKEN: "chat-token",
   };
   const previous = Object.fromEntries(Object.keys(environment).map((key) => [key, process.env[key]]));
   Object.assign(process.env, environment);
@@ -443,43 +432,40 @@ test("chat route degrades find_ride questions deterministically without a provid
 test("chat route completes the autonomous tool loop end-to-end with a scripted provider (CHAT-17)", async () => {
   const environment = {
     CHAT_MODEL_ENABLED: "true",
-    COZE_CHAT_WORKFLOW_NAME: "ride_chat_v1",
-    COZE_CHAT_WORKFLOW_ID: "chat-workflow-test",
-    COZE_CHAT_WORKFLOW_VERSION: "v0.0.5",
-    COZE_CHAT_API_URL: "https://api.coze.cn/v1/workflow/run",
-    COZE_CHAT_API_TOKEN: "chat-token",
+    SILICONFLOW_API_TOKEN: "chat-token",
+    SILICONFLOW_CHAT_MODEL_ID: "deepseek-ai/DeepSeek-V3.2",
   };
   const previous = Object.fromEntries(Object.keys(environment).map((key) => [key, process.env[key]]));
   Object.assign(process.env, environment);
   const originalFetch = globalThis.fetch;
   const providerCalls: string[] = [];
   globalThis.fetch = (async (_input: RequestInfo | URL, init?: RequestInit) => {
-    const parameters = JSON.parse(String(init?.body)) as { parameters: { chat_request: string } };
-    providerCalls.push(parameters.parameters.chat_request);
-    const request = JSON.parse(parameters.parameters.chat_request) as {
+    const body = JSON.parse(String(init?.body)) as { messages: Array<{ role: string; content: string }> };
+    const userContent = body.messages[1]?.content ?? "";
+    const requestTag = /<chat_request>\n([\s\S]*?)\n<\/chat_request>/.exec(userContent)?.[1] ?? "{}";
+    providerCalls.push(requestTag);
+    const request = JSON.parse(requestTag) as {
       toolCatalog?: { anchorRideId?: string };
       toolResults?: Array<{ context: { tool: string; matches?: Array<{ rideDateLabel?: string; claims: Array<{ displayValue: string; unit: string; claimId: string }> }> } }>;
     };
+    const complete = (rawText: string) => new Response(
+      JSON.stringify({ choices: [{ message: { role: "assistant", content: rawText } }] }),
+      { status: 200 },
+    );
     // 首轮：携带工具目录、无工具结果 → 请求 find_ride（极值模式，锚点/窗口由编排层补全）。
     if (!request.toolResults) {
-      return new Response(JSON.stringify({
-        code: 0,
-        data: { chat_output: JSON.stringify({ schemaVersion: "ride-chat-tool-call-v0.1", calls: [{ tool: "find_ride", input: { metric: "distanceM", mode: "max" } }] }) },
-      }), { status: 200 });
+      return complete(JSON.stringify({ schemaVersion: "ride-chat-tool-call-v0.1", calls: [{ tool: "find_ride", input: { metric: "distanceM", mode: "max" } }] }));
     }
     // 次轮：回传投影中距离最远命中的日期与显示值，引用 claim:loop:1:1。
     const match = request.toolResults[0]?.context.matches?.[0];
     const claim = match?.claims[0];
-    return new Response(JSON.stringify({
-      code: 0,
-      data: { chat_output: JSON.stringify({
-        schemaVersion: "ride-chat-output-v0.1",
-        route: "autonomous_tools",
-        reply: `距离最远的是${match?.rideDateLabel ?? ""}那次骑行，共 ${claim?.displayValue ?? ""} ${claim?.unit ?? ""}。`,
-        claimIds: [claim?.claimId ?? ""],
-        capabilityKeys: [],
-      }) },
-    }), { status: 200 });
+    return complete(JSON.stringify({
+      schemaVersion: "ride-chat-output-v0.1",
+      route: "autonomous_tools",
+      reply: `距离最远的是${match?.rideDateLabel ?? ""}那次骑行，共 ${claim?.displayValue ?? ""} ${claim?.unit ?? ""}。`,
+      claimIds: [claim?.claimId ?? ""],
+      capabilityKeys: [],
+    }));
   }) as typeof fetch;
   try {
     const { session } = await seededSession();

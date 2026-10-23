@@ -32,7 +32,7 @@ import {
   type FindRideToolResult,
   type RideContextToolResult,
 } from "./chat-tools.ts";
-import { CozeChatWorkflowClient, readCozeChatWorkflowConfig } from "./coze-chat-workflow.ts";
+import { readSiliconFlowChatProviderConfig, SiliconFlowChatProvider } from "./siliconflow-chat-provider.ts";
 import { aggregateReply, classifyAggregateQuestion } from "./chat-home.ts";
 import type { RideRecord } from "../domain/ride-schema.ts";
 
@@ -236,11 +236,13 @@ export class HttpChatProvider implements ChatProvider {
 }
 
 export function createChatProvider(environment: Readonly<Record<string, string | undefined>> = process.env): ChatProvider | undefined {
+  // AGT-A0（D-A6）：默认 provider = 硅基流动直连；`http` 保留为通用自建端点后备；
+  // `coze_workflow`（ride_chat_v1）已退役。
   const providerKind = environment.CHAT_PROVIDER_KIND?.trim()
-    || (environment.COZE_CHAT_WORKFLOW_ID?.trim() ? "coze_workflow" : "http");
-  if (providerKind === "coze_workflow") {
-    const config = readCozeChatWorkflowConfig(environment);
-    return config ? new CozeChatWorkflowClient(config) : undefined;
+    || (environment.SILICONFLOW_API_TOKEN?.trim() ? "siliconflow" : "http");
+  if (providerKind === "siliconflow") {
+    const config = readSiliconFlowChatProviderConfig(environment);
+    return config ? new SiliconFlowChatProvider(config) : undefined;
   }
   if (providerKind !== "http") return undefined;
   const config = readChatProviderConfig(environment);
