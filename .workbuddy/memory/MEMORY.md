@@ -81,7 +81,7 @@
 
 ## 分支与工作树结构（git worktree，每个里程碑一个平级目录）
 
-- 主目录 `AI骑行伙伴-指导版_0827`（`main`）+ 各里程碑独立目录：m2 `codex/m2-prd-ai-riding-partner`、m3 `codex/m3-prd-ai-riding-partner`、m4 `codex/m4-refactor-agent-capabilities`、m5 `codex/m5-m3-optimization`（基于 m3）、**m6 `codex/m6-m4-optimization`（基于 m4，2026-10-08 建，用途 = M4 能力优化）**。
+- 主目录 `AI骑行伙伴-指导版_0827`（`main`）+ 各里程碑独立目录：m2 `codex/m2-prd-ai-riding-partner`、m3 `codex/m3-prd-ai-riding-partner`、m4 `codex/m4-refactor-agent-capabilities`、m5 `codex/m5-m3-optimization`（基于 m3）、**m6 `codex/m6-m4-optimization`（基于 m4，2026-10-08 建，用途 = M4 能力优化）、**m7 `codex/m7-agent-autonomy`（基于 m6，2026-10-23 建，用途 = 对话 Agent 自主化改造，`doc_Agent/` 需求分析落地）**。
 - 命名约定：目录 `AI骑行伙伴-指导版_0827-m<N>-<主题>`，分支 `codex/m<N>-<主题>`。
 - **worktree 之间不共享未跟踪文件**：新工作树无 `node_modules`（需各自 `npm install`；本机 pnpm 受沙箱限制不可用），大文件（如参考文献 PDF）需手动拷贝或入库。
 - 拉新工作树前必须先把源分支改动提交干净，新工作树才会带上这些成果。
