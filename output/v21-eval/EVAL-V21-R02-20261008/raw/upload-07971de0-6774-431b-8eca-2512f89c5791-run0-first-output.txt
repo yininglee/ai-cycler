@@ -1,0 +1,169 @@
+{
+  "schemaVersion": "ride-output-v2.2.0",
+  "label": {
+    "text": "总距离 30.4 公里的平路骑行，平均速度 29.29 km/h",
+    "conclusionType": "fact",
+    "claimIds": [
+      "claim:upload-07971de0-6774-431b-8eca-2512f89c5791:v2:metric.distanceM",
+      "claim:upload-07971de0-6774-431b-8eca-2512f89c5791:v2:speed.mean"
+    ]
+  },
+  "overallAssessment": {
+    "text": "本次骑行数据完整，整体为一次高强度平路骑行，心率负荷较高，踏频分布偏向耐力区间。",
+    "conclusionType": "fact",
+    "claimIds": [
+      "claim:upload-07971de0-6774-431b-8eca-2512f89c5791:v2:heart_rate.mean",
+      "claim:upload-07971de0-6774-431b-8eca-2512f89c5791:v2:heartRate.zone.highIntensityCombined",
+      "claim:upload-07971de0-6774-431b-8eca-2512f89c5791:v2:cadence.zone.endurance"
+    ]
+  },
+  "highlights": [
+    {
+      "text": "全程几乎全平路，平均速度 29.29 km/h，速度波动较小（变异系数 11%）。",
+      "conclusionType": "fact",
+      "claimIds": [
+        "claim:upload-07971de0-6774-431b-8eca-2512f89c5791:v2:terrain.trendFlatDistanceM",
+        "claim:upload-07971de0-6774-431b-8eca-2512f89c5791:v2:speed.mean",
+        "claim:upload-07971de0-6774-431b-8eca-2512f89c5791:v2:speed.coefficientOfVariation"
+      ]
+    },
+    {
+      "text": "心率区间以 Z4 为主（60%），Z5 占 34%，高强度区间合计 94%，显示本次骑行强度较高。",
+      "conclusionType": "fact",
+      "claimIds": [
+        "claim:upload-07971de0-6774-431b-8eca-2512f89c5791:v2:heartRate.zone.z4",
+        "claim:upload-07971de0-6774-431b-8eca-2512f89c5791:v2:heartRate.zone.z5",
+        "claim:upload-07971de0-6774-431b-8eca-2512f89c5791:v2:heartRate.zone.highIntensityCombined"
+      ]
+    }
+  ],
+  "dimensions": [
+    {
+      "dimensionId": "pacingExecution",
+      "assertions": [
+        {
+          "text": "本次骑行总距离 30.4 公里，移动时长 1 小时 1 分钟，平均速度 29.29 km/h，速度变异系数 11%，速度波动较小。",
+          "conclusionType": "fact",
+          "claimIds": [
+            "claim:upload-07971de0-6774-431b-8eca-2512f89c5791:v2:metric.distanceM",
+            "claim:upload-07971de0-6774-431b-8eca-2512f89c5791:v2:timing.movingDurationS",
+            "claim:upload-07971de0-6774-431b-8eca-2512f89c5791:v2:speed.mean",
+            "claim:upload-07971de0-6774-431b-8eca-2512f89c5791:v2:speed.coefficientOfVariation"
+          ]
+        },
+        {
+          "text": "全程几乎全平路（平路距离 30.4 公里），无爬坡和下降段，地形简单。",
+          "conclusionType": "fact",
+          "claimIds": [
+            "claim:upload-07971de0-6774-431b-8eca-2512f89c5791:v2:terrain.trendFlatDistanceM",
+            "claim:upload-07971de0-6774-431b-8eca-2512f89c5791:v2:terrain.trendClimbDistanceM",
+            "claim:upload-07971de0-6774-431b-8eca-2512f89c5791:v2:terrain.trendDescentDistanceM"
+          ]
+        },
+        {
+          "text": "本次骑行有 2 次停车，停歇时间占总时间的 10.5%，停歇占比适中。",
+          "conclusionType": "fact",
+          "claimIds": [
+            "claim:upload-07971de0-6774-431b-8eca-2512f89c5791:v2:stops.count",
+            "claim:upload-07971de0-6774-431b-8eca-2512f89c5791:v2:pacing.stoppedTimeShare"
+          ]
+        },
+        {
+          "text": "速度前后段差异为 0.86 km/h，整体配速较为均匀，未出现明显的前快后慢或后程加速。",
+          "conclusionType": "interpretation",
+          "claimIds": [
+            "claim:upload-07971de0-6774-431b-8eca-2512f89c5791:v2:speed.lastMinusFirst"
+          ]
+        }
+      ]
+    },
+    {
+      "dimensionId": "heartRateLoad",
+      "assertions": [
+        {
+          "text": "平均心率 169 bpm，心率变异系数 5.6%，心率波动较小，整体处于较高水平。",
+          "conclusionType": "fact",
+          "claimIds": [
+            "claim:upload-07971de0-6774-431b-8eca-2512f89c5791:v2:heart_rate.mean",
+            "claim:upload-07971de0-6774-431b-8eca-2512f89c5791:v2:heart_rate.coefficientOfVariation"
+          ]
+        },
+        {
+          "text": "心率区间分布以 Z4（60%）和 Z5（34%）为主，高强度区间合计 94%，显示本次骑行强度较高，接近阈值和极限区间。",
+          "conclusionType": "fact",
+          "claimIds": [
+            "claim:upload-07971de0-6774-431b-8eca-2512f89c5791:v2:heartRate.zone.z4",
+            "claim:upload-07971de0-6774-431b-8eca-2512f89c5791:v2:heartRate.zone.z5",
+            "claim:upload-07971de0-6774-431b-8eca-2512f89c5791:v2:heartRate.zone.highIntensityCombined"
+          ]
+        },
+        {
+          "text": "心率前后段差异为 9.3 bpm，后半程心率有所上升，但波动较小，整体负荷较高。",
+          "conclusionType": "interpretation",
+          "claimIds": [
+            "claim:upload-07971de0-6774-431b-8eca-2512f89c5791:v2:heart_rate.lastMinusFirst"
+          ]
+        }
+      ]
+    },
+    {
+      "dimensionId": "cadenceStrategy",
+      "assertions": [
+        {
+          "text": "平均踏频 83 rpm，踏频变异系数 19.8%，踏频波动较大。",
+          "conclusionType": "fact",
+          "claimIds": [
+            "claim:upload-07971de0-6774-431b-8eca-2512f89c5791:v2:cadence.mean",
+            "claim:upload-07971de0-6774-431b-8eca-2512f89c5791:v2:cadence.coefficientOfVariation"
+          ]
+        },
+        {
+          "text": "踏频区间以耐力区间为主（51%），高强度区间占 37%，零踏频占 2%，整体踏频分布偏向耐力型。",
+          "conclusionType": "fact",
+          "claimIds": [
+            "claim:upload-07971de0-6774-431b-8eca-2512f89c5791:v2:cadence.zone.endurance",
+            "claim:upload-07971de0-6774-431b-8eca-2512f89c5791:v2:cadence.zone.high",
+            "claim:upload-07971de0-6774-431b-8eca-2512f89c5791:v2:cadence.zone.zero"
+          ]
+        },
+        {
+          "text": "踏频前后段差异为 2.7 rpm，变化不大，但踏频波动较大，可能反映踩踏节奏不够平稳。",
+          "conclusionType": "interpretation",
+          "claimIds": [
+            "claim:upload-07971de0-6774-431b-8eca-2512f89c5791:v2:cadence.lastMinusFirst",
+            "claim:upload-07971de0-6774-431b-8eca-2512f89c5791:v2:cadence.coefficientOfVariation"
+          ]
+        }
+      ]
+    },
+    {
+      "dimensionId": "crossSensorCoordination",
+      "assertions": []
+    }
+  ],
+  "suggestions": [
+    {
+      "text": "本次骑行心率负荷较高，建议下次骑行适当降低强度，增加低心率区间（Z2）的比例，以促进恢复。",
+      "conclusionType": "suggestion",
+      "claimIds": [
+        "claim:upload-07971de0-6774-431b-8eca-2512f89c5791:v2:heart_rate.mean"
+      ],
+      "riskNote": "心率区间分布显示高强度占比高，需注意恢复。"
+    },
+    {
+      "text": "踏频波动较大，建议在平路骑行时尝试保持更稳定的踏频，例如通过调整齿比来减少波动。",
+      "conclusionType": "suggestion",
+      "claimIds": [
+        "claim:upload-07971de0-6774-431b-8eca-2512f89c5791:v2:cadence.coefficientOfVariation"
+      ],
+      "riskNote": "踏频波动大可能影响踩踏效率。"
+    }
+  ],
+  "limitations": [
+    "pacing.variabilityIndex:NP_OR_POWER_MISSING",
+    "pacing.splitDifference:INSUFFICIENT_POWER_SAMPLES",
+    "heartRate.efficiencyFactor:NP_OR_HR_MISSING",
+    "relation.fixed.speed-heart_rate.aggregate:AGGREGATED_FROM_119_WINDOWS",
+    "power:SERIES_MISSING"
+  ]
+}

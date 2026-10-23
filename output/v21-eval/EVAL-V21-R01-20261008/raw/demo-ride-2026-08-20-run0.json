@@ -1,0 +1,54 @@
+{
+  "rideId": "demo-ride-2026-08-20",
+  "runIndex": 0,
+  "startedAt": "2026-10-08T01:29:38.631Z",
+  "status": "modelRepairPass",
+  "firstRound": {
+    "parseOk": true,
+    "issueCount": 1,
+    "issues": [
+      {
+        "code": "FACT_WITHOUT_CLAIM",
+        "path": "dimensions[3].assertions[0]",
+        "message": "a fact conclusion must cite at least one claim; knowledge cannot act as a personal ride fact",
+        "excerpt": "本次骑行功率数据缺失，无法进行跨传感器配合分析，部分数据缺失。",
+        "tag": "structure"
+      }
+    ]
+  },
+  "orchestration": {
+    "steps": [
+      {
+        "step": "first_validation",
+        "detail": "failed: FACT_WITHOUT_CLAIM"
+      },
+      {
+        "step": "model_repair_call",
+        "detail": "one constrained repair call with 1 error codes, prompt ride-repair-prompt-v2.2.4"
+      },
+      {
+        "step": "post_repair_validation",
+        "detail": "passed"
+      }
+    ],
+    "modelRepairCalls": 1
+  },
+  "callRecords": [
+    {
+      "latencyMs": 9268,
+      "usage": {
+        "inputTokens": 14789,
+        "outputTokens": 2000,
+        "totalTokens": 16789
+      }
+    },
+    {
+      "latencyMs": 7764,
+      "usage": {
+        "inputTokens": 29003,
+        "outputTokens": 1978,
+        "totalTokens": 30981
+      }
+    }
+  ]
+}

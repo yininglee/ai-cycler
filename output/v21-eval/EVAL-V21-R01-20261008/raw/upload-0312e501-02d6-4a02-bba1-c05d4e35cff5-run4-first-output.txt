@@ -1,0 +1,195 @@
+{
+  "schemaVersion": "ride-output-v2.2.0",
+  "label": {
+    "text": "总距离 56 公里、移动时长 2 小时 9 分钟的骑行",
+    "conclusionType": "fact",
+    "claimIds": [
+      "claim:upload-0312e501-02d6-4a02-bba1-c05d4e35cff5:v2:metric.distanceM",
+      "claim:upload-0312e501-02d6-4a02-bba1-c05d4e35cff5:v2:timing.movingDurationS"
+    ]
+  },
+  "overallAssessment": {
+    "text": "本次骑行功率与速度数据完整，整体为一次中等强度的耐力骑行。",
+    "conclusionType": "fact",
+    "claimIds": [
+      "claim:upload-0312e501-02d6-4a02-bba1-c05d4e35cff5:v2:power.mean",
+      "claim:upload-0312e501-02d6-4a02-bba1-c05d4e35cff5:v2:speed.mean"
+    ]
+  },
+  "highlights": [
+    {
+      "text": "平均速度 26.1 km/h，移动时长 2 小时 9 分钟，总距离 56 公里。",
+      "conclusionType": "fact",
+      "claimIds": [
+        "claim:upload-0312e501-02d6-4a02-bba1-c05d4e35cff5:v2:speed.mean",
+        "claim:upload-0312e501-02d6-4a02-bba1-c05d4e35cff5:v2:timing.movingDurationS",
+        "claim:upload-0312e501-02d6-4a02-bba1-c05d4e35cff5:v2:metric.distanceM"
+      ]
+    }
+  ],
+  "dimensions": [
+    {
+      "dimensionId": "pacingExecution",
+      "assertions": [
+        {
+          "text": "本次骑行移动时长 2 小时 9 分钟，总距离 56 公里，平均速度 26.1 km/h。速度变异系数 37.6%，速度波动较大，但后半程速度比前半程高 1.66 km/h，呈现负分割趋势。",
+          "conclusionType": "fact",
+          "claimIds": [
+            "claim:upload-0312e501-02d6-4a02-bba1-c05d4e35cff5:v2:timing.movingDurationS",
+            "claim:upload-0312e501-02d6-4a02-bba1-c05d4e35cff5:v2:metric.distanceM",
+            "claim:upload-0312e501-02d6-4a02-bba1-c05d4e35cff5:v2:speed.mean",
+            "claim:upload-0312e501-02d6-4a02-bba1-c05d4e35cff5:v2:speed.coefficientOfVariation",
+            "claim:upload-0312e501-02d6-4a02-bba1-c05d4e35cff5:v2:speed.lastMinusFirst"
+          ]
+        },
+        {
+          "text": "配速执行方面，变速系数 1.37 表明功率波动剧烈，负分割等级 27.2% 显示后半程明显更强，整体配速策略偏向后程发力。",
+          "conclusionType": "interpretation",
+          "claimIds": [
+            "claim:upload-0312e501-02d6-4a02-bba1-c05d4e35cff5:v2:pacing.variabilityIndex",
+            "claim:upload-0312e501-02d6-4a02-bba1-c05d4e35cff5:v2:pacing.negativeSplit"
+          ],
+          "knowledgeIds": ["kb-v21-pacingExecution"]
+        },
+        {
+          "text": "停歇次数 10 次，停歇时间占比 7.8%，停歇较多，可能影响骑行节奏。",
+          "conclusionType": "fact",
+          "claimIds": [
+            "claim:upload-0312e501-02d6-4a02-bba1-c05d4e35cff5:v2:stops.count",
+            "claim:upload-0312e501-02d6-4a02-bba1-c05d4e35cff5:v2:pacing.stoppedTimeShare"
+          ]
+        }
+      ]
+    },
+    {
+      "dimensionId": "climbPerformance",
+      "assertions": [
+        {
+          "text": "本次骑行累计爬升 904 米，下降 414 米，包含 8 个爬坡段和 8 个下坡段，代表性爬坡 3/5 个。",
+          "conclusionType": "fact",
+          "claimIds": [
+            "claim:upload-0312e501-02d6-4a02-bba1-c05d4e35cff5:v2:metric.elevationGainM",
+            "claim:upload-0312e501-02d6-4a02-bba1-c05d4e35cff5:v2:metric.elevationLossM",
+            "claim:upload-0312e501-02d6-4a02-bba1-c05d4e35cff5:v2:terrain.climbRunCount",
+            "claim:upload-0312e501-02d6-4a02-bba1-c05d4e35cff5:v2:terrain.descentRunCount",
+            "claim:upload-0312e501-02d6-4a02-bba1-c05d4e35cff5:v2:climb.representativeClimbCount"
+          ]
+        },
+        {
+          "text": "平均功率体重比 2.2 W/kg，标准化功率体重比 3.02 W/kg，爬坡表现处于经常训练水平。",
+          "conclusionType": "interpretation",
+          "claimIds": [
+            "claim:upload-0312e501-02d6-4a02-bba1-c05d4e35cff5:v2:power.averageWkg",
+            "claim:upload-0312e501-02d6-4a02-bba1-c05d4e35cff5:v2:power.normalizedWkg"
+          ],
+          "knowledgeIds": ["kb-v21-climbPerformance"]
+        }
+      ]
+    },
+    {
+      "dimensionId": "powerOutput",
+      "assertions": [
+        {
+          "text": "平均功率 159W，标准化功率 218W，功率变异系数 66.2%，功率波动较大。高强度区间（Z5-Z7）合计占比 27%。",
+          "conclusionType": "fact",
+          "claimIds": [
+            "claim:upload-0312e501-02d6-4a02-bba1-c05d4e35cff5:v2:power.mean",
+            "claim:upload-0312e501-02d6-4a02-bba1-c05d4e35cff5:v2:power.normalizedW",
+            "claim:upload-0312e501-02d6-4a02-bba1-c05d4e35cff5:v2:power.coefficientOfVariation",
+            "claim:upload-0312e501-02d6-4a02-bba1-c05d4e35cff5:v2:power.zone.highIntensityCombined"
+          ]
+        },
+        {
+          "text": "功率输出波动剧烈，变速系数 1.37 表明功率变化大，可能反映了频繁的加速和减速。",
+          "conclusionType": "interpretation",
+          "claimIds": [
+            "claim:upload-0312e501-02d6-4a02-bba1-c05d4e35cff5:v2:pacing.variabilityIndex"
+          ],
+          "knowledgeIds": ["kb-v21-powerOutput"]
+        }
+      ]
+    },
+    {
+      "dimensionId": "intensityAndTrainingLoad",
+      "assertions": [
+        {
+          "text": "强度因子 0.99，训练压力分 209.3，属于阈值强度骑行，训练负荷较高。",
+          "conclusionType": "fact",
+          "claimIds": [
+            "claim:upload-0312e501-02d6-4a02-bba1-c05d4e35cff5:v2:power.intensityFactor",
+            "claim:upload-0312e501-02d6-4a02-bba1-c05d4e35cff5:v2:power.trainingStressScore"
+          ]
+        },
+        {
+          "text": "本次骑行强度因子接近 1.0，属于阈值强度，训练压力分 209.3 为较高负荷，对体能要求较高。",
+          "conclusionType": "interpretation",
+          "claimIds": [
+            "claim:upload-0312e501-02d6-4a02-bba1-c05d4e35cff5:v2:power.intensityFactor",
+            "claim:upload-0312e501-02d6-4a02-bba1-c05d4e35cff5:v2:power.trainingStressScore"
+          ],
+          "knowledgeIds": ["kb-v21-intensityAndTrainingLoad"]
+        }
+      ]
+    },
+    {
+      "dimensionId": "cadenceStrategy",
+      "assertions": [
+        {
+          "text": "平均踏频 70 rpm，踏频数据部分缺失，但踏频分布显示 42% 时间处于稳定区间，35% 处于耐力区间。",
+          "conclusionType": "fact",
+          "claimIds": [
+            "claim:upload-0312e501-02d6-4a02-bba1-c05d4e35cff5:v2:cadence.mean",
+            "claim:upload-0312e501-02d6-4a02-bba1-c05d4e35cff5:v2:cadence.zone.steady",
+            "claim:upload-0312e501-02d6-4a02-bba1-c05d4e35cff5:v2:cadence.zone.endurance"
+          ]
+        },
+        {
+          "text": "平均踏频 70 rpm 偏低，可能更多依赖肌肉力量，长距离骑行中可能加速疲劳。",
+          "conclusionType": "interpretation",
+          "claimIds": [
+            "claim:upload-0312e501-02d6-4a02-bba1-c05d4e35cff5:v2:cadence.mean"
+          ],
+          "knowledgeIds": ["kb-v21-cadenceStrategy"]
+        }
+      ]
+    },
+    {
+      "dimensionId": "crossSensorCoordination",
+      "assertions": [
+        {
+          "text": "由于心率数据缺失，跨传感器分析无法进行，本次可用数据有限。",
+          "conclusionType": "fact",
+          "claimIds": []
+        }
+      ]
+    }
+  ],
+  "suggestions": [
+    {
+      "text": "下次骑行可尝试在平路或缓坡段提高踏频至 85-95 rpm，以减少肌肉疲劳。",
+      "conclusionType": "suggestion",
+      "claimIds": [
+        "claim:upload-0312e501-02d6-4a02-bba1-c05d4e35cff5:v2:cadence.mean"
+      ],
+      "riskNote": "踏频调整需逐步适应，避免突然改变导致不适。"
+    },
+    {
+      "text": "鉴于本次停歇次数较多，下次可规划补给点，减少中途停车次数。",
+      "conclusionType": "suggestion",
+      "claimIds": [
+        "claim:upload-0312e501-02d6-4a02-bba1-c05d4e35cff5:v2:stops.count"
+      ],
+      "riskNote": "停歇次数减少可能影响补给，需合理安排。"
+    }
+  ],
+  "limitations": [
+    "heartRate.efficiencyFactor:NP_OR_HR_MISSING",
+    "terrain.climbRunCount:AGGREGATED_FROM_8_WINDOWS",
+    "terrain.flatRunCount:AGGREGATED_FROM_15_WINDOWS",
+    "terrain.descentRunCount:AGGREGATED_FROM_8_WINDOWS",
+    "heartRate:SERIES_MISSING",
+    "climb.representativeClimbCount:AGGREGATED_FROM_5_WINDOWS",
+    "relation.fixed.power-speed.aggregate:AGGREGATED_FROM_249_WINDOWS",
+    "relation.fixed.power-cadence.aggregate:AGGREGATED_FROM_196_WINDOWS"
+  ]
+}

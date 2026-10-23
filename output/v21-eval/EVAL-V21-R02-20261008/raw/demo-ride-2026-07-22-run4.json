@@ -1,0 +1,65 @@
+{
+  "rideId": "demo-ride-2026-07-22",
+  "runIndex": 4,
+  "startedAt": "2026-10-08T04:43:22.051Z",
+  "status": "repairFailed",
+  "fallbackCode": "REPAIR_FAILED",
+  "failureCodes": [
+    "NUMBER_NOT_IN_CLAIMS"
+  ],
+  "firstRound": {
+    "parseOk": true,
+    "issueCount": 2,
+    "issues": [
+      {
+        "code": "NUMBER_NOT_IN_CLAIMS",
+        "path": "dimensions[3].assertions[2].text",
+        "message": "number 71 in the text does not match any referenced claim value/displayValue",
+        "excerpt": "本次骑行以 Z1-Z3 为主（合计 71%），高强度区间（Z5-Z7）占 16%，强度分布偏向耐力基础。",
+        "tag": "number-unbound"
+      },
+      {
+        "code": "FIELD_TYPE_INVALID",
+        "path": "dimensions[5].assertions",
+        "message": "dimension assertions must be a non-empty array",
+        "tag": "other"
+      }
+    ]
+  },
+  "orchestration": {
+    "steps": [
+      {
+        "step": "first_validation",
+        "detail": "failed: NUMBER_NOT_IN_CLAIMS,FIELD_TYPE_INVALID"
+      },
+      {
+        "step": "model_repair_call",
+        "detail": "one constrained repair call with 2 error codes, prompt ride-repair-prompt-v2.2.4"
+      },
+      {
+        "step": "post_repair_validation",
+        "detail": "failed: NUMBER_NOT_IN_CLAIMS"
+      }
+    ],
+    "modelRepairCalls": 1,
+    "fallbackReason": "REPAIR_OUTPUT_INVALID"
+  },
+  "callRecords": [
+    {
+      "latencyMs": 58959,
+      "usage": {
+        "inputTokens": 24017,
+        "outputTokens": 3110,
+        "totalTokens": 27127
+      }
+    },
+    {
+      "latencyMs": 64788,
+      "usage": {
+        "inputTokens": 54392,
+        "outputTokens": 3386,
+        "totalTokens": 57778
+      }
+    }
+  ]
+}

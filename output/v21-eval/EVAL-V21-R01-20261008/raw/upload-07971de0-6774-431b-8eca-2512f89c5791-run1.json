@@ -1,0 +1,68 @@
+{
+  "rideId": "upload-07971de0-6774-431b-8eca-2512f89c5791",
+  "runIndex": 1,
+  "startedAt": "2026-10-08T01:42:10.132Z",
+  "status": "modelRepairPass",
+  "firstRound": {
+    "parseOk": true,
+    "issueCount": 2,
+    "issues": [
+      {
+        "code": "STABILITY_WITHOUT_VARIANCE",
+        "path": "highlights[0]",
+        "message": "stability wording requires a referenced variance/process claim; a mean or generic performance claim is not enough",
+        "excerpt": "全程几乎全平路，地形分类覆盖率达 100%，骑行节奏平稳。",
+        "tag": "expression-gate"
+      },
+      {
+        "code": "CLAIM_NOT_IN_DIMENSION",
+        "path": "dimensions[3].assertions[0].claimIds",
+        "message": "claimId \"claim:upload-07971de0-6774-431b-8eca-2512f89c5791:v2:heart_rate.mean\" belongs to dimension \"heartRateLoad\", not \"crossSensorCoordination\"",
+        "tag": "cross-dimension"
+      }
+    ]
+  },
+  "orchestration": {
+    "steps": [
+      {
+        "step": "first_validation",
+        "detail": "failed: STABILITY_WITHOUT_VARIANCE,CLAIM_NOT_IN_DIMENSION"
+      },
+      {
+        "step": "deterministic_organize",
+        "detail": "1 invalid \"highlights\" entry deleted"
+      },
+      {
+        "step": "post_organize_validation",
+        "detail": "failed: CLAIM_NOT_IN_DIMENSION"
+      },
+      {
+        "step": "model_repair_call",
+        "detail": "one constrained repair call with 1 error codes, prompt ride-repair-prompt-v2.2.4"
+      },
+      {
+        "step": "post_repair_validation",
+        "detail": "passed"
+      }
+    ],
+    "modelRepairCalls": 1
+  },
+  "callRecords": [
+    {
+      "latencyMs": 44543,
+      "usage": {
+        "inputTokens": 20108,
+        "outputTokens": 2542,
+        "totalTokens": 22650
+      }
+    },
+    {
+      "latencyMs": 14201,
+      "usage": {
+        "inputTokens": 51557,
+        "outputTokens": 2749,
+        "totalTokens": 54306
+      }
+    }
+  ]
+}

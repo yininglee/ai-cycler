@@ -1,0 +1,66 @@
+{
+  "rideId": "demo-ride-2026-07-22",
+  "runIndex": 0,
+  "startedAt": "2026-10-08T01:20:23.587Z",
+  "status": "repairFailed",
+  "fallbackCode": "REPAIR_FAILED",
+  "failureCodes": [
+    "STABILITY_WITHOUT_VARIANCE"
+  ],
+  "firstRound": {
+    "parseOk": true,
+    "issueCount": 2,
+    "issues": [
+      {
+        "code": "STABILITY_WITHOUT_VARIANCE",
+        "path": "dimensions[4].assertions[1]",
+        "message": "stability wording requires a referenced variance/process claim; a mean or generic performance claim is not enough",
+        "excerpt": "踏频区间分布：低踏频占 7%，稳定踏频占 37%，耐力踏频占 44%，高踏频占 11%，踏频主要集中在稳定和耐力区间。",
+        "tag": "expression-gate"
+      },
+      {
+        "code": "FACT_WITHOUT_CLAIM",
+        "path": "dimensions[5].assertions[0]",
+        "message": "a fact conclusion must cite at least one claim; knowledge cannot act as a personal ride fact",
+        "excerpt": "本次骑行心率数据缺失，跨传感器分析无法进行，部分数据缺失。",
+        "tag": "structure"
+      }
+    ]
+  },
+  "orchestration": {
+    "steps": [
+      {
+        "step": "first_validation",
+        "detail": "failed: STABILITY_WITHOUT_VARIANCE,FACT_WITHOUT_CLAIM"
+      },
+      {
+        "step": "model_repair_call",
+        "detail": "one constrained repair call with 2 error codes, prompt ride-repair-prompt-v2.2.4"
+      },
+      {
+        "step": "post_repair_validation",
+        "detail": "failed: STABILITY_WITHOUT_VARIANCE"
+      }
+    ],
+    "modelRepairCalls": 1,
+    "fallbackReason": "REPAIR_OUTPUT_INVALID"
+  },
+  "callRecords": [
+    {
+      "latencyMs": 15270,
+      "usage": {
+        "inputTokens": 23898,
+        "outputTokens": 3457,
+        "totalTokens": 27355
+      }
+    },
+    {
+      "latencyMs": 63817,
+      "usage": {
+        "inputTokens": 54747,
+        "outputTokens": 3682,
+        "totalTokens": 58429
+      }
+    }
+  ]
+}

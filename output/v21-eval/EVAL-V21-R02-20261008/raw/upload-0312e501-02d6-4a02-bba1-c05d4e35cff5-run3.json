@@ -1,0 +1,76 @@
+{
+  "rideId": "upload-0312e501-02d6-4a02-bba1-c05d4e35cff5",
+  "runIndex": 3,
+  "startedAt": "2026-10-08T04:56:32.021Z",
+  "status": "modelRepairPass",
+  "firstRound": {
+    "parseOk": true,
+    "issueCount": 2,
+    "issues": [
+      {
+        "code": "STABILITY_WITHOUT_VARIANCE",
+        "path": "dimensions[4].assertions[0]",
+        "message": "stability wording requires a referenced variance/process claim; a mean or generic performance claim is not enough",
+        "excerpt": "平均踏频 70 rpm，踏频分布以平稳区（42%）和耐力区（35%）为主，低踏频区占 19%，高踏频区占 4%。",
+        "tag": "expression-gate"
+      },
+      {
+        "code": "FIELD_TYPE_INVALID",
+        "path": "dimensions[5].assertions",
+        "message": "dimension assertions must be a non-empty array",
+        "tag": "other"
+      }
+    ]
+  },
+  "orchestration": {
+    "steps": [
+      {
+        "step": "first_validation",
+        "detail": "failed: FIELD_TYPE_INVALID"
+      },
+      {
+        "step": "model_repair_call",
+        "detail": "one constrained repair call with 1 error codes, prompt ride-repair-prompt-v2.2.4"
+      },
+      {
+        "step": "post_repair_validation",
+        "detail": "passed"
+      }
+    ],
+    "modelRepairCalls": 1
+  },
+  "callRecords": [
+    {
+      "latencyMs": 142520,
+      "usage": {
+        "inputTokens": 33090,
+        "outputTokens": 3698,
+        "totalTokens": 36788
+      }
+    },
+    {
+      "latencyMs": 68380,
+      "usage": {
+        "inputTokens": 82784,
+        "outputTokens": 4107,
+        "totalTokens": 86891
+      }
+    },
+    {
+      "latencyMs": 1455,
+      "usage": {
+        "inputTokens": 255,
+        "outputTokens": 35,
+        "totalTokens": 290
+      }
+    },
+    {
+      "latencyMs": 994,
+      "usage": {
+        "inputTokens": 259,
+        "outputTokens": 35,
+        "totalTokens": 294
+      }
+    }
+  ]
+}

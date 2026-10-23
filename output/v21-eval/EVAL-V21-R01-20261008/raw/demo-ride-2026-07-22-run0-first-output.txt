@@ -1,0 +1,187 @@
+{
+  "schemaVersion": "ride-output-v2.2.0",
+  "label": {
+    "text": "总距离 161.8 公里的长距离骑行",
+    "conclusionType": "fact",
+    "claimIds": ["claim:demo-ride-2026-07-22:v2:metric.distanceM"]
+  },
+  "overallAssessment": {
+    "text": "本次骑行总距离 161.8 公里，移动时长 6 小时 40 分钟，累计爬升 2924 米，整体为一次高强度、大负荷的长距离骑行。",
+    "conclusionType": "fact",
+    "claimIds": ["claim:demo-ride-2026-07-22:v2:metric.distanceM", "claim:demo-ride-2026-07-22:v2:timing.movingDurationS", "claim:demo-ride-2026-07-22:v2:metric.elevationGainM"]
+  },
+  "highlights": [
+    {
+      "text": "本次骑行累计爬升 2924 米，包含 3 个代表性爬坡段，爬坡表现突出。",
+      "conclusionType": "fact",
+      "claimIds": ["claim:demo-ride-2026-07-22:v2:metric.elevationGainM", "claim:demo-ride-2026-07-22:v2:climb.representativeClimbCount"]
+    },
+    {
+      "text": "10 秒峰值平均功率达到 566W，展现了较强的短时爆发力。",
+      "conclusionType": "fact",
+      "claimIds": ["claim:demo-ride-2026-07-22:v2:power.peakAverage.10s"]
+    }
+  ],
+  "dimensions": [
+    {
+      "dimensionId": "pacingExecution",
+      "assertions": [
+        {
+          "text": "本次骑行移动时长 6 小时 40 分钟，总用时 7 小时 2 分钟，停歇次数 14 次，停歇时间占比 5.1%。",
+          "conclusionType": "fact",
+          "claimIds": ["claim:demo-ride-2026-07-22:v2:timing.movingDurationS", "claim:demo-ride-2026-07-22:v2:metric.elapsedDurationS", "claim:demo-ride-2026-07-22:v2:stops.count", "claim:demo-ride-2026-07-22:v2:pacing.stoppedTimeShare"]
+        },
+        {
+          "text": "平均速度 24.06 km/h，速度变异系数 49.2%，速度波动较大，与地形起伏和多次停歇相伴出现。",
+          "conclusionType": "fact",
+          "claimIds": ["claim:demo-ride-2026-07-22:v2:speed.mean", "claim:demo-ride-2026-07-22:v2:speed.coefficientOfVariation"]
+        },
+        {
+          "text": "变速系数 VI 为 1.31，根据配速执行知识，VI >1.25 表示功率波动剧烈，常见于比赛或大量间歇，本次骑行功率波动较大。",
+          "conclusionType": "knowledgeReference",
+          "claimIds": ["claim:demo-ride-2026-07-22:v2:pacing.variabilityIndex"],
+          "knowledgeIds": ["kb-v21-pacingExecution"]
+        },
+        {
+          "text": "后半程比前半程功率高 6.4%，属于负分割，根据配速执行知识，后半程比前半程高 2–5% 为理想负分割，本次略高于该范围，但仍为后半程更强的表现。",
+          "conclusionType": "knowledgeReference",
+          "claimIds": ["claim:demo-ride-2026-07-22:v2:pacing.negativeSplit"],
+          "knowledgeIds": ["kb-v21-pacingExecution"]
+        },
+        {
+          "text": "地形以爬坡和下降为主，爬坡距离 70.2 公里，下降距离 73.3 公里，平路距离 16.1 公里，几乎全为起伏路段，配速波动与地形复杂度相符。",
+          "conclusionType": "interpretation",
+          "claimIds": ["claim:demo-ride-2026-07-22:v2:terrain.trendClimbDistanceM", "claim:demo-ride-2026-07-22:v2:terrain.trendDescentDistanceM", "claim:demo-ride-2026-07-22:v2:terrain.trendFlatDistanceM"]
+        }
+      ]
+    },
+    {
+      "dimensionId": "climbPerformance",
+      "assertions": [
+        {
+          "text": "本次骑行累计爬升 2924 米，累计下降 2808 米，包含 3 个代表性爬坡段，爬坡段数量较多。",
+          "conclusionType": "fact",
+          "claimIds": ["claim:demo-ride-2026-07-22:v2:metric.elevationGainM", "claim:demo-ride-2026-07-22:v2:metric.elevationLossM", "claim:demo-ride-2026-07-22:v2:climb.representativeClimbCount"]
+        },
+        {
+          "text": "平均功率体重比 2.09 W/kg，标准化功率体重比 2.74 W/kg，根据爬坡表现知识，2.0–2.8 W/kg 属于新手/休闲级别，本次爬坡功率体重比处于该区间。",
+          "conclusionType": "knowledgeReference",
+          "claimIds": ["claim:demo-ride-2026-07-22:v2:power.averageWkg", "claim:demo-ride-2026-07-22:v2:power.normalizedWkg"],
+          "knowledgeIds": ["kb-v21-climbPerformance"]
+        },
+        {
+          "text": "爬坡距离 70.2 公里，下降距离 73.3 公里，爬坡与下降距离接近，本次骑行以爬坡和下降为主，爬坡表现对整体成绩影响显著。",
+          "conclusionType": "interpretation",
+          "claimIds": ["claim:demo-ride-2026-07-22:v2:terrain.trendClimbDistanceM", "claim:demo-ride-2026-07-22:v2:terrain.trendDescentDistanceM"]
+        }
+      ]
+    },
+    {
+      "dimensionId": "powerOutput",
+      "assertions": [
+        {
+          "text": "平均功率 151W，标准化功率 197W，功率变异系数 66.1%，功率波动较大。",
+          "conclusionType": "fact",
+          "claimIds": ["claim:demo-ride-2026-07-22:v2:power.mean", "claim:demo-ride-2026-07-22:v2:power.normalizedW", "claim:demo-ride-2026-07-22:v2:power.coefficientOfVariation"]
+        },
+        {
+          "text": "功率区间分布：Z1 占 29%，Z2 占 21%，Z3 占 21%，Z4 占 13%，Z5 占 7%，Z6 占 7%，Z7 占 3%，高强度区间（Z5-Z7）合计占 16%。",
+          "conclusionType": "fact",
+          "claimIds": ["claim:demo-ride-2026-07-22:v2:power.zone.z1", "claim:demo-ride-2026-07-22:v2:power.zone.z2", "claim:demo-ride-2026-07-22:v2:power.zone.z3", "claim:demo-ride-2026-07-22:v2:power.zone.z4", "claim:demo-ride-2026-07-22:v2:power.zone.z5", "claim:demo-ride-2026-07-22:v2:power.zone.z6", "claim:demo-ride-2026-07-22:v2:power.zone.z7", "claim:demo-ride-2026-07-22:v2:power.zone.highIntensityCombined"]
+        },
+        {
+          "text": "10 秒峰值平均功率 566W，20 秒峰值平均功率 538W，30 秒峰值平均功率 516W，短时峰值功率较高。",
+          "conclusionType": "fact",
+          "claimIds": ["claim:demo-ride-2026-07-22:v2:power.peakAverage.10s", "claim:demo-ride-2026-07-22:v2:power.peakAverage.20s", "claim:demo-ride-2026-07-22:v2:power.peakAverage.30s"]
+        },
+        {
+          "text": "功率曲线显示 5 秒最大平均功率 588W，60 秒最大平均功率 403W，300 秒最大平均功率 309W，1200 秒最大平均功率 283W，3600 秒最大平均功率 246W，功率输出随持续时间增加而递减，符合功率持续时间曲线的一般规律。",
+          "conclusionType": "knowledgeReference",
+          "claimIds": ["claim:demo-ride-2026-07-22:v2:power.curve.5s", "claim:demo-ride-2026-07-22:v2:power.curve.60s", "claim:demo-ride-2026-07-22:v2:power.curve.300s", "claim:demo-ride-2026-07-22:v2:power.curve.1200s", "claim:demo-ride-2026-07-22:v2:power.curve.3600s"],
+          "knowledgeIds": ["kb-v21-powerOutput"]
+        },
+        {
+          "text": "本次骑行功率波动较大（VI 1.31），但高强度区间占比 16%，整体输出以有氧耐力区间为主，属于高强度耐力骑行。",
+          "conclusionType": "interpretation",
+          "claimIds": ["claim:demo-ride-2026-07-22:v2:pacing.variabilityIndex", "claim:demo-ride-2026-07-22:v2:power.zone.highIntensityCombined"]
+        }
+      ]
+    },
+    {
+      "dimensionId": "intensityAndTrainingLoad",
+      "assertions": [
+        {
+          "text": "强度因子 IF 为 0.9，根据强度与训练负荷知识，0.86–0.95 属于节奏/Tempo 强度，本次骑行强度较高。",
+          "conclusionType": "knowledgeReference",
+          "claimIds": ["claim:demo-ride-2026-07-22:v2:power.intensityFactor"],
+          "knowledgeIds": ["kb-v21-intensityAndTrainingLoad"]
+        },
+        {
+          "text": "训练压力分 TSS 为 529.1，根据强度与训练负荷知识，>450 属于极高负荷（比赛/长途，恢复 3–5 天），本次骑行训练负荷极高。",
+          "conclusionType": "knowledgeReference",
+          "claimIds": ["claim:demo-ride-2026-07-22:v2:power.trainingStressScore"],
+          "knowledgeIds": ["kb-v21-intensityAndTrainingLoad"]
+        },
+        {
+          "text": "本次骑行移动时长 6 小时 40 分钟，TSS 529.1，IF 0.9，属于极高负荷的长距离骑行，需要较长时间恢复。",
+          "conclusionType": "interpretation",
+          "claimIds": ["claim:demo-ride-2026-07-22:v2:timing.movingDurationS", "claim:demo-ride-2026-07-22:v2:power.trainingStressScore", "claim:demo-ride-2026-07-22:v2:power.intensityFactor"]
+        }
+      ]
+    },
+    {
+      "dimensionId": "cadenceStrategy",
+      "assertions": [
+        {
+          "text": "平均踏频 76 rpm，踏频变异系数 15.3%，踏频数据部分缺失，本次骑行踏频数据有限。",
+          "conclusionType": "fact",
+          "claimIds": ["claim:demo-ride-2026-07-22:v2:cadence.mean", "claim:demo-ride-2026-07-22:v2:cadence.coefficientOfVariation"]
+        },
+        {
+          "text": "踏频区间分布：低踏频占 7%，稳定踏频占 37%，耐力踏频占 44%，高踏频占 11%，踏频主要集中在稳定和耐力区间。",
+          "conclusionType": "fact",
+          "claimIds": ["claim:demo-ride-2026-07-22:v2:cadence.zone.low", "claim:demo-ride-2026-07-22:v2:cadence.zone.steady", "claim:demo-ride-2026-07-22:v2:cadence.zone.endurance", "claim:demo-ride-2026-07-22:v2:cadence.zone.high"]
+        },
+        {
+          "text": "根据踏频策略知识，平路耐力踏频通常为 85–95 rpm，本次平均踏频 76 rpm 偏低，可能更依赖肌肉力量，长距离骑行中需关注肌肉疲劳。",
+          "conclusionType": "knowledgeReference",
+          "claimIds": ["claim:demo-ride-2026-07-22:v2:cadence.mean"],
+          "knowledgeIds": ["kb-v21-cadenceStrategy"]
+        }
+      ]
+    },
+    {
+      "dimensionId": "crossSensorCoordination",
+      "assertions": [
+        {
+          "text": "本次骑行心率数据缺失，跨传感器分析无法进行，部分数据缺失。",
+          "conclusionType": "fact",
+          "claimIds": []
+        }
+      ]
+    }
+  ],
+  "suggestions": [
+    {
+      "text": "本次骑行 TSS 529.1，负荷极高，建议安排 3-5 天恢复期，并注意补充营养和睡眠。",
+      "conclusionType": "suggestion",
+      "claimIds": ["claim:demo-ride-2026-07-22:v2:power.trainingStressScore"],
+      "riskNote": "恢复建议基于 TSS 负荷，但个体恢复能力存在差异。"
+    },
+    {
+      "text": "平均踏频 76 rpm 偏低，建议在平路和缓坡尝试提高踏频至 85-95 rpm，以减少肌肉疲劳。",
+      "conclusionType": "suggestion",
+      "claimIds": ["claim:demo-ride-2026-07-22:v2:cadence.mean"],
+      "riskNote": "踏频调整需逐步适应，避免突然改变导致效率下降。"
+    }
+  ],
+  "limitations": [
+    "heartRate.efficiencyFactor:NP_OR_HR_MISSING",
+    "terrain.climbRunCount:AGGREGATED_FROM_24_WINDOWS",
+    "terrain.flatRunCount:AGGREGATED_FROM_41_WINDOWS",
+    "terrain.descentRunCount:AGGREGATED_FROM_22_WINDOWS",
+    "heartRate:SERIES_MISSING",
+    "climb.representativeClimbCount:AGGREGATED_FROM_15_WINDOWS",
+    "relation.fixed.power-speed.aggregate:AGGREGATED_FROM_776_WINDOWS"
+  ]
+}

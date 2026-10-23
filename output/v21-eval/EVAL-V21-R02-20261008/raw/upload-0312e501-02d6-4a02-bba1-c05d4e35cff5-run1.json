@@ -1,0 +1,53 @@
+{
+  "rideId": "upload-0312e501-02d6-4a02-bba1-c05d4e35cff5",
+  "runIndex": 1,
+  "startedAt": "2026-10-08T04:53:12.667Z",
+  "status": "modelRepairPass",
+  "firstRound": {
+    "parseOk": true,
+    "issueCount": 1,
+    "issues": [
+      {
+        "code": "FIELD_TYPE_INVALID",
+        "path": "dimensions[5].assertions",
+        "message": "dimension assertions must be a non-empty array",
+        "tag": "other"
+      }
+    ]
+  },
+  "orchestration": {
+    "steps": [
+      {
+        "step": "first_validation",
+        "detail": "failed: FIELD_TYPE_INVALID"
+      },
+      {
+        "step": "model_repair_call",
+        "detail": "one constrained repair call with 1 error codes, prompt ride-repair-prompt-v2.2.4"
+      },
+      {
+        "step": "post_repair_validation",
+        "detail": "passed"
+      }
+    ],
+    "modelRepairCalls": 1
+  },
+  "callRecords": [
+    {
+      "latencyMs": 16969,
+      "usage": {
+        "inputTokens": 33090,
+        "outputTokens": 3453,
+        "totalTokens": 36543
+      }
+    },
+    {
+      "latencyMs": 17118,
+      "usage": {
+        "inputTokens": 82574,
+        "outputTokens": 3623,
+        "totalTokens": 86197
+      }
+    }
+  ]
+}

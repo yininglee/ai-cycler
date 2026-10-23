@@ -1,0 +1,54 @@
+{
+  "rideId": "upload-07971de0-6774-431b-8eca-2512f89c5791",
+  "runIndex": 2,
+  "startedAt": "2026-10-08T01:43:09.114Z",
+  "status": "modelRepairPass",
+  "firstRound": {
+    "parseOk": true,
+    "issueCount": 1,
+    "issues": [
+      {
+        "code": "FACT_WITHOUT_CLAIM",
+        "path": "dimensions[3].assertions[0]",
+        "message": "a fact conclusion must cite at least one claim; knowledge cannot act as a personal ride fact",
+        "excerpt": "本次骑行功率数据缺失，跨传感器分析受限，无法进行功率-心率解耦等分析。",
+        "tag": "structure"
+      }
+    ]
+  },
+  "orchestration": {
+    "steps": [
+      {
+        "step": "first_validation",
+        "detail": "failed: FACT_WITHOUT_CLAIM"
+      },
+      {
+        "step": "model_repair_call",
+        "detail": "one constrained repair call with 1 error codes, prompt ride-repair-prompt-v2.2.4"
+      },
+      {
+        "step": "post_repair_validation",
+        "detail": "passed"
+      }
+    ],
+    "modelRepairCalls": 1
+  },
+  "callRecords": [
+    {
+      "latencyMs": 11745,
+      "usage": {
+        "inputTokens": 20108,
+        "outputTokens": 2391,
+        "totalTokens": 22499
+      }
+    },
+    {
+      "latencyMs": 42662,
+      "usage": {
+        "inputTokens": 51488,
+        "outputTokens": 2456,
+        "totalTokens": 53944
+      }
+    }
+  ]
+}

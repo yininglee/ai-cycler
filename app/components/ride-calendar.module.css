@@ -1,0 +1,150 @@
+.page { --heat-0: #e9e9e4; --heat-1: #cecec5; --heat-2: #9c9d91; --heat-3: #5b5e53; --heat-4: #24271f; }
+.page button { font: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.page button:focus-visible, .rideCard:focus-visible { outline: 2px solid #111; outline-offset: 4px; }
+.header { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 0 30px; }
+.eyebrow { margin: 0 0 10px; color: #70706d; font-size: 12px; letter-spacing: .04em; }
+.header h1 { margin: 0; font-size: clamp(32px, 8vw, 44px); line-height: 1.2; letter-spacing: -.06em; }
+.header h1 span { margin-left: 3px; }
+.importButton { display: flex; align-items: center; justify-content: center; gap: 7px; min-height: 44px; padding: 0 16px; border: 0; border-radius: 30px; background: #111; color: #fff; font-size: 14px !important; font-weight: 700 !important; }
+.importButton svg { width: 18px; height: 18px; }
+.calendarSection { position: relative; }
+.monthHeader { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 22px; }
+.monthHeader h2 { margin: 0; font-size: 30px; line-height: 1.1; letter-spacing: -.04em; }
+.monthHeader h2 > span { display: block; margin-bottom: 7px; color: #70706d; font-size: 12px; font-weight: 500; letter-spacing: .02em; }
+.monthActions { display: flex; align-items: center; gap: 6px; }
+.todayButton { min-height: 44px; padding: 0 14px; border: 1px solid #ddddd7; border-radius: 30px; background: transparent; font-size: 13px !important; }
+.iconButton { width: 44px; height: 44px; padding: 12px; border: 0; border-radius: 50%; background: #e9e9e4; display: grid; place-items: center; }
+.iconButton svg { width: 18px; height: 18px; }
+.nextIcon { transform: rotate(180deg); }
+.weekdays, .calendarGrid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
+.weekdays { margin-bottom: 12px; color: #70706d; font-size: 12px; text-align: center; }
+.dayCell { position: relative; min-width: 0; }
+.day { position: relative; display: grid; place-items: center; width: 100%; min-height: 44px; aspect-ratio: 1; padding: 0; border: 0; border-radius: 13px; color: #55564e; font-size: 14px !important; font-weight: 650 !important; font-variant-numeric: tabular-nums; }
+.day[data-heat="0"], .legend i[data-heat="0"] { background: var(--heat-0); }
+.day[data-heat="1"], .legend i[data-heat="1"] { background: var(--heat-1); }
+.day[data-heat="2"], .legend i[data-heat="2"] { background: var(--heat-2); }
+.day[data-heat="3"], .legend i[data-heat="3"] { background: var(--heat-3); }
+.day[data-heat="4"], .legend i[data-heat="4"] { background: var(--heat-4); }
+.day[data-heat="2"] { color: #17190f; }
+.day[data-heat="3"], .day[data-heat="4"] { color: white; }
+.day:hover { filter: brightness(.94); }
+.selected::after { position: absolute; content: ""; inset: -3px; border: 1.5px solid #282b23; border-radius: 16px; pointer-events: none; }
+.todayDot { position: absolute; bottom: 5px; width: 4px; height: 4px; border-radius: 50%; background: currentColor; }
+.calendarFooter { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 18px 0 0; font-size: 11px; color: #70706d; }
+.todayKey { display: flex; align-items: center; gap: 7px; }
+.todayKey i { width: 5px; height: 5px; border-radius: 50%; background: #282b23; }
+.legend { display: flex; align-items: center; gap: 4px; }
+.legend > span:first-child { margin-right: 4px; }
+.legend i { width: 11px; height: 11px; border-radius: 3px; }
+.calendarHint { display: flex; align-items: center; justify-content: space-between; gap: 6px; padding: 8px 0 14px; color: #70706d; font-size: 11px; }
+.calendarHint button { display: flex; align-items: center; gap: 5px; min-height: 44px; padding: 0; border: 0; background: transparent; color: #363830; font-size: 11px !important; font-weight: 650 !important; white-space: nowrap; }
+.calendarHint svg { width: 14px; height: 14px; }
+.popover { position: absolute; z-index: 25; bottom: calc(100% + 12px); left: 50%; transform: translateX(-50%); width: 228px; padding: 12px 16px 16px; border: 1px solid #e5e5de; border-radius: 21px; background: #fff; box-shadow: 0 12px 40px #1112; color: #111; font-size: 13px; }
+.popover[data-align="left"] { left: 0; transform: none; }
+.popover[data-align="right"] { left: auto; right: 0; transform: none; }
+.popover[data-below="true"] { bottom: auto; top: calc(100% + 12px); }
+.popoverHeading { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+.popoverHeading strong { font-weight: 750; }
+.closeButton { flex-shrink: 0; width: 32px; height: 32px; margin-right: -6px; padding: 0; border: 0; border-radius: 50%; background: #f1f1ed; color: #70706d; font-size: 22px !important; line-height: 1; }
+.popover p { margin: 0 0 9px; color: #70706d; font-size: 11px; }
+.popover ul { max-height: 150px; margin: 0; padding: 0; overflow-y: auto; list-style: none; }
+.popover li { display: flex; justify-content: space-between; gap: 10px; padding: 8px 0; border-top: 1px solid #f0f0eb; }
+.popover li span, .popoverEmpty { color: #70706d; font-size: 12px; }
+.popover li strong { font-size: 14px; font-variant-numeric: tabular-nums; }
+.monthSummary { padding: 24px; border-radius: 28px; background: #20211d; color: #f8f8f2; }
+.summaryHeading { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 24px; }
+.summaryHeading h2 { margin: 0; font-size: 16px; font-weight: 650; }
+.summaryHeading > span { color: #b6b7ad; font-size: 11px; }
+.summaryGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px 16px; }
+.summaryGrid > div { min-width: 0; }
+.summaryGrid > div > span { font-size: 11px; color: #b6b7ad; }
+.summaryGrid p { margin: 7px 0 0; font-size: 26px; line-height: 1.25; font-weight: 650; letter-spacing: -.04em; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.summaryGrid small { margin-left: 5px; color: #b6b7ad; font-size: 12px; font-weight: 400; letter-spacing: 0; }
+.summaryGrid .totalDistance p { font-size: 34px; }
+.summaryGrid .duration { font-size: 18px; line-height: 1.8; letter-spacing: -.025em; }
+.partialNote { margin: 20px 0 0; font-size: 11px; color: #b6b7ad; }
+.dailySection { margin-top: 32px; }
+.dailyHeading { display: flex; align-items: flex-end; justify-content: space-between; gap: 10px; margin-bottom: 18px; }
+.dailyHeading p { margin: 0 0 7px; color: #70706d; font-size: 11px; }
+.dailyHeading h2 { margin: 0; font-size: 23px; letter-spacing: -.04em; }
+.dailyHeading > span { color: #70706d; font-size: 11px; white-space: nowrap; padding-bottom: 3px; }
+.emptyDay { padding: 28px 20px; border: 1px solid #e3e3dc; border-radius: 28px; text-align: center; }
+.emptyIcon { display: grid; place-items: center; width: 56px; height: 56px; margin: 0 auto 16px; border-radius: 50%; background: #e9e9e4; color: #77796e; }
+.emptyIcon svg { width: 30px; height: 30px; }
+.emptyDay h3 { margin: 0; font-size: 16px; font-weight: 650; }
+.emptyDay p { margin: 8px 0 14px; font-size: 12px; color: #70706d; }
+.emptyDay button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 0 18px; border: 1px solid #ddddd7; border-radius: 30px; background: #fff; font-size: 12px !important; font-weight: 650 !important; }
+.emptyDay button svg { width: 16px; height: 16px; }
+.rideList { display: grid; gap: 12px; }
+.rideCard { display: block; min-width: 0; padding: 22px; border: 1px solid #e4e4de; border-radius: 28px; background: #fff; }
+.rideCard:hover { border-color: #b6b7ab; }
+.rideCardTop { display: flex; align-items: center; gap: 12px; }
+.rideIcon { display: grid; place-items: center; width: 42px; height: 42px; flex-shrink: 0; border-radius: 14px; background: #f0f0eb; }
+.rideIcon svg { width: 27px; height: 27px; }
+.rideName { font-size: 15px; font-weight: 700; }
+.rideName small { display: block; margin-top: 5px; color: #70706d; font-size: 11px; font-weight: 400; }
+.cardArrow { width: 20px; height: 20px; margin-left: auto; flex-shrink: 0; }
+.rideDistance { margin: 20px 0 8px; font-size: 40px; font-weight: 650; line-height: 1.1; letter-spacing: -.05em; }
+.rideDistance > span { margin-left: 7px; font-size: 14px; font-weight: 400; color: #70706d; letter-spacing: 0; }
+.rideDistance > .unrecorded { margin-left: 0; font-size: 22px; }
+.rideFacts { margin: 0; color: #70706d; font-size: 12px; line-height: 1.7; }
+.undated { margin-top: 30px; }
+.undated h2 { font-size: 20px; }
+.undated > p { font-size: 12px; color: #70706d; }
+.extra { margin-top: 32px; }
+.extra > details { margin-top: 12px; }
+.extra > details > summary { min-height: 44px; color: #70706d; font-size: 12px; cursor: pointer; padding: 12px 0; }
+.extra :global(.sample-list) { margin-top: 14px; }
+.importDialog { width: min(520px, calc(100% - 24px)); max-height: calc(100svh - 32px); margin: auto; padding: 20px; border: 0; border-radius: 28px; background: #f4f4f2; color: #111; overflow-y: auto; }
+.importDialog::backdrop { background: #1117; backdrop-filter: blur(5px); }
+.dialogHeader { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 16px; }
+.dialogHeader h2 { margin: 0; font-size: 22px; letter-spacing: -.04em; }
+.importDialog :global(.upload-card) { padding: 18px; }
+@media (min-width: 600px) {
+  .header { padding-bottom: 36px; }
+  .calendarGrid { gap: 9px; }
+  .day { max-height: 66px; aspect-ratio: auto; height: 60px; font-size: 16px !important; border-radius: 17px; }
+  .selected::after { border-radius: 20px; }
+  .todayDot { bottom: 9px; }
+  .monthSummary { padding: 28px; }
+  .summaryGrid { grid-template-columns: 1.2fr .7fr 1.3fr 1fr; gap: 14px; align-items: start; }
+  .summaryGrid p, .summaryGrid .totalDistance p { font-size: 28px; line-height: 1.4; }
+  .summaryGrid .duration { font-size: 15px; line-height: 2.6; }
+  .summaryHeading { margin-bottom: 22px; }
+}
+@media (max-width: 359px) {
+  .calendarGrid, .weekdays { gap: 3px; }
+  .day { border-radius: 10px; }
+  .selected::after { inset: -2px; border-radius: 12px; }
+  .header h1 { font-size: 30px; }
+  .monthSummary { padding: 20px; }
+  .summaryGrid .duration { font-size: 16px; }
+  .importDialog { padding: 14px; }
+  .importDialog :global(.upload-card) { padding: 14px; grid-template-columns: 40px 1fr; gap: 12px; }
+  .importDialog :global(.upload-icon) { width: 40px; height: 40px; }
+}
+
+.heatmapScroller { width: calc(100% + 2px); margin: 0 -1px; padding: 0 1px 12px; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; -webkit-overflow-scrolling: touch; scroll-behavior: smooth; }
+.heatmapScroller::-webkit-scrollbar { display: none; }
+.heatmapTrack { display: flex; align-items: flex-start; gap: 18px; width: max-content; min-height: 112px; }
+.heatmapMonth { position: relative; flex: 0 0 auto; }
+.heatmapMonth h3 { margin: 0 0 9px 2px; color: #70706d; font-size: 11px; line-height: 1.2; font-weight: 600; }
+.monthSquares { display: grid; grid-template-columns: repeat(7, 14px); grid-auto-rows: 14px; gap: 4px; }
+.dayCell { position: relative; width: 14px; height: 14px; }
+.day { position: relative; display: block; width: 14px; height: 14px; min-height: 0; aspect-ratio: auto; padding: 0; border: 0; border-radius: 4px; }
+.day[data-heat="0"], .legend i[data-heat="0"] { background: #e7e7e1; }
+.day[data-heat="1"], .legend i[data-heat="1"] { background: #c9cac0; }
+.day[data-heat="2"], .legend i[data-heat="2"] { background: #9d9f92; }
+.day[data-heat="3"], .legend i[data-heat="3"] { background: #62655a; }
+.day[data-heat="4"], .legend i[data-heat="4"] { background: #292b24; }
+.selected::after { position: absolute; content: ""; inset: -2px; border: 1.5px solid #20211d; border-radius: 5px; pointer-events: none; }
+.todayDot { position: absolute; z-index: 1; inset: 4px; width: 6px; height: 6px; border-radius: 50%; background: white; box-shadow: 0 0 0 1px #1118; }
+.heatmapScroller + .calendarFooter { margin-top: 8px; }
+.calendarSection .popover { position: relative; left: auto; right: auto; bottom: auto; width: min(280px, 100%); margin: 10px 0 0; padding: 12px 15px; transform: none; }
+@media (min-width: 600px) {
+  .heatmapTrack { gap: 24px; }
+  .monthSquares { grid-template-columns: repeat(7, 16px); grid-auto-rows: 16px; gap: 5px; }
+  .dayCell, .day { width: 16px; height: 16px; }
+  .day { min-height: 0; font-size: 0 !important; }
+  .todayDot { inset: 5px; width: 6px; height: 6px; }
+}

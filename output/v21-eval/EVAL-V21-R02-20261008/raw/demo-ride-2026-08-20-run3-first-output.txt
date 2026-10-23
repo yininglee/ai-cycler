@@ -1,0 +1,131 @@
+{
+  "schemaVersion": "ride-output-v2.2.0",
+  "label": {
+    "text": "总距离 31.1 公里的骑行，平均心率 168 bpm。",
+    "conclusionType": "fact",
+    "claimIds": [
+      "claim:demo-ride-2026-08-20:v2:metric.distanceM",
+      "claim:demo-ride-2026-08-20:v2:heart_rate.mean"
+    ]
+  },
+  "overallAssessment": {
+    "text": "本次可用数据有限，但心率数据完整，整体为一次高强度骑行，心率区间分布显示大部分时间处于高负荷状态。",
+    "conclusionType": "fact",
+    "claimIds": [
+      "claim:demo-ride-2026-08-20:v2:heartRate.zone.highIntensityCombined",
+      "claim:demo-ride-2026-08-20:v2:heart_rate.mean"
+    ]
+  },
+  "highlights": [
+    {
+      "text": "平均心率 168 bpm，高强度区间（Z5）占比 55%，显示骑行强度较高。",
+      "conclusionType": "fact",
+      "claimIds": [
+        "claim:demo-ride-2026-08-20:v2:heart_rate.mean",
+        "claim:demo-ride-2026-08-20:v2:heartRate.zone.z5"
+      ]
+    }
+  ],
+  "dimensions": [
+    {
+      "dimensionId": "pacingExecution",
+      "assertions": [
+        {
+          "text": "本次骑行移动时长 1 小时 2 分钟，总距离 31.1 公里，平均速度 28.47 km/h。由于部分数据缺失，配速执行的解读有限。",
+          "conclusionType": "fact",
+          "claimIds": [
+            "claim:demo-ride-2026-08-20:v2:timing.movingDurationS",
+            "claim:demo-ride-2026-08-20:v2:metric.distanceM",
+            "claim:demo-ride-2026-08-20:v2:speed.mean"
+          ]
+        },
+        {
+          "text": "骑行过程中有 1 次停歇，停歇时间占总时间的 6.1%，整体节奏较为连续。",
+          "conclusionType": "fact",
+          "claimIds": [
+            "claim:demo-ride-2026-08-20:v2:stops.count",
+            "claim:demo-ride-2026-08-20:v2:pacing.stoppedTimeShare"
+          ]
+        },
+        {
+          "text": "地形以平路为主，平路距离 29 公里，几乎全平路，爬坡距离为 0 公里。",
+          "conclusionType": "fact",
+          "claimIds": [
+            "claim:demo-ride-2026-08-20:v2:terrain.trendFlatDistanceM",
+            "claim:demo-ride-2026-08-20:v2:terrain.trendClimbDistanceM"
+          ]
+        }
+      ]
+    },
+    {
+      "dimensionId": "heartRateLoad",
+      "assertions": [
+        {
+          "text": "平均心率 168 bpm，最大心率 192 bpm，高强度区间（Z5）占比 55%，整体负荷较高。",
+          "conclusionType": "fact",
+          "claimIds": [
+            "claim:demo-ride-2026-08-20:v2:heart_rate.mean",
+            "claim:demo-ride-2026-08-20:v2:profile.maxHeartRateBpm",
+            "claim:demo-ride-2026-08-20:v2:heartRate.zone.z5"
+          ]
+        },
+        {
+          "text": "心率变异系数 9.2%，波动较小，显示心率控制相对稳定。",
+          "conclusionType": "fact",
+          "claimIds": [
+            "claim:demo-ride-2026-08-20:v2:heart_rate.coefficientOfVariation"
+          ]
+        },
+        {
+          "text": "心率区间分布显示，Z4 和 Z5 合计占比 87%，高强度区间占主导，意味着本次骑行对心血管系统提出了较高要求。",
+          "conclusionType": "interpretation",
+          "claimIds": [
+            "claim:demo-ride-2026-08-20:v2:heartRate.zone.highIntensityCombined"
+          ]
+        }
+      ]
+    },
+    {
+      "dimensionId": "cadenceStrategy",
+      "assertions": [
+        {
+          "text": "平均踏频 79 rpm，踏频区间分布显示耐力区间占比 48%，高强度区间占比 33%。",
+          "conclusionType": "fact",
+          "claimIds": [
+            "claim:demo-ride-2026-08-20:v2:cadence.mean",
+            "claim:demo-ride-2026-08-20:v2:cadence.zone.endurance",
+            "claim:demo-ride-2026-08-20:v2:cadence.zone.high"
+          ]
+        },
+        {
+          "text": "踏频变异系数 29.7%，波动较大，可能反映了骑行中频繁的变速或地形变化。",
+          "conclusionType": "interpretation",
+          "claimIds": [
+            "claim:demo-ride-2026-08-20:v2:cadence.coefficientOfVariation"
+          ]
+        }
+      ]
+    },
+    {
+      "dimensionId": "crossSensorCoordination",
+      "assertions": []
+    }
+  ],
+  "suggestions": [
+    {
+      "text": "鉴于本次骑行高强度区间占比较大，建议下次骑行适当降低强度，增加恢复时间。",
+      "conclusionType": "suggestion",
+      "claimIds": [
+        "claim:demo-ride-2026-08-20:v2:heartRate.zone.highIntensityCombined"
+      ],
+      "riskNote": "高强度区间占比过高可能增加疲劳风险，注意恢复。"
+    }
+  ],
+  "limitations": [
+    "pacing.variabilityIndex:NP_OR_POWER_MISSING",
+    "pacing.splitDifference:INSUFFICIENT_POWER_SAMPLES",
+    "heartRate.efficiencyFactor:NP_OR_HR_MISSING",
+    "relation.fixed.speed-heart_rate.aggregate:AGGREGATED_FROM_123_WINDOWS",
+    "power:SERIES_MISSING"
+  ]
+}

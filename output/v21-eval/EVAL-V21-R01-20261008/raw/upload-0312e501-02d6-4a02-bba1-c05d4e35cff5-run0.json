@@ -1,0 +1,103 @@
+{
+  "rideId": "upload-0312e501-02d6-4a02-bba1-c05d4e35cff5",
+  "runIndex": 0,
+  "startedAt": "2026-10-08T01:34:45.474Z",
+  "status": "modelRepairPass",
+  "firstRound": {
+    "parseOk": true,
+    "issueCount": 7,
+    "issues": [
+      {
+        "code": "NUMBER_NOT_IN_CLAIMS",
+        "path": "highlights[0].text",
+        "message": "number 11.1 in the text does not match any referenced claim value/displayValue",
+        "excerpt": "本次骑行累计爬升 904 米，包含 5 个代表性爬坡段，其中最具挑战的爬坡段平均坡度 11.1%，平均功率 256W。",
+        "tag": "number-unbound"
+      },
+      {
+        "code": "NUMBER_NOT_IN_CLAIMS",
+        "path": "highlights[0].text",
+        "message": "number 256 in the text does not match any referenced claim value/displayValue",
+        "excerpt": "本次骑行累计爬升 904 米，包含 5 个代表性爬坡段，其中最具挑战的爬坡段平均坡度 11.1%，平均功率 256W。",
+        "tag": "number-unbound"
+      },
+      {
+        "code": "NUMBER_NOT_IN_CLAIMS",
+        "path": "dimensions[1].assertions[1].text",
+        "message": "number 11.1 in the text does not match any referenced claim value/displayValue",
+        "excerpt": "最具挑战的爬坡段平均坡度 11.1%，平均功率 256W，平均踏频 66rpm，属于陡坡低踏频爬坡。",
+        "tag": "number-unbound"
+      },
+      {
+        "code": "NUMBER_NOT_IN_CLAIMS",
+        "path": "dimensions[1].assertions[1].text",
+        "message": "number 256 in the text does not match any referenced claim value/displayValue",
+        "excerpt": "最具挑战的爬坡段平均坡度 11.1%，平均功率 256W，平均踏频 66rpm，属于陡坡低踏频爬坡。",
+        "tag": "number-unbound"
+      },
+      {
+        "code": "NUMBER_NOT_IN_CLAIMS",
+        "path": "dimensions[1].assertions[1].text",
+        "message": "number 66 in the text does not match any referenced claim value/displayValue",
+        "excerpt": "最具挑战的爬坡段平均坡度 11.1%，平均功率 256W，平均踏频 66rpm，属于陡坡低踏频爬坡。",
+        "tag": "number-unbound"
+      },
+      {
+        "code": "SOFT_QUALITY_NOT_DISCLOSED",
+        "path": "dimensions[4].assertions",
+        "message": "a soft-quality dimension must disclose partial data limitations in its text",
+        "tag": "other"
+      },
+      {
+        "code": "FACT_WITHOUT_CLAIM",
+        "path": "dimensions[5].assertions[0]",
+        "message": "a fact conclusion must cite at least one claim; knowledge cannot act as a personal ride fact",
+        "excerpt": "本次骑行部分数据缺失，无法进行跨传感器配合分析。",
+        "tag": "structure"
+      }
+    ]
+  },
+  "orchestration": {
+    "steps": [
+      {
+        "step": "first_validation",
+        "detail": "failed: NUMBER_NOT_IN_CLAIMS,SOFT_QUALITY_NOT_DISCLOSED,FACT_WITHOUT_CLAIM"
+      },
+      {
+        "step": "deterministic_organize",
+        "detail": "1 invalid \"highlights\" entry deleted"
+      },
+      {
+        "step": "post_organize_validation",
+        "detail": "failed: NUMBER_NOT_IN_CLAIMS,SOFT_QUALITY_NOT_DISCLOSED,FACT_WITHOUT_CLAIM"
+      },
+      {
+        "step": "model_repair_call",
+        "detail": "one constrained repair call with 3 error codes, prompt ride-repair-prompt-v2.2.4"
+      },
+      {
+        "step": "post_repair_validation",
+        "detail": "passed"
+      }
+    ],
+    "modelRepairCalls": 1
+  },
+  "callRecords": [
+    {
+      "latencyMs": 76605,
+      "usage": {
+        "inputTokens": 32971,
+        "outputTokens": 4166,
+        "totalTokens": 37137
+      }
+    },
+    {
+      "latencyMs": 16454,
+      "usage": {
+        "inputTokens": 83171,
+        "outputTokens": 4351,
+        "totalTokens": 87522
+      }
+    }
+  ]
+}

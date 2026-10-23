@@ -1,0 +1,53 @@
+{
+  "rideId": "upload-07971de0-6774-431b-8eca-2512f89c5791",
+  "runIndex": 2,
+  "startedAt": "2026-10-08T05:03:53.332Z",
+  "status": "modelRepairPass",
+  "firstRound": {
+    "parseOk": true,
+    "issueCount": 1,
+    "issues": [
+      {
+        "code": "CLAIM_NOT_IN_DIMENSION",
+        "path": "dimensions[3].assertions[0].claimIds",
+        "message": "claimId \"claim:upload-07971de0-6774-431b-8eca-2512f89c5791:v2:heart_rate.mean\" belongs to dimension \"heartRateLoad\", not \"crossSensorCoordination\"",
+        "tag": "cross-dimension"
+      }
+    ]
+  },
+  "orchestration": {
+    "steps": [
+      {
+        "step": "first_validation",
+        "detail": "failed: CLAIM_NOT_IN_DIMENSION"
+      },
+      {
+        "step": "model_repair_call",
+        "detail": "one constrained repair call with 1 error codes, prompt ride-repair-prompt-v2.2.4"
+      },
+      {
+        "step": "post_repair_validation",
+        "detail": "passed"
+      }
+    ],
+    "modelRepairCalls": 1
+  },
+  "callRecords": [
+    {
+      "latencyMs": 46457,
+      "usage": {
+        "inputTokens": 20227,
+        "outputTokens": 2600,
+        "totalTokens": 22827
+      }
+    },
+    {
+      "latencyMs": 12885,
+      "usage": {
+        "inputTokens": 51696,
+        "outputTokens": 2666,
+        "totalTokens": 54362
+      }
+    }
+  ]
+}

@@ -1,0 +1,65 @@
+{
+  "rideId": "demo-ride-2026-08-20",
+  "runIndex": 2,
+  "startedAt": "2026-10-08T01:32:03.601Z",
+  "status": "repairFailed",
+  "fallbackCode": "REPAIR_FAILED",
+  "failureCodes": [
+    "SOFT_QUALITY_NOT_DISCLOSED"
+  ],
+  "firstRound": {
+    "parseOk": true,
+    "issueCount": 2,
+    "issues": [
+      {
+        "code": "SOFT_QUALITY_NOT_DISCLOSED",
+        "path": "dimensions[0].assertions",
+        "message": "a soft-quality dimension must disclose partial data limitations in its text",
+        "tag": "other"
+      },
+      {
+        "code": "INTERPRETATION_WITHOUT_CLAIM",
+        "path": "dimensions[3].assertions[0]",
+        "message": "an interpretation conclusion must cite at least one claim of its dimension",
+        "excerpt": "本次可用数据有限，跨传感器配合维度缺少功率数据，无法进行有氧解耦或效率因子分析。",
+        "tag": "other"
+      }
+    ]
+  },
+  "orchestration": {
+    "steps": [
+      {
+        "step": "first_validation",
+        "detail": "failed: SOFT_QUALITY_NOT_DISCLOSED,INTERPRETATION_WITHOUT_CLAIM"
+      },
+      {
+        "step": "model_repair_call",
+        "detail": "one constrained repair call with 2 error codes, prompt ride-repair-prompt-v2.2.4"
+      },
+      {
+        "step": "post_repair_validation",
+        "detail": "failed: SOFT_QUALITY_NOT_DISCLOSED"
+      }
+    ],
+    "modelRepairCalls": 1,
+    "fallbackReason": "REPAIR_OUTPUT_INVALID"
+  },
+  "callRecords": [
+    {
+      "latencyMs": 41900,
+      "usage": {
+        "inputTokens": 14789,
+        "outputTokens": 1760,
+        "totalTokens": 16549
+      }
+    },
+    {
+      "latencyMs": 40795,
+      "usage": {
+        "inputTokens": 28794,
+        "outputTokens": 1849,
+        "totalTokens": 30643
+      }
+    }
+  ]
+}

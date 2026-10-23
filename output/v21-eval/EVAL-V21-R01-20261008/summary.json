@@ -1,0 +1,41 @@
+{
+  "runId": "EVAL-V21-R01-20261008",
+  "generatedAt": "2026-10-08T01:47:50.715Z",
+  "total": 20,
+  "statusCount": {
+    "repairFailed": 3,
+    "modelRepairPass": 15,
+    "firstPass": 2
+  },
+  "finalDegradationRate": 0.15,
+  "perRide": {
+    "demo-ride-2026-07-22": {
+      "repairFailed": 2,
+      "modelRepairPass": 3
+    },
+    "demo-ride-2026-08-20": {
+      "modelRepairPass": 3,
+      "repairFailed": 1,
+      "firstPass": 1
+    },
+    "upload-0312e501-02d6-4a02-bba1-c05d4e35cff5": {
+      "modelRepairPass": 5
+    },
+    "upload-07971de0-6774-431b-8eca-2512f89c5791": {
+      "firstPass": 1,
+      "modelRepairPass": 4
+    }
+  },
+  "firstIssueTags": {
+    "expression-gate": 3,
+    "structure": 14,
+    "other": 8,
+    "number-unbound": 7,
+    "cross-dimension": 1
+  },
+  "finalFailureCodes": {
+    "STABILITY_WITHOUT_VARIANCE": 2,
+    "SOFT_QUALITY_NOT_DISCLOSED": 1
+  },
+  "totalFirstIssues": 33
+}

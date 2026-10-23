@@ -1,0 +1,99 @@
+{
+  "schemaVersion": "ride-output-v2.2.0",
+  "label": {
+    "text": "总距离 31.1 公里的平路骑行",
+    "conclusionType": "fact",
+    "claimIds": ["claim:demo-ride-2026-08-20:v2:metric.distanceM"]
+  },
+  "overallAssessment": {
+    "text": "本次骑行移动时长 1 小时 2 分钟，平均心率 168 bpm，平均踏频 79 rpm，整体为一次强度较高的平路骑行。",
+    "conclusionType": "fact",
+    "claimIds": ["claim:demo-ride-2026-08-20:v2:timing.movingDurationS", "claim:demo-ride-2026-08-20:v2:heart_rate.mean", "claim:demo-ride-2026-08-20:v2:cadence.mean"]
+  },
+  "highlights": [
+    {
+      "text": "平均速度 28.47 km/h，在平路为主的线路上表现较快。",
+      "conclusionType": "fact",
+      "claimIds": ["claim:demo-ride-2026-08-20:v2:speed.mean", "claim:demo-ride-2026-08-20:v2:terrain.trendFlatDistanceM"]
+    }
+  ],
+  "dimensions": [
+    {
+      "dimensionId": "pacingExecution",
+      "assertions": [
+        {
+          "text": "本次骑行移动时长 1 小时 2 分钟，总用时 1 小时 6 分钟，停车时间占比 6.1%，途中停车 1 次。部分数据缺失（功率数据不足），无法计算变速系数与前后半程功率差。",
+          "conclusionType": "fact",
+          "claimIds": ["claim:demo-ride-2026-08-20:v2:timing.movingDurationS", "claim:demo-ride-2026-08-20:v2:metric.elapsedDurationS", "claim:demo-ride-2026-08-20:v2:pacing.stoppedTimeShare", "claim:demo-ride-2026-08-20:v2:stops.count"]
+        },
+        {
+          "text": "平均速度 28.47 km/h，速度变异系数 18.6%，末段比初段快 3.64 km/h，整体配速呈前慢后快。",
+          "conclusionType": "interpretation",
+          "claimIds": ["claim:demo-ride-2026-08-20:v2:speed.mean", "claim:demo-ride-2026-08-20:v2:speed.coefficientOfVariation", "claim:demo-ride-2026-08-20:v2:speed.lastMinusFirst"]
+        }
+      ]
+    },
+    {
+      "dimensionId": "heartRateLoad",
+      "assertions": [
+        {
+          "text": "平均心率 168 bpm，最大心率 192 bpm，心率区间分布中 Z5 占 55%、Z4 占 32%，高强度区间（Z4-Z5）合计占 87%。",
+          "conclusionType": "fact",
+          "claimIds": ["claim:demo-ride-2026-08-20:v2:heart_rate.mean", "claim:demo-ride-2026-08-20:v2:profile.maxHeartRateBpm", "claim:demo-ride-2026-08-20:v2:heartRate.zone.z5", "claim:demo-ride-2026-08-20:v2:heartRate.zone.z4", "claim:demo-ride-2026-08-20:v2:heartRate.zone.highIntensityCombined"]
+        },
+        {
+          "text": "心率变异系数 9.2%，末段心率比初段高 26.2 bpm，心率在骑行中明显上升，提示生理负荷持续累积。",
+          "conclusionType": "interpretation",
+          "claimIds": ["claim:demo-ride-2026-08-20:v2:heart_rate.coefficientOfVariation", "claim:demo-ride-2026-08-20:v2:heart_rate.lastMinusFirst"]
+        }
+      ]
+    },
+    {
+      "dimensionId": "cadenceStrategy",
+      "assertions": [
+        {
+          "text": "平均踏频 79 rpm，踏频区间分布中耐力区占 48%、高踏频区占 33%，踏频变异系数 29.7%，末段比初段高 14.3 rpm。",
+          "conclusionType": "fact",
+          "claimIds": ["claim:demo-ride-2026-08-20:v2:cadence.mean", "claim:demo-ride-2026-08-20:v2:cadence.zone.endurance", "claim:demo-ride-2026-08-20:v2:cadence.zone.high", "claim:demo-ride-2026-08-20:v2:cadence.coefficientOfVariation", "claim:demo-ride-2026-08-20:v2:cadence.lastMinusFirst"]
+        },
+        {
+          "text": "踏频整体处于中等水平，但波动较大，末段踏频明显上升，可能与加速或换挡有关。",
+          "conclusionType": "interpretation",
+          "claimIds": ["claim:demo-ride-2026-08-20:v2:cadence.mean", "claim:demo-ride-2026-08-20:v2:cadence.coefficientOfVariation", "claim:demo-ride-2026-08-20:v2:cadence.lastMinusFirst"]
+        }
+      ]
+    },
+    {
+      "dimensionId": "crossSensorCoordination",
+      "assertions": [
+        {
+          "text": "由于功率数据缺失，无法进行有氧解耦和效率因子分析，本次跨传感器配合解读受限。",
+          "conclusionType": "knowledgeReference",
+          "knowledgeIds": ["kb-v21-crossSensorCoordination"],
+          "claimIds": []
+        }
+      ]
+    }
+  ],
+  "suggestions": [
+    {
+      "text": "下次骑行可尝试在平路保持 85-95 rpm 的踏频，以减少肌肉疲劳。",
+      "conclusionType": "suggestion",
+      "claimIds": ["claim:demo-ride-2026-08-20:v2:cadence.mean"],
+      "riskNote": "个体最优踏频因人而异，需根据自身感受调整。"
+    },
+    {
+      "text": "鉴于本次高强度心率占比高，建议后续安排低强度恢复骑行，并注意充分休息。",
+      "conclusionType": "suggestion",
+      "claimIds": ["claim:demo-ride-2026-08-20:v2:heartRate.zone.highIntensityCombined"],
+      "riskNote": "恢复建议基于本次心率表现，不构成医疗诊断。"
+    }
+  ],
+  "limitations": [
+    "pacing.variabilityIndex:NP_OR_POWER_MISSING",
+    "pacing.splitDifference:INSUFFICIENT_POWER_SAMPLES",
+    "heartRate.efficiencyFactor:NP_OR_HR_MISSING",
+    "relation.fixed.speed-heart_rate.aggregate:AGGREGATED_FROM_123_WINDOWS",
+    "power:SERIES_MISSING"
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "rideId": "upload-0312e501-02d6-4a02-bba1-c05d4e35cff5",
+  "runIndex": 3,
+  "startedAt": "2026-10-08T01:39:36.414Z",
+  "status": "modelRepairPass",
+  "firstRound": {
+    "parseOk": true,
+    "issueCount": 1,
+    "issues": [
+      {
+        "code": "FACT_WITHOUT_CLAIM",
+        "path": "dimensions[5].assertions[0]",
+        "message": "a fact conclusion must cite at least one claim; knowledge cannot act as a personal ride fact",
+        "excerpt": "由于心率数据缺失，本次无法进行跨传感器配合分析，部分数据缺失。",
+        "tag": "structure"
+      }
+    ]
+  },
+  "orchestration": {
+    "steps": [
+      {
+        "step": "first_validation",
+        "detail": "failed: FACT_WITHOUT_CLAIM"
+      },
+      {
+        "step": "model_repair_call",
+        "detail": "one constrained repair call with 1 error codes, prompt ride-repair-prompt-v2.2.4"
+      },
+      {
+        "step": "post_repair_validation",
+        "detail": "passed"
+      }
+    ],
+    "modelRepairCalls": 1
+  },
+  "callRecords": [
+    {
+      "latencyMs": 14762,
+      "usage": {
+        "inputTokens": 32971,
+        "outputTokens": 3245,
+        "totalTokens": 36216
+      }
+    },
+    {
+      "latencyMs": 72494,
+      "usage": {
+        "inputTokens": 82393,
+        "outputTokens": 3303,
+        "totalTokens": 85696
+      }
+    }
+  ]
+}

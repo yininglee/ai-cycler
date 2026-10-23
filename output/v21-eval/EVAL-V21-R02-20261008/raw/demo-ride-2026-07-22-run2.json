@@ -1,0 +1,75 @@
+{
+  "rideId": "demo-ride-2026-07-22",
+  "runIndex": 2,
+  "startedAt": "2026-10-08T04:39:11.795Z",
+  "status": "repairFailed",
+  "fallbackCode": "REPAIR_FAILED",
+  "failureCodes": [
+    "STABILITY_WITHOUT_VARIANCE"
+  ],
+  "firstRound": {
+    "parseOk": true,
+    "issueCount": 1,
+    "issues": [
+      {
+        "code": "STABILITY_WITHOUT_VARIANCE",
+        "path": "dimensions[2].assertions[2]",
+        "message": "stability wording requires a referenced variance/process claim; a mean or generic performance claim is not enough",
+        "excerpt": "功率曲线显示 5 秒最大平均功率 588W，60 秒 403W，300 秒 309W，1200 秒 283W，3600 秒 246W，短时爆发力突出，长时耐力输出相对平稳。",
+        "tag": "expression-gate"
+      }
+    ]
+  },
+  "orchestration": {
+    "steps": [
+      {
+        "step": "first_validation",
+        "detail": "failed: STABILITY_WITHOUT_VARIANCE"
+      },
+      {
+        "step": "model_repair_call",
+        "detail": "one constrained repair call with 1 error codes, prompt ride-repair-prompt-v2.2.4"
+      },
+      {
+        "step": "post_repair_validation",
+        "detail": "failed: STABILITY_WITHOUT_VARIANCE"
+      }
+    ],
+    "modelRepairCalls": 1,
+    "fallbackReason": "REPAIR_OUTPUT_INVALID"
+  },
+  "callRecords": [
+    {
+      "latencyMs": 86192,
+      "usage": {
+        "inputTokens": 24017,
+        "outputTokens": 3214,
+        "totalTokens": 27231
+      }
+    },
+    {
+      "latencyMs": 16038,
+      "usage": {
+        "inputTokens": 54440,
+        "outputTokens": 3340,
+        "totalTokens": 57780
+      }
+    },
+    {
+      "latencyMs": 1712,
+      "usage": {
+        "inputTokens": 277,
+        "outputTokens": 49,
+        "totalTokens": 326
+      }
+    },
+    {
+      "latencyMs": 984,
+      "usage": {
+        "inputTokens": 277,
+        "outputTokens": 51,
+        "totalTokens": 328
+      }
+    }
+  ]
+}

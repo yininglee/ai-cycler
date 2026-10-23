@@ -1,0 +1,30 @@
+{
+  "rideId": "upload-07971de0-6774-431b-8eca-2512f89c5791",
+  "runIndex": 0,
+  "startedAt": "2026-10-08T01:41:33.459Z",
+  "status": "firstPass",
+  "firstRound": {
+    "parseOk": true,
+    "issueCount": 0,
+    "issues": []
+  },
+  "orchestration": {
+    "steps": [
+      {
+        "step": "first_validation",
+        "detail": "passed"
+      }
+    ],
+    "modelRepairCalls": 0
+  },
+  "callRecords": [
+    {
+      "latencyMs": 36440,
+      "usage": {
+        "inputTokens": 20108,
+        "outputTokens": 2267,
+        "totalTokens": 22375
+      }
+    }
+  ]
+}

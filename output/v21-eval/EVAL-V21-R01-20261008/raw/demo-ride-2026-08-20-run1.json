@@ -1,0 +1,54 @@
+{
+  "rideId": "demo-ride-2026-08-20",
+  "runIndex": 1,
+  "startedAt": "2026-10-08T01:29:55.916Z",
+  "status": "modelRepairPass",
+  "firstRound": {
+    "parseOk": true,
+    "issueCount": 1,
+    "issues": [
+      {
+        "code": "FACT_WITHOUT_CLAIM",
+        "path": "dimensions[3].assertions[0]",
+        "message": "a fact conclusion must cite at least one claim; knowledge cannot act as a personal ride fact",
+        "excerpt": "本次骑行跨传感器数据有限，无法进行有效的同窗口关系分析。",
+        "tag": "structure"
+      }
+    ]
+  },
+  "orchestration": {
+    "steps": [
+      {
+        "step": "first_validation",
+        "detail": "failed: FACT_WITHOUT_CLAIM"
+      },
+      {
+        "step": "model_repair_call",
+        "detail": "one constrained repair call with 1 error codes, prompt ride-repair-prompt-v2.2.4"
+      },
+      {
+        "step": "post_repair_validation",
+        "detail": "passed"
+      }
+    ],
+    "modelRepairCalls": 1
+  },
+  "callRecords": [
+    {
+      "latencyMs": 82162,
+      "usage": {
+        "inputTokens": 14789,
+        "outputTokens": 2473,
+        "totalTokens": 17262
+      }
+    },
+    {
+      "latencyMs": 45320,
+      "usage": {
+        "inputTokens": 29397,
+        "outputTokens": 2511,
+        "totalTokens": 31908
+      }
+    }
+  ]
+}

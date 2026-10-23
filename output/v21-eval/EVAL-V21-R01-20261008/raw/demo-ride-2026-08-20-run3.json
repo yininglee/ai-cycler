@@ -1,0 +1,30 @@
+{
+  "rideId": "demo-ride-2026-08-20",
+  "runIndex": 3,
+  "startedAt": "2026-10-08T01:33:26.601Z",
+  "status": "firstPass",
+  "firstRound": {
+    "parseOk": true,
+    "issueCount": 0,
+    "issues": []
+  },
+  "orchestration": {
+    "steps": [
+      {
+        "step": "first_validation",
+        "detail": "passed"
+      }
+    ],
+    "modelRepairCalls": 0
+  },
+  "callRecords": [
+    {
+      "latencyMs": 27717,
+      "usage": {
+        "inputTokens": 14789,
+        "outputTokens": 1639,
+        "totalTokens": 16428
+      }
+    }
+  ]
+}

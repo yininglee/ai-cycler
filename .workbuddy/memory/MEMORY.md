@@ -65,6 +65,14 @@
 - **交付**（`doc_V2.1/`）：`AI骑行解读V2.1优化设计文档.md`、`VIBE_CODING_V2.1_开发规划.md`（5 里程碑 11 切片 V21-01~11）、`V2.1_开发进度.md`。任务 ID 前缀 `V21`（与 V2 的 `RIDE-AI-*` 不冲突）。
 - **口径记忆**：心率恢复指标"有停表后数据才算、无则进 limitation、不新开开关"；FTP 有效期纳入 TSS/IF 能力依赖；V2.1 评测须在 V2 发布门评测之后开新 Run（避免旧指标口径结论给新口径背书）。
 
+## 对话 Agent 自主化改造（2026-10-23 需求分析立项，`doc_Agent/`）
+
+- 用户想把对话改造成"自主 Agent"（多源工具 + 问答/分析/水平评估/训练规划/监督/情绪价值六任务簇）。需求分析结论：**✅ 优先引入 AI，但正确落地 = L1 扩工具面 + 训练监督单点升 L2，不上 L3/L4**。当前 `src/chat/` CHAT-17 L2b 已是受限单 Agent，改造是扩面非范式革命；"自主"真实需求 = 工具自主编排（已有）+ 主动性（新，属调度基础设施）。
+- **训练规划/监督 = 中低容错 P0**：处方数值走 `claimNumericVariants` 等价类硬门 + 计划确认制 + safety_stop；放行四阶段（影子→只读全自动→计划人机协作→监督自动化）。
+- 新工具映射现有模块：`get_health_profile`(user-profile) / `get_training_load`(ride-pmc-load-v2 的 CTL/ATL/TSB) / `search_knowledge_base`(ride-knowledge-base-v21) / `get_ride_history`(**需放开 30 天冻结窗口**，评测须开新 Run) / `get_route_overview`；计划实体+打卡为全新（第一个写操作工具）。派生指标计算仍由规则函数承担、LLM 只叙事。
+- 评测挂靠现有体系：意图集 v0.4（12→~16 路由，新增 training_plan/training_supervision/level_assessment/kb_qa）；训练监督需全新「时序情景」评测形态。
+- 报告：`doc_Agent/2026-10-23_骑行伙伴自主Agent改造_需求分析.md`（含原始需求归档）。**未确认项**：地图录像语义（轨迹回放 vs 真实录像多模态）、监督主动性边界（应答 vs 主动推送）、skills 具体所指、健康数据范围。
+
 ## 文档约定
 
 - 图示统一用 Mermaid 代码块，不嵌截图。
@@ -83,5 +91,6 @@
 - **演示端口归属**：`localhost:3000` = m4 工作树，`localhost:3001` = m6 工作树。演示前先确认端口属于哪个工作树，改错了不会生效（worktree 各自独立 `node_modules` 与 `.local-data`）。
 - **演示记录（2026-10-08 扩为四条）**：`demo-ride-2026-10-05`（30.4km 心率）/ `08-20`（31.1km 通勤心率）/ `07-22`（161.8km 长途功率）/ `07-18`（56km 起伏功率），随仓库分发（`test-data/demo-imported-rides/*.fit`），按骑行时间倒序；R01/R02 用的 upload-* 样例已从 .local-data 清理（备份 `application-state.backup-before-demo-rides-cleanup.json`），**R03 脚本须改用 demo-ride id**。
 - **校验旁路开关（2026-10-14 用户决策，仅限 demo）**：`.env.local` 置 `DEMO_VALIDATION_BYPASS=on` → V2 解读首轮输出直接展示（无收敛/修复/语义豁免/降级），校验器仍跑并记录 issue（响应 `v2Candidate.bypassedIssueCodes` + 前端"演示标注"角标，**演示即失败率探针**）。**校验门设计不变**（validator/repair/语义豁免零改动）；缺省 off 行为与正式链路逐字节一致；**评测脚本（R03/V21-12）永不读此开关**，旁路结论不给放量背书。背景：R02 firstPass 仅 5%、95% 靠修复轮（60–142s 二次调用），demo 体感差的真实根因。
+- **线上部署（发布为应用，2026-10-08 首发 / 10-14 更新）**：链接 `https://ai-cycling-buddy.app.workbuddy.host/`。重新部署 `workbuddy_sites_deploy` 要点——`domainPrefix="ai-cycling-buddy"` 必填（复用同一 app、链接不变）、`startCmd="npm run build && npm start"`（`.next` 属构建产物被排除上传，build 必须并入）、部署前移出 `.local-data`（测试数据不上云）部署后还原；`.env.production` 含全部密钥 + `DEMO_VALIDATION_BYPASS=on`（与 `.env.local` 双份上传，`.env.local` 优先）。云端是临时沙箱文件存储，重新发布清空线上数据（每会话 seed 演示基线）。管理入口「设置—数据管理—应用」。
 - **个人资料演示基线（2026-10-08 落地）**：`/api/profile` GET 在会话无任何资料时 seed 一份基线并落盘 —— 28 岁 / 175cm / 72kg / 192bpm（`user_provided`）/ FTP 220（`user_confirmed`），时间戳固定 `2026-10-08T04:37:10.707Z`（北京 12:37）。前端初始 state 同源，首屏不闪空表。关闭开关：`DEMO_PROFILE_SEED=off`。
 - 语义边界：这是**演示默认值**，不是产品行为；已有的真实资料不会被覆盖（只判"完全没资料"才 seed）。"清除当前资料"会真清空，刷新后按 seed 规则恢复。

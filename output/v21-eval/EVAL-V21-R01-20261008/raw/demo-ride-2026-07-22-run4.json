@@ -1,0 +1,54 @@
+{
+  "rideId": "demo-ride-2026-07-22",
+  "runIndex": 4,
+  "startedAt": "2026-10-08T01:27:29.807Z",
+  "status": "modelRepairPass",
+  "firstRound": {
+    "parseOk": true,
+    "issueCount": 1,
+    "issues": [
+      {
+        "code": "FACT_WITHOUT_CLAIM",
+        "path": "dimensions[5].assertions[0]",
+        "message": "a fact conclusion must cite at least one claim; knowledge cannot act as a personal ride fact",
+        "excerpt": "本次骑行部分数据缺失，跨传感器分析受限，无法进行完整的有氧解耦分析。",
+        "tag": "structure"
+      }
+    ]
+  },
+  "orchestration": {
+    "steps": [
+      {
+        "step": "first_validation",
+        "detail": "failed: FACT_WITHOUT_CLAIM"
+      },
+      {
+        "step": "model_repair_call",
+        "detail": "one constrained repair call with 1 error codes, prompt ride-repair-prompt-v2.2.4"
+      },
+      {
+        "step": "post_repair_validation",
+        "detail": "passed"
+      }
+    ],
+    "modelRepairCalls": 1
+  },
+  "callRecords": [
+    {
+      "latencyMs": 62647,
+      "usage": {
+        "inputTokens": 23898,
+        "outputTokens": 3529,
+        "totalTokens": 27427
+      }
+    },
+    {
+      "latencyMs": 63099,
+      "usage": {
+        "inputTokens": 54631,
+        "outputTokens": 3577,
+        "totalTokens": 58208
+      }
+    }
+  ]
+}

@@ -1,0 +1,67 @@
+{
+  "rideId": "demo-ride-2026-07-22",
+  "runIndex": 1,
+  "startedAt": "2026-10-08T04:37:32.479Z",
+  "status": "modelRepairPass",
+  "firstRound": {
+    "parseOk": true,
+    "issueCount": 2,
+    "issues": [
+      {
+        "code": "SOFT_QUALITY_NOT_DISCLOSED",
+        "path": "dimensions[4].assertions",
+        "message": "a soft-quality dimension must disclose partial data limitations in its text",
+        "tag": "other"
+      },
+      {
+        "code": "FIELD_TYPE_INVALID",
+        "path": "dimensions[5].assertions",
+        "message": "dimension assertions must be a non-empty array",
+        "tag": "other"
+      }
+    ]
+  },
+  "orchestration": {
+    "steps": [
+      {
+        "step": "first_validation",
+        "detail": "failed: SOFT_QUALITY_NOT_DISCLOSED,FIELD_TYPE_INVALID"
+      },
+      {
+        "step": "model_repair_call",
+        "detail": "one constrained repair call with 2 error codes, prompt ride-repair-prompt-v2.2.4"
+      },
+      {
+        "step": "post_repair_validation",
+        "detail": "passed"
+      }
+    ],
+    "modelRepairCalls": 1
+  },
+  "callRecords": [
+    {
+      "latencyMs": 14914,
+      "usage": {
+        "inputTokens": 24017,
+        "outputTokens": 3215,
+        "totalTokens": 27232
+      }
+    },
+    {
+      "latencyMs": 78025,
+      "usage": {
+        "inputTokens": 54406,
+        "outputTokens": 3530,
+        "totalTokens": 57936
+      }
+    },
+    {
+      "latencyMs": 2825,
+      "usage": {
+        "inputTokens": 314,
+        "outputTokens": 29,
+        "totalTokens": 343
+      }
+    }
+  ]
+}

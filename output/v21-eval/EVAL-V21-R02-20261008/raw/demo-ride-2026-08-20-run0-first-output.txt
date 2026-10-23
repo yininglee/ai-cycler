@@ -1,0 +1,152 @@
+{
+  "schemaVersion": "ride-output-v2.2.0",
+  "label": {
+    "text": "总距离 31.1 公里的骑行，平均心率 168 bpm，整体强度偏高。",
+    "conclusionType": "fact",
+    "claimIds": [
+      "claim:demo-ride-2026-08-20:v2:metric.distanceM",
+      "claim:demo-ride-2026-08-20:v2:heart_rate.mean"
+    ]
+  },
+  "overallAssessment": {
+    "text": "本次骑行平均心率 168 bpm，高强度区间（Z4-Z5）合计占比 87%，整体强度较高。",
+    "conclusionType": "fact",
+    "claimIds": [
+      "claim:demo-ride-2026-08-20:v2:heart_rate.mean",
+      "claim:demo-ride-2026-08-20:v2:heartRate.zone.highIntensityCombined"
+    ]
+  },
+  "highlights": [
+    {
+      "text": "平均心率 168 bpm，高强度区间（Z4-Z5）合计占比 87%，显示出较强的输出意愿。",
+      "conclusionType": "fact",
+      "claimIds": [
+        "claim:demo-ride-2026-08-20:v2:heart_rate.mean",
+        "claim:demo-ride-2026-08-20:v2:heartRate.zone.highIntensityCombined"
+      ]
+    }
+  ],
+  "dimensions": [
+    {
+      "dimensionId": "pacingExecution",
+      "assertions": [
+        {
+          "text": "本次骑行总距离 31.1 公里，移动时长 1 小时 2 分钟，平均速度 28.47 km/h。由于功率数据缺失，部分配速分析受限。",
+          "conclusionType": "fact",
+          "claimIds": [
+            "claim:demo-ride-2026-08-20:v2:metric.distanceM",
+            "claim:demo-ride-2026-08-20:v2:timing.movingDurationS",
+            "claim:demo-ride-2026-08-20:v2:speed.mean"
+          ]
+        },
+        {
+          "text": "骑行过程中有 1 次停歇，停歇时间占比 6.1%，整体节奏较为紧凑。",
+          "conclusionType": "fact",
+          "claimIds": [
+            "claim:demo-ride-2026-08-20:v2:stops.count",
+            "claim:demo-ride-2026-08-20:v2:pacing.stoppedTimeShare"
+          ]
+        },
+        {
+          "text": "速度变异系数为 18.6%，速度波动较大，可能反映了路况或节奏的变化。",
+          "conclusionType": "interpretation",
+          "claimIds": [
+            "claim:demo-ride-2026-08-20:v2:speed.coefficientOfVariation"
+          ]
+        },
+        {
+          "text": "后半程速度比前半程高 3.64 km/h，显示出后半程发力更足。",
+          "conclusionType": "fact",
+          "claimIds": [
+            "claim:demo-ride-2026-08-20:v2:speed.lastMinusFirst"
+          ]
+        },
+        {
+          "text": "地形以平路为主，平路距离 29 公里，几乎全平路，有利于保持速度。",
+          "conclusionType": "fact",
+          "claimIds": [
+            "claim:demo-ride-2026-08-20:v2:terrain.trendFlatDistanceM"
+          ]
+        }
+      ]
+    },
+    {
+      "dimensionId": "heartRateLoad",
+      "assertions": [
+        {
+          "text": "平均心率 168 bpm，最大心率 192 bpm，高强度区间（Z4-Z5）合计占比 87%，整体强度较高。",
+          "conclusionType": "fact",
+          "claimIds": [
+            "claim:demo-ride-2026-08-20:v2:heart_rate.mean",
+            "claim:demo-ride-2026-08-20:v2:profile.maxHeartRateBpm",
+            "claim:demo-ride-2026-08-20:v2:heartRate.zone.highIntensityCombined"
+          ]
+        },
+        {
+          "text": "心率变异系数为 9.2%，心率波动相对较小，但后半程心率比前半程高 26.2 bpm，显示心率有上升趋势。",
+          "conclusionType": "fact",
+          "claimIds": [
+            "claim:demo-ride-2026-08-20:v2:heart_rate.coefficientOfVariation",
+            "claim:demo-ride-2026-08-20:v2:heart_rate.lastMinusFirst"
+          ]
+        },
+        {
+          "text": "高强度区间占比高，可能意味着本次骑行对心血管系统提出了较高要求。",
+          "conclusionType": "interpretation",
+          "claimIds": [
+            "claim:demo-ride-2026-08-20:v2:heartRate.zone.highIntensityCombined"
+          ]
+        }
+      ]
+    },
+    {
+      "dimensionId": "cadenceStrategy",
+      "assertions": [
+        {
+          "text": "平均踏频 79 rpm，处于休闲骑手常见范围，但踏频变异系数为 29.7%，波动较大。",
+          "conclusionType": "fact",
+          "claimIds": [
+            "claim:demo-ride-2026-08-20:v2:cadence.mean",
+            "claim:demo-ride-2026-08-20:v2:cadence.coefficientOfVariation"
+          ]
+        },
+        {
+          "text": "踏频分布中，耐力区间占比 48%，高踏频区间占比 33%，显示踩踏节奏以耐力为主，但有一定高踏频输出。",
+          "conclusionType": "fact",
+          "claimIds": [
+            "claim:demo-ride-2026-08-20:v2:cadence.zone.endurance",
+            "claim:demo-ride-2026-08-20:v2:cadence.zone.high"
+          ]
+        },
+        {
+          "text": "后半程踏频比前半程高 14.3 rpm，显示后半程踩踏更积极。",
+          "conclusionType": "fact",
+          "claimIds": [
+            "claim:demo-ride-2026-08-20:v2:cadence.lastMinusFirst"
+          ]
+        }
+      ]
+    },
+    {
+      "dimensionId": "crossSensorCoordination",
+      "assertions": []
+    }
+  ],
+  "suggestions": [
+    {
+      "text": "本次骑行高强度区间占比较高，建议下次骑行适当降低强度，增加恢复时间。",
+      "conclusionType": "suggestion",
+      "claimIds": [
+        "claim:demo-ride-2026-08-20:v2:heartRate.zone.highIntensityCombined"
+      ],
+      "riskNote": "高强度占比过高可能增加疲劳风险，注意恢复。"
+    }
+  ],
+  "limitations": [
+    "pacing.variabilityIndex:NP_OR_POWER_MISSING",
+    "pacing.splitDifference:INSUFFICIENT_POWER_SAMPLES",
+    "heartRate.efficiencyFactor:NP_OR_HR_MISSING",
+    "power:SERIES_MISSING",
+    "relation.fixed.speed-heart_rate.aggregate:AGGREGATED_FROM_123_WINDOWS"
+  ]
+}

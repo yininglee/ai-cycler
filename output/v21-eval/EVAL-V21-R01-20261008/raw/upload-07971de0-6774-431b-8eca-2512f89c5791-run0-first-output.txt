@@ -1,0 +1,154 @@
+{
+  "schemaVersion": "ride-output-v2.2.0",
+  "label": {
+    "text": "总距离 30.4 公里的平路骑行",
+    "conclusionType": "fact",
+    "claimIds": ["claim:upload-07971de0-6774-431b-8eca-2512f89c5791:v2:metric.distanceM"]
+  },
+  "overallAssessment": {
+    "text": "本次骑行总距离 30.4 公里，移动时长 1 小时 1 分钟，平均心率 169 bpm，整体强度较高。",
+    "conclusionType": "fact",
+    "claimIds": [
+      "claim:upload-07971de0-6774-431b-8eca-2512f89c5791:v2:metric.distanceM",
+      "claim:upload-07971de0-6774-431b-8eca-2512f89c5791:v2:timing.movingDurationS",
+      "claim:upload-07971de0-6774-431b-8eca-2512f89c5791:v2:heart_rate.mean"
+    ]
+  },
+  "highlights": [
+    {
+      "text": "全程几乎全平路，平均速度 29.29 km/h，速度波动较小。",
+      "conclusionType": "fact",
+      "claimIds": [
+        "claim:upload-07971de0-6774-431b-8eca-2512f89c5791:v2:terrain.trendFlatDistanceM",
+        "claim:upload-07971de0-6774-431b-8eca-2512f89c5791:v2:speed.mean",
+        "claim:upload-07971de0-6774-431b-8eca-2512f89c5791:v2:speed.coefficientOfVariation"
+      ]
+    }
+  ],
+  "dimensions": [
+    {
+      "dimensionId": "pacingExecution",
+      "assertions": [
+        {
+          "text": "本次骑行总距离 30.4 公里，移动时长 1 小时 1 分钟，总用时 1 小时 8 分钟，平均速度 29.29 km/h。",
+          "conclusionType": "fact",
+          "claimIds": [
+            "claim:upload-07971de0-6774-431b-8eca-2512f89c5791:v2:metric.distanceM",
+            "claim:upload-07971de0-6774-431b-8eca-2512f89c5791:v2:timing.movingDurationS",
+            "claim:upload-07971de0-6774-431b-8eca-2512f89c5791:v2:metric.elapsedDurationS",
+            "claim:upload-07971de0-6774-431b-8eca-2512f89c5791:v2:speed.mean"
+          ]
+        },
+        {
+          "text": "全程几乎全平路，速度波动较小，整体配速控制较为平稳。",
+          "conclusionType": "interpretation",
+          "claimIds": [
+            "claim:upload-07971de0-6774-431b-8eca-2512f89c5791:v2:terrain.trendFlatDistanceM",
+            "claim:upload-07971de0-6774-431b-8eca-2512f89c5791:v2:speed.coefficientOfVariation"
+          ]
+        },
+        {
+          "text": "本次骑行包含 2 次停歇，停歇时间占总用时的 10.5%。",
+          "conclusionType": "fact",
+          "claimIds": [
+            "claim:upload-07971de0-6774-431b-8eca-2512f89c5791:v2:stops.count",
+            "claim:upload-07971de0-6774-431b-8eca-2512f89c5791:v2:pacing.stoppedTimeShare"
+          ]
+        },
+        {
+          "text": "配速执行方面，由于功率数据缺失，无法计算变速系数和前后半程功率差，本次可用数据有限。",
+          "conclusionType": "knowledgeReference",
+          "knowledgeIds": ["kb-v21-pacingExecution"],
+          "claimIds": ["claim:upload-07971de0-6774-431b-8eca-2512f89c5791:v2:speed.mean"]
+        }
+      ]
+    },
+    {
+      "dimensionId": "heartRateLoad",
+      "assertions": [
+        {
+          "text": "平均心率 169 bpm，心率区间分布以 Z4 为主（60%），Z5 占 34%，高强度区间（Z4-Z5）合计占 94%。",
+          "conclusionType": "fact",
+          "claimIds": [
+            "claim:upload-07971de0-6774-431b-8eca-2512f89c5791:v2:heart_rate.mean",
+            "claim:upload-07971de0-6774-431b-8eca-2512f89c5791:v2:heartRate.zone.z4",
+            "claim:upload-07971de0-6774-431b-8eca-2512f89c5791:v2:heartRate.zone.z5",
+            "claim:upload-07971de0-6774-431b-8eca-2512f89c5791:v2:heartRate.zone.highIntensityCombined"
+          ]
+        },
+        {
+          "text": "心率波动较小，后半程心率较前半程上升 9.3 bpm，提示本次骑行强度较高，心率负荷较大。",
+          "conclusionType": "interpretation",
+          "claimIds": [
+            "claim:upload-07971de0-6774-431b-8eca-2512f89c5791:v2:heart_rate.coefficientOfVariation",
+            "claim:upload-07971de0-6774-431b-8eca-2512f89c5791:v2:heart_rate.lastMinusFirst"
+          ]
+        },
+        {
+          "text": "心率负荷维度部分数据缺失，效率因子无法计算，本次可用数据有限。",
+          "conclusionType": "knowledgeReference",
+          "knowledgeIds": ["kb-v21-heartRateLoad"],
+          "claimIds": ["claim:upload-07971de0-6774-431b-8eca-2512f89c5791:v2:heart_rate.mean"]
+        }
+      ]
+    },
+    {
+      "dimensionId": "cadenceStrategy",
+      "assertions": [
+        {
+          "text": "平均踏频 83 rpm，踏频区间以 endurance 为主（51%），high 占 37%，踏频波动较大。",
+          "conclusionType": "fact",
+          "claimIds": [
+            "claim:upload-07971de0-6774-431b-8eca-2512f89c5791:v2:cadence.mean",
+            "claim:upload-07971de0-6774-431b-8eca-2512f89c5791:v2:cadence.zone.endurance",
+            "claim:upload-07971de0-6774-431b-8eca-2512f89c5791:v2:cadence.zone.high",
+            "claim:upload-07971de0-6774-431b-8eca-2512f89c5791:v2:cadence.coefficientOfVariation"
+          ]
+        },
+        {
+          "text": "踏频整体处于耐力区间，但波动较大，可能反映踩踏流畅度有待提升。",
+          "conclusionType": "interpretation",
+          "claimIds": ["claim:upload-07971de0-6774-431b-8eca-2512f89c5791:v2:cadence.coefficientOfVariation"]
+        },
+        {
+          "text": "踏频策略维度部分数据缺失，功率数据缺失，无法进一步分析功率-踏频关系，本次可用数据有限。",
+          "conclusionType": "knowledgeReference",
+          "knowledgeIds": ["kb-v21-cadenceStrategy"],
+          "claimIds": ["claim:upload-07971de0-6774-431b-8eca-2512f89c5791:v2:cadence.mean"]
+        }
+      ]
+    },
+    {
+      "dimensionId": "crossSensorCoordination",
+      "assertions": [
+        {
+          "text": "跨传感器配合维度部分数据缺失，功率数据缺失，无法进行有氧解耦和效率因子分析，本次可用数据有限。",
+          "conclusionType": "knowledgeReference",
+          "knowledgeIds": ["kb-v21-crossSensorCoordination"],
+          "claimIds": []
+        }
+      ]
+    }
+  ],
+  "suggestions": [
+    {
+      "text": "本次骑行心率负荷较高，建议后续安排低强度恢复骑行，并注意补充水分和休息。",
+      "conclusionType": "suggestion",
+      "claimIds": ["claim:upload-07971de0-6774-431b-8eca-2512f89c5791:v2:heart_rate.mean"],
+      "riskNote": "恢复建议基于本次高强度心率表现，不构成医疗建议。"
+    },
+    {
+      "text": "踏频波动较大，下次骑行可尝试更稳定的齿比选择，以提升踩踏流畅度。",
+      "conclusionType": "suggestion",
+      "claimIds": ["claim:upload-07971de0-6774-431b-8eca-2512f89c5791:v2:cadence.coefficientOfVariation"],
+      "riskNote": "踏频优化需结合个人感受，避免强行改变习惯。"
+    }
+  ],
+  "limitations": [
+    "pacing.variabilityIndex:NP_OR_POWER_MISSING",
+    "pacing.splitDifference:INSUFFICIENT_POWER_SAMPLES",
+    "heartRate.efficiencyFactor:NP_OR_HR_MISSING",
+    "power:SERIES_MISSING",
+    "relation.fixed.speed-heart_rate.aggregate:AGGREGATED_FROM_119_WINDOWS"
+  ]
+}

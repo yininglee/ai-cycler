@@ -1,0 +1,144 @@
+{
+  "schemaVersion": "ride-output-v2.2.0",
+  "label": {
+    "text": "总距离 31.1 公里的平路骑行",
+    "conclusionType": "fact",
+    "claimIds": ["claim:demo-ride-2026-08-20:v2:metric.distanceM"]
+  },
+  "overallAssessment": {
+    "text": "本次骑行总距离 31.1 公里，移动时长 1 小时 2 分钟，平均速度 28.47 km/h，平均心率 168 bpm，整体强度较高。",
+    "conclusionType": "fact",
+    "claimIds": [
+      "claim:demo-ride-2026-08-20:v2:metric.distanceM",
+      "claim:demo-ride-2026-08-20:v2:timing.movingDurationS",
+      "claim:demo-ride-2026-08-20:v2:speed.mean",
+      "claim:demo-ride-2026-08-20:v2:heart_rate.mean"
+    ]
+  },
+  "highlights": [
+    {
+      "text": "平均速度 28.47 km/h，在平路为主的路线中表现不错。",
+      "conclusionType": "fact",
+      "claimIds": ["claim:demo-ride-2026-08-20:v2:speed.mean"]
+    },
+    {
+      "text": "心率区间分布显示高强度区间（Z5-Z7）占比 87%，骑行强度较高。",
+      "conclusionType": "fact",
+      "claimIds": ["claim:demo-ride-2026-08-20:v2:heartRate.zone.highIntensityCombined"]
+    }
+  ],
+  "dimensions": [
+    {
+      "dimensionId": "pacingExecution",
+      "assertions": [
+        {
+          "text": "本次骑行总距离 31.1 公里，移动时长 1 小时 2 分钟，平均速度 28.47 km/h，速度变异系数 18.6%，速度波动较大。",
+          "conclusionType": "fact",
+          "claimIds": [
+            "claim:demo-ride-2026-08-20:v2:metric.distanceM",
+            "claim:demo-ride-2026-08-20:v2:timing.movingDurationS",
+            "claim:demo-ride-2026-08-20:v2:speed.mean",
+            "claim:demo-ride-2026-08-20:v2:speed.coefficientOfVariation"
+          ]
+        },
+        {
+          "text": "本次骑行几乎全平路（平路距离 29 公里，下坡 1.6 公里，爬坡 0 公里），速度波动较大可能受停歇或路况影响。",
+          "conclusionType": "interpretation",
+          "claimIds": [
+            "claim:demo-ride-2026-08-20:v2:terrain.trendFlatDistanceM",
+            "claim:demo-ride-2026-08-20:v2:terrain.trendDescentDistanceM",
+            "claim:demo-ride-2026-08-20:v2:terrain.trendClimbDistanceM",
+            "claim:demo-ride-2026-08-20:v2:speed.coefficientOfVariation"
+          ]
+        },
+        {
+          "text": "本次骑行有 1 次停歇，停歇时间占比 6.1%，停歇管理尚可。",
+          "conclusionType": "fact",
+          "claimIds": [
+            "claim:demo-ride-2026-08-20:v2:stops.count",
+            "claim:demo-ride-2026-08-20:v2:pacing.stoppedTimeShare"
+          ]
+        }
+      ]
+    },
+    {
+      "dimensionId": "heartRateLoad",
+      "assertions": [
+        {
+          "text": "平均心率 168 bpm，心率变异系数 9.2%，心率波动较小。",
+          "conclusionType": "fact",
+          "claimIds": [
+            "claim:demo-ride-2026-08-20:v2:heart_rate.mean",
+            "claim:demo-ride-2026-08-20:v2:heart_rate.coefficientOfVariation"
+          ]
+        },
+        {
+          "text": "心率区间分布显示高强度区间（Z5-Z7）占比 87%，其中 Z5 占比 55%，骑行强度较高，可能接近无氧区间。",
+          "conclusionType": "interpretation",
+          "claimIds": [
+            "claim:demo-ride-2026-08-20:v2:heartRate.zone.highIntensityCombined",
+            "claim:demo-ride-2026-08-20:v2:heartRate.zone.z5"
+          ]
+        },
+        {
+          "text": "心率从开始到结束上升了 26.2 bpm，提示骑行过程中生理负荷逐渐增加。",
+          "conclusionType": "fact",
+          "claimIds": ["claim:demo-ride-2026-08-20:v2:heart_rate.lastMinusFirst"]
+        }
+      ]
+    },
+    {
+      "dimensionId": "cadenceStrategy",
+      "assertions": [
+        {
+          "text": "平均踏频 79 rpm，踏频变异系数 29.7%，踏频波动较大。",
+          "conclusionType": "fact",
+          "claimIds": [
+            "claim:demo-ride-2026-08-20:v2:cadence.mean",
+            "claim:demo-ride-2026-08-20:v2:cadence.coefficientOfVariation"
+          ]
+        },
+        {
+          "text": "踏频区间分布显示耐力区间占比 48%，高踏频区间占比 33%，踏频整体处于中等水平，但波动较大可能反映齿比选择或路况变化。",
+          "conclusionType": "interpretation",
+          "claimIds": [
+            "claim:demo-ride-2026-08-20:v2:cadence.zone.endurance",
+            "claim:demo-ride-2026-08-20:v2:cadence.zone.high",
+            "claim:demo-ride-2026-08-20:v2:cadence.coefficientOfVariation"
+          ]
+        }
+      ]
+    },
+    {
+      "dimensionId": "crossSensorCoordination",
+      "assertions": [
+        {
+          "text": "本次可用数据有限，跨传感器配合维度缺少功率数据，无法进行有氧解耦或效率因子分析。",
+          "conclusionType": "interpretation",
+          "claimIds": []
+        }
+      ]
+    }
+  ],
+  "suggestions": [
+    {
+      "text": "下次骑行可尝试在平路保持更稳定的踏频（如 85-95 rpm），以减少踏频波动。",
+      "conclusionType": "suggestion",
+      "claimIds": ["claim:demo-ride-2026-08-20:v2:cadence.mean"],
+      "riskNote": "踏频调整需结合个人舒适度，避免强行改变导致肌肉疲劳。"
+    },
+    {
+      "text": "鉴于本次高强度区间占比较高，建议后续安排低强度恢复骑行，注意恢复。",
+      "conclusionType": "suggestion",
+      "claimIds": ["claim:demo-ride-2026-08-20:v2:heartRate.zone.highIntensityCombined"],
+      "riskNote": "恢复建议基于本次强度，具体恢复计划需结合个人感受。"
+    }
+  ],
+  "limitations": [
+    "pacing.variabilityIndex:NP_OR_POWER_MISSING",
+    "pacing.splitDifference:INSUFFICIENT_POWER_SAMPLES",
+    "heartRate.efficiencyFactor:NP_OR_HR_MISSING",
+    "relation.fixed.speed-heart_rate.aggregate:AGGREGATED_FROM_123_WINDOWS",
+    "power:SERIES_MISSING"
+  ]
+}

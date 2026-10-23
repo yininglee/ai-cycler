@@ -1,0 +1,60 @@
+{
+  "rideId": "demo-ride-2026-07-22",
+  "runIndex": 1,
+  "startedAt": "2026-10-08T01:21:47.231Z",
+  "status": "modelRepairPass",
+  "firstRound": {
+    "parseOk": true,
+    "issueCount": 2,
+    "issues": [
+      {
+        "code": "SOFT_QUALITY_NOT_DISCLOSED",
+        "path": "dimensions[4].assertions",
+        "message": "a soft-quality dimension must disclose partial data limitations in its text",
+        "tag": "other"
+      },
+      {
+        "code": "FACT_WITHOUT_CLAIM",
+        "path": "dimensions[5].assertions[0]",
+        "message": "a fact conclusion must cite at least one claim; knowledge cannot act as a personal ride fact",
+        "excerpt": "本次骑行部分数据缺失，跨传感器配合分析受限，无法进行完整的功率-心率解耦分析。",
+        "tag": "structure"
+      }
+    ]
+  },
+  "orchestration": {
+    "steps": [
+      {
+        "step": "first_validation",
+        "detail": "failed: SOFT_QUALITY_NOT_DISCLOSED,FACT_WITHOUT_CLAIM"
+      },
+      {
+        "step": "model_repair_call",
+        "detail": "one constrained repair call with 2 error codes, prompt ride-repair-prompt-v2.2.4"
+      },
+      {
+        "step": "post_repair_validation",
+        "detail": "passed"
+      }
+    ],
+    "modelRepairCalls": 1
+  },
+  "callRecords": [
+    {
+      "latencyMs": 13637,
+      "usage": {
+        "inputTokens": 23898,
+        "outputTokens": 3118,
+        "totalTokens": 27016
+      }
+    },
+    {
+      "latencyMs": 52354,
+      "usage": {
+        "inputTokens": 54328,
+        "outputTokens": 3166,
+        "totalTokens": 57494
+      }
+    }
+  ]
+}

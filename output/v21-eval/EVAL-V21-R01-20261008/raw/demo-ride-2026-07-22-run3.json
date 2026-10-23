@@ -1,0 +1,67 @@
+{
+  "rideId": "demo-ride-2026-07-22",
+  "runIndex": 3,
+  "startedAt": "2026-10-08T01:25:16.800Z",
+  "status": "modelRepairPass",
+  "firstRound": {
+    "parseOk": true,
+    "issueCount": 3,
+    "issues": [
+      {
+        "code": "NUMBER_NOT_IN_CLAIMS",
+        "path": "dimensions[3].assertions[0].text",
+        "message": "number 450 in the text does not match any referenced claim value/displayValue",
+        "excerpt": "强度因子 0.9，属于节奏/Tempo 区间，训练压力分 529.1，属于极高负荷（>450）。",
+        "tag": "number-unbound"
+      },
+      {
+        "code": "SOFT_QUALITY_NOT_DISCLOSED",
+        "path": "dimensions[4].assertions",
+        "message": "a soft-quality dimension must disclose partial data limitations in its text",
+        "tag": "other"
+      },
+      {
+        "code": "FACT_WITHOUT_CLAIM",
+        "path": "dimensions[5].assertions[0]",
+        "message": "a fact conclusion must cite at least one claim; knowledge cannot act as a personal ride fact",
+        "excerpt": "本次骑行部分数据缺失，无法进行完整的跨传感器分析。",
+        "tag": "structure"
+      }
+    ]
+  },
+  "orchestration": {
+    "steps": [
+      {
+        "step": "first_validation",
+        "detail": "failed: NUMBER_NOT_IN_CLAIMS,SOFT_QUALITY_NOT_DISCLOSED,FACT_WITHOUT_CLAIM"
+      },
+      {
+        "step": "model_repair_call",
+        "detail": "one constrained repair call with 3 error codes, prompt ride-repair-prompt-v2.2.4"
+      },
+      {
+        "step": "post_repair_validation",
+        "detail": "passed"
+      }
+    ],
+    "modelRepairCalls": 1
+  },
+  "callRecords": [
+    {
+      "latencyMs": 59269,
+      "usage": {
+        "inputTokens": 23898,
+        "outputTokens": 3313,
+        "totalTokens": 27211
+      }
+    },
+    {
+      "latencyMs": 70823,
+      "usage": {
+        "inputTokens": 54516,
+        "outputTokens": 3556,
+        "totalTokens": 58072
+      }
+    }
+  ]
+}

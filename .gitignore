@@ -9,6 +9,7 @@ test-data/private/
 .env*
 !.env.example
 .local-data/
+.wbapp_*.genie
 
 # doc_V2 下的外部参考文献 PDF 不入库（自产 md 文档正常跟踪）
 doc_V2/*.pdf

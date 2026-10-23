@@ -1,0 +1,61 @@
+{
+  "rideId": "demo-ride-2026-08-20",
+  "runIndex": 4,
+  "startedAt": "2026-10-08T01:33:54.499Z",
+  "status": "modelRepairPass",
+  "firstRound": {
+    "parseOk": true,
+    "issueCount": 2,
+    "issues": [
+      {
+        "code": "NUMBER_NOT_IN_CLAIMS",
+        "path": "dimensions[1].assertions[1].text",
+        "message": "number 87.5 in the text does not match any referenced claim value/displayValue",
+        "excerpt": "本次骑行高强度心率区间（Z4-Z5）占比高达 87%，平均心率 168 bpm，接近最大心率的 87.5%，表明骑行强度较高，心血管负荷较大。心率末段比初段高 26.2 bpm，提示后程生理负荷进一步上升。",
+        "tag": "number-unbound"
+      },
+      {
+        "code": "FACT_WITHOUT_CLAIM",
+        "path": "dimensions[3].assertions[0]",
+        "message": "a fact conclusion must cite at least one claim; knowledge cannot act as a personal ride fact",
+        "excerpt": "由于功率数据缺失，本次可用数据有限，无法进行有氧解耦和效率因子分析。",
+        "tag": "structure"
+      }
+    ]
+  },
+  "orchestration": {
+    "steps": [
+      {
+        "step": "first_validation",
+        "detail": "failed: NUMBER_NOT_IN_CLAIMS,FACT_WITHOUT_CLAIM"
+      },
+      {
+        "step": "model_repair_call",
+        "detail": "one constrained repair call with 2 error codes, prompt ride-repair-prompt-v2.2.4"
+      },
+      {
+        "step": "post_repair_validation",
+        "detail": "passed"
+      }
+    ],
+    "modelRepairCalls": 1
+  },
+  "callRecords": [
+    {
+      "latencyMs": 11259,
+      "usage": {
+        "inputTokens": 14789,
+        "outputTokens": 2419,
+        "totalTokens": 17208
+      }
+    },
+    {
+      "latencyMs": 39522,
+      "usage": {
+        "inputTokens": 29447,
+        "outputTokens": 2469,
+        "totalTokens": 31916
+      }
+    }
+  ]
+}
