@@ -75,7 +75,7 @@
 
 | Prompt | 版本 | 事实源位置 | 归档副本 | 状态 |
 | --- | --- | --- | --- | --- |
-| 意图分类器 | `ride-chat-classifier-prompt-v0.4` | `src/chat/chat-classifier-prompt.ts`（`CHAT_CLASSIFIER_SYSTEM_PROMPT` 常量，AGT-A3 已写入，随请求直发硅基流动） | `prompts/ride-chat-classifier-v0.2.md`（归档副本，单测断言逐字一致） | ✅ AGT-A3 交付 |
+| 意图分类器 | `ride-chat-classifier-prompt-v0.4.1` | `src/chat/chat-classifier-prompt.ts`（`CHAT_CLASSIFIER_SYSTEM_PROMPT` 常量，随请求直发硅基流动） | `prompts/ride-chat-classifier-v0.2.md`（归档副本，单测断言逐字一致） | ✅ AGT-A5 定版（83/83） |
 | 主对话 | `ride-chat-workflow` v0.1 → 硅基流动版 | `src/chat/`（AGT-A0 原样搬运，语义演进挂 AGT-C） | `prompts/ride-chat-workflow-v0.1.md` | AGT-A0 搬运 |
 | 分析叙事 / 水平评估 / KB 问答 / 陪伴 | 待定 | 待定（AGT-C 落地，按任务簇分模板） | — | AGT-C 并入 |
 | 训练计划生成 | 待定 | 待定（AGT-F，附结构化输出格式约束 + few-shot 计划样例） | — | AGT-F 并入 |
@@ -144,6 +144,7 @@
 | 2026-10-23 | AGT-A3 | 分类器 Prompt v0.4 写入代码常量（16 意图定义 + 顺序判断规则 + 13 条 dev-only few-shot）；归档副本 `prompts/ride-chat-classifier-v0.2.md` + 同步脚本 + 一致性/防泄漏单测 | ✅ |
 | 2026-10-24 | AGT-A2 | 三处边界张力经用户裁决（level_assessment BLIND-26 / training_supervision BLIND-45 / companion BLIND-31），与现有标注一致 → 数据集零改动、哈希不变；三条判据回写进 Prompt 判断规则第 2、4 条；**复合问法口径成文**（第 8 条：单标签 + 主意图优先级 + 次诉求由回复层承接；本集 4 例明确复合） | ✅ |
 | 2026-10-24 | AGT-A4 | 评测脚本指向 v0.4：kind 分组归因（只诊断不放宽门槛）、kind 冻结一致性校验、run 记录升 v0.2（`runtimeMode`/`contracts`/`signOffReady`） | ✅ |
+| 2026-10-24 | AGT-A5 | 两轮全新 Run（数据集冻结不变）：Run 1 `82/83`（`CLS-BLIND-01` 因"表现"一词误判 history_compare）→ prompt **v0.4.1** 给 history_compare 加"必须有对比参照或变化词"硬条件 → Run 2 **`83/83` 全对**（dev 13/13 · blind 60/60 · red-team 10/10；kind positive/boundary/ambiguous 全满）。分类器按 D-A5 启用（`.env.local`） | ✅ |
 | 待补 | AGT-B | 5 新工具完整参数/返回 schema、白名单与预算重标定值、catalog 精简口径 | 占位 |
 | 待补 | AGT-C | 4 生成任务簇 prompt 版本索引、KB 引用校验规则细则 | 占位 |
 | 待补 | AGT-D | 分层混合上下文细则、校验器白名单扩展口径（P8 拍板后） | 占位 |

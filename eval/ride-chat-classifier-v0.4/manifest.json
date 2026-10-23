@@ -58,7 +58,7 @@
     "classifierSchemaVersion": "chat-classifier-v0.2",
     "classifierInputContractVersion": "ride-chat-classifier-input-v0.1",
     "routingSchemaVersion": "chat-routing-v0.2",
-    "promptVersion": "ride-chat-classifier-prompt-v0.4",
+    "promptVersion": "ride-chat-classifier-prompt-v0.4.1",
     "provider": "siliconflow",
     "classifierModel": "deepseek-ai/DeepSeek-V4-Flash",
     "runtimeMode": "single_enabled",

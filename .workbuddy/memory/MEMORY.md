@@ -17,7 +17,8 @@
 - **评测成本实测（10-24，`scripts/measure-classifier-token-usage.ts`）**：分类器单次 prompt **2157 tokens**（system prompt 约 2100 占主导）、completion 36；全量 83 例 = 输入 179k / 输出 3k。按硅基流动 `DeepSeek-V4-Flash` 分时段价：2:00–8:00 档 ¥1.5/M 入 ¥4.5/M 出 → **≈¥0.28**（前缀缓存命中可低至 ≈¥0.05）；其他时段 ¥3/M、¥9/M → **≈¥0.56**。耗时 ≈2.5 分钟。**成本不构成约束**，重跑 5 轮 <¥2。
 - **三条轴**（10-24 补全）：`split` = 谁能调 Prompt（dev 调优 / blind 放行 / red-team 安全断言）；`intent` = 正确答案；`kind` = 难度归因（positive 53 / boundary 26 / ambiguous 4，`ambiguous ⇔ intent=unclear`）。`kind` 只能用于归因，**不得用于放宽门槛**。9 组 `boundaryPairs` 写在 manifest 里（把"意图之间怎么切"变成可校验资产），preflight 校验两侧齐备且各含 boundary 例。
 - **防泄漏纪律（AGT-A3 立）**：few-shot 只取 dev split；意图定义里的示例一律泛化、不照抄 blind/red-team 原句（`tests/chat-classifier.test.ts` 有机械断言 + preflight 查跨 split 重复正文）。prompt v0.3 时代定义里抄了 blind 原句（BLIND-22/23/24、BLIND-07），已消除——否则 blind 通过率虚高。
-- **Prompt 事实源**：分类器 prompt = `src/chat/chat-classifier-prompt.ts` 常量（v0.4）；改完跑 `npm run prompt:classifier:sync` 对齐归档副本 `prompts/ride-chat-classifier-v0.2.md`，一致性有单测兜。
+- **A5 结果（10-24，两轮）**：Run 1 `82/83`（`CLS-BLIND-01`「上次骑行我的心率表现怎么样」被"表现"一词带偏到 history_compare）→ prompt **v0.4.1** 给 history_compare 加"必须有对比参照或变化词"硬条件 → Run 2 **`83/83` 全对**（dev 13/13 · blind 60/60 · red-team 10/10；kind 三组全满），Run `AEVAL-CLASSIFIER-20261023233648`。分类器已按 D-A5 在 `.env.local` 启用（`CHAT_CLASSIFIER_ENABLED=true`，需重启进程），线上 `.env.production` 未动。
+- **Prompt 事实源**：分类器 prompt = `src/chat/chat-classifier-prompt.ts` 常量（**v0.4.1**）；改完跑 `npm run prompt:classifier:sync` 对齐归档副本 `prompts/ride-chat-classifier-v0.2.md`，一致性有单测兜。**"表现/整体表现"不是比较词**——history_compare 必须有参照或变化词，这是 A5 用真金白银换来的口径。
 - 坑：`prompts/ride-chat-classifier-v0.1.md` 文件名按 schema 版本、内容是 prompt-v0.3，两套版本号并存。
 - **文档体系补缺已拍板（10-23）**：① 业务交互 PRD **挂 AGT-F 细规划前置产出**（A~E 阶段无新前端交互面不提前写；F/G 的计划确认/打卡/推送交互在进入 F 细规划时作前置输入，与 P6 同步）；② **AI-Spec 骨架版已建** = `doc_Agent/AI-Spec_对话Agent能力规约.md`（集中合同：工具合同 schema/生成约束/硬门/评测索引 + §11 按里程碑增补记录）。**最高原则：Prompt 正文唯一事实源 = 代码库**（D-A6），AI-Spec 只做版本索引不内嵌 Prompt；各里程碑细规划定稿后把规约并入 AI-Spec 对应章节。
 

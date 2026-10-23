@@ -17,9 +17,9 @@
 | 项目 | 当前值 |
 |---|---|
 | 当前里程碑 | **AGT-A 意图路由 v0.4 + Provider 迁移**（7 工作项 A0~A6，D-A1~A6 全部拍板） |
-| 当前主任务 | `AGT-A2` 标注集 v0.4：**`Done`（2026-10-24 用户批准冻结）**；`AGT-A3`（Prompt v0.4）→ `Review`（等通读验收）；`AGT-A4`（评测脚本适配）实施完成，`Blocked` 于 A3 同批验收 |
-| 阻塞 | A5 真实 Run 需用户授权（成本实测 ~¥0.05–0.28/次全量，见 A5 卡） |
-| 唯一下一步 | 用户授权 A5 → 先置 `CHAT_CLASSIFIER_ENABLED=true` → 跑 `eval:classifier:accuracy`（83 例，约 2.5 分钟） |
+| 当前主任务 | `AGT-A5` 全新 Run：**`Review`（2026-10-24）——83/83 全对达成**（Run `AEVAL-CLASSIFIER-20261023233648`，prompt v0.4.1）；§A3/A4 已实施完成，`Blocked` 于 A5 同批验收 |
+| 阻塞 | 无（等 A5 验收 → A6 收口） |
+| 唯一下一步 | 用户验收 A5 → `AGT-A6` 收口（重评报告归档 + 粗规划状态 + 里程碑计数） |
 
 ## 2. 里程碑看板
 
@@ -76,7 +76,7 @@
   - **用户检查清单**：① 读 `README.md`（用例说明：三条轴、9 组对抗对判据、§2.4 复合问法、§7 已知局限）；② 抽检 `CHANGES.md` §3 改标 6 例与 §4 五类新增例的边界标注；③ **确认 9 组对抗对是否就是你认为的切线**（`manifest.boundaryPairs`，任一对判据不对都可改）；④ 对 §6 三处张力给出裁决（✅ 已于 2026-10-24 完成）；⑤ **批准冻结**（批准后 manifest 哈希锁定，任何改动须重算并重跑全新 Run）。
 - 用户验收：（**已通过，2026-10-24 用户批准冻结**。`Done` 记录：83 例冻结，`casesSha256` = `9a4c242f…` 锁定，`manifest.frozenAt = 2026-10-24`；commits 9cacb5f（初版）+ 0b4c7f6（kind 轴 + README）+ b279d89（三处张力裁决）+ e3617e6（复合问法口径）。此后任何用例改动须新版本目录 v0.5 + 重算哈希 + 全新 Run。）
 
-### AGT-A3 · 分类器 Prompt v0.4 · `Review`（2026-10-23，commit 9cacb5f｜实施与自检已完成，等通读验收）
+### AGT-A3 · 分类器 Prompt v0.4 → v0.4.1 · `Blocked`（2026-10-23/24｜实施与自检已完成，随 A5 同批验收）
 
 - 目标：意图定义与判断规则按 §2 边界迁移重写 + 5 新意图 few-shot（取自 dev 例，避免 blind 泄漏）+ 输出 schema 升 `chat-classifier-v0.2`；**Prompt 以版本化常量写入 `src/chat/` 并随请求直发硅基流动（代码库为唯一事实源）**，`prompts/ride-chat-classifier-v0.2.md` 为归档副本（A0/D-A6 已取消 Coze workflow 维护，原卡"Coze 试运行"口径随之失效）。
 - 进入条件：A0 完成（已满足）+ A2 数据集定稿（few-shot 选例依赖）。退出条件：定向单测（messages 合同）+ 真实调用 smoke 输出符合 v0.2 schema + 归档副本与代码内 prompt 逐字一致。
@@ -89,7 +89,7 @@
   - **用户检查清单**：① 通读 `chat-classifier-prompt.ts` 的 16 条意图定义与 7 条判断规则（特别是 §2 边界迁移的四组：训练计划 vs 域外训练、计划 vs 监督、水平评估 vs 历史比较、知识 vs 产品能力）；② 确认几个占位口径：`training_supervision` 允许句中出现"调整下周安排"、`companion` 覆盖"骑行生活感受分享"；③ 认可 smoke 结果仅作可用性证据（准确率结论留给 A5）。
 - 用户验收：（待确认）
 
-### AGT-A4 · 评测脚本适配 · `Blocked`（2026-10-24｜实施与自检已完成，随 A3 同批验收）
+### AGT-A4 · 评测脚本适配 · `Blocked`（2026-10-24｜实施与自检已完成，随 A5 同批验收）
 
 - 目标：`eval-classifier-accuracy.ts` / `preflight` 指向 v0.4 数据集，意图集从代码导入防漂移。
 - 进入条件：A1 + A2 完成。退出条件：preflight 四项检查通过。
@@ -104,7 +104,7 @@
   - **用户检查清单**：确认归因口径（kind 分组只是诊断，不参与 PASS/FAIL 判定；`signOffReady` 才是签收信号）。
 - 用户验收：（待确认）
 
-### AGT-A5 · 全新 Run 重评 · `Backlog`（需用户授权）
+### AGT-A5 · 全新 Run 重评 · `Review`（2026-10-24，两轮 Run，83/83 全对）
 
 - 目标：v0.4 全量 **83 例**真实模型调用，bad case 回流循环直至全对；按 D-A1 与 v0.3 待授权 Run 合并。
 - 进入条件：A3 + A4 完成 + 用户授权。退出条件：全量全对（硬门 ≥0.95 + red-team 零失误为底线）+ run 报告归档。
@@ -112,7 +112,19 @@
   - 按硅基流动 `DeepSeek-V4-Flash` 现价（分时段）：**2:00–8:00 时段** 输入 ¥1.5/M、输出 ¥4.5/M → **约 ¥0.28**（若 system prompt 命中前缀缓存，可降至 **¥0.05 左右**）；**其他时段** 输入 ¥3/M、输出 ¥9/M → **约 ¥0.56**。
   - 耗时：83 × (约 1s 调用 + 500ms 间隔) ≈ **2.5 分钟**；`AEVAL_CLASSIFIER_DELAY_MS` 可调。
   - 结论：单次全量成本 **不到 6 毛**，重跑 5 轮也在 ¥2 内，成本不构成约束。
-- 验收汇报：（进入 Review 后填写）
+- **验收汇报（2026-10-24，两轮 Run）**：
+  - **Run 1**（`eval/runs/AEVAL-CLASSIFIER-20261023233337.json`，prompt v0.4）：**82/83 = 98.8%**，PASS 门槛但未达签收线。唯一 MISS：`CLS-BLIND-01`「上次骑行我的心率表现怎么样？」`ride_summary` → 判成 `history_compare`。
+    - **归因（`scripts/probe-classifier-texts.ts` 5 条探针验证）**：触发词是"**表现**"——`上次骑行的心率怎么样`→ride_summary ✓、`这次骑行的表现如何`→ride_summary ✓，但只要"表现"与"上次/最近一次"共现就漂到 history_compare（`最近一次骑行的整体表现怎么样`同样判错）；带真实参照的 `我上次骑行的表现比之前好吗`→history_compare ✓。根因 = history_compare 定义里写了"整体表现作比较"，把"表现"这个词当成了比较信号。
+    - **注意分层面**：**26 条 boundary 全过、53 条 positive 错 1** —— 正是 `kind` 轴要区分的情形（**正例错 = 定义有漏洞**，不是切线问题）。
+  - **修法（prompt v0.4 → v0.4.1，语义变更故升版）**：① history_compare 增加硬条件"**必须存在对比参照或变化词**（比/和/与/相比/对比/之前/上次/上个月/趋势/进步/退步/变快/变慢），只有'表现'字样没有参照不算比较"；② ride_summary 明确"**'表现/整体表现'本身不是比较词**"；③ 判断规则第 4 条同步。改后探针 4/4 归位。
+  - **Run 2**（`eval/runs/AEVAL-CLASSIFIER-20261023233648.json`，prompt v0.4.1）：**83/83 = 100%**，`signOffReady = true`，**全量全对达成**。
+    - dev 13/13 · blind **60/60** · red-team **10/10**（红线零失误）
+    - by kind：positive 53/53 · boundary 26/26 · ambiguous 4/4
+    - 16 意图全部满分；数据集哈希未变（`9a4c242f…`，只改 Prompt）
+  - **启用手册（D-A5）**：`.env.local` 已置 `CHAT_CLASSIFIER_ENABLED=true`（**需重启 dev/prod 进程生效**，端口 3002）；回退即改 `false`。线上 `.env.production` 未动——是否随下次重部署一起启用由用户决定（启用后对话路由 = 分类器，四个新占位模板与"模型暂不可用"降级同时可见）。
+  - **成本/耗时实测**：Run 1/2 各约 1m55s–2m00s（`AEVAL_CLASSIFIER_DELAY_MS=400`），每轮 ≈¥0.28（2–8 点档），两轮合计 ≈¥0.6。
+  - **口径交代（不得省略）**：本轮属于"看 blind 结果 → 改 Prompt → 重跑"的 bad case 回流，符合项目制度，但也意味着 **blind 已不是完全未见的样本**；这一层限制度已在 README §7 披露。真正的独立证据要等 AGT-C 的生成层新 Run 或真实流量抽样。
+  - **用户检查清单**：① 看 `eval/runs/` 两份记录（逐例 PASS/MISS 明细）；② 确认 prompt v0.4.1 那条硬条件是否接受（这会影响后续所有"表现"类问法的归属）；③ 重启 dev（3002）实测一条 `上次骑行我的心率表现怎么样？` 看是否走 `ride_summary`；④ 决定线上是否同步启用分类器。
 
 ### AGT-A6 · 里程碑收口 · `Backlog`
 
