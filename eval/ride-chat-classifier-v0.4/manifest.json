@@ -4,6 +4,8 @@
   "casesFile": "cases.json",
   "casesSha256": "9a4c242fc72ce0449dc9e6e7eb7d5f599d9b98c17761a03d3a54f5f593655f74",
   "caseCount": 83,
+  "frozenAt": "2026-10-24",
+  "freezeNote": "用户批准冻结（2026-10-24）。casesSha256 锁定：任何用例改动须新版本目录（v0.5）+ 重算哈希 + 全新 Run，旧 Run 结论标 supersede。",
   "splitCounts": {
     "dev": 13,
     "blind": 60,
