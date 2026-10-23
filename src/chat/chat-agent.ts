@@ -1,4 +1,4 @@
-import { RIDE_IDENTITY, type ChatRoutingDecision, type ChatSessionSummary } from "./chat-routing.ts";
+import { CHAT_ROUTING_SCHEMA_VERSION, RIDE_IDENTITY, type ChatRoutingDecision, type ChatSessionSummary } from "./chat-routing.ts";
 import { rideIdentityReply, type RideAnchorOverride } from "./chat-ride-anchor.ts";
 import {
   CHAT_TOOL_LOOP_MAX_PROVIDER_CALLS,
@@ -257,6 +257,12 @@ function templateReply(decision: ChatRoutingDecision): string {
     case "PRIVACY_REQUEST": return "我只能协助查看当前会话中你自己的骑行信息，不能展示他人的记录或精确位置。";
     case "PROMPT_INJECTION": return "我不能提供内部提示、密钥或绕过安全边界的信息。";
     case "OUT_OF_SCOPE": return "当前骑行伙伴只支持本次骑行和已开放能力范围内的问题，训练计划尚未开放。";
+    // AGT-A1：四个任务簇新路由的确定性占位模板——说明能力在改造路线图中并给出当前
+    // 可用替代入口，不承诺上线时间（占位在 AGT-B/C/F/G 落地后逐个升级为实能力）。
+    case "TRAINING_PLAN": return "骑行训练计划的生成与确认功能正在自主 Agent 改造路线图中。当前你可以问我某次骑行的数据解读、与最近 30 天历史的比较，或累计与本周的汇总统计。";
+    case "TRAINING_SUPERVISION": return "训练监督（课表完成度、执行偏差反馈）正在规划中，需要先有训练计划。当前你可以问我某次骑行的具体表现，或与历史记录的比较。";
+    case "LEVEL_ASSESSMENT": return "骑行水平的综合评估正在规划中。当前可以问我某次骑行的具体指标表现，或最近骑行的纵向比较。";
+    case "KB_QA": return "骑行科学知识问答正在规划中。当前可以问我支持分析哪些数据，或某次骑行的具体指标表现。";
     // CHAT-12 P1 引入；CHAT-13 更新口径：缺口收窄为跨次筛选/排序与水平/体能评估（M4 水平评估、
     // 历史清单检索），历史比较已由 compare_rides 承接——话术改为引导使用已交付的比较能力。
     case "CAPABILITY_GAP": return `这个问题需要跨骑行的筛选排序或长期能力水平评估，属于后续版本开放的能力。当前我可以回答最近一次骑行的解读、这次骑行与最近 ${CHAT_COMPARISON_WINDOW_DAYS} 天历史的比较，以及累计、本周的汇总统计。`;
@@ -268,8 +274,7 @@ function templateReply(decision: ChatRoutingDecision): string {
   }
 }
 
-function fallback(decision: ChatRoutingDecision, code: ChatProviderErrorCode): ChatAgentResult {
-  return {
+function fallback(decision: ChatRoutingDecision, code: ChatProviderErrorCode): ChatAgentResult {  return {
     schemaVersion: CHAT_AGENT_SCHEMA_VERSION,
     decision,
     execution: "template",
@@ -277,6 +282,27 @@ function fallback(decision: ChatRoutingDecision, code: ChatProviderErrorCode): C
     reply: code === "MODEL_NOT_CONFIGURED"
       ? "对话模型尚未配置；当前仅提供受控边界回复。"
       : "对话服务暂时不可用；我不会使用未经验证的结果回答。",
+    fallbackCode: code,
+  };
+}
+
+// AGT-A1（D-A2）：启用态分类器失败/超时/限流的终局降级结果——不再走 P1 业务正则硬猜，
+// 统一"模型暂不可用"（诚实失败优于错误猜测）。事件码沿用 provider 稳定错误码。
+export function chatRoutingUnavailableResult(code: ChatProviderErrorCode, normalizedLength: number): ChatAgentResult {
+  return {
+    schemaVersion: CHAT_AGENT_SCHEMA_VERSION,
+    decision: {
+      schemaVersion: CHAT_ROUTING_SCHEMA_VERSION,
+      route: "out_of_scope",
+      risk: "none",
+      allowModel: false,
+      action: "deterministic_reply",
+      reasonCode: "OUT_OF_SCOPE",
+      normalizedLength,
+    },
+    execution: "template",
+    modelInvoked: false,
+    reply: "对话服务暂时不可用；我不会使用未经验证的结果回答。稍后再试，或先问我累计、本周的汇总统计。",
     fallbackCode: code,
   };
 }
@@ -956,8 +982,11 @@ export async function runChatAgent(input: {
   }));
   console.log(`${tag} agent start | route=${decision.route} action=${decision.action} risk=${decision.risk} summaries=${sessionSummaries.length} | text="${input.text}"`);
   // CHAT-12 P3：clarification（unclear 意图）是确定性一等路径，零模型调用。
-  if (decision.action === "safety_stop" || decision.action === "reject" || decision.route === "out_of_scope" || decision.route === "capability_gap" || decision.route === "clarification") {
-    console.log(`${tag} → TEMPLATE direct | reasonCode=${decision.reasonCode} (safety/reject/out_of_scope/capability_gap/clarification)`);
+  // AGT-A1：四个任务簇新路由（training_plan/training_supervision/level_assessment/kb_qa）
+  // 同属确定性占位模板——AGT-B/C/F/G 落地后逐个升级为实能力时再移出本分支。
+  if (decision.action === "safety_stop" || decision.action === "reject" || decision.route === "out_of_scope" || decision.route === "capability_gap" || decision.route === "clarification"
+    || decision.route === "training_plan" || decision.route === "training_supervision" || decision.route === "level_assessment" || decision.route === "kb_qa") {
+    console.log(`${tag} → TEMPLATE direct | reasonCode=${decision.reasonCode} (safety/reject/out_of_scope/capability_gap/clarification/task-cluster-placeholder)`);
     return { schemaVersion: CHAT_AGENT_SCHEMA_VERSION, decision, execution: "template", modelInvoked: false, reply: templateReply(decision) };
   }
   // CHAT-12 P1（G-AGGREGATE）：聚合问题服务端确定性回答（数据源与 /chat 页同源），零模型调用。

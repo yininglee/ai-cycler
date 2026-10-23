@@ -2,29 +2,43 @@ import { ChatProviderError, type ChatProviderErrorCode } from "./chat-agent.ts";
 import { buildChatClassifierUserPrompt, CHAT_CLASSIFIER_SYSTEM_PROMPT } from "./chat-classifier-prompt.ts";
 import { classifyChatInputL0, makeChatDecision, type ChatRoute, type ChatRoutingDecision } from "./chat-routing.ts";
 
-// CHAT-12 P2（CHAT-ADR-08 / 架构设计 v0.4 第 4.2.1 节）：L1 LLM 语义分类器——影子模式合同。
-// 设计冻结项：
+// L1 LLM 语义分类器（CHAT-12 P2 引入；AGT-A1 起按 D-A5 单一启用语义运行）。
+// 合同冻结项：
 // - 输出只有 {schemaVersion, intent, needsClarification}，不使用模型自报数字置信度（快速模型校准不可信）；
-// - `unclear` 是显式合法输出（P3 触发澄清话术一等路径），不是错误；
-// - 输入仅当前问题文本（v0.1 不含摘要槽位、不含任何私有数据）；
-// - 影子模式只记录分类结果，不影响路由——分类器失败/超时/限流一律按 P1 确定性规则继续，
-//   混合架构任何时刻不劣于纯规则基线。
-export const CHAT_CLASSIFIER_SCHEMA_VERSION = "chat-classifier-v0.1" as const;
+// - `unclear` 是显式合法输出（触发澄清话术一等路径），不是错误；
+// - 输入仅当前问题文本（不含摘要槽位、不含任何私有数据）；
+// - **D-A5（2026-10-23 用户拍板）**：取消 shadow/active 双模式——`CHAT_CLASSIFIER_ENABLED=true`
+//   即分类器接管主路由（唯一启用语义）；未配置/关闭 = 规则基线（开发与未升级环境兜底）。
+// - **D-A2（2026-10-23 用户拍板）**：启用态分类器失败/超时/限流不再降级 P1 业务正则硬猜——
+//   统一"模型暂不可用"终局降级（诚实失败优于错误猜测：L0 与红线恒可用，其余明示不可用）；
+//   原 CHAT-12"任何时刻不劣于纯规则基线"承诺随之修订。
+export const CHAT_CLASSIFIER_SCHEMA_VERSION = "chat-classifier-v0.2" as const;
 export const CHAT_CLASSIFIER_INPUT_CONTRACT_VERSION = "ride-chat-classifier-input-v0.1" as const;
 export const SILICONFLOW_CLASSIFIER_PROVIDER_VERSION = "siliconflow-classifier-provider-v0.1" as const;
 export const DEFAULT_SILICONFLOW_CLASSIFIER_MODEL_ID = "deepseek-ai/DeepSeek-V4-Flash" as const;
 
 export const CHAT_CLASSIFIER_INTENTS = [
-  // 红线类（L0 规则层在 P3 仍先拦截；分类器标注用于纵深防御验证）
+  // 红线类（L0 规则层仍先拦截；分类器标注用于纵深防御验证）
   "safety_stop",
   "privacy_boundary",
   "injection_stop",
-  // 生产八类意图（P3 分类器接管后的主路由标签空间）
+  // 数据与能力类
   "ride_summary",
   "aggregate",
   "history_compare",
+  // AGT-A1（意图路由 v0.4）：能力/水平评估自 capability_gap 迁入 level_assessment；
+  // capability_gap 收窄为"域内但产品暂无法服务"（轨迹录像回放、外部健康数据接入类问法）。
+  "level_assessment",
   "capability_gap",
   "capabilities",
+  // AGT-A1：骑行科学/训练原理知识问答（问知识 vs 问产品能力 capabilities）。
+  "kb_qa",
+  // AGT-A1：训练任务簇——仅骑行训练；域外训练（马拉松/跑步）仍 out_of_scope。
+  "training_plan",
+  "training_supervision",
+  // 对话类：companion 为 D-A4 拆分（骑行相关社交闲聊 → social 路由）；
+  // open_chat 收窄为纯跨记录筛选/排名/复合问法（→ autonomous_tools / L2b 循环）。
+  "companion",
   "open_chat",
   "out_of_scope",
   "unclear",
@@ -196,18 +210,18 @@ export function createChatClassifier(
   return config ? new SiliconFlowClassifierClient(config) : undefined;
 }
 
-// 影子执行结果：ok 携带分类标签；error 携带稳定错误码（含配置错误）。两者都不影响主链路回复。
+// 分类器执行结果：ok 携带分类标签；error 携带稳定错误码（含配置错误）。
 export type ChatClassifierErrorCode = Exclude<ChatProviderErrorCode, "MODEL_NOT_CONFIGURED"> | "CLASSIFIER_CONFIG_INVALID";
 
-export type ChatClassifierShadowOutcome =
+export type ChatClassifierOutcome =
   | { status: "ok"; intent: ChatClassifierIntent; needsClarification: boolean; durationMs: number }
   | { status: "error"; code: ChatClassifierErrorCode; durationMs: number };
 
-export async function runChatClassifierShadow(input: {
+async function runClassifierOutcome(input: {
   client: ChatClassifierClient;
   requestId: string;
   text: string;
-}): Promise<ChatClassifierShadowOutcome> {
+}): Promise<ChatClassifierOutcome> {
   const startedAt = Date.now();
   const durationMs = () => Math.max(0, Math.min(60_000, Math.round(Date.now() - startedAt)));
   try {
@@ -219,7 +233,8 @@ export async function runChatClassifierShadow(input: {
   }
 }
 
-// 意图 → 影子对照的规则层期望路由。null 表示规则层无对应（不构成分歧判定）。
+// 意图 → 规则层期望路由（事件遥测对照用；classifierAgrees 统计启用后仍可观测分歧）。
+// null 表示规则层无对应（不构成分歧判定）。
 const INTENT_ROUTE_EXPECTATIONS: Readonly<Record<ChatClassifierIntent, readonly ChatRoute[] | null>> = {
   safety_stop: ["safety_stop"],
   privacy_boundary: ["privacy_boundary"],
@@ -228,13 +243,20 @@ const INTENT_ROUTE_EXPECTATIONS: Readonly<Record<ChatClassifierIntent, readonly 
   aggregate: ["aggregate"],
   // CHAT-13：历史比较在规则层已由 HISTORY_COMPARE 正则承接为独立路由（compare_rides 工具）。
   history_compare: ["history_compare"],
+  // AGT-A1：能力/水平评估独立路由（自 capability_gap 迁入）。
+  level_assessment: ["level_assessment"],
   capability_gap: ["capability_gap"],
   capabilities: ["capabilities"],
-  // CHAT-17 P2：open_chat 映射 autonomous_tools（L2b 自主工具循环，分类器 Prompt v0.3 重定边界）；
-  // 纯问候（L0 SOCIAL 快路径 → social）与域外闲聊（out_of_scope）同属开放方向，均计为一致。
-  open_chat: ["social", "out_of_scope", "autonomous_tools"],
+  kb_qa: ["kb_qa"],
+  training_plan: ["training_plan"],
+  training_supervision: ["training_supervision"],
+  // AGT-A1（D-A4）：companion（骑行相关闲聊）→ social 路由零模型模板。
+  companion: ["social"],
+  // AGT-A1（D-A4）：open_chat 收窄为纯跨记录筛选/排名/复合问法 → L2b 自主工具循环；
+  // 纯问候由 companion/social 承接、域外闲聊由 out_of_scope 承接——不再与它们互认一致。
+  open_chat: ["autonomous_tools"],
   out_of_scope: ["out_of_scope"],
-  // unclear 无规则层对应——澄清话术是 P3 新增的一等路径，影子阶段仅记录。
+  // unclear 无规则层对应——澄清话术是一等路径，仅记录。
   unclear: null,
 };
 
@@ -244,8 +266,8 @@ export function classifierAgreesWithRule(intent: ChatClassifierIntent, route: Ch
   return expected.includes(route);
 }
 
-// 影子模式事件属性（仅脱敏标签与状态，不含用户原文）——仅在分类器已配置时附加。
-export function shadowClassifierAttributes(outcome: ChatClassifierShadowOutcome, route: ChatRoute): Record<string, string> {
+// 分类器结果事件属性（仅脱敏标签与状态，不含用户原文）——分类器已配置时附加。
+export function classifierOutcomeAttributes(outcome: ChatClassifierOutcome, route: ChatRoute): Record<string, string> {
   const agrees = outcome.status === "ok" ? classifierAgreesWithRule(outcome.intent, route) : null;
   return {
     classifierStatus: outcome.status === "ok" ? "ok" : outcome.code,
@@ -260,19 +282,10 @@ export function shadowClassifierAttributes(outcome: ChatClassifierShadowOutcome,
   };
 }
 
-// CHAT-12 P3：分类器运行模式——shadow（默认，只记录不生效）与 active（接管主路由）。
-// 默认值是 shadow：任何非法取值都安全降级为影子模式，混合架构任何时刻不劣于纯规则基线。
-export type ChatClassifierMode = "shadow" | "active";
-
-export function readChatClassifierMode(
-  environment: Readonly<Record<string, string | undefined>> = process.env,
-): ChatClassifierMode {
-  return environment.CHAT_CLASSIFIER_MODE?.trim() === "active" ? "active" : "shadow";
-}
-
-// CHAT-12 P3：意图 → 路由决定（分类器接管主路由的权威映射）。
-// 红线意图即使 L0 正则未拦截也尊重（纵深防御）；history_compare 在 CHAT-13 接入前
-// 落 capability_gap（域内能力不足模板）；unclear 触发澄清话术一等路径。
+// AGT-A1（D-A5）：意图 → 路由决定（分类器接管主路由的权威映射，16 意图全覆盖）。
+// 红线意图即使 L0 正则未拦截也尊重（纵深防御）；unclear 触发澄清话术一等路径；
+// companion → social（D-A4：闲聊不进 L2b 工具循环）；四个任务簇新意图 → 新路由确定性占位
+// （AGT-B/C/F/G 落地后逐个升级为实能力）。
 export function intentToRoutingDecision(intent: ChatClassifierIntent, normalizedLength: number): ChatRoutingDecision {
   switch (intent) {
     case "safety_stop":
@@ -288,12 +301,26 @@ export function intentToRoutingDecision(intent: ChatClassifierIntent, normalized
     // CHAT-13：历史比较由 compare_rides 只读工具承接（30 天窗口历史基线）。
     case "history_compare":
       return makeChatDecision("history_compare", "none", "HISTORY_COMPARE", normalizedLength);
+    // AGT-A1：能力/水平评估自 capability_gap 迁入（占位模板，AGT-C 生成层承接）。
+    case "level_assessment":
+      return makeChatDecision("level_assessment", "none", "LEVEL_ASSESSMENT", normalizedLength);
     case "capability_gap":
       return makeChatDecision("capability_gap", "none", "CAPABILITY_GAP", normalizedLength);
     case "capabilities":
       return makeChatDecision("capabilities", "none", "CAPABILITIES", normalizedLength);
-    // CHAT-17 P2：开放/复合问题映射 L2b 自主工具循环（find_ride 首场景）——模型在只读工具
-    // 白名单与既有预算内自行组合调用工具；纯问候由 L0 SOCIAL 快路径承接（不经此映射）。
+    // AGT-A1：知识问答占位模板（KB RAG 工具 AGT-B 接入）。
+    case "kb_qa":
+      return makeChatDecision("kb_qa", "none", "KB_QA", normalizedLength);
+    // AGT-A1：训练计划占位模板（生成 + 硬门 + 确认制 AGT-F 承接）。
+    case "training_plan":
+      return makeChatDecision("training_plan", "none", "TRAINING_PLAN", normalizedLength);
+    // AGT-A1：训练监督占位模板（计划执行器 AGT-G 承接）。
+    case "training_supervision":
+      return makeChatDecision("training_supervision", "none", "TRAINING_SUPERVISION", normalizedLength);
+    // AGT-A1（D-A4）：骑行相关闲聊 → social 路由（既有零模型模板，AGT-C 升级陪伴生成）。
+    case "companion":
+      return makeChatDecision("social", "none", "SOCIAL", normalizedLength);
+    // CHAT-17 P2：纯跨记录筛选/排名/复合问法 → L2b 自主工具循环（find_ride 首场景）。
     case "open_chat":
       return makeChatDecision("autonomous_tools", "none", "AUTONOMOUS_TOOLS", normalizedLength);
     case "out_of_scope":
@@ -303,26 +330,30 @@ export function intentToRoutingDecision(intent: ChatClassifierIntent, normalized
   }
 }
 
-// CHAT-12 P3：active 模式混合路由编排——L0 快路径（零调用直答）→ L1 分类器串行接管 →
-// 失败/超时/限流降级 P1 全量规则（ruleDecision）。混合架构任何时刻不劣于纯规则基线。
-export type ActiveChatRoutingResolution = {
-  decision: ChatRoutingDecision;
-  routedBy: "rules_l0" | "classifier" | "rules_fallback";
+// AGT-A1（D-A5 + D-A2）：路由编排——单一启用语义：
+// - 分类器未配置/未启用 → 规则基线（ruleDecision，事件记 not_configured）；
+// - L0 快路径（红线 + 高置信聚合/身份/纯问候）→ 零调用直答（rules_l0，分类器不发起）；
+// - L1 分类器接管（classifier）；
+// - **分类器失败/超时/限流 → unavailable（终局降级：不再走 P1 业务正则硬猜，调用方直接
+//   返回"模型暂不可用"降级回复）**。L0 与红线恒可用。
+export type ChatRoutingResolution = {
+  decision?: ChatRoutingDecision;
+  routedBy: "rules" | "rules_l0" | "classifier" | "classifier_unavailable";
   configStatus?: "not_configured";
-  outcome?: ChatClassifierShadowOutcome;
+  outcome?: ChatClassifierOutcome;
 };
 
-export async function resolveActiveChatRouting(input: {
+export async function resolveChatRouting(input: {
   text: string;
   ruleDecision: ChatRoutingDecision;
   classifier?: ChatClassifierClient;
   requestId: string;
-}): Promise<ActiveChatRoutingResolution> {
+}): Promise<ChatRoutingResolution> {
   const tag = `[chat-trace] [${input.requestId}]`;
-  console.log(`${tag} L0+L1 active routing start | text="${input.text}" | rule.route=${input.ruleDecision.route} rule.reason=${input.ruleDecision.reasonCode}`);
+  console.log(`${tag} routing start | text="${input.text}" | rule.route=${input.ruleDecision.route} rule.reason=${input.ruleDecision.reasonCode}`);
   if (!input.classifier) {
-    console.log(`${tag} classifier not configured → rules_fallback (route=${input.ruleDecision.route})`);
-    return { decision: input.ruleDecision, routedBy: "rules_fallback", configStatus: "not_configured" };
+    console.log(`${tag} classifier not configured → rules baseline (route=${input.ruleDecision.route})`);
+    return { decision: input.ruleDecision, routedBy: "rules", configStatus: "not_configured" };
   }
   const l0 = classifyChatInputL0(input.text);
   if (l0) {
@@ -330,31 +361,28 @@ export async function resolveActiveChatRouting(input: {
     return { decision: l0, routedBy: "rules_l0" };
   }
   console.log(`${tag} L0 miss → invoking L1 classifier...`);
-  const outcome = await runChatClassifierShadow({ client: input.classifier, requestId: input.requestId, text: input.text });
+  const outcome = await runClassifierOutcome({ client: input.classifier, requestId: input.requestId, text: input.text });
   if (outcome.status === "ok") {
     const decision = intentToRoutingDecision(outcome.intent, input.ruleDecision.normalizedLength);
     const agrees = classifierAgreesWithRule(outcome.intent, decision.route);
     console.log(`${tag} L1 classifier OK | intent=${outcome.intent} needsClarification=${outcome.needsClarification} duration=${outcome.durationMs}ms → route=${decision.route} reason=${decision.reasonCode} ruleAgrees=${agrees}`);
     return { decision, routedBy: "classifier", outcome };
   }
-  console.log(`${tag} L1 classifier FAILED | code=${outcome.code} duration=${outcome.durationMs}ms → fallback to rule (route=${input.ruleDecision.route} reason=${input.ruleDecision.reasonCode})`);
-  return { decision: input.ruleDecision, routedBy: "rules_fallback", outcome };
+  // D-A2：诚实失败优于错误猜测——分类器不可用时终局降级（无规则硬猜 fallback）。
+  console.log(`${tag} L1 classifier FAILED | code=${outcome.code} duration=${outcome.durationMs}ms → unavailable degradation (no rule fallback)`);
+  return { routedBy: "classifier_unavailable", outcome };
 }
 
-// CHAT-12 P3：路由事件属性——routedBy 标记本次路由由谁决定；active 模式附加分类器状态，
-// L0 快路径记 classifierStatus=skipped_l0（未调用），未配置记 not_configured；shadow 模式沿用影子属性。
+// 路由事件属性——routedBy 标记本次路由由谁决定；L0 快路径记 classifierStatus=skipped_l0，
+// 未配置记 not_configured；分类器结果遥测（classifierIntent/classifierAgrees）随 outcome 附加。
 export function routingEventAttributes(input: {
-  mode: ChatClassifierMode;
-  routedBy: "rules" | "rules_l0" | "classifier" | "rules_fallback";
+  routedBy: "rules" | "rules_l0" | "classifier" | "classifier_unavailable";
   route: ChatRoute;
-  outcome?: ChatClassifierShadowOutcome;
+  outcome?: ChatClassifierOutcome;
   configStatus?: "not_configured" | "CLASSIFIER_CONFIG_INVALID";
 }): Record<string, string> {
   const base: Record<string, string> = { routedBy: input.routedBy };
-  if (input.mode === "active") {
-    if (input.configStatus) return { ...base, classifierStatus: input.configStatus };
-    if (input.routedBy === "rules_l0") return { ...base, classifierStatus: "skipped_l0" };
-    return input.outcome ? { ...base, ...shadowClassifierAttributes(input.outcome, input.route) } : base;
-  }
-  return input.outcome ? { ...base, ...shadowClassifierAttributes(input.outcome, input.route) } : base;
+  if (input.configStatus) return { ...base, classifierStatus: input.configStatus };
+  if (input.routedBy === "rules_l0") return { ...base, classifierStatus: "skipped_l0" };
+  return input.outcome ? { ...base, ...classifierOutcomeAttributes(input.outcome, input.route) } : base;
 }

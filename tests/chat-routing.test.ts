@@ -196,3 +196,48 @@ test("L0 fast path leaves business intents to the semantic classifier (CHAT-12 P
     assert.ok(classifyChatInput(text).route, text);
   }
 });
+
+// AGT-A1（意图路由 v0.4）：新路由合同——16 路由枚举、摘要 route 往返、
+// 未启用态规则基线对四类新问法的归属（D-A2：P1 fallback 不新增正则，保守落 out_of_scope/既有归属）。
+
+import { isChatRoute, makeChatDecision, sanitizeChatSummaries } from "../src/chat/chat-routing.ts";
+
+test("v0.2 route enum accepts the four task-cluster routes and summary slots round-trip them (AGT-A1)", () => {
+  for (const route of ["training_plan", "training_supervision", "level_assessment", "kb_qa"] as const) {
+    assert.equal(isChatRoute(route), true, route);
+    const { summaries, dropped } = sanitizeChatSummaries([
+      { kind: "session_turn", question: "帮我安排下周的训练", route },
+    ]);
+    assert.equal(dropped, false, route);
+    assert.equal(summaries[0]?.route, route, route);
+  }
+  assert.equal(isChatRoute("training_plan_x"), false);
+  assert.equal(isChatRoute("classifier_unavailable"), false);
+});
+
+test("the four task-cluster routes are deterministic placeholders with zero model calls (AGT-A1)", () => {
+  for (const [route, reasonCode] of [
+    ["training_plan", "TRAINING_PLAN"],
+    ["training_supervision", "TRAINING_SUPERVISION"],
+    ["level_assessment", "LEVEL_ASSESSMENT"],
+    ["kb_qa", "KB_QA"],
+  ] as const) {
+    const decision = makeChatDecision(route, "none", reasonCode, 10);
+    assert.deepEqual({ route: decision.route, reasonCode: decision.reasonCode, allowModel: decision.allowModel, action: decision.action }, {
+      route,
+      reasonCode,
+      allowModel: false,
+      action: "deterministic_reply",
+    }, route);
+  }
+});
+
+test("rule baseline (classifier-disabled) keeps new task-cluster phrasings on conservative routes (D-A2)", () => {
+  // 未启用态/降级路径不认识训练/知识/水平评估问法——宁可落 out_of_scope 保守基线，
+  // 也不新增易误拦的业务正则（D-A2：启用态失败已改为终局不可用降级，正则不再是降级目标）。
+  assert.equal(classifyChatInput("帮我安排下周的训练").route, "out_of_scope");
+  assert.equal(classifyChatInput("为什么要做区间训练？").route, "out_of_scope");
+  assert.equal(classifyChatInput("VI 是什么意思？").route, "out_of_scope");
+  // 水平评估类既有正则（CAPABILITY_LEVEL_GAP）保持不变——规则基线行为零回归。
+  assert.equal(classifyChatInput("我的骑行能力水平怎么样？").route, "capability_gap");
+});

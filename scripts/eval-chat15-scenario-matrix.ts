@@ -2,7 +2,7 @@ import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { createChatProvider, runChatAgent, type ChatProvider } from "../src/chat/chat-agent.ts";
-import { createChatClassifier, readChatClassifierMode, resolveActiveChatRouting } from "../src/chat/chat-classifier.ts";
+import { createChatClassifier, resolveChatRouting } from "../src/chat/chat-classifier.ts";
 import { routeChatInput } from "../src/chat/chat-routing.ts";
 import { createChatToolRunner } from "../src/chat/chat-tool-orchestration.ts";
 import { getApplicationRepository } from "../src/persistence/application-repository.ts";
@@ -111,9 +111,8 @@ type Sample = {
 
 const { ownerId, rideCount } = resolveOwnerId();
 const toolRunner = createChatToolRunner(repository, ownerId);
-const classifierMode = readChatClassifierMode(environment);
 const classifier = createChatClassifier(environment);
-console.log(`CHAT-15 scenario matrix | owner rides=${rideCount} | classifier.mode=${classifierMode} | samples/question=${SAMPLES_PER_QUESTION}`);
+console.log(`CHAT-15 scenario matrix | owner rides=${rideCount} | classifier=${classifier ? "enabled" : "not-configured"} | samples/question=${SAMPLES_PER_QUESTION}`);
 
 const samples: Sample[] = [];
 let runIndex = 0;
@@ -130,11 +129,14 @@ for (const entry of MATRIX) {
     }
     let decision = gateway.decision;
     let routedBy = "rules";
-    if (classifierMode === "active") {
-      const resolution = await resolveActiveChatRouting({ text: gateway.text, ruleDecision: gateway.decision, classifier, requestId });
-      decision = resolution.decision;
-      routedBy = resolution.routedBy;
+    // AGT-A1（D-A5）：单一启用语义——分类器未配置时 resolveChatRouting 返回规则基线。
+    const resolution = await resolveChatRouting({ text: gateway.text, ruleDecision: gateway.decision, classifier, requestId });
+    routedBy = resolution.routedBy;
+    if (resolution.routedBy === "classifier_unavailable") {
+      samples.push({ question: entry.question, expectedRoute: entry.expectedRoute, run, routedBy, finalRoute: "classifier_unavailable", routeOk: false, execution: "routing_unavailable", modelInvoked: false, repairAttempts: 0, replyChars: 0, replyNumbers: [], durationMs: Math.round(Date.now() - startedAt) });
+      continue;
     }
+    decision = resolution.decision ?? gateway.decision;
     const result = await runChatAgent({ text: gateway.text, decision, provider, toolRunner, requestId });
     samples.push({
       question: entry.question,
@@ -211,7 +213,7 @@ const runRecord = {
   kind: "scenario-matrix-real-model",
   createdAt: new Date().toISOString(),
   environment: {
-    classifierMode,
+    classifierEnabled: Boolean(classifier),
     samplesPerQuestion: SAMPLES_PER_QUESTION,
     questions: MATRIX.length,
     ownerRideCount: rideCount,

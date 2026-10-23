@@ -113,9 +113,9 @@ test("chat route records only redacted observability metadata", async () => {
   assert.doesNotMatch(serialized, new RegExp(session.userId));
 });
 
-// CHAT-12 P2：影子模式在分类器已配置时只追加脱敏事件属性，不改变规则路由与回复；
-// 未配置时（上一条测试）事件形状保持完全不变。
-test("chat route records shadow classifier attributes without changing the rule-based reply", async () => {
+// AGT-A1（D-A5/D-A4）：启用态分类器接管路由——闲聊类输入（L0 不拦）由 L1 分类器决定，
+// companion → social 路由（零模型模板 + 遥测属性）；provider 未配置时降级模板回复。
+test("chat route lets the enabled classifier route companion chit-chat and records telemetry attributes", async () => {
   const environment = {
     CHAT_CLASSIFIER_ENABLED: "true",
     SILICONFLOW_API_TOKEN: "chat-token",
@@ -127,7 +127,7 @@ test("chat route records shadow classifier attributes without changing the rule-
   globalThis.fetch = (async (_input: RequestInfo | URL, init?: RequestInit) => {
     classifierCalls.push(init ?? {});
     return new Response(JSON.stringify({
-      choices: [{ message: { role: "assistant", content: JSON.stringify({ schemaVersion: "chat-classifier-v0.1", intent: "open_chat", needsClarification: false }) } }],
+      choices: [{ message: { role: "assistant", content: JSON.stringify({ schemaVersion: "chat-classifier-v0.2", intent: "companion", needsClarification: false }) } }],
     }), { status: 200 });
   }) as typeof fetch;
   try {
@@ -135,7 +135,7 @@ test("chat route records shadow classifier attributes without changing the rule-
     const response = await chatRoute(new Request("http://localhost/api/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json", Cookie: cookie(session.setCookie) },
-      body: JSON.stringify({ text: "你好" }),
+      body: JSON.stringify({ text: "今天天气真不错，适合出去骑车吗" }),
     }));
     assert.equal(response.status, 200);
     const body = await response.json() as { decision: { route: string }; modelInvoked: boolean; fallbackCode?: string };
@@ -148,12 +148,12 @@ test("chat route records shadow classifier attributes without changing the rule-
     assert.ok(completed);
     assert.equal(completed.type, "chat_degraded");
     assert.equal(completed.attributes?.classifierStatus, "ok");
-    assert.equal(completed.attributes?.classifierIntent, "open_chat");
+    assert.equal(completed.attributes?.classifierIntent, "companion");
     assert.equal(completed.attributes?.classifierNeedsClarification, "false");
     assert.equal(completed.attributes?.classifierAgrees, "true");
     assert.ok(completed.attributes?.classifierDurationMs !== undefined);
     const serialized = JSON.stringify(events);
-    assert.doesNotMatch(serialized, /你好|chat-token|classifier-workflow-test/);
+    assert.doesNotMatch(serialized, /今天天气|chat-token/i);
   } finally {
     globalThis.fetch = originalFetch;
     for (const [key, value] of Object.entries(previous)) {
@@ -179,7 +179,7 @@ test("active mode lets the classifier reroute an unclear question to the clarifi
   globalThis.fetch = (async (_input: RequestInfo | URL, init?: RequestInit) => {
     classifierCalls.push(init ?? {});
     return new Response(JSON.stringify({
-      choices: [{ message: { role: "assistant", content: JSON.stringify({ schemaVersion: "chat-classifier-v0.1", intent: "unclear", needsClarification: true }) } }],
+      choices: [{ message: { role: "assistant", content: JSON.stringify({ schemaVersion: "chat-classifier-v0.2", intent: "unclear", needsClarification: true }) } }],
     }), { status: 200 });
   }) as typeof fetch;
   try {
@@ -278,7 +278,7 @@ test("active mode without classifier configuration degrades to the rule layer (C
     });
     const events = await getApplicationRepository().listDemoEvents(session.userId);
     const requested = events.find((event) => event.type === "chat_requested");
-    assert.equal(requested?.attributes?.routedBy, "rules_fallback");
+    assert.equal(requested?.attributes?.routedBy, "rules");
     assert.equal(requested?.attributes?.classifierStatus, "not_configured");
   } finally {
     if (previous === undefined) delete process.env.CHAT_CLASSIFIER_MODE;

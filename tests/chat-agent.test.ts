@@ -560,3 +560,46 @@ test("Chat provider selects the SiliconFlow adapter by default and no longer rea
     COZE_CHAT_API_TOKEN: "chat-token",
   }), undefined);
 });
+
+// AGT-A1：四个任务簇新路由的确定性占位模板 + 分类器不可用终局降级（D-A2）。
+
+test("task-cluster placeholder routes produce guidance templates without model calls (AGT-A1)", async () => {
+  const { runChatAgent } = await import("../src/chat/chat-agent.ts");
+  for (const [route, reasonCode, keyword] of [
+    ["training_plan", "TRAINING_PLAN", "训练计划"],
+    ["training_supervision", "TRAINING_SUPERVISION", "训练监督"],
+    ["level_assessment", "LEVEL_ASSESSMENT", "水平"],
+    ["kb_qa", "KB_QA", "知识"],
+  ] as const) {
+    const result = await runChatAgent({
+      text: "帮我安排下周的训练",
+      decision: { ...makePlaceholderDecision(route, reasonCode) },
+      requestId: "request",
+    });
+    assert.equal(result.modelInvoked, false, route);
+    assert.equal(result.execution, "template", route);
+    assert.ok(result.reply.includes(keyword), `${route}: ${result.reply}`);
+  }
+});
+
+function makePlaceholderDecision(route: "training_plan" | "training_supervision" | "level_assessment" | "kb_qa", reasonCode: string) {
+  return {
+    schemaVersion: "chat-routing-v0.2" as const,
+    route,
+    risk: "none" as const,
+    allowModel: false,
+    action: "deterministic_reply" as const,
+    reasonCode: reasonCode as "TRAINING_PLAN" | "TRAINING_SUPERVISION" | "LEVEL_ASSESSMENT" | "KB_QA",
+    normalizedLength: 10,
+  };
+}
+
+test("chatRoutingUnavailableResult returns terminal degradation without provider or tools (D-A2)", async () => {
+  const { chatRoutingUnavailableResult } = await import("../src/chat/chat-agent.ts");
+  const result = chatRoutingUnavailableResult("MODEL_TIMEOUT", 8);
+  assert.equal(result.modelInvoked, false);
+  assert.equal(result.execution, "template");
+  assert.equal(result.fallbackCode, "MODEL_TIMEOUT");
+  assert.match(result.reply, /暂时不可用/);
+  assert.equal(result.decision.route, "out_of_scope");
+});

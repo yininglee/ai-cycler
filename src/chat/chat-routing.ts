@@ -1,4 +1,4 @@
-export const CHAT_ROUTING_SCHEMA_VERSION = "chat-routing-v0.1" as const;
+export const CHAT_ROUTING_SCHEMA_VERSION = "chat-routing-v0.2" as const;
 export const CHAT_INPUT_MAX_CHARS = 1_200;
 export const CHAT_INPUT_MAX_BYTES = 4 * 1_024;
 export const CHAT_RATE_LIMIT_MAX_REQUESTS = 20;
@@ -20,7 +20,17 @@ export type ChatRoute =
   | "history_compare"
   // CHAT-17：L2b 自主工具循环——模型在只读工具白名单与既有预算内自行组合调用工具回答
   // 开放/复合问题（find_ride 为首个场景）；同一 ride_chat_v1 编排循环的执行策略扩展。
-  | "autonomous_tools";
+  | "autonomous_tools"
+  // AGT-A1（意图路由 v0.4）：四个任务簇新路由——AGT-A 阶段只到确定性占位模板
+  // （与 capability_gap 同构，零模型调用），工具与生成层由 AGT-B/C/F/G 承接。
+  // - training_plan：骑行训练计划/课表/周期安排类问法（域外训练计划仍 out_of_scope）。
+  // - training_supervision：对着已有计划/执行问反馈类问法（无计划时占位模板说明需先有计划）。
+  // - level_assessment：能力/体能/水平评估结论类问法（自 capability_gap 迁入）。
+  // - kb_qa：骑行科学/训练原理知识问答（问知识 vs 问产品能力 capabilities）。
+  | "training_plan"
+  | "training_supervision"
+  | "level_assessment"
+  | "kb_qa";
 
 // CHAT-14 P1：会话摘要网关合同（架构设计 v0.4 4.2.2 节）——白名单槽位仅含本轮问题、
 // 路由枚举与可选骑乘锚点日期；不含 assistant 回复、数值或 Claim 引用（历史轮数字不得
@@ -50,6 +60,10 @@ const CHAT_ROUTE_VALUES: readonly ChatRoute[] = [
   "clarification",
   "history_compare",
   "autonomous_tools",
+  "training_plan",
+  "training_supervision",
+  "level_assessment",
+  "kb_qa",
 ];
 
 const CHAT_ROUTE_SET = new Set<string>(CHAT_ROUTE_VALUES);
@@ -139,7 +153,12 @@ export type ChatRoutingDecision = {
     // CHAT-13：历史比较路由（compare_rides 工具承接）。
     | "HISTORY_COMPARE"
     // CHAT-17：L2b 自主工具循环路由（find_ride 首场景，跨记录筛选/排名问法从 CAPABILITY_GAP 迁入）。
-    | "AUTONOMOUS_TOOLS";
+    | "AUTONOMOUS_TOOLS"
+    // AGT-A1：四个任务簇新路由的确定性占位（D-A2/D-A4 边界迁移，Prompt v0.4 与标注集 v0.4 在 A2/A3 跟进）。
+    | "TRAINING_PLAN"
+    | "TRAINING_SUPERVISION"
+    | "LEVEL_ASSESSMENT"
+    | "KB_QA";
   normalizedLength: number;
 };
 
@@ -234,7 +253,11 @@ export function makeChatDecision(
   normalizedLength: number,
 ): ChatRoutingDecision {
   const safety = route === "safety_stop" || route === "privacy_boundary" || route === "injection_stop";
-  const deterministicOnly = safety || route === "out_of_scope" || route === "aggregate" || route === "capability_gap" || route === "clarification";
+  // AGT-A1：四个任务簇新路由与 out_of_scope/capability_gap/clarification 同属确定性占位
+  // （AGT-A 阶段零模型调用；AGT-B/C/F/G 落地后逐个升级为实能力，action 届时再改）。
+  const deterministicOnly = safety || route === "out_of_scope" || route === "aggregate" || route === "capability_gap"
+    || route === "clarification" || route === "training_plan" || route === "training_supervision"
+    || route === "level_assessment" || route === "kb_qa";
   return {
     schemaVersion: CHAT_ROUTING_SCHEMA_VERSION,
     route,

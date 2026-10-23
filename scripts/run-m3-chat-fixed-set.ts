@@ -12,11 +12,9 @@ import {
 } from "../src/chat/chat-agent.ts";
 import {
   createChatClassifier,
-  readChatClassifierMode,
-  resolveActiveChatRouting,
+  resolveChatRouting,
   routingEventAttributes,
-  type ChatClassifierMode,
-  type ChatClassifierShadowOutcome,
+  type ChatClassifierOutcome,
 } from "../src/chat/chat-classifier.ts";
 import { RIDE_IDENTITY, routeChatInput } from "../src/chat/chat-routing.ts";
 import {
@@ -114,11 +112,10 @@ if (casesSha256 !== manifest.casesSha256 || fixedSet.cases.length !== manifest.c
 
 const realProvider = createChatProvider(environment) as ChatProvider | undefined;
 if (!realProvider) {
-  console.error("M3CHAT_PROVIDER_NOT_CONFIGURED：需要 CHAT_PROVIDER_KIND=coze_workflow 且 COZE_CHAT_WORKFLOW_ID/VERSION、COZE_CHAT_API_URL/TOKEN 可用。");
+  console.error("M3CHAT_PROVIDER_NOT_CONFIGURED：需要 CHAT_MODEL_ENABLED=true 且 SILICONFLOW_API_TOKEN 可用（可选 SILICONFLOW_CHAT_MODEL_ID 覆盖）。");
   process.exit(2);
 }
 
-const classifierMode: ChatClassifierMode = readChatClassifierMode(environment);
 let classifier: ReturnType<typeof createChatClassifier> | undefined;
 let classifierConfigInvalid = false;
 try {
@@ -127,8 +124,8 @@ try {
   classifier = undefined;
   classifierConfigInvalid = true;
 }
-if (classifierMode === "active" && !classifier) {
-  console.error(`M3CHAT_CLASSIFIER_UNAVAILABLE：CHAT_CLASSIFIER_MODE=active 但分类器未配置${classifierConfigInvalid ? "（配置非法）" : ""}，真实固定集 Run 不应在降级路由下执行。`);
+if (!classifier) {
+  console.error(`M3CHAT_CLASSIFIER_UNAVAILABLE：分类器未配置${classifierConfigInvalid ? "（配置非法）" : ""}，真实固定集 Run 不应在降级路由下执行。`);
   process.exit(2);
 }
 
@@ -322,7 +319,7 @@ const modelDurationsAll: number[] = [];
 const classifierDurationsAll: number[] = [];
 const stopConditions: Array<{ name: string; violated: boolean; detail: string }> = [];
 
-console.log(`M3 chat fixed set (real model) | cases=${fixedSet.cases.length} | classifier.mode=${classifierMode} | provider=${environment.COZE_CHAT_WORKFLOW_NAME ?? "?"}@${environment.COZE_CHAT_WORKFLOW_VERSION ?? "?"} | delayMs=${DELAY_MS}`);
+console.log(`M3 chat fixed set (real model) | cases=${fixedSet.cases.length} | classifier=enabled | provider=siliconflow:${environment.SILICONFLOW_CHAT_MODEL_ID ?? "deepseek-ai/DeepSeek-V3.2"} | delayMs=${DELAY_MS}`);
 
 for (const item of fixedSet.cases) {
   const fixture = item.fixture ?? "default";
@@ -347,20 +344,16 @@ for (const item of fixedSet.cases) {
   }
 
   let decision = gateway.decision;
-  let routedBy: "rules" | "rules_l0" | "classifier" | "rules_fallback" = "rules";
-  let routingOutcome: ChatClassifierShadowOutcome | undefined;
+  let routedBy: "rules" | "rules_l0" | "classifier" | "classifier_unavailable" = "rules";
+  let routingOutcome: ChatClassifierOutcome | undefined;
   let configStatus: "not_configured" | "CLASSIFIER_CONFIG_INVALID" | undefined;
-  if (classifierMode === "active") {
-    if (classifierConfigInvalid) {
-      routedBy = "rules_fallback";
-      configStatus = "CLASSIFIER_CONFIG_INVALID";
-    } else {
-      const resolution = await resolveActiveChatRouting({ text: gateway.text, ruleDecision: gateway.decision, classifier, requestId });
-      decision = resolution.decision;
-      routedBy = resolution.routedBy;
-      routingOutcome = resolution.outcome;
-      configStatus = resolution.configStatus;
-    }
+  // AGT-A1（D-A5）：单一启用语义——分类器必配置（上方 gate 已保证），失败走终局降级。
+  {
+    const resolution = await resolveChatRouting({ text: gateway.text, ruleDecision: gateway.decision, classifier, requestId });
+    routedBy = resolution.routedBy;
+    routingOutcome = resolution.outcome;
+    configStatus = resolution.configStatus;
+    decision = resolution.decision ?? gateway.decision;
   }
   if (routingOutcome?.status === "ok") classifierDurationsAll.push(routingOutcome.durationMs);
 
@@ -368,7 +361,7 @@ for (const item of fixedSet.cases) {
     agentVersion: CHAT_AGENT_SCHEMA_VERSION,
     route: decision.route,
     summariesCount: "0",
-    ...routingEventAttributes({ mode: classifierMode, routedBy, route: decision.route, outcome: routingOutcome, configStatus }),
+    ...routingEventAttributes({ routedBy, route: decision.route, outcome: routingOutcome, configStatus }),
     tokenStatus: "not_observed",
     costStatus: "not_observed",
   });
@@ -418,7 +411,7 @@ for (const item of fixedSet.cases) {
     costStatus: "not_observed",
     ...(result.fallbackCode ? { fallbackCode: result.fallbackCode } : {}),
     ...(result.outputValidation?.code ? { validationCode: result.outputValidation.code } : {}),
-    ...routingEventAttributes({ mode: classifierMode, routedBy, route: result.decision.route, outcome: routingOutcome, configStatus }),
+    ...routingEventAttributes({ routedBy, route: result.decision.route, outcome: routingOutcome, configStatus }),
   });
   modelDurationsAll.push(...modelMetrics.durations);
 
@@ -615,14 +608,14 @@ const runRecord = {
   createdAt: now.toISOString(),
   authorizedBy: "user（M3 里程碑收口流程授权，2026-09-09 会话）",
   environment: {
-    classifierMode,
+    classifierEnabled: Boolean(classifier),
     classifierConfigured: Boolean(classifier),
-    chatWorkflow: { name: environment.COZE_CHAT_WORKFLOW_NAME, id: environment.COZE_CHAT_WORKFLOW_ID, version: environment.COZE_CHAT_WORKFLOW_VERSION, model: environment.COZE_CHAT_MODEL_ID },
-    classifierWorkflow: { name: environment.COZE_CHAT_CLASSIFIER_WORKFLOW_NAME, id: environment.COZE_CHAT_CLASSIFIER_WORKFLOW_ID, version: environment.COZE_CHAT_CLASSIFIER_WORKFLOW_VERSION },
+    chatProvider: { kind: "siliconflow", model: environment.SILICONFLOW_CHAT_MODEL_ID ?? "deepseek-ai/DeepSeek-V3.2" },
+    classifierProvider: { kind: "siliconflow", model: environment.SILICONFLOW_CLASSIFIER_MODEL_ID ?? "deepseek-ai/DeepSeek-V4-Flash" },
     delayMs: DELAY_MS,
     toolData: "controlled fixture repositories (per cases.json fixture field)",
     owner: "synthetic-runner（事件与级联删除使用合成 owner，不含真实用户数据）",
-    costSource: "coze-workflow-quota（Workflow 响应不含 token 用量，costStatus=not_observed）",
+    costSource: "siliconflow-pay-as-you-go（响应含 token 用量，costStatus 可观测）",
   },
   fixedSet: { datasetId: fixedSet.datasetId, casesSha256, caseCount: fixedSet.cases.length, splits: manifest.splitCounts },
   summary: {
