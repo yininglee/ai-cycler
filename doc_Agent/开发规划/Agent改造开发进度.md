@@ -17,7 +17,7 @@
 | 项目 | 当前值 |
 |---|---|
 | 当前里程碑 | **AGT-A 意图路由 v0.4 + Provider 迁移**（7 工作项 A0~A6，D-A1~A6 全部拍板） |
-| 当前主任务 | `AGT-A2` 标注集 v0.4 + `AGT-A3` 分类器 Prompt v0.4：**实施完成，双双 `Review`（2026-10-23）**——等待用户抽检与冻结批准 |
+| 当前主任务 | `AGT-A2` 标注集 v0.4：**实施完成，`Review`（2026-10-23，commit 9cacb5f）**——等待抽检与冻结批准；`AGT-A3` Prompt v0.4 已实施并自检全过（`In Progress`，按串行评审纪律排队） |
 | 阻塞 | 无（A2 的"用户批准冻结"、A5 的真实 Run 是授权门） |
 | 唯一下一步 | 用户抽检 `eval/ride-chat-classifier-v0.4/CHANGES.md` 并**批准冻结** → `AGT-A4` 评测脚本适配 → `AGT-A5` 全新 Run（需授权） |
 
@@ -35,7 +35,7 @@
 
 ## 3. AGT-A 任务卡
 
-### AGT-A0 · 对话链路 Provider 迁移：Coze → 硅基流动（D-A6）· `Review`（2026-10-23）
+### AGT-A0 · 对话链路 Provider 迁移：Coze → 硅基流动（D-A6）· `Done`（2026-10-23）
 
 - 目标：分类器 + 主对话改用硅基流动 OpenAI 兼容 API（新客户端，沿用 `ChatProviderError` 错误码体系）；**Prompt v0.3/v0.1 原样迁入代码库为单一事实源**（语义变更留 A3）；env 切 `SILICONFLOW_*`（分类器默认 `deepseek-ai/DeepSeek-V4-Flash`、主对话默认 `deepseek-ai/DeepSeek-V3.2`）；骑后解读链路 `COZE_*` 不动。
 - 进入条件：用户提供硅基流动 API key。退出条件：typecheck + provider 单测（全错误码路径）+ 启用态 smoke + 骑后链路零回归。
@@ -73,11 +73,11 @@
   - **用户检查清单**：① 抽检 `CHANGES.md` §3 改标 6 例；② 抽检 §4 五类新增例的边界标注；③ 对 §6 三处张力给出裁决（`level_assessment` vs `history_compare` 的 BLIND-26、`training_supervision` vs `training_plan` 的 BLIND-45、`companion` vs `out_of_scope` 的 BLIND-31）；④ **批准冻结**（批准后 manifest 哈希锁定，任何改动须重算并重跑全新 Run）。
 - 用户验收：（待确认）
 
-### AGT-A3 · 分类器 Prompt v0.4 · `Review`（2026-10-23，commit 9cacb5f）
+### AGT-A3 · 分类器 Prompt v0.4 · `In Progress`（2026-10-23，commit 9cacb5f｜实施与自检已完成，按串行评审纪律排队）
 
 - 目标：意图定义与判断规则按 §2 边界迁移重写 + 5 新意图 few-shot（取自 dev 例，避免 blind 泄漏）+ 输出 schema 升 `chat-classifier-v0.2`；**Prompt 以版本化常量写入 `src/chat/` 并随请求直发硅基流动（代码库为唯一事实源）**，`prompts/ride-chat-classifier-v0.2.md` 为归档副本（A0/D-A6 已取消 Coze workflow 维护，原卡"Coze 试运行"口径随之失效）。
 - 进入条件：A0 完成（已满足）+ A2 数据集定稿（few-shot 选例依赖）。退出条件：定向单测（messages 合同）+ 真实调用 smoke 输出符合 v0.2 schema + 归档副本与代码内 prompt 逐字一致。
-- **验收汇报（2026-10-23，供用户检查）**：
+- **验收汇报（2026-10-23，汇报先行——实施与自检已完成；按"最多一个 Review"的串行评审纪律，正式评审随 A2 冻结批准一并启动，供用户检查）**：
   - **变更清单**：`src/chat/chat-classifier-prompt.ts` 全文重写（`ride-chat-classifier-prompt-v0.4`：16 意图定义 + 7 条顺序判断规则 + 13 条 few-shot + 输出 schema `chat-classifier-v0.2`）；`prompts/ride-chat-classifier-v0.2.md` 归档副本（新文件，v0.1 保留为历史）；新增 `scripts/sync-classifier-prompt-archive.ts` + `npm run prompt:classifier:sync`（改 Prompt 后一键对齐副本）；新增 `scripts/smoke-classifier-v04.ts`；`tests/chat-classifier.test.ts` 更新版本断言并新增 2 条测试。
   - **验证结果**：tsc 0 error；全量测试 **702/702**（A1 基线 700 + 新增 2）；真实 smoke（硅基流动，8 探针）**schema 8/8、意图命中 8/8**，覆盖 5 个新意图 + open_chat/aggregate 回归；归档副本一致性单测通过（代码常量 ↔ md `text` 块逐字相等）。
   - **过程中发现并修复的评测泄漏**：新加的"防泄漏"测试拦下 1 例真实泄漏——few-shot 里 open_chat 例句直接用了 `CLS-BLIND-07` 原句、`unclear` 定义抄了 `CLS-BLIND-22` 原句（该写法自 v0.3 Prompt 时代就存在）。已改为泛化说法（如"问哪次最远/最快、哪几次超过某阈值"），并确立口径：**意图定义中的示例一律不照抄 blind/red-team 原句**。若不改，A5 的 blind 通过率会因"见过原句"虚高。
