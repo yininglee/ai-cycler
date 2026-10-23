@@ -1,7 +1,8 @@
 # 标注集 v0.4 变更清单（AGT-A2 · 供用户逐条抽检）
 
 > 数据集 ID：`AEVAL-M3-CHAT-CLASSIFIER`｜目录：`eval/ride-chat-classifier-v0.4/`
-> 基线：`eval/ride-chat-classifier-v0.1/`（38 例，v0.3 口径）｜冻结候选：83 例（sha256 `414e0d31c365…`）
+> 基线：`eval/ride-chat-classifier-v0.1/`（38 例，v0.3 口径）｜冻结候选：83 例（sha256 `9a4c242f…`）
+> 口径说明（用例怎么分、怎么维护、有哪些局限）：见 [README.md](README.md)｜本文只做 v0.3→v0.4 的**变更**登记
 > 意图空间：11 → **16**（分类器 `chat-classifier-v0.2`）｜路由空间：12 → 16（`chat-routing-v0.2`）
 > 口径来源：[AGT-A 细规划 §2 边界迁移](../doc_Agent/开发规划/AGT-A_意图路由v0.4_工作项规划.md)、D-A3（水平评估改标）、D-A4（companion 拆分）
 
@@ -16,6 +17,22 @@
 | `manifest.json` schemaVersion | `ride-chat-classifier-eval-manifest-v0.4` |
 | 关联合同版本（manifest.versionMatrix） | classifier `chat-classifier-v0.2` · routing `chat-routing-v0.2` · prompt `ride-chat-classifier-prompt-v0.4` · input `ride-chat-classifier-input-v0.1` |
 | 运行模式 | `single_enabled`（D-A5：`CHAT_CLASSIFIER_MODE` 已退役，无 shadow 概念） |
+
+### 1.1 冻结前补入难度轴 `kind`（2026-10-24）
+
+原稿只有 `split`（谁能用来调 Prompt）与 `intent`（正确答案），缺少"这条有多难"的显式标签——导致无法回答"退化发生在边界判断还是常规问法上"。冻结前补入：
+
+| kind | 数量 | 判据 |
+|---|---:|---|
+| `positive` | 53 | 直白问法，不需辨析即可归类 |
+| `boundary` | 26（31.3%） | 与相邻意图共享词汇，或带对抗诱导 |
+| `ambiguous` | 4 | 指代缺失，本应触发澄清（**与 `intent=unclear` 互为充要**，preflight 机械校验） |
+
+同时把 9 组对抗对写进 `manifest.boundaryPairs`（两侧都有例 + 至少一条 `boundary`），把"意图之间怎么切"从口头约定变成可校验资产：
+
+`training_plan~out_of_scope` · `training_plan~training_supervision` · `training_supervision~safety_stop` · `level_assessment~history_compare` · `kb_qa~capabilities` · `kb_qa~safety_stop` · `companion~out_of_scope` · `capability_gap~capabilities` · `open_chat~aggregate`
+
+> 哈希因加字段重算：`414e0d31…` → **`9a4c242f…`**。例文与技术判定口径未变。
 
 ## 2. 统计对照
 
@@ -161,6 +178,7 @@
 | 硬门 | `accuracyGate ≥ 0.95`、`redTeamGate = 1`（不放宽） |
 | 签收 | **全量全对**（83/83）；未全对 → bad case 回流 → 版本递增 → 全新 Run |
 | split 用途 | `dev` 是**调优集**（A3 few-shot 只从这里取例，故 dev 通过率不构成独立证据）；`blind` 是唯一放行依据；`red-team` 断言红线零失误 |
+| kind 用途 | 难度归因：A5 之后按 `positive`/`boundary` 分组看错误分布——边界例错 = 切线没教会（改 Prompt）；正例错 = 定义有漏洞（改定义）。`kind` 不可用于放宽门槛 |
 | 制度 | 本次为标注集扩充 + 改标 = 评估资产变更 → 必须**全新 Run**；按 D-A1 与 v0.3 待授权 Run 合并，一次授权一次 Run |
 | 冻结授权 | **待用户批准**（本清单即抽检材料；批准后 manifest 哈希不再变动，任何改动须重算哈希并重跑） |
 

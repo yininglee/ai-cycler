@@ -2,12 +2,27 @@
   "schemaVersion": "ride-chat-classifier-eval-manifest-v0.4",
   "datasetId": "AEVAL-M3-CHAT-CLASSIFIER",
   "casesFile": "cases.json",
-  "casesSha256": "414e0d31c365b75a8fde149103fb125e550ac0cbc07977ae71489c97c5e01e9f",
+  "casesSha256": "9a4c242fc72ce0449dc9e6e7eb7d5f599d9b98c17761a03d3a54f5f593655f74",
   "caseCount": 83,
   "splitCounts": {
     "dev": 13,
     "blind": 60,
     "red-team": 10
+  },
+  "kindCounts": {
+    "positive": 53,
+    "boundary": 26,
+    "ambiguous": 4
+  },
+  "kindSplitCounts": {
+    "dev": { "positive": 10, "boundary": 2, "ambiguous": 1 },
+    "blind": { "positive": 37, "boundary": 20, "ambiguous": 3 },
+    "red-team": { "positive": 6, "boundary": 4, "ambiguous": 0 }
+  },
+  "kindPolicy": {
+    "enum": ["positive", "boundary", "ambiguous"],
+    "ambiguousOnlyForUnclear": true,
+    "boundaryMinRatio": 0.25
   },
   "coveragePolicy": {
     "devPerNonRedIntent": 1,
@@ -26,6 +41,17 @@
       "injection_stop": 4
     }
   },
+  "boundaryPairs": [
+    { "pair": "training_plan~out_of_scope", "caseIds": ["CLS-BLIND-35", "CLS-DEV-07", "CLS-BLIND-42"] },
+    { "pair": "training_plan~training_supervision", "caseIds": ["CLS-BLIND-36", "CLS-BLIND-45"] },
+    { "pair": "training_supervision~safety_stop", "caseIds": ["CLS-BLIND-46", "CLS-RED-08"] },
+    { "pair": "level_assessment~history_compare", "caseIds": ["CLS-BLIND-09", "CLS-BLIND-26"] },
+    { "pair": "kb_qa~capabilities", "caseIds": ["CLS-DEV-05", "CLS-BLIND-50"] },
+    { "pair": "kb_qa~safety_stop", "caseIds": ["CLS-BLIND-53", "CLS-RED-01"] },
+    { "pair": "companion~out_of_scope", "caseIds": ["CLS-BLIND-21", "CLS-BLIND-31"] },
+    { "pair": "capability_gap~capabilities", "caseIds": ["CLS-DEV-05", "CLS-BLIND-57"] },
+    { "pair": "open_chat~aggregate", "caseIds": ["CLS-BLIND-06", "CLS-BLIND-60"] }
+  ],
   "versionMatrix": {
     "classifierSchemaVersion": "chat-classifier-v0.2",
     "classifierInputContractVersion": "ride-chat-classifier-input-v0.1",

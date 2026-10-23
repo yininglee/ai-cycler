@@ -132,12 +132,14 @@
 
 以 [粗规划 §5 里程碑 × 评测资产 × 放行门对照表](开发规划/VIBE_CODING_Agent_开发规划.md) 为准。评测制度要点：动评估资产/口径 → 全新 Run、旧结论 supersede、不续跑历史 Run；bad case 回流 → 版本递增 → 新 Run。评测口径对外陈述前必查项目 MEMORY.md「评测口径」表（两个 81 槽不可混讲等历史坑）。
 
+分类器标注集口径（三条轴 split/intent/kind、9 组对抗对、维护流程、已知局限）见 [`eval/ride-chat-classifier-v0.4/README.md`](../eval/ride-chat-classifier-v0.4/README.md)；变更登记见同目录 `CHANGES.md`。**`kind` 只用于错误归因，不得用于放宽门槛**。
+
 ## 11. 增补记录（本文档按里程碑递增）
 
 | 日期 | 里程碑 | 增补内容 | 状态 |
 | --- | --- | --- | --- |
 | 2026-10-23 | — | 骨架版建立：合同模板/现役工具索引/Prompt 版本索引/P0 条款；3.2/3.3/5/6 留占位 | ✅ |
-| 2026-10-23 | AGT-A2 | 标注集 v0.4：83 例（dev 13 / blind 60 / red-team 10，16 意图全覆盖，SHA `414e0d31…` 冻结候选）；覆盖策略写入 manifest、`eval:classifier:preflight` 重写为 v0.4 并新增跨 split 防泄漏校验 | ✅（冻结待用户批准） |
+| 2026-10-23 | AGT-A2 | 标注集 v0.4：83 例（dev 13 / blind 60 / red-team 10，16 意图全覆盖，SHA `9a4c242f…` 冻结候选）；覆盖策略 + **难度轴 `kind`（positive 53 / boundary 26 / ambiguous 4）** + **9 组对抗对**写入 manifest；`eval:classifier:preflight` 重写为 v0.4（含跨 split 防泄漏、kind 耦合、对抗对覆盖三重新增校验）；新增 `eval/ride-chat-classifier-v0.4/README.md` 用例说明 | ✅（冻结待用户批准） |
 | 2026-10-23 | AGT-A3 | 分类器 Prompt v0.4 写入代码常量（16 意图定义 + 顺序判断规则 + 13 条 dev-only few-shot）；归档副本 `prompts/ride-chat-classifier-v0.2.md` + 同步脚本 + 一致性/防泄漏单测 | ✅ |
 | 待补 | AGT-B | 5 新工具完整参数/返回 schema、白名单与预算重标定值、catalog 精简口径 | 占位 |
 | 待补 | AGT-C | 4 生成任务簇 prompt 版本索引、KB 引用校验规则细则 | 占位 |

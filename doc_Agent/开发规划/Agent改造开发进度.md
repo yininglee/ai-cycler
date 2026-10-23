@@ -63,14 +63,15 @@
 - 目标：新增 ≥40 例（4 新意图各 ≥8 + companion ≥8，含边界对抗例）、旧例改标（水平评估例 + open_chat 闲聊例）、red-team 扩充 ≥2、manifest 重算冻结。
 - 进入条件：A1 完成（已满足）。退出条件：schema 校验全过 + 用户批准冻结。
 - **验收汇报（2026-10-23，供用户抽检）**：
-  - **交付清单**：新增 `eval/ride-chat-classifier-v0.4/cases.json`（83 例）、`manifest.json`（SHA + 覆盖策略 + 版本矩阵）、`CHANGES.md`（**抽检主入口**：改标 6 例、新增 45 例逐条边界说明、统计对照、3 处已知张力）；重写 `scripts/preflight-ride-chat-classifier-eval.ts` 指向 v0.4。
+  - **交付清单**：新增 `eval/ride-chat-classifier-v0.4/cases.json`（83 例）、`manifest.json`（SHA + 覆盖策略 + 难度轴 + 9 组对抗对 + 版本矩阵）、`README.md`（**用例说明文档**：三条轴、判定口径速查、对抗对清单、维护流程、已知局限）、`CHANGES.md`（**变更抽检清单**：改标 6 例、新增 45 例逐条边界说明、统计对照、3 处已知张力）；重写 `scripts/preflight-ride-chat-classifier-eval.ts` 指向 v0.4。
+  - **难度轴 `kind`（2026-10-24 补入，冻结前）**：因"无法区分退化发生在边界判断还是常规问法"，给 83 例补 `kind` 三值——`positive` 53 / `boundary` 26（31.3%，下限 25%）/ `ambiguous` 4（与 `intent=unclear` 互为充要）；并把 9 组对抗对写入 `manifest.boundaryPairs`（两侧都有例 + 至少一条 boundary，preflight 机械校验）。**哈希因此重算：`414e0d31…` → `9a4c242f…`；例文与判定口径未变。**
   - **规模与分布**：83 例 = dev 13 / blind 60 / red-team 10；新增 45 例（含 red-team 4）；5 个新意图各 8 例（每意图 dev 1 + blind 7）；所有非红线意图 dev ≥1、blind ≥3；红线意图只落 red-team（safety 4 / privacy 2 / injection 4）。
   - **改标 6 例（D-A3/D-A4）**：`CLS-DEV-04`/`CLS-BLIND-10`/`-16`/`-17` capability_gap → level_assessment；`CLS-DEV-06`/`CLS-BLIND-18` open_chat → companion。正文未改，仅 `intent` 改标（供逐条确认）。
   - **收窄意图换例**：`capability_gap` 原 4 例已全部改标，补 4 例（Strava 同步 / 录像回放 / 三维地图 / Apple Health）；`open_chat` 闲聊 2 例迁出后补 2 例（极值检索 + 阈值筛选）。
   - **版本口径修正**：目录/内部 schemaVersion 统一到标注集 v0.4（旧目录名 v0.1 与内容 v0.3 交错的坑消除）；`mode: shadow` 字段随 D-A5 退役，改记 `runtimeMode: single_enabled`。
-  - **验证结果**：`node scripts/preflight-ride-chat-classifier-eval.ts` → `preflight pass`（83 例 / sha256 `414e0d31c365…` / 16 意图全覆盖 / 契约版本与源码一致 / 零模型调用）；新增跨 split 重复正文检测（dev 例会被 few-shot 使用，重复即泄漏）。tsc 通过；全量测试 702/702。
+  - **验证结果**：`node scripts/preflight-ride-chat-classifier-eval.ts` → `preflight pass`（83 例 / sha256 `9a4c242f…` / 16 意图全覆盖 / 契约版本与源码一致 / kind 分组计数一致 / 9 组对抗对两侧齐备且各含 boundary 例 / 零模型调用）；新增跨 split 重复正文检测（dev 例会被 few-shot 使用，重复即泄漏）。tsc 通过；全量测试 702/702。
   - **口径偏差**：细规划估 ≈78 例，实际 83 例——差额来自两处必要修补（capability_gap 改标归零须补 4；open_chat dev 归零须补 2），"新增 ≥40 例"硬口径满足（45）。
-  - **用户检查清单**：① 抽检 `CHANGES.md` §3 改标 6 例；② 抽检 §4 五类新增例的边界标注；③ 对 §6 三处张力给出裁决（`level_assessment` vs `history_compare` 的 BLIND-26、`training_supervision` vs `training_plan` 的 BLIND-45、`companion` vs `out_of_scope` 的 BLIND-31）；④ **批准冻结**（批准后 manifest 哈希锁定，任何改动须重算并重跑全新 Run）。
+  - **用户检查清单**：① 读 `README.md`（用例说明：三条轴、9 组对抗对判据、§7 已知局限）；② 抽检 `CHANGES.md` §3 改标 6 例与 §4 五类新增例的边界标注；③ **确认 9 组对抗对是否就是你认为的切线**（`manifest.boundaryPairs`，任一对判据不对都可改）；④ 对 §6 三处张力给出裁决（`level_assessment` vs `history_compare` 的 BLIND-26、`training_supervision` vs `training_plan` 的 BLIND-45、`companion` vs `out_of_scope` 的 BLIND-31）；⑤ **批准冻结**（批准后 manifest 哈希锁定，任何改动须重算并重跑全新 Run）。
 - 用户验收：（待确认）
 
 ### AGT-A3 · 分类器 Prompt v0.4 · `In Progress`（2026-10-23，commit 9cacb5f｜实施与自检已完成，按串行评审纪律排队）

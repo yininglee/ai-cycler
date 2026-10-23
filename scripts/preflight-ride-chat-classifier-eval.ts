@@ -19,7 +19,8 @@ const RED_LINE_INTENTS: readonly ChatClassifierIntent[] = ["safety_stop", "priva
 const forbiddenKeys = new Set(["ownerId", "rideId", "coordinates", "latitude", "longitude", "prompt", "providerRawOutput", "apiToken", "token", "confidence"]);
 
 type Split = (typeof EXPECTED_SPLITS)[number];
-type Case = { caseId: string; split: Split; intent: ChatClassifierIntent; input: string };
+type CaseKind = "positive" | "boundary" | "ambiguous";
+type Case = { caseId: string; split: Split; intent: ChatClassifierIntent; kind: CaseKind; input: string };
 type CoveragePolicy = {
   devPerNonRedIntent: number;
   blindMinPerNonRedIntent: number;
@@ -27,6 +28,8 @@ type CoveragePolicy = {
   newIntents: ChatClassifierIntent[];
   redTeamIntentCounts: Record<string, number>;
 };
+type KindPolicy = { enum: CaseKind[]; ambiguousOnlyForUnclear: boolean; boundaryMinRatio: number };
+type BoundaryPair = { pair: string; caseIds: string[] };
 type Manifest = {
   schemaVersion: string;
   datasetId: string;
@@ -34,7 +37,11 @@ type Manifest = {
   casesSha256: string;
   caseCount: number;
   splitCounts: Record<Split, number>;
+  kindCounts: Record<CaseKind, number>;
+  kindSplitCounts: Record<Split, Record<CaseKind, number>>;
+  kindPolicy: KindPolicy;
   coveragePolicy: CoveragePolicy;
+  boundaryPairs: BoundaryPair[];
   versionMatrix: Record<string, string>;
   intents: string[];
   accuracyGate: number;
@@ -83,6 +90,9 @@ const seenCaseIds = new Set<string>();
 const seenInputs = new Map<string, string>();
 const counts: Record<string, number> = {};
 const intentCounts: Record<Split, Record<string, number>> = { dev: {}, blind: {}, "red-team": {} };
+const kindCounts: Record<string, number> = {};
+const kindSplitCounts: Record<Split, Record<string, number>> = { dev: {}, blind: {}, "red-team": {} };
+const caseById = new Map<string, Case>();
 for (const item of payload.cases) {
   assert(/^CLS-(DEV|BLIND|RED)-\d{2}$/.test(item.caseId), `CASE_ID_INVALID:${item.caseId}`);
   assert(!seenCaseIds.has(item.caseId), `CASE_ID_DUPLICATED:${item.caseId}`);
@@ -90,6 +100,11 @@ for (const item of payload.cases) {
   assert((CHAT_CLASSIFIER_INTENTS as readonly string[]).includes(item.intent), `CASE_INTENT_INVALID:${item.caseId}`);
   assert(item.input.trim().length > 0 && item.input.length <= 1_200, `CASE_INPUT_INVALID:${item.caseId}`);
   assert(!hasForbiddenKey(item), `SENSITIVE_FIELD_PRESENT:${item.caseId}`);
+  assert((manifest.kindPolicy.enum as readonly string[]).includes(item.kind), `CASE_KIND_INVALID:${item.caseId}=${item.kind}`);
+  // 难度轴耦合：ambiguous 专指"指代缺失、本应触发澄清"，只能落在 unclear 意图上。
+  if (manifest.kindPolicy.ambiguousOnlyForUnclear) {
+    assert((item.kind === "ambiguous") === (item.intent === "unclear"), `CASE_KIND_INTENT_MISMATCH:${item.caseId}`);
+  }
   const normalizedInput = item.input.replaceAll(/\s+/g, "");
   const duplicate = seenInputs.get(normalizedInput);
   assert(!duplicate, `CASE_INPUT_DUPLICATED:${item.caseId}~${duplicate ?? ""}`);
@@ -97,6 +112,9 @@ for (const item of payload.cases) {
   seenCaseIds.add(item.caseId);
   counts[item.split] = (counts[item.split] ?? 0) + 1;
   intentCounts[item.split][item.intent] = (intentCounts[item.split][item.intent] ?? 0) + 1;
+  kindCounts[item.kind] = (kindCounts[item.kind] ?? 0) + 1;
+  kindSplitCounts[item.split][item.kind] = (kindSplitCounts[item.split][item.kind] ?? 0) + 1;
+  caseById.set(item.caseId, item);
 }
 
 // 5) split 计数 + 覆盖策略（manifest 声明，脚本执行）
@@ -120,6 +138,36 @@ for (const intent of RED_LINE_INTENTS) {
   assert((intentCounts["red-team"][intent] ?? 0) === policy.redTeamIntentCounts[intent], `RED_TEAM_INTENT_COVERAGE_INVALID:${intent}`);
 }
 
+// 5b) 难度轴（kind）：分组计数一致 + 边界占比下限 + 对抗对覆盖
+for (const kind of manifest.kindPolicy.enum) {
+  assert((kindCounts[kind] ?? 0) === manifest.kindCounts[kind], `KIND_COUNT_MISMATCH:${kind}`);
+}
+for (const split of EXPECTED_SPLITS) {
+  for (const kind of manifest.kindPolicy.enum) {
+    assert((kindSplitCounts[split][kind] ?? 0) === (manifest.kindSplitCounts[split]?.[kind] ?? 0), `KIND_SPLIT_COUNT_MISMATCH:${split}:${kind}`);
+  }
+}
+const boundaryRatio = (kindCounts.boundary ?? 0) / manifest.caseCount;
+assert(boundaryRatio >= manifest.kindPolicy.boundaryMinRatio, `BOUNDARY_RATIO_TOO_LOW:${boundaryRatio.toFixed(3)}<${manifest.kindPolicy.boundaryMinRatio}`);
+assert(manifest.boundaryPairs.length > 0, "BOUNDARY_PAIRS_EMPTY");
+for (const entry of manifest.boundaryPairs) {
+  const sides = entry.pair.split("~");
+  assert(sides.length === 2 && sides[0] !== sides[1], `BOUNDARY_PAIR_INVALID:${entry.pair}`);
+  assert(entry.caseIds.length >= 2, `BOUNDARY_PAIR_THIN:${entry.pair}`);
+  const intentsInPair = new Set<string>();
+  let hasBoundaryCase = false;
+  for (const caseId of entry.caseIds) {
+    const found = caseById.get(caseId);
+    assert(found, `BOUNDARY_PAIR_CASE_MISSING:${entry.pair}:${caseId}`);
+    assert(sides.includes(found.intent), `BOUNDARY_PAIR_INTENT_MISMATCH:${entry.pair}:${caseId}`);
+    intentsInPair.add(found.intent);
+    if (found.kind === "boundary") hasBoundaryCase = true;
+  }
+  // 对抗对必须两侧都有例（否则不成对），且至少要有一条 boundary 例（否则等于没测切线）
+  assert(intentsInPair.size === 2, `BOUNDARY_PAIR_ONE_SIDED:${entry.pair}`);
+  assert(hasBoundaryCase, `BOUNDARY_PAIR_WITHOUT_BOUNDARY_CASE:${entry.pair}`);
+}
+
 // 6) 意图枚举双向一致
 assert(JSON.stringify(manifest.intents) === JSON.stringify([...CHAT_CLASSIFIER_INTENTS]), "INTENT_CONTRACT_DRIFT");
 for (const intent of CHAT_CLASSIFIER_INTENTS) {
@@ -133,6 +181,8 @@ const perIntent = CHAT_CLASSIFIER_INTENTS
 console.log(`AEVAL-M3-CHAT-CLASSIFIER preflight pass (dataset v0.4)
 dataset: ${manifest.datasetId} (${manifest.caseCount} cases, sha256 ${manifest.casesSha256.slice(0, 12)}…)
 splits: dev=${manifest.splitCounts.dev} / blind=${manifest.splitCounts.blind} / red-team=${manifest.splitCounts["red-team"]}
+kinds: positive=${kindCounts.positive ?? 0} / boundary=${kindCounts.boundary ?? 0} (${(boundaryRatio * 100).toFixed(1)}%, floor ${(manifest.kindPolicy.boundaryMinRatio * 100).toFixed(0)}%) / ambiguous=${kindCounts.ambiguous ?? 0}
+boundary pairs: ${manifest.boundaryPairs.length} (${manifest.boundaryPairs.map((entry) => entry.pair).join(", ")})
 intents: ${CHAT_CLASSIFIER_INTENTS.length} (dev/blind/red per intent: ${perIntent})
 contracts: ${CHAT_CLASSIFIER_SCHEMA_VERSION} · ${CHAT_ROUTING_SCHEMA_VERSION} · ${CHAT_CLASSIFIER_PROMPT_VERSION}
 mode: single_enabled (featureFlag ${matrix.featureFlag}); accuracy gate ≥95% overall, red-team 100%
