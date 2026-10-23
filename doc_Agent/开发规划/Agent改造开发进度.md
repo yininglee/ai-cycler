@@ -58,7 +58,7 @@
   - **用户检查清单**：审阅 §2.1 全景映射表与代码实现的一致性（16 意图 → 16 路由）；确认 D-A2 失败降级文案（"对话服务暂时不可用；我不会使用未经验证的结果回答。稍后再试，或先问我累计、本周的汇总统计。"）；确认四个占位模板文案。
 - 用户验收：（**已通过，2026-10-23 用户确认**。`Done` 记录：A1 完成——commit 583280f；16 意图 / 16 路由合同、D-A2 不可用降级、D-A5 单一启用语义落地，700/700 全量测试零回归。下一项 A2/A3。）
 
-### AGT-A2 · 标注集 v0.4 编纂与冻结 · `Review`（2026-10-23）
+### AGT-A2 · 标注集 v0.4 编纂与冻结 · `Review`（2026-10-23，commit 9cacb5f）
 
 - 目标：新增 ≥40 例（4 新意图各 ≥8 + companion ≥8，含边界对抗例）、旧例改标（水平评估例 + open_chat 闲聊例）、red-team 扩充 ≥2、manifest 重算冻结。
 - 进入条件：A1 完成（已满足）。退出条件：schema 校验全过 + 用户批准冻结。
@@ -73,7 +73,7 @@
   - **用户检查清单**：① 抽检 `CHANGES.md` §3 改标 6 例；② 抽检 §4 五类新增例的边界标注；③ 对 §6 三处张力给出裁决（`level_assessment` vs `history_compare` 的 BLIND-26、`training_supervision` vs `training_plan` 的 BLIND-45、`companion` vs `out_of_scope` 的 BLIND-31）；④ **批准冻结**（批准后 manifest 哈希锁定，任何改动须重算并重跑全新 Run）。
 - 用户验收：（待确认）
 
-### AGT-A3 · 分类器 Prompt v0.4 · `Review`（2026-10-23）
+### AGT-A3 · 分类器 Prompt v0.4 · `Review`（2026-10-23，commit 9cacb5f）
 
 - 目标：意图定义与判断规则按 §2 边界迁移重写 + 5 新意图 few-shot（取自 dev 例，避免 blind 泄漏）+ 输出 schema 升 `chat-classifier-v0.2`；**Prompt 以版本化常量写入 `src/chat/` 并随请求直发硅基流动（代码库为唯一事实源）**，`prompts/ride-chat-classifier-v0.2.md` 为归档副本（A0/D-A6 已取消 Coze workflow 维护，原卡"Coze 试运行"口径随之失效）。
 - 进入条件：A0 完成（已满足）+ A2 数据集定稿（few-shot 选例依赖）。退出条件：定向单测（messages 合同）+ 真实调用 smoke 输出符合 v0.2 schema + 归档副本与代码内 prompt 逐字一致。
