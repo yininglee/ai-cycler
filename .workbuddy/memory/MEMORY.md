@@ -69,6 +69,11 @@
 - 根因：守卫目录下 `.lock` 变成了**空目录**，且 `state.json` 只剩 `.tmp` 版。**重启客户端无效**（坏的是磁盘状态）。
 - 修法：到系统终端 `rm -rf` 守卫 hash 目录让它重建，再清各树的 `index.lock`/`HEAD.lock`/`refs/heads/*.lock`。见 `SAFE_DELETE_BULK_GUARD_ERROR` 就不要再在会话内试删除或找 git 绕行，直接请用户去终端。
 
+## 本机验 API 的两个必踩坑（10-24）
+
+- `curl POST /api/chat` 必须带**签名会话 cookie**，否则一律 404（`getRequestSession` 挡掉；首页不下发 cookie）。DEV_SECRET 硬编码在 `src/auth/session.ts`（`ai-cycling-buddy-local-development-secret-v1`），用 `createHmac("sha256", secret).update(base64url(JSON)).digest("base64url")` 造 `payload.sig` 即可。
+- **必须加 `--noproxy '*'`**：本机有代理，`curl http://localhost:3002` 会返回 **502**，容易误判成"服务没起来"。
+
 ## 演示与发布
 
 - 演示记录四条（`test-data/demo-imported-rides/*.fit`，按骑行时间倒序）：`demo-ride-2026-10-05`(30.4km 心率) / `08-20`(31.1km 通勤) / `07-22`(161.8km 长途功率) / `07-18`(56km 起伏功率)。R03 脚本须用 demo-ride id。

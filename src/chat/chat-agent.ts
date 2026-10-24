@@ -33,12 +33,16 @@ import {
   type RideContextToolResult,
 } from "./chat-tools.ts";
 import { readSiliconFlowChatProviderConfig, SiliconFlowChatProvider } from "./siliconflow-chat-provider.ts";
-import { aggregateReply, classifyAggregateQuestion } from "./chat-home.ts";
+import { aggregateOverviewReply, aggregateReply, classifyAggregateQuestion } from "./chat-home.ts";
 import type { RideRecord } from "../domain/ride-schema.ts";
 
 export const CHAT_AGENT_SCHEMA_VERSION = "ride-chat-agent-v0.1" as const;
 export const CHAT_PROVIDER_ADAPTER_VERSION = "chat-http-provider-v0.1" as const;
-export const CHAT_PROVIDER_TIMEOUT_MS = 8_000;
+// 2026-10-24 回归修复：8s → 15s。硅基流动 DeepSeek-V3.2 实测单项耗时 4.5 / 5.3 / 7.4s，
+// 8s 阈值下 9.2s 的调用被判 MODEL_TIMEOUT，用户侧表现为随机出现"对话服务暂时不可用"
+// （同一问题连问三次才成功）。工具循环总预算 30s（CHAT_TOOL_LOOP_TIMEOUT_MS）足以容纳，
+// 上限仍由 readChatProviderConfig 的 25s 兜住，避免配置写飞。
+export const CHAT_PROVIDER_TIMEOUT_MS = 15_000;
 export const CHAT_PROVIDER_MAX_RESPONSE_BYTES = 64 * 1_024;
 
 export type ChatProviderErrorCode =
@@ -1000,8 +1004,13 @@ export async function runChatAgent(input: {
       return { schemaVersion: CHAT_AGENT_SCHEMA_VERSION, decision, execution: "template", modelInvoked: false, reply };
     }
     const kind = classifyAggregateQuestion(input.text);
-    const reply = kind ? aggregateReply(kind, input.aggregateRecords ?? []) : templateReply(decision);
-    console.log(`${tag} → AGGREGATE server-side | kind=${kind ?? "none"} records=${input.aggregateRecords?.length ?? 0} reply.len=${reply.length}`);
+    // 2026-10-24 回归修复：kind 抽不出（如「我最近骑行数据怎么样」）时旧实现回落到 templateReply
+    // 的 default 分支，答"我不会猜测骑行数据"——手里有记录却说没有，属答非所问。
+    // 现改为总览回答：只陈述服务端已确定的事实（次数/总里程/本周/最近日期），不做推断。
+    const reply = kind
+      ? aggregateReply(kind, input.aggregateRecords ?? [])
+      : aggregateOverviewReply(input.aggregateRecords ?? []);
+    console.log(`${tag} → AGGREGATE server-side | kind=${kind ?? "overview"} records=${input.aggregateRecords?.length ?? 0} reply.len=${reply.length}`);
     return { schemaVersion: CHAT_AGENT_SCHEMA_VERSION, decision, execution: "template", modelInvoked: false, reply };
   }
   // CHAT-17 P3：L2b 自主工具循环——模型在只读工具白名单与既有预算内自行组合调用工具

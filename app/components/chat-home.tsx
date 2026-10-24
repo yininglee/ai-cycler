@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 
 import {
-  replyToChatInput,
   type ChatHomeSnapshot,
   type ChatMessage,
 } from "../../src/chat/chat-home.ts";
@@ -26,26 +25,32 @@ import { isChatRoute, type ChatSessionSummary } from "../../src/chat/chat-routin
 
 // CHAT-14 P1：携带当前对话白名单摘要（≤6 条 session_turn 槽位）请求服务端；
 // 响应解析 reply / rideAnchor / decision.route 供槽位记录（锚点继承与挂起确认识别依赖）。
-async function requestChatReply(text: string, summaries: ChatSessionSummary[], fallback: string | null): Promise<{ reply: string | null; route?: string; rideAnchor?: string }> {
+// D-A2「诚实失败优于错误猜测」在前端的落地（2026-10-24 回归修复）。
+// 旧实现在服务端失败时回退到本地正则模板（replyToChatInput）：问「上次我的骑行心率多少？」
+// 被 /(最近|上次).*(骑行|记录)/ 命中，答成"最近一次骑行记录的日期是 10/5"——答非所问。
+// 现在任何业务答案必须来自服务端；拿不到就如实说拿不到。
+const CHAT_UNAVAILABLE_REPLY = "对话服务暂时不可用；我不会使用未经验证的结果回答。";
+
+async function requestChatReply(text: string, summaries: ChatSessionSummary[]): Promise<{ reply: string | null; route?: string; rideAnchor?: string }> {
   try {
     const response = await fetch("/api/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(summaries.length ? { text, summaries } : { text }),
     });
-    if (!response.ok) return { reply: fallback };
+    if (!response.ok) return { reply: CHAT_UNAVAILABLE_REPLY };
     const payload: unknown = await response.json();
     const record = payload as { reply?: unknown; rideAnchor?: unknown; decision?: { route?: unknown } } | null;
     const reply = record?.reply;
     const rideAnchor = record?.rideAnchor;
     const route = record?.decision?.route;
     return {
-      reply: typeof reply === "string" && reply.trim() ? reply : fallback,
+      reply: typeof reply === "string" && reply.trim() ? reply : CHAT_UNAVAILABLE_REPLY,
       ...(isChatRoute(route) ? { route } : {}),
       ...(typeof rideAnchor === "string" && /^\d{4}-\d{2}-\d{2}$/.test(rideAnchor) ? { rideAnchor } : {}),
     };
   } catch {
-    return { reply: fallback };
+    return { reply: CHAT_UNAVAILABLE_REPLY };
   }
 }
 
@@ -136,11 +141,11 @@ export function ChatHome({ snapshot }: { snapshot: ChatHomeSnapshot }) {
     setSession((current) => appendChatTurn(current, userText, reply, source, slotTurn));
   }
 
-  async function ask(userText: string, fallback: string | null, source: ChatSessionSummarySource) {
+  async function ask(userText: string, source: ChatSessionSummarySource) {
     setPendingTurn({ userText });
     // CHAT-14 P1：携带当前对话白名单摘要请求服务端（指代消解/锚点继承依赖）。
     const summaries = buildChatSessionSummaries(activeConversation);
-    const result = await requestChatReply(userText, summaries, fallback);
+    const result = await requestChatReply(userText, summaries);
     setPendingTurn(null);
     addReply(userText, result.reply, source, { route: result.route, rideAnchor: result.rideAnchor });
   }
@@ -160,7 +165,7 @@ export function ChatHome({ snapshot }: { snapshot: ChatHomeSnapshot }) {
 
   function askQuickQuestion(label: string) {
     if (pending) return;
-    void ask(label, null, "quick_question");
+    void ask(label, "quick_question");
   }
 
   function submit(event: FormEvent<HTMLFormElement>) {
@@ -169,7 +174,8 @@ export function ChatHome({ snapshot }: { snapshot: ChatHomeSnapshot }) {
     if (!value || pending) return;
     setInput("");
     // CHAT-12 P1：聚合问题由服务端 "aggregate" 路由确定性作答，不再客户端拦截。
-    void ask(value, replyToChatInput(value, snapshot), "typed_input");
+    // 2026-10-24 回归修复：不再传本地正则兜底，失败就如实降级（见 CHAT_UNAVAILABLE_REPLY）。
+    void ask(value, "typed_input");
   }
 
   return <section className="chat-home" aria-label="AI 骑行伙伴">

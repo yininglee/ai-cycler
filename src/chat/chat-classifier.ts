@@ -121,7 +121,10 @@ export function readSiliconFlowClassifierConfig(
     apiUrl: parsedUrl.toString(),
     apiToken,
     modelId: environment.SILICONFLOW_CLASSIFIER_MODEL_ID?.trim() || DEFAULT_SILICONFLOW_CLASSIFIER_MODEL_ID,
-    timeoutMs: positiveInteger(environment.SILICONFLOW_CLASSIFIER_TIMEOUT_MS, 8_000, 25_000),
+    // 2026-10-24：默认 8s → 12s。实测分类耗时 0.78–4.2s（v0.4 prompt 4127 字符），
+    // 4.2s 已占满 8s 的一半；分类器失败是**终局降级**（直接回"模型暂不可用"，无规则兜底，
+    // 见 D-A2），代价高于主对话重试，故留更宽余量。
+    timeoutMs: positiveInteger(environment.SILICONFLOW_CLASSIFIER_TIMEOUT_MS, 12_000, 25_000),
     maxResponseBytes: positiveInteger(environment.SILICONFLOW_CLASSIFIER_MAX_RESPONSE_BYTES, 16 * 1_024, 262_144),
   };
 }

@@ -43,7 +43,10 @@ export function readSiliconFlowChatProviderConfig(
     apiUrl: parsedUrl.toString(),
     apiToken,
     modelId: environment.SILICONFLOW_CHAT_MODEL_ID?.trim() || DEFAULT_SILICONFLOW_CHAT_MODEL_ID,
-    timeoutMs: positiveInteger(environment.SILICONFLOW_CHAT_TIMEOUT_MS, 8_000, 25_000),
+    // 2026-10-24 回归修复：默认 8s → 15s。硅基流动 DeepSeek-V3.2 实测单次耗时 4.5 / 5.3 / 7.4s，
+    // 9.2s 的调用在 8s 阈值下被判 MODEL_TIMEOUT → 用户侧表现为"同一问题连问三次才成功"。
+    // 上限 25s 不变；工具循环总预算 30s 可容纳，不会把失败推迟到前端等待极限之外。
+    timeoutMs: positiveInteger(environment.SILICONFLOW_CHAT_TIMEOUT_MS, 15_000, 25_000),
     maxResponseBytes: positiveInteger(environment.SILICONFLOW_CHAT_MAX_RESPONSE_BYTES, 64 * 1_024, 262_144),
   };
 }

@@ -113,24 +113,12 @@ function responseForQuestion(id: ChatQuickQuestionId, snapshot: ChatHomeSnapshot
   return capabilityText(snapshot);
 }
 
-function classifyInput(text: string): ChatQuickQuestionId | "social" | "boundary" {
-  const compact = text.replaceAll(/\s/g, "");
-  if (/^(你好|嗨|哈喽|谢谢|感谢)/.test(compact)) return "social";
-  if (/(累计|一共|总里程|总共)/.test(compact)) return "total";
-  if (/(本周|这周)/.test(compact)) return "week";
-  if (/(最近|上次).*(骑行|记录)|(骑行|记录).*(最近|上次)/.test(compact)) return "latest";
-  if (/(能力|哪些数据|可分析|有什么数据)/.test(compact)) return "capabilities";
-  return "boundary";
-}
-
-export function replyToChatInput(input: string, snapshot: ChatHomeSnapshot): string | null {
-  const text = input.trim();
-  if (!text) return null;
-  const intent = classifyInput(text);
-  if (intent === "social") return "你好。这里目前只提供基于你的最小骑行摘要的确定性回答。";
-  if (intent === "boundary") return "对话服务暂时不可用。我可以直接回答累计、本周、最近一次记录和可用数据范围；趋势比较、路线、体能评分和训练建议尚未开放。";
-  return responseForQuestion(intent, snapshot);
-}
+// 已退役（2026-10-24，A5 后回归修复）：`replyToChatInput` / `classifyInput` 曾作为
+// **前端兜底**（服务端失败时用本地正则猜业务答案）。实测缺陷：问「上次我的骑行心率多少？」
+// 被 /(最近|上次).*(骑行|记录)/ 命中 → 答成"最近记录日期"，答非所问。
+// 该行为违反 D-A2「诚实失败优于错误猜测」——服务端早已诚实降级，前端仍保留 M1 时代的正则硬猜。
+// 现改为：服务端失败时前端只回统一降级话术（见 app/components/chat-home.tsx CHAT_UNAVAILABLE_REPLY），
+// 任何业务答案必须来自服务端确定性路由或模型校验后的结果。此函数不再提供，不得复活。
 
 export function replyToQuickQuestion(id: ChatQuickQuestionId, snapshot: ChatHomeSnapshot): string {
   return responseForQuestion(id, snapshot);
@@ -154,4 +142,27 @@ export function classifyAggregateQuestion(text: string): ChatAggregateKind | nul
 
 export function aggregateReply(kind: ChatAggregateKind, records: RideRecord[], now = new Date()): string {
   return responseForQuestion(kind, buildChatHomeSnapshot(records, now));
+}
+
+/**
+ * 聚合路由但抽不出具体口径时的总览回答（2026-10-24，A5 后回归修复）。
+ *
+ * 缺陷背景：`route=aggregate` + `classifyAggregateQuestion` 返回 null（例如「我最近骑行数据怎么样？」
+ * 既无"累计"也无"本周"关键词）时，旧实现回落到 `templateReply` 的 default 分支，回答
+ * 「当前请求需要先取得已授权的只读工具结果…我不会猜测骑行数据」——用户拿到一句自我否定，
+ * 而实际上服务端手里已有完整记录，属于"有数据却说没有"。
+ *
+ * 口径：只陈述服务端已确定的事实（次数/总里程/本周/最近日期），不做任何推断，
+ * 因此不违反"不猜测"原则；再给出下一句可收窄的方向，避免用户反复撞同一句话。
+ */
+export function aggregateOverviewReply(records: RideRecord[], now = new Date()): string {
+  const snapshot = buildChatHomeSnapshot(records, now);
+  if (snapshot.totalRideCount === 0) return "你还没有可汇总的骑行记录。可以先从“骑行”页导入一条 FIT 或 GPX。";
+  const lines = [
+    `已记录 ${snapshot.totalRideCount} 次骑行，累计 ${compactNumber(snapshot.totalDistanceKm)} km。`,
+    `本周 ${snapshot.weekRideCount} 次、${compactNumber(snapshot.weekDistanceKm)} km。`,
+    snapshot.latestRideDateLabel ? `最近一次是 ${snapshot.latestRideDateLabel}。` : null,
+    "想看某次的具体指标（心率、功率、踏频），或某次与历史的对比，可以直接问我。",
+  ].filter((line): line is string => Boolean(line));
+  return lines.join("");
 }
