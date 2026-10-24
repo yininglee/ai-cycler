@@ -147,5 +147,6 @@ m7 工作树就绪（`npm install` + `tsc --noEmit` 通过、`.env.local`/`.env.
 
 ## 8. 当前状态与唯一下一步
 
-- 当前：粗版路线图 v1 已评审（P1/P2/P5 已拍板，2026-10-23）。**AGT-A 细工作项规划已产出并评审通过**（D-A1~D-A6 全部拍板，2026-10-23）：[AGT-A 意图路由 v0.4 工作项规划](AGT-A_意图路由v0.4_工作项规划.md)（**7 工作项 A0~A6**，A0 为对话链路 provider 迁移前置项，A5 全新 Run 需用户授权）。执行事实源 [Agent 改造开发进度](Agent改造开发进度.md) 已建立。**AI-Spec 集中合同文档骨架版已建立（2026-10-23）**：[AI-Spec 对话 Agent 能力规约](../AI-Spec_对话Agent能力规约.md)，各里程碑细规划定稿后按 §11 增补记录并入。**业务交互 PRD 已定时机**：挂 AGT-F 细规划前置（见 §4 AGT-F 段），AGT-A~E 阶段无新前端交互面、无需提前产出。无任何 `In Progress` 任务。
-- 唯一下一步：用户提供硅基流动 API key → 启动 `AGT-A0`（provider 迁移：客户端 + prompt v0.3/v0.1 原样搬入代码库 + env 切 `SILICONFLOW_*`）。
+- 当前：粗版路线图 v1 已评审（P1/P2/P5 已拍板，2026-10-23）。**`AGT-A` 已于 2026-10-24 用户验收、里程碑 `Done`（7/7）**——意图 11→16、路由 12→16、标注集 v0.4 冻结（83 例）、分类器 Prompt `v0.4.1`、对话链路迁硅基流动、全新 Run **83/83 全对**；[重评报告](../AGT-A_意图路由v0.4_重评报告.md) 已归档。执行事实源 [Agent 改造开发进度](Agent改造开发进度.md)。**AI-Spec 集中合同文档已建立并随 A 增补**：[AI-Spec 对话 Agent 能力规约](../AI-Spec_对话Agent能力规约.md)。**业务交互 PRD 已定时机**：挂 AGT-F 细规划前置（见 §4 AGT-F 段）。当前**无 `In Progress` 任务**。
+- AGT-A 遗留（带入后续，不得遗忘）：① **线上 `.env.production` 仍为规则基线**，是否启用分类器待用户决定（启用后四个占位模板与"模型暂不可用"降级同时可见）；② blind 独立性证据挂 `AGT-C`；③ 复合问法多标签重审挂 `AGT-B`；④ 四个占位路由（`training_plan`/`training_supervision`/`level_assessment`/`kb_qa`）的交互设计挂 `AGT-F` 前置。
+- 唯一下一步：启动 **`AGT-B` 细规划**（只读工具面与 L2b 循环扩展）——首项即 `get_ride_history` 放开 30 天窗口，会动 `history_compare`/`aggregate` 口径，**须开新 Run**。

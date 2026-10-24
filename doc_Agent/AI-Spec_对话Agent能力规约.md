@@ -146,7 +146,7 @@
 | 2026-10-24 | AGT-A4 | 评测脚本指向 v0.4：kind 分组归因（只诊断不放宽门槛）、kind 冻结一致性校验、run 记录升 v0.2（`runtimeMode`/`contracts`/`signOffReady`） | ✅ |
 | 2026-10-24 | AGT-A5 | 两轮全新 Run（数据集冻结不变）：Run 1 `82/83`（`CLS-BLIND-01` 因"表现"一词误判 history_compare）→ prompt **v0.4.1** 给 history_compare 加"必须有对比参照或变化词"硬条件 → Run 2 **`83/83` 全对**（dev 13/13 · blind 60/60 · red-team 10/10；kind positive/boundary/ambiguous 全满）。分类器按 D-A5 启用（`.env.local`） | ✅ |
 | 2026-10-24 | AGT-A5（回归） | 分类器之外三处缺陷（用户实测暴露，判定全对）：**R1** 前端本地正则兜底会猜答案（问心率答日期）→ 删除 `replyToChatInput`，失败统一诚实降级（落地 D-A2）；**R2** 主对话超时 8s→15s（实测 8.17s 成功样本）、分类器 8s→12s；**R3** `aggregate` 抽不出口径时答"我不会猜测骑行数据" → 新增 `aggregateOverviewReply` 只陈述已确定事实 | ✅ |
-| 2026-10-24 | AGT-A6 | 里程碑收口：重评报告归档 `doc_Agent/AGT-A_意图路由v0.4_重评报告.md`（8 章，含 §6 六条口径局限）；粗规划 AGT-A 标 `Done` 并登记三条执行期偏离；A0~A5 全部 `Done`。**线上 `.env.production` 仍规则基线，启用分类器待用户决定** | ✅（A6 待用户验收整体） |
+| 2026-10-24 | AGT-A6 | 里程碑收口：重评报告归档 `doc_Agent/AGT-A_意图路由v0.4_重评报告.md`（8 章，含 §6 六条口径局限）；粗规划 AGT-A 标 `Done` 并登记三条执行期偏离；A0~A5 全部 `Done`。**线上 `.env.production` 仍规则基线，启用分类器待用户决定** | ✅ **AGT-A 里程碑 `Done`（7/7，2026-10-24 用户验收）** |
 | 待补 | AGT-B | 5 新工具完整参数/返回 schema、白名单与预算重标定值、catalog 精简口径 | 占位 |
 | 待补 | AGT-C | 4 生成任务簇 prompt 版本索引、KB 引用校验规则细则 | 占位 |
 | 待补 | AGT-D | 分层混合上下文细则、校验器白名单扩展口径（P8 拍板后） | 占位 |
