@@ -1,0 +1,100 @@
+{
+  "datasetId": "AEVAL-TOOL-ORCHESTRATION",
+  "repeat": 3,
+  "total": 3,
+  "passed": 2,
+  "avgElapsedMs": 18592,
+  "slowestElapsedMs": 22227,
+  "promptVersion": "ride-chat-prompt-v0.2.7",
+  "results": [
+    {
+      "caseId": "ORCH-09",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 22227,
+      "replyPreview": "根据2026年10月24日的骑行记录，可以看到以下数据：距离约56公里，用时约1小时53分钟，爬升980米，平均速度约29.7公里/小时，最高速度约68.8公里",
+      "steps": [
+        "get_ride_context:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-09",
+      "round": 2,
+      "pass": false,
+      "detail": "未交付（exec=template fb=TOOLS_LOOP_INVALID_TOOL_CALL） requiredAnyOf 未命中:get_capabilities/get_ride_context 拒调用:get_capabilities/INVALID_TOOL_CALL",
+      "execution": "template",
+      "fallback": "TOOLS_LOOP_INVALID_TOOL_CALL",
+      "elapsedMs": 17379,
+      "replyPreview": "这个查询请求不在当前允许的只读工具范围内，我不能按这种方式查询。可以换成支持的问法，例如「距离最远的那次骑行是哪次」。",
+      "steps": [
+        "get_capabilities:rejected"
+      ]
+    },
+    {
+      "caseId": "ORCH-09",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 16171,
+      "replyPreview": "你最近一次骑行（2026年10月24日）的数据显示：距离约56公里，用时约1小时53分钟，爬升980米。平均速度约29.7公里/小时，最高速度约68.8公里/小",
+      "steps": [
+        "get_ride_context:completed"
+      ]
+    }
+  ],
+  "timings": [
+    {
+      "caseId": "ORCH-09",
+      "round": 1,
+      "ok": true,
+      "headersMs": 7715,
+      "bodyMs": 1,
+      "totalMs": 7716
+    },
+    {
+      "caseId": "ORCH-09",
+      "round": 1,
+      "ok": true,
+      "headersMs": 14490,
+      "bodyMs": 1,
+      "totalMs": 14491
+    },
+    {
+      "caseId": "ORCH-09",
+      "round": 2,
+      "ok": true,
+      "headersMs": 17375,
+      "bodyMs": 0,
+      "totalMs": 17376
+    },
+    {
+      "caseId": "ORCH-09",
+      "round": 3,
+      "ok": true,
+      "headersMs": 4848,
+      "bodyMs": 0,
+      "totalMs": 4848
+    },
+    {
+      "caseId": "ORCH-09",
+      "round": 3,
+      "ok": true,
+      "headersMs": 11307,
+      "bodyMs": 0,
+      "totalMs": 11307
+    }
+  ],
+  "timingSummary": {
+    "calls": 5,
+    "headersP50Ms": 11307,
+    "headersP90Ms": 17375,
+    "bodyP50Ms": 0,
+    "bodyP90Ms": 1,
+    "failByPhase": {}
+  }
+}

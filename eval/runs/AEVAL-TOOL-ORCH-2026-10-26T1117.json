@@ -1,0 +1,108 @@
+{
+  "datasetId": "AEVAL-TOOL-ORCHESTRATION",
+  "repeat": 3,
+  "total": 3,
+  "passed": 3,
+  "avgElapsedMs": 16510,
+  "slowestElapsedMs": 23159,
+  "promptVersion": "ride-chat-prompt-v0.2.7",
+  "results": [
+    {
+      "caseId": "ORCH-01",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 13754,
+      "replyPreview": "你最近一次骑行（2026年10月24日）的平均功率是230瓦，标准化功率是244瓦。",
+      "steps": [
+        "get_ride_context:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-01",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 23159,
+      "replyPreview": "根据2026年10月24日这次骑行的数据，平均功率是230瓦，标准化功率是244瓦。",
+      "steps": [
+        "get_ride_context:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-01",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 12617,
+      "replyPreview": "根据 2026年10月24日 这次骑行的数据，平均功率是 230 瓦。",
+      "steps": [
+        "get_ride_context:completed"
+      ]
+    }
+  ],
+  "timings": [
+    {
+      "caseId": "ORCH-01",
+      "round": 1,
+      "ok": true,
+      "headersMs": 6981,
+      "bodyMs": 2,
+      "totalMs": 6983
+    },
+    {
+      "caseId": "ORCH-01",
+      "round": 1,
+      "ok": true,
+      "headersMs": 6747,
+      "bodyMs": 1,
+      "totalMs": 6748
+    },
+    {
+      "caseId": "ORCH-01",
+      "round": 2,
+      "ok": true,
+      "headersMs": 12951,
+      "bodyMs": 0,
+      "totalMs": 12952
+    },
+    {
+      "caseId": "ORCH-01",
+      "round": 2,
+      "ok": true,
+      "headersMs": 10193,
+      "bodyMs": 0,
+      "totalMs": 10193
+    },
+    {
+      "caseId": "ORCH-01",
+      "round": 3,
+      "ok": true,
+      "headersMs": 6940,
+      "bodyMs": 1,
+      "totalMs": 6941
+    },
+    {
+      "caseId": "ORCH-01",
+      "round": 3,
+      "ok": true,
+      "headersMs": 5667,
+      "bodyMs": 1,
+      "totalMs": 5668
+    }
+  ],
+  "timingSummary": {
+    "calls": 6,
+    "headersP50Ms": 6981,
+    "headersP90Ms": 12951,
+    "bodyP50Ms": 1,
+    "bodyP90Ms": 2,
+    "failByPhase": {}
+  }
+}

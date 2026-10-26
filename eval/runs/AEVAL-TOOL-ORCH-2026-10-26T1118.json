@@ -1,0 +1,116 @@
+{
+  "datasetId": "AEVAL-TOOL-ORCHESTRATION",
+  "repeat": 3,
+  "total": 3,
+  "passed": 3,
+  "avgElapsedMs": 18576,
+  "slowestElapsedMs": 26096,
+  "promptVersion": "ride-chat-prompt-v0.2.7",
+  "results": [
+    {
+      "caseId": "ORCH-08",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 18260,
+      "replyPreview": "根据您最近一次骑行的路线概要，爬坡路段约 3.3 公里，平路约 46.7 公里，下坡路段为 0 公里。爬坡里程占总里程的比例相对较小。",
+      "steps": [
+        "get_route_overview:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-08",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "repaired",
+      "fallback": "-",
+      "elapsedMs": 26096,
+      "replyPreview": "根据您最近一次骑行的路线分析，爬坡路段约3.3公里，平路约46.7公里，没有下坡路段。路线中包含一段约3.3公里的连续爬坡。",
+      "steps": [
+        "get_route_overview:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-08",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 11372,
+      "replyPreview": "根据最近一次骑行的路线数据，爬坡路段约3.3公里，平路路段约46.7公里，没有下坡路段。爬坡里程占总里程的比例相对较小。",
+      "steps": [
+        "get_route_overview:completed"
+      ]
+    }
+  ],
+  "timings": [
+    {
+      "caseId": "ORCH-08",
+      "round": 1,
+      "ok": true,
+      "headersMs": 6447,
+      "bodyMs": 1,
+      "totalMs": 6448
+    },
+    {
+      "caseId": "ORCH-08",
+      "round": 1,
+      "ok": true,
+      "headersMs": 11800,
+      "bodyMs": 1,
+      "totalMs": 11801
+    },
+    {
+      "caseId": "ORCH-08",
+      "round": 2,
+      "ok": true,
+      "headersMs": 7525,
+      "bodyMs": 0,
+      "totalMs": 7525
+    },
+    {
+      "caseId": "ORCH-08",
+      "round": 2,
+      "ok": true,
+      "headersMs": 7266,
+      "bodyMs": 1,
+      "totalMs": 7267
+    },
+    {
+      "caseId": "ORCH-08",
+      "round": 2,
+      "ok": true,
+      "headersMs": 11298,
+      "bodyMs": 0,
+      "totalMs": 11299
+    },
+    {
+      "caseId": "ORCH-08",
+      "round": 3,
+      "ok": true,
+      "headersMs": 4299,
+      "bodyMs": 0,
+      "totalMs": 4300
+    },
+    {
+      "caseId": "ORCH-08",
+      "round": 3,
+      "ok": true,
+      "headersMs": 7066,
+      "bodyMs": 0,
+      "totalMs": 7066
+    }
+  ],
+  "timingSummary": {
+    "calls": 7,
+    "headersP50Ms": 7266,
+    "headersP90Ms": 11800,
+    "bodyP50Ms": 0,
+    "bodyP90Ms": 1,
+    "failByPhase": {}
+  }
+}

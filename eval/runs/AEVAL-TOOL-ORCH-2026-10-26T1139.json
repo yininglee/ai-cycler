@@ -1,0 +1,126 @@
+{
+  "datasetId": "AEVAL-TOOL-ORCHESTRATION",
+  "repeat": 3,
+  "total": 3,
+  "passed": 2,
+  "avgElapsedMs": 18872,
+  "slowestElapsedMs": 22888,
+  "promptVersion": "ride-chat-prompt-v0.2.7",
+  "results": [
+    {
+      "caseId": "ORCH-11",
+      "round": 1,
+      "pass": false,
+      "detail": "缺工具:get_route_overview",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 11038,
+      "replyPreview": "根据您过去一年的骑行记录，距离最远的是2026年10月24日的那次，距离为56.0公里。关于那次骑行的爬坡情况，我目前没有足够的信息。",
+      "steps": [
+        "find_ride:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-11",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 22690,
+      "replyPreview": "你距离最远的一次骑行是2026年10月24日，那次骑行了56.0公里。关于那次骑行的爬坡情况，路线中爬坡路段约为3.3公里，平路路段约为46.7公里，下坡路段为",
+      "steps": [
+        "find_ride:completed",
+        "get_route_overview:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-11",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 22888,
+      "replyPreview": "根据您的历史记录，距离最远的是2026年10月24日的一次骑行，总距离为56.0公里。关于那次骑行的爬坡情况，根据路线概要分析，其爬坡路段约为3.3公里，平路路",
+      "steps": [
+        "find_ride:completed",
+        "get_route_overview:completed"
+      ]
+    }
+  ],
+  "timings": [
+    {
+      "caseId": "ORCH-11",
+      "round": 1,
+      "ok": true,
+      "headersMs": 4756,
+      "bodyMs": 1,
+      "totalMs": 4757
+    },
+    {
+      "caseId": "ORCH-11",
+      "round": 1,
+      "ok": true,
+      "headersMs": 6274,
+      "bodyMs": 0,
+      "totalMs": 6274
+    },
+    {
+      "caseId": "ORCH-11",
+      "round": 2,
+      "ok": true,
+      "headersMs": 5431,
+      "bodyMs": 0,
+      "totalMs": 5432
+    },
+    {
+      "caseId": "ORCH-11",
+      "round": 2,
+      "ok": true,
+      "headersMs": 8034,
+      "bodyMs": 0,
+      "totalMs": 8034
+    },
+    {
+      "caseId": "ORCH-11",
+      "round": 2,
+      "ok": true,
+      "headersMs": 9210,
+      "bodyMs": 1,
+      "totalMs": 9211
+    },
+    {
+      "caseId": "ORCH-11",
+      "round": 3,
+      "ok": true,
+      "headersMs": 6039,
+      "bodyMs": 0,
+      "totalMs": 6039
+    },
+    {
+      "caseId": "ORCH-11",
+      "round": 3,
+      "ok": true,
+      "headersMs": 6341,
+      "bodyMs": 1,
+      "totalMs": 6342
+    },
+    {
+      "caseId": "ORCH-11",
+      "round": 3,
+      "ok": true,
+      "headersMs": 10500,
+      "bodyMs": 0,
+      "totalMs": 10500
+    }
+  ],
+  "timingSummary": {
+    "calls": 8,
+    "headersP50Ms": 6341,
+    "headersP90Ms": 10500,
+    "bodyP50Ms": 0,
+    "bodyP90Ms": 1,
+    "failByPhase": {}
+  }
+}
