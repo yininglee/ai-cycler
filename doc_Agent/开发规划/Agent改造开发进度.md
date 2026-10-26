@@ -634,7 +634,7 @@ case "WRITE_NOT_SUPPORTED": return "骑行记录来自你导入的文件，我�
 
 **审计遗留（转 B6/B7）**：
 - **编排集 93.7% 距 95% 门槛差 1 次**：4 次失败全为单次波动（ORCH-05 1/3、07/09/11/12/16/18 各 2/3），无系统性失败。B6 报告须沿用 `failByPhase` 校正口径。
-- `.env.production` 的 `CHAT_MODEL_ENABLED=true` / `CHAT_CLASSIFIER_MODE=active` 属 A 阶段既定决策，不违反 B5 约束；**A 遗留项"是否随重部署放行 kb_qa/level_assessment"仍在 B7 收口时拍板**。
+- **m7 分支至今从未部署**——线上运行的是 m6 工作树，不含 B 的工具面（9 工具）与 L2b 循环。**待下次部署 m7 时拍板**是否放行 `kb_qa` / `level_assessment`。（更正：此前把 m7 本地未跟踪的 `.env.production` 当作线上配置，是错的。）
 - fixture 局限：22 条记录复用同一 fixture（数值一致）→ "最近一次 vs 平时"的正确答案是"持平"，测不出真实差异；建议 B6 前注入差异化数值。
 - 已知时间敏感 flaky 测试 `latencyMs >= 30`（`candidate service`）在 CPU 竞争时偶发失败，单独跑通过。
 

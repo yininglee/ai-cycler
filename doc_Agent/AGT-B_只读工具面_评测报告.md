@@ -174,7 +174,7 @@
 
 | 项 | 归属 | 说明 |
 |---|---|---|
-| 线上是否放行 `kb_qa` / `level_assessment` | **B7 待用户拍板** | `.env.production` 现为 `CHAT_MODEL_ENABLED=true` + `CHAT_CLASSIFIER_MODE=active`（A 阶段既定），但两个新路由线上仍是占位 |
+| **下次部署 m7 时**是否放行 `kb_qa` / `level_assessment` | **B7 待用户拍板** | **m7 分支至今从未部署**——当前线上运行的是 `m6-m4-optimization` 工作树，**不含 B 的工具面（9 工具）、L2b 循环与两个新路由**。m7 目录下的 `.env.production` 是**未纳入 git 跟踪的本地文件**，不代表线上配置；线上实际由 m6 部署时的环境变量决定 |
 | ORCH-11 跨轮依赖（2 次） | 接受 | 见 §6 |
 | `find_ride` 是否支持 `elevationGainM` | AGT-C 评估 | 能力面扩张会改变合法输入面，不在 B 范围 |
 | 复合问法多标签重审 | AGT-C | 沿用 B 的"单标签 + 主意图优先级"结论 |
