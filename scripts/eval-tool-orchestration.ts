@@ -204,7 +204,7 @@ type BoundaryCase = {
 
 function loadCases(): Array<OrchestrationCase | BoundaryCase> {
   if (set === "orchestration") {
-    const data = JSON.parse(readFileSync("eval/ride-chat-tool-orchestration-v0.1/cases.json", "utf8"));
+    const data = JSON.parse(readFileSync("eval/ride-chat-tool-orchestration-v0.2/cases.json", "utf8"));
     return data.cases;
   }
   const data = JSON.parse(readFileSync("eval/ride-chat-boundary-v0.1/cases.json", "utf8"));

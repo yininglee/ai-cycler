@@ -313,6 +313,11 @@ export type TrainingLoadToolResult = {
   anchorDate: string;
   windowDays: number;
   loadDays: number;
+  // AGT-B5（第 15 个缺陷，ORCH-05/16 驱动）：**被跳过的记录数必须可引用**。
+  // 这些数字原本只以 `rides_without_tss:<reason>:<count>` 的字符串形式进 limitations，
+  // 模型读得到文字、写出来却不在数字白名单 → 说"有 4 次因缺功率未计入"就被判越权。
+  // 结构化后既进 numericFacts，也让前端/日志能直接读。
+  ridesWithoutTss: Array<{ reason: string; count: number }>;
   ctl?: number;
   atl?: number;
   tsb?: number;
@@ -916,6 +921,8 @@ export const chatToolSpecs: Record<ChatToolName, ChatToolSpec> = {
         ...(result.ctl !== undefined ? [{ value: result.ctl, key: "ctl" }] : []),
         ...(result.atl !== undefined ? [{ value: result.atl, key: "atl" }] : []),
         ...(result.tsb !== undefined ? [{ value: result.tsb, key: "tsb" }] : []),
+        // 每条跳过原因的计数都要可引用（"4 次因缺功率未计入"）
+        ...result.ridesWithoutTss.map((item) => ({ value: item.count, key: "ridesWithoutTss" })),
         ...result.claims.map((claim) => ({ value: claim.value, unit: claim.unit, key: claim.key, displayValue: claim.displayValue })),
       ]
       : emptyFacts),
@@ -1171,6 +1178,7 @@ async function buildTrainingLoadResult(
   }
   // 逐条原因聚合成一行，避免 limitations 随记录数线性膨胀。
   for (const [reason, count] of unavailableByReason) limitations.push(`rides_without_tss:${reason}:${count}`);
+  const ridesWithoutTss = [...unavailableByReason.entries()].map(([reason, count]) => ({ reason: String(reason), count }));
 
   const snapshot = buildRidePmcLoadV2({
     // PMC 是"截至某日的全局负荷"，不绑定某次骑行；固定伪 id 让 claimId 稳定可溯。
@@ -1195,6 +1203,7 @@ async function buildTrainingLoadResult(
   return {
     schemaVersion: CHAT_TOOL_SCHEMA_VERSION,
     tool: "get_training_load",
+    ridesWithoutTss,
     status: snapshot.status === "available" ? "available" : "unavailable",
     ...(snapshot.reason ? { reason: snapshot.reason } : {}),
     anchorDate: snapshot.anchorDate,

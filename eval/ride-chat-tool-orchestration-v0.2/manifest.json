@@ -1,0 +1,29 @@
+{
+  "schemaVersion": "ride-chat-eval-manifest-v0.1",
+  "datasetId": "AEVAL-TOOL-ORCHESTRATION",
+  "casesFile": "cases.json",
+  "casesSha256": "121c4b2f400c636ada7d39aaf171e14d024f9f7e95df6e30e58ee312f6a9ab2e",
+  "caseCount": 21,
+  "splitCounts": {
+    "regression": 13,
+    "boundary": 6,
+    "negative": 2
+  },
+  "repeat": 3,
+  "frozenAt": "2026-10-24",
+  "versionMatrix": {
+    "agentSchemaVersion": "ride-chat-agent-v0.1",
+    "routingSchemaVersion": "chat-routing-v0.2",
+    "outputSchemaVersion": "ride-chat-output-v0.2",
+    "toolCallSchemaVersion": "ride-chat-tool-call-v0.1",
+    "toolScope": "9 tools (autonomous_tools catalog)",
+    "promptVersion": "ride-chat-prompt-v0.2.3",
+    "provider": "siliconflow:deepseek-ai/DeepSeek-V3.2",
+    "loopBudget": "per-round 4 / total 5 / provider 6 / 45s"
+  },
+  "scoring": "requiredTools 齐全 + 无 forbiddenTools + 调用参数合法（不比序列，D-B8）",
+  "freezeNote": "v0.2：ORCH-17 期望改为 requiredAnyOf（两条合法路径），其余 20 例与 v0.1 完全一致。待用户批准冻结。",
+  "version": "v0.2",
+  "supersedes": "eval/ride-chat-tool-orchestration-v0.1",
+  "note": "AGT-B5：ORCH-17 判分口径修正（一条路径 → 两条合法路径）"
+}

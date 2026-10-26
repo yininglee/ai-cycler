@@ -36,7 +36,7 @@ function checkManifest(dir: string, label: string): { caseCount: number; cases: 
 const TOOL_SET = new Set<string>(Object.keys(chatToolSpecs));
 
 // ---- 编排集 ----
-const orch = checkManifest("eval/ride-chat-tool-orchestration-v0.1", "orchestration");
+const orch = checkManifest("eval/ride-chat-tool-orchestration-v0.2", "orchestration");
 const evidenceKinds = new Set<string>();
 for (const item of orch.cases) {
   const expected = item.expected as { requiredTools: string[]; requiredAnyOf?: string[]; forbiddenTools: string[]; requiredEvidence: string[] };
