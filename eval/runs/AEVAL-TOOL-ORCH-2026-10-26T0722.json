@@ -1,0 +1,97 @@
+{
+  "datasetId": "AEVAL-TOOL-ORCHESTRATION",
+  "repeat": 2,
+  "total": 2,
+  "passed": 2,
+  "avgElapsedMs": 19950,
+  "slowestElapsedMs": 20048,
+  "promptVersion": "ride-chat-prompt-v0.2.7",
+  "results": [
+    {
+      "caseId": "ORCH-11",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 19852,
+      "replyPreview": "根据过去一年的记录，你距离最远的一次骑行是2026年10月24日，那次骑行了约56公里。关于爬坡情况，那次骑行的路线中，爬坡路段约为3.3公里，平路路段约为46",
+      "steps": [
+        "find_ride:completed",
+        "get_route_overview:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-11",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 20048,
+      "replyPreview": "根据您过去一年的骑行记录，距离最远的一次是2026年10月24日，那次骑行了约56公里。关于那次骑行的爬坡情况，根据路线概要，爬坡路段约为3.3公里，平路路段约",
+      "steps": [
+        "find_ride:completed",
+        "get_route_overview:completed"
+      ]
+    }
+  ],
+  "timings": [
+    {
+      "caseId": "ORCH-11",
+      "round": 1,
+      "ok": true,
+      "headersMs": 5997,
+      "bodyMs": 1,
+      "totalMs": 5998
+    },
+    {
+      "caseId": "ORCH-11",
+      "round": 1,
+      "ok": true,
+      "headersMs": 4676,
+      "bodyMs": 0,
+      "totalMs": 4676
+    },
+    {
+      "caseId": "ORCH-11",
+      "round": 1,
+      "ok": true,
+      "headersMs": 9160,
+      "bodyMs": 0,
+      "totalMs": 9161
+    },
+    {
+      "caseId": "ORCH-11",
+      "round": 2,
+      "ok": true,
+      "headersMs": 5182,
+      "bodyMs": 0,
+      "totalMs": 5182
+    },
+    {
+      "caseId": "ORCH-11",
+      "round": 2,
+      "ok": true,
+      "headersMs": 5050,
+      "bodyMs": 0,
+      "totalMs": 5050
+    },
+    {
+      "caseId": "ORCH-11",
+      "round": 2,
+      "ok": true,
+      "headersMs": 9807,
+      "bodyMs": 1,
+      "totalMs": 9808
+    }
+  ],
+  "timingSummary": {
+    "calls": 6,
+    "headersP50Ms": 5997,
+    "headersP90Ms": 9807,
+    "bodyP50Ms": 0,
+    "bodyP90Ms": 1,
+    "failByPhase": {}
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "datasetId": "AEVAL-TOOL-ORCHESTRATION",
+  "repeat": 2,
+  "total": 2,
+  "passed": 2,
+  "avgElapsedMs": 4972,
+  "slowestElapsedMs": 5092,
+  "promptVersion": "ride-chat-prompt-v0.2.7",
+  "results": [
+    {
+      "caseId": "ORCH-02",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "TOOLS_LOOP_NO_MATCH",
+      "elapsedMs": 5092,
+      "replyPreview": "这次比较缺少可比条件，我不能给出结论。可以换一个指标（例如功率或心率）再试。",
+      "steps": [
+        "compare_rides:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-02",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "TOOLS_LOOP_NO_MATCH",
+      "elapsedMs": 4851,
+      "replyPreview": "这次比较缺少可比条件，我不能给出结论。可以换一个指标（例如功率或心率）再试。",
+      "steps": [
+        "compare_rides:completed"
+      ]
+    }
+  ],
+  "timings": [
+    {
+      "caseId": "ORCH-02",
+      "round": 1,
+      "ok": true,
+      "headersMs": 5081,
+      "bodyMs": 1,
+      "totalMs": 5082
+    },
+    {
+      "caseId": "ORCH-02",
+      "round": 2,
+      "ok": true,
+      "headersMs": 4846,
+      "bodyMs": 0,
+      "totalMs": 4846
+    }
+  ],
+  "timingSummary": {
+    "calls": 2,
+    "headersP50Ms": 5081,
+    "headersP90Ms": 5081,
+    "bodyP50Ms": 1,
+    "bodyP90Ms": 1,
+    "failByPhase": {}
+  }
+}

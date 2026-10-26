@@ -34,6 +34,44 @@ const dry = args.get("dry") === "true";
 
 const sleep = (ms: number) => new Promise((resolve) => { setTimeout(resolve, ms); });
 
+// AGT-B5 审计遗留修复（2026-10-26 15:2x）：**22 条记录必须数值差异化**。
+// 旧实现全部复用同一 fixture，所有记录数值完全一致 → "最近一次 vs 平时"的正确答案永远是
+// "持平、没有变化"，**比较类用例等于没测**。现在按 daysAgo 给乘数：
+//   daysAgo ≤ 2（最近一次）→ 1.12（明显更快更强，"比平时快"是真实可验证的答案）
+//   其余 → 0.94~1.05 的伪随机波动
+// 约束：① 保持物理一致（速度 = 距离/时间，功率与因子同向）；
+//      ② "最远的那次"仍唯一（最新一条 56km > 其余）——ORCH-11 依赖这一点；
+//      ③ 只改 value，不碰 displayValue（由格式层生成）；densify/withoutMetrics 顺序不变。
+function varyMetricsByDays(item: RideRecord, daysAgo: number): RideRecord {
+  const factor = daysAgo <= 2 ? 1.12 : 0.94 + ((daysAgo * 13) % 12) / 100;
+  const metrics = item.activity.metrics as Record<string, { value?: number } | undefined>;
+  const scale = (key: string, ratio: number, round = true) => {
+    const metric = metrics[key];
+    if (!metric || typeof metric.value !== "number") return;
+    const next = metric.value * ratio;
+    metric.value = round ? Math.round(next) : next;
+  };
+  const distance = metrics.distanceM?.value;
+  const movingTime = metrics.movingTimeS?.value;
+  scale("distanceM", factor);
+  // 时间缩短得比距离少 → 速度略升（factor 1.12 → 速度 ≈ ×1.06）
+  scale("movingTimeS", 1 / (0.5 + factor / 2));
+  scale("avgPowerW", factor);
+  scale("normalizedPowerW", factor);
+  scale("avgHeartRateBpm", 0.96 + (factor - 1) * 0.5);
+  scale("maxHeartRateBpm", 1 + (factor - 1) * 0.4);
+  // 速度按物理关系重算（距离/时间），maxSpeed 保持与 avgSpeed 的既有比例（16.1/6.944 ≈ 2.318）
+  const nextDistance = metrics.distanceM?.value;
+  const nextTime = metrics.movingTimeS?.value;
+  if (typeof nextDistance === "number" && typeof nextTime === "number" && nextTime > 0) {
+    if (metrics.avgSpeedMps) metrics.avgSpeedMps.value = nextDistance / nextTime;
+    if (metrics.maxSpeedMps) metrics.maxSpeedMps.value = (nextDistance / nextTime) * 2.318;
+  }
+  void distance;
+  void movingTime;
+  return item;
+}
+
 function record(fixtureId: string, rideId: string, daysAgo: number): RideRecord {
   const fixture = getRideFixture(fixtureId);
   const item: RideRecord = {
@@ -41,7 +79,7 @@ function record(fixtureId: string, rideId: string, daysAgo: number): RideRecord 
     series: { ...structuredClone(fixture.series), rideId },
   };
   item.activity.startTime = new Date(Date.now() - daysAgo * 86_400_000).toISOString();
-  return item;
+  return varyMetricsByDays(item, daysAgo);
 }
 
 function withoutMetrics(fixtureId: string, rideId: string, daysAgo: number, keys: string[]): RideRecord {
