@@ -1,0 +1,84 @@
+{
+  "datasetId": "AEVAL-TOOL-ORCHESTRATION",
+  "repeat": 3,
+  "total": 3,
+  "passed": 0,
+  "avgElapsedMs": 5273,
+  "slowestElapsedMs": 6201,
+  "promptVersion": "ride-chat-prompt-v0.2.7",
+  "results": [
+    {
+      "caseId": "ORCH-02",
+      "round": 1,
+      "pass": false,
+      "detail": "异常: Cannot read properties of undefined (reading 'filter')",
+      "execution": "template",
+      "fallback": "TOOLS_LOOP_NO_MATCH",
+      "elapsedMs": 4459,
+      "replyPreview": "本轮查询没有返回可引用的数据结果，暂时无法回答这个问题。可以问得更具体一些，例如「距离最远的那次骑行是哪次」。",
+      "steps": [
+        "compare_rides:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-02",
+      "round": 2,
+      "pass": false,
+      "detail": "异常: Cannot read properties of undefined (reading 'filter')",
+      "execution": "template",
+      "fallback": "TOOLS_LOOP_NO_MATCH",
+      "elapsedMs": 6201,
+      "replyPreview": "本轮查询没有返回可引用的数据结果，暂时无法回答这个问题。可以问得更具体一些，例如「距离最远的那次骑行是哪次」。",
+      "steps": [
+        "compare_rides:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-02",
+      "round": 3,
+      "pass": false,
+      "detail": "异常: Cannot read properties of undefined (reading 'filter')",
+      "execution": "template",
+      "fallback": "TOOLS_LOOP_NO_MATCH",
+      "elapsedMs": 5158,
+      "replyPreview": "本轮查询没有返回可引用的数据结果，暂时无法回答这个问题。可以问得更具体一些，例如「距离最远的那次骑行是哪次」。",
+      "steps": [
+        "compare_rides:completed"
+      ]
+    }
+  ],
+  "timings": [
+    {
+      "caseId": "ORCH-02",
+      "round": 1,
+      "ok": true,
+      "headersMs": 4452,
+      "bodyMs": 1,
+      "totalMs": 4454
+    },
+    {
+      "caseId": "ORCH-02",
+      "round": 2,
+      "ok": true,
+      "headersMs": 6195,
+      "bodyMs": 0,
+      "totalMs": 6195
+    },
+    {
+      "caseId": "ORCH-02",
+      "round": 3,
+      "ok": true,
+      "headersMs": 5153,
+      "bodyMs": 0,
+      "totalMs": 5153
+    }
+  ],
+  "timingSummary": {
+    "calls": 3,
+    "headersP50Ms": 5153,
+    "headersP90Ms": 6195,
+    "bodyP50Ms": 0,
+    "bodyP90Ms": 1,
+    "failByPhase": {}
+  }
+}

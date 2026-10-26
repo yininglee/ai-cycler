@@ -1,0 +1,824 @@
+{
+  "datasetId": "AEVAL-TOOL-ORCHESTRATION",
+  "repeat": 3,
+  "total": 63,
+  "passed": 34,
+  "avgElapsedMs": 17867,
+  "slowestElapsedMs": 54920,
+  "promptVersion": "ride-chat-prompt-v0.2.3",
+  "results": [
+    {
+      "caseId": "ORCH-01",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 10284,
+      "replyPreview": "2026年10月23日这次骑行的平均功率是205瓦。",
+      "steps": [
+        "get_ride_context:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-01",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 11785,
+      "replyPreview": "根据记录，你2026年10月23日这次骑行的平均功率是205瓦（标准化功率为218瓦）。",
+      "steps": [
+        "get_ride_context:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-01",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 14278,
+      "replyPreview": "2026年10月23日这次骑行的平均功率是205瓦，标准化功率为218瓦。",
+      "steps": [
+        "get_ride_context:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-02",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 12024,
+      "replyPreview": "根据与最近30天同路线骑行历史的比较，你在10月23日这次骑行的平均速度与平时相同。",
+      "steps": [
+        "compare_rides:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-02",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 8638,
+      "replyPreview": "根据最近30天在相同路线上的骑行记录来看，你10月23日这次骑行的平均速度与平时相同，没有变化。",
+      "steps": [
+        "compare_rides:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-02",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 10189,
+      "replyPreview": "根据与最近30天在同一条路线上的骑行历史比较，10月23日这次骑行的平均速度与平时相同。",
+      "steps": [
+        "compare_rides:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-03",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 17802,
+      "replyPreview": "根据过去一年的记录，你骑得最远的一次是2026年10月23日，那次骑行的距离是50.0公里。",
+      "steps": [
+        "find_ride:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-03",
+      "round": 2,
+      "pass": false,
+      "detail": "未交付（exec=template fb=MODEL_TIMEOUT）",
+      "execution": "template",
+      "fallback": "MODEL_TIMEOUT",
+      "elapsedMs": 29329,
+      "replyPreview": "对话服务暂时不可用；我不会使用未经验证的结果回答。",
+      "steps": [
+        "find_ride:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-03",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 26673,
+      "replyPreview": "根据过去一年的记录，你骑得最远的一次是2026年10月23日，距离为50.0公里。",
+      "steps": [
+        "find_ride:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-04",
+      "round": 1,
+      "pass": false,
+      "detail": "未交付（exec=template fb=REPAIR_FAILED）",
+      "execution": "template",
+      "fallback": "REPAIR_FAILED",
+      "elapsedMs": 53603,
+      "replyPreview": "对话模型输出未通过当前安全校验；已切换为受控回复。",
+      "steps": [
+        "get_ride_history:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-04",
+      "round": 2,
+      "pass": false,
+      "detail": "未交付（exec=template fb=REPAIR_FAILED）",
+      "execution": "template",
+      "fallback": "REPAIR_FAILED",
+      "elapsedMs": 34234,
+      "replyPreview": "对话模型输出未通过当前安全校验；已切换为受控回复。",
+      "steps": [
+        "get_ride_history:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-04",
+      "round": 3,
+      "pass": false,
+      "detail": "未交付（exec=template fb=REPAIR_FAILED）",
+      "execution": "template",
+      "fallback": "REPAIR_FAILED",
+      "elapsedMs": 43394,
+      "replyPreview": "对话模型输出未通过当前安全校验；已切换为受控回复。",
+      "steps": [
+        "get_ride_history:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-05",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 11132,
+      "replyPreview": "根据最近91天（含18天有负荷记录）的数据，你的长期训练负荷（CTL）约为62 TSS/天，急性负荷（ATL）约为50 TSS/天，训练压力平衡（TSB）为12",
+      "steps": [
+        "get_training_load:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-05",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 21608,
+      "replyPreview": "根据你最近18天的训练负荷数据，长期负荷（CTL）约为每天62 TSS，急性负荷（ATL）约为每天50 TSS，训练压力平衡（TSB）约为12 TSS。这表明你",
+      "steps": [
+        "get_training_load:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-05",
+      "round": 3,
+      "pass": false,
+      "detail": "未交付（exec=template fb=REPAIR_FAILED）",
+      "execution": "template",
+      "fallback": "REPAIR_FAILED",
+      "elapsedMs": 18803,
+      "replyPreview": "对话模型输出未通过当前安全校验；已切换为受控回复。",
+      "steps": [
+        "get_training_load:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-06",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 8698,
+      "replyPreview": "你的 FTP 是 220 瓦。",
+      "steps": [
+        "get_health_profile:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-06",
+      "round": 2,
+      "pass": false,
+      "detail": "未交付（exec=template fb=MODEL_TIMEOUT） 缺工具:get_health_profile 证据形态不符",
+      "execution": "template",
+      "fallback": "MODEL_TIMEOUT",
+      "elapsedMs": 25003,
+      "replyPreview": "对话服务暂时不可用；我不会使用未经验证的结果回答。",
+      "steps": []
+    },
+    {
+      "caseId": "ORCH-06",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 20624,
+      "replyPreview": "你的 FTP 是 220 W。",
+      "steps": [
+        "get_health_profile:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-07",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 13119,
+      "replyPreview": "负分割是配速执行中的一种策略，指在骑行后半程的功率输出比前半程更高。根据知识库，理想负分割表现为后半程比前半程高 2–5%，常见于耐力骑行或长距离项目，有助于避",
+      "steps": [
+        "search_knowledge_base:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-07",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 13559,
+      "replyPreview": "负分割是一种配速策略，指在骑行后半程的平均功率比前半程更高，通常高出 2–5% 被认为是理想的负分割，有助于在长距离骑行中节省体能、避免过早疲劳。根据知识库条目",
+      "steps": [
+        "search_knowledge_base:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-07",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 15683,
+      "replyPreview": "负分割是一种配速策略，指在长距离骑行中，后半程的平均功率比前半程更高（通常高出2-5%）。这被认为是理想的配速方式，有助于避免过早耗尽体能，从而在耐力骑行中保持",
+      "steps": [
+        "search_knowledge_base:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-08",
+      "round": 1,
+      "pass": false,
+      "detail": "未交付（exec=template fb=TOOLS_LOOP_NO_MATCH）",
+      "execution": "template",
+      "fallback": "TOOLS_LOOP_NO_MATCH",
+      "elapsedMs": 5206,
+      "replyPreview": "本轮查询没有返回可引用的数据结果，暂时无法回答这个问题。可以问得更具体一些，例如「距离最远的那次骑行是哪次」。",
+      "steps": [
+        "get_route_overview:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-08",
+      "round": 2,
+      "pass": false,
+      "detail": "未交付（exec=template fb=TOOLS_LOOP_NO_MATCH）",
+      "execution": "template",
+      "fallback": "TOOLS_LOOP_NO_MATCH",
+      "elapsedMs": 3300,
+      "replyPreview": "本轮查询没有返回可引用的数据结果，暂时无法回答这个问题。可以问得更具体一些，例如「距离最远的那次骑行是哪次」。",
+      "steps": [
+        "get_route_overview:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-08",
+      "round": 3,
+      "pass": false,
+      "detail": "未交付（exec=template fb=TOOLS_LOOP_NO_MATCH）",
+      "execution": "template",
+      "fallback": "TOOLS_LOOP_NO_MATCH",
+      "elapsedMs": 4327,
+      "replyPreview": "本轮查询没有返回可引用的数据结果，暂时无法回答这个问题。可以问得更具体一些，例如「距离最远的那次骑行是哪次」。",
+      "steps": [
+        "get_route_overview:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-09",
+      "round": 1,
+      "pass": false,
+      "detail": "未交付（exec=template fb=MODEL_TIMEOUT） requiredAnyOf 未命中:get_capabilities/get_ride_context",
+      "execution": "template",
+      "fallback": "MODEL_TIMEOUT",
+      "elapsedMs": 25004,
+      "replyPreview": "对话服务暂时不可用；我不会使用未经验证的结果回答。",
+      "steps": []
+    },
+    {
+      "caseId": "ORCH-09",
+      "round": 2,
+      "pass": false,
+      "detail": "未交付（exec=template fb=MODEL_TIMEOUT）",
+      "execution": "template",
+      "fallback": "MODEL_TIMEOUT",
+      "elapsedMs": 45745,
+      "replyPreview": "对话服务暂时不可用；我不会使用未经验证的结果回答。",
+      "steps": [
+        "get_ride_context:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-09",
+      "round": 3,
+      "pass": false,
+      "detail": "未交付（exec=template fb=MODEL_TIMEOUT） requiredAnyOf 未命中:get_capabilities/get_ride_context",
+      "execution": "template",
+      "fallback": "MODEL_TIMEOUT",
+      "elapsedMs": 25007,
+      "replyPreview": "对话服务暂时不可用；我不会使用未经验证的结果回答。",
+      "steps": []
+    },
+    {
+      "caseId": "ORCH-10",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 20924,
+      "replyPreview": "你最近一次骑行是2026年10月23日，骑了50公里，用时2小时，平均速度约25公里/小时。与最近30天相比，这次骑行的距离比平时高约2.4公里（约5%）。在相",
+      "steps": [
+        "find_ride:completed",
+        "get_ride_context:completed",
+        "compare_rides:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-10",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 37659,
+      "replyPreview": "你最近一次骑行是2026年10月23日，距离50公里，用时2小时，平均速度25公里/小时。与最近30天的历史相比，这次骑行的总距离比平时高了约5%（高了2.4公",
+      "steps": [
+        "find_ride:completed",
+        "get_ride_context:completed",
+        "compare_rides:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-10",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 21066,
+      "replyPreview": "你最近一次骑行是2026年10月23日，骑了50公里，用时2小时，平均速度约25公里/小时。与最近30天相比，这次骑行的总距离比平时平均水平高了约5%（平时平均",
+      "steps": [
+        "find_ride:completed",
+        "get_ride_context:completed",
+        "compare_rides:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-11",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 17935,
+      "replyPreview": "根据检索，你最远的一次骑行是2026年10月23日，距离为50.0公里。不过，关于那次骑行的路线爬坡信息，目前没有提供足够的数据。",
+      "steps": [
+        "find_ride:completed",
+        "get_route_overview:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-11",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 17836,
+      "replyPreview": "根据你的记录，距离最远的是2026年10月23日那次骑行，距离为50.0公里。不过，这次骑行的路线形状数据暂时无法提供，因此无法判断其爬坡情况。",
+      "steps": [
+        "find_ride:completed",
+        "get_route_overview:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-11",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 15825,
+      "replyPreview": "根据你的历史记录，距离最远的是2026年10月23日的一次骑行，距离为50.0公里。不过，关于那次骑行的路线爬坡详情，目前没有提供足够的信息。",
+      "steps": [
+        "find_ride:completed",
+        "get_route_overview:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-12",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 16498,
+      "replyPreview": "你的 FTP 是 220 瓦。最近 18 天的训练负荷情况是：长期负荷（CTL）约 62 TSS/天，急性负荷（ATL）约 50 TSS/天，训练压力平衡（TS",
+      "steps": [
+        "get_health_profile:completed",
+        "get_training_load:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-12",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 16042,
+      "replyPreview": "你的 FTP 是 220 W。最近 18 天的训练负荷趋势显示，长期负荷（CTL）为 62 TSS/天，急性负荷（ATL）为 50 TSS/天，训练压力平衡（T",
+      "steps": [
+        "get_health_profile:completed",
+        "get_training_load:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-12",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 14148,
+      "replyPreview": "你的 FTP 是 220 W。最近 18 天的训练负荷情况是：长期负荷（CTL）为 62 TSS/天，急性负荷（ATL）为 50 TSS/天，训练压力平衡（TS",
+      "steps": [
+        "get_health_profile:completed",
+        "get_training_load:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-13",
+      "round": 1,
+      "pass": false,
+      "detail": "缺工具:get_ride_context 误用:find_ride",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 18723,
+      "replyPreview": "负分割指后半程比前半程功率更高（通常高2–5%）的配速策略，有助于长距离骑行中节省糖原、避免过早疲劳。根据知识库，理想负分割应以标准化功率（NP）为口径。你最近",
+      "steps": [
+        "search_knowledge_base:completed",
+        "find_ride:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-13",
+      "round": 2,
+      "pass": false,
+      "detail": "缺工具:get_ride_context 误用:find_ride",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 15423,
+      "replyPreview": "负分割指骑行后半程比前半程功率更高，通常高2-5%被视为理想配速，有助于长距离骑行节省体能。根据知识库，这需要以标准化功率（NP）为口径。你最近一次骑行是202",
+      "steps": [
+        "search_knowledge_base:completed",
+        "find_ride:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-13",
+      "round": 3,
+      "pass": false,
+      "detail": "缺工具:get_ride_context 误用:find_ride",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 15304,
+      "replyPreview": "负分割是配速策略的一种，指后半程的功率输出比前半程更高（例如高出2-5%），这有助于在长距离骑行中避免过早疲劳。根据知识库，判断负分割需要对比前半程和后半程的标",
+      "steps": [
+        "search_knowledge_base:completed",
+        "find_ride:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-14",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 12370,
+      "replyPreview": "根据过去一年的骑行记录，你一共骑行了约1051公里，共22次。例如，在2026年10月23日、20日、16日等多次骑行中，单次距离都达到了50公里。",
+      "steps": [
+        "get_ride_history:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-14",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 9052,
+      "replyPreview": "根据最近一年的骑行记录，您一共骑行了约1051公里，共完成了22次骑行。",
+      "steps": [
+        "get_ride_history:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-14",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 9660,
+      "replyPreview": "根据过去一年的骑行记录，你一共骑行了约1051公里。",
+      "steps": [
+        "get_ride_history:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-15",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 9408,
+      "replyPreview": "根据你的健康档案，你的体重是72公斤。身高信息目前没有提供。",
+      "steps": [
+        "get_health_profile:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-15",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 15919,
+      "replyPreview": "根据健康档案，你的体重是72公斤。身高信息当前未提供。",
+      "steps": [
+        "get_health_profile:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-15",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "repaired",
+      "fallback": "-",
+      "elapsedMs": 17952,
+      "replyPreview": "根据你的健康档案，目前没有提供身高数据。",
+      "steps": [
+        "get_health_profile:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-16",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 12083,
+      "replyPreview": "根据最近18天的训练负荷数据，你当前的长期训练负荷（CTL）约为62 TSS/天，急性训练负荷（ATL）约为50 TSS/天，训练压力平衡（TSB）约为12 T",
+      "steps": [
+        "get_training_load:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-16",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 9886,
+      "replyPreview": "根据最近18天的训练负荷数据，您当前的长期训练负荷（CTL）约为62 TSS/天，急性训练负荷（ATL）约为50 TSS/天，训练压力平衡（TSB）约为12 T",
+      "steps": [
+        "get_training_load:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-16",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 9459,
+      "replyPreview": "根据最近18天的训练数据，你的长期训练负荷（CTL）约为62 TSS/天，急性训练负荷（ATL）约为50 TSS/天，训练压力平衡（TSB）约为12 TSS。",
+      "steps": [
+        "get_training_load:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-17",
+      "round": 1,
+      "pass": false,
+      "detail": "未交付（exec=template fb=MODEL_TIMEOUT） 缺工具:get_ride_history 证据形态不符",
+      "execution": "template",
+      "fallback": "MODEL_TIMEOUT",
+      "elapsedMs": 25010,
+      "replyPreview": "对话服务暂时不可用；我不会使用未经验证的结果回答。",
+      "steps": []
+    },
+    {
+      "caseId": "ORCH-17",
+      "round": 2,
+      "pass": false,
+      "detail": "未交付（exec=template fb=MODEL_TIMEOUT）",
+      "execution": "template",
+      "fallback": "MODEL_TIMEOUT",
+      "elapsedMs": 40415,
+      "replyPreview": "对话服务暂时不可用；我不会使用未经验证的结果回答。",
+      "steps": [
+        "get_ride_history:completed",
+        "find_ride:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-17",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 54920,
+      "replyPreview": "在最近一年的骑行记录中，距离最远的一次是 2026年10月23日 的骑行，距离为 50 公里（引用 claim:loop:2:1）。您提到的“三年前”的骑行，在",
+      "steps": [
+        "get_ride_history:completed",
+        "find_ride:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-18",
+      "round": 1,
+      "pass": false,
+      "detail": "未交付（exec=template fb=REPAIR_FAILED）",
+      "execution": "template",
+      "fallback": "REPAIR_FAILED",
+      "elapsedMs": 24263,
+      "replyPreview": "这次回复暂时没能通过安全校验，先直接给你本次骑行已核实的数据：平均心率 151 bpm；最高心率 182 bpm。",
+      "steps": [
+        "get_ride_context:completed",
+        "search_knowledge_base:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-18",
+      "round": 2,
+      "pass": false,
+      "detail": "未交付（exec=template fb=REPAIR_FAILED）",
+      "execution": "template",
+      "fallback": "REPAIR_FAILED",
+      "elapsedMs": 24228,
+      "replyPreview": "这次回复暂时没能通过安全校验，先直接给你本次骑行已核实的数据：平均心率 151 bpm；最高心率 182 bpm。",
+      "steps": [
+        "get_ride_context:completed",
+        "search_knowledge_base:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-18",
+      "round": 3,
+      "pass": false,
+      "detail": "未交付（exec=template fb=REPAIR_FAILED）",
+      "execution": "template",
+      "fallback": "REPAIR_FAILED",
+      "elapsedMs": 21363,
+      "replyPreview": "这次回复暂时没能通过安全校验，先直接给你本次骑行已核实的数据：平均心率 151 bpm；最高心率 182 bpm。",
+      "steps": [
+        "get_ride_context:completed",
+        "search_knowledge_base:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-19",
+      "round": 1,
+      "pass": false,
+      "detail": "未交付（exec=template fb=TOOLS_ANCHOR_CLARIFY）",
+      "execution": "template",
+      "fallback": "TOOLS_ANCHOR_CLARIFY",
+      "elapsedMs": 1,
+      "replyPreview": "你说的「这次」是指最近一次（10月23日）的骑行，还是其他某一次？可以直接告诉我日期。",
+      "steps": []
+    },
+    {
+      "caseId": "ORCH-19",
+      "round": 2,
+      "pass": false,
+      "detail": "未交付（exec=template fb=TOOLS_ANCHOR_CLARIFY）",
+      "execution": "template",
+      "fallback": "TOOLS_ANCHOR_CLARIFY",
+      "elapsedMs": 0,
+      "replyPreview": "你说的「这次」是指最近一次（10月23日）的骑行，还是其他某一次？可以直接告诉我日期。",
+      "steps": []
+    },
+    {
+      "caseId": "ORCH-19",
+      "round": 3,
+      "pass": false,
+      "detail": "未交付（exec=template fb=TOOLS_ANCHOR_CLARIFY）",
+      "execution": "template",
+      "fallback": "TOOLS_ANCHOR_CLARIFY",
+      "elapsedMs": 1,
+      "replyPreview": "你说的「这次」是指最近一次（10月23日）的骑行，还是其他某一次？可以直接告诉我日期。",
+      "steps": []
+    },
+    {
+      "caseId": "ORCH-20",
+      "round": 1,
+      "pass": false,
+      "detail": "未交付（exec=template fb=REPAIR_FAILED）",
+      "execution": "template",
+      "fallback": "REPAIR_FAILED",
+      "elapsedMs": 29583,
+      "replyPreview": "对话模型输出未通过当前安全校验；已切换为受控回复。",
+      "steps": []
+    },
+    {
+      "caseId": "ORCH-20",
+      "round": 2,
+      "pass": false,
+      "detail": "未交付（exec=template fb=REPAIR_FAILED）",
+      "execution": "template",
+      "fallback": "REPAIR_FAILED",
+      "elapsedMs": 17018,
+      "replyPreview": "对话模型输出未通过当前安全校验；已切换为受控回复。",
+      "steps": []
+    },
+    {
+      "caseId": "ORCH-20",
+      "round": 3,
+      "pass": false,
+      "detail": "未交付（exec=template fb=REPAIR_FAILED）",
+      "execution": "template",
+      "fallback": "REPAIR_FAILED",
+      "elapsedMs": 26589,
+      "replyPreview": "对话模型输出未通过当前安全校验；已切换为受控回复。",
+      "steps": []
+    },
+    {
+      "caseId": "ORCH-21",
+      "round": 1,
+      "pass": false,
+      "detail": "未交付（exec=template fb=TOOLS_ANCHOR_CLARIFY） 缺工具:get_capabilities 证据形态不符",
+      "execution": "template",
+      "fallback": "TOOLS_ANCHOR_CLARIFY",
+      "elapsedMs": 0,
+      "replyPreview": "你说的「这次」是指最近一次（10月23日）的骑行，还是其他某一次？可以直接告诉我日期。",
+      "steps": []
+    },
+    {
+      "caseId": "ORCH-21",
+      "round": 2,
+      "pass": false,
+      "detail": "未交付（exec=template fb=TOOLS_ANCHOR_CLARIFY） 缺工具:get_capabilities 证据形态不符",
+      "execution": "template",
+      "fallback": "TOOLS_ANCHOR_CLARIFY",
+      "elapsedMs": 0,
+      "replyPreview": "你说的「这次」是指最近一次（10月23日）的骑行，还是其他某一次？可以直接告诉我日期。",
+      "steps": []
+    },
+    {
+      "caseId": "ORCH-21",
+      "round": 3,
+      "pass": false,
+      "detail": "未交付（exec=template fb=TOOLS_ANCHOR_CLARIFY） 缺工具:get_capabilities 证据形态不符",
+      "execution": "template",
+      "fallback": "TOOLS_ANCHOR_CLARIFY",
+      "elapsedMs": 0,
+      "replyPreview": "你说的「这次」是指最近一次（10月23日）的骑行，还是其他某一次？可以直接告诉我日期。",
+      "steps": []
+    }
+  ]
+}

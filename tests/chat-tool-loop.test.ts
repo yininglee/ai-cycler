@@ -3,7 +3,7 @@ import test from "node:test";
 
 import { publicChatAgentResult, runChatAgent, type ChatProvider } from "../src/chat/chat-agent.ts";
 import { createChatToolLoopRunner } from "../src/chat/chat-tool-orchestration.ts";
-import { classifyChatInput } from "../src/chat/chat-routing.ts";
+import { classifyChatInput, makeChatDecision } from "../src/chat/chat-routing.ts";
 import { getRideFixture } from "../src/fixtures/rides.ts";
 import type { ApplicationRepository } from "../src/persistence/application-repository.ts";
 
@@ -150,9 +150,10 @@ test("L2b loop composes find_ride then get_ride_context on the returned rideId (
 test("L2b loop degrades deterministically when the tool budget is exhausted (CHAT-17)", async () => {
   const records = loopRecords();
   const repository = loopRepository(records, ["history-short", "history-far", "anchor-ride"]);
-  // 模型每轮只请求 1 次调用且从不给出最终回答：3 次工具预算耗尽后第 4 轮请求被拒。
+  // AGT-B3 预期变更：累计工具预算 3 → 5（D-B5）。模型每轮只请求 1 次且从不给最终回答：
+  // 第 5 次调用用尽累计预算，第 6 轮请求被拒。
   const endlessRequest = toolCallRequest("get_ride_context", {});
-  const provider = new SequenceProvider([endlessRequest, endlessRequest, endlessRequest, endlessRequest, endlessRequest, endlessRequest]);
+  const provider = new SequenceProvider(Array.from({ length: 7 }, () => endlessRequest));
   const text = "哪次骑行距离最远？";
 
   const result = await runLoop(provider, repository, text);
@@ -161,9 +162,9 @@ test("L2b loop degrades deterministically when the tool budget is exhausted (CHA
   assert.equal(result.modelInvoked, true);
   assert.equal(result.fallbackCode, "TOOLS_LOOP_BUDGET_EXHAUSTED");
   assert.equal(result.loopTrace?.status, "budget_exhausted");
-  assert.equal(result.loopTrace?.toolCalls, 3);
-  assert.equal(result.loopTrace?.providerCalls, 4);
-  assert.equal(result.loopTrace?.steps.length, 3);
+  assert.equal(result.loopTrace?.toolCalls, 5);
+  assert.equal(result.loopTrace?.providerCalls, 6);
+  assert.equal(result.loopTrace?.steps.length, 5);
   assert.ok(result.reply.includes("预算"));
 });
 
@@ -238,19 +239,21 @@ test("L2b loop falls back to a claims summary when repair still fails (CHAT-17)"
   assert.equal(provider.calls[2]!.repairInstruction?.includes("OUTPUT_INVALID_JSON"), true);
 });
 
-test("L2b loop degrades without model calls when the owner has no rides (CHAT-17)", async () => {
-  const repository = loopRepository({}, []);
-  const provider = new SequenceProvider([]);
-  const text = "距离最远的那次骑行是哪次？";
-
-  const result = await runLoop(provider, repository, text);
-
-  assert.equal(result.execution, "template");
-  assert.equal(result.modelInvoked, false);
-  assert.equal(result.fallbackCode, "TOOLS_NO_CURRENT_RIDE");
-  assert.equal(result.reply, "还没有可供查看的当前骑行记录。导入一条自己的骑行记录后再试。");
-  assert.equal(provider.calls.length, 0);
-  assert.equal(result.loopTrace, undefined);
+// AGT-B5（预期契约变更，边界集 no_records 3/9 驱动）：旧契约是"无记录 → 零模型降级"，
+// 但问知识库原理 / 健康档案是**全局工具**（anchorMode: "none"），不该依赖骑行记录——
+// 旧行为让"没有骑行记录的新用户问什么是负分割"直接得到"还没有可供查看的骑行记录"。
+// 新契约：该 route 的 catalog 里含全局工具时，用**空锚点**启动循环（要查某次骑行会因
+// 空 rideId 被判 INVALID_TOOL_CALL，属合理拒绝）；catalog 全是锚点工具时才降级。
+test("L2b startLoop starts with empty anchor when no rides but catalog has anchor-free tools (AGT-B5)", async () => {
+  const runner = createChatToolLoopRunner(loopRepository({}, []), "owner-a");
+  for (const [route, reasonCode] of [["kb_qa", "KB_QA"], ["autonomous_tools", "AUTONOMOUS_TOOLS"]] as const) {
+    const start = await runner.startLoop({ text: "什么是负分割？", decision: makeChatDecision(route, "none", reasonCode, 8) });
+    assert.equal(start.ok, true, `${route}：无记录时也应能启动（catalog 含全局工具）`);
+    assert.equal(start.ok && start.anchorRideId, "", `${route}：空锚点`);
+  }
+  // 若 catalog 只有锚点工具（模拟：none 路由没有工具）则仍降级
+  const noneRoute = await runner.startLoop({ text: "什么是负分割？", decision: makeChatDecision("training_plan", "none", "TRAINING_PLAN", 8) });
+  assert.equal(noneRoute.ok, false);
 });
 
 test("L2b loop clarifies the anchor deterministically when a find_ride question carries deixis without context (CHAT-17)", async () => {

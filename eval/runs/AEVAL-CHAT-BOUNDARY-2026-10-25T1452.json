@@ -1,0 +1,50 @@
+{
+  "datasetId": "AEVAL-CHAT-BOUNDARY",
+  "repeat": 3,
+  "total": 3,
+  "passed": 2,
+  "avgElapsedMs": 23832,
+  "slowestElapsedMs": 33910,
+  "promptVersion": "ride-chat-prompt-v0.2.3",
+  "results": [
+    {
+      "caseId": "BND-K04",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "MODEL_TIMEOUT",
+      "elapsedMs": 33910,
+      "replyPreview": "对话服务暂时不可用；我不会使用未经验证的结果回答。",
+      "steps": [
+        "search_knowledge_base:completed"
+      ]
+    },
+    {
+      "caseId": "BND-K04",
+      "round": 2,
+      "pass": false,
+      "detail": "降级未给说明（fallback=REPAIR_FAILED）",
+      "execution": "template",
+      "fallback": "REPAIR_FAILED",
+      "elapsedMs": 32352,
+      "replyPreview": "对话模型输出未通过当前安全校验；已切换为受控回复。",
+      "steps": [
+        "search_knowledge_base:completed"
+      ]
+    },
+    {
+      "caseId": "BND-K04",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "TOOLS_LOOP_NO_MATCH",
+      "elapsedMs": 5233,
+      "replyPreview": "本轮查询没有返回可引用的数据结果，暂时无法回答这个问题。可以问得更具体一些，例如「距离最远的那次骑行是哪次」。",
+      "steps": [
+        "search_knowledge_base:completed"
+      ]
+    }
+  ]
+}

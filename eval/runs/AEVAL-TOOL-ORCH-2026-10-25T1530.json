@@ -1,0 +1,53 @@
+{
+  "datasetId": "AEVAL-TOOL-ORCHESTRATION",
+  "repeat": 3,
+  "total": 3,
+  "passed": 3,
+  "avgElapsedMs": 18240,
+  "slowestElapsedMs": 19856,
+  "promptVersion": "ride-chat-prompt-v0.2.3",
+  "results": [
+    {
+      "caseId": "ORCH-13",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 19856,
+      "replyPreview": "负分割指后半程功率比前半程更强，通常后半程比前半程高2–5%为理想负分割，有助于长距离骑行节省体能。要判断2026年10月23日这次骑行是否算负分割，需要知道这",
+      "steps": [
+        "search_knowledge_base:completed",
+        "get_ride_context:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-13",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 17823,
+      "replyPreview": "负分割是一种配速策略，指骑行后半程的平均功率比前半程更高，通常高出2–5%被认为是理想的耐力骑行配速。要判断你最近一次骑行（2026年10月23日）是否算负分割",
+      "steps": [
+        "search_knowledge_base:completed",
+        "get_ride_context:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-13",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 17040,
+      "replyPreview": "负分割是一种配速策略，指后半程的平均功率比前半程更高。根据知识库，后半程比前半高 2–5% 为理想的负分割。你最近一次骑行是 2026年10月23日，这次骑行的",
+      "steps": [
+        "search_knowledge_base:completed",
+        "get_ride_context:completed"
+      ]
+    }
+  ]
+}

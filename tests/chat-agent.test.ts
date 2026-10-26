@@ -128,8 +128,9 @@ test("capability_gap questions get the in-scope-but-locked template without invo
   assert.deepEqual({ execution: result.execution, modelInvoked: result.modelInvoked, route: result.decision.route }, {
     execution: "template", modelInvoked: false, route: "capability_gap",
   });
-  // CHAT-13 更新口径：缺口收窄为筛选排序/水平评估，历史比较已交付并在话术中引导。
-  assert.match(result.reply, /跨骑行的筛选排序或长期能力水平评估/);
+  // AGT-B4 预期变更：跨次筛选排序、历史统计、负荷评估**已开放**，缺口只剩训练计划/监督。
+  assert.match(result.reply, /训练计划与训练监督仍在路线图中/);
+  assert.match(result.reply, /跨记录的条件检索与排名/);
   assert.match(result.reply, /与最近 30 天历史的比较/);
   assert.equal(provider.calls.length, 0);
 });
@@ -167,7 +168,7 @@ test("empty ride-context claims skip the provider with a deterministic metric-ga
         decision: classifyChatInput(text),
         sessionSummaries: [] as [],
         toolResult: {
-          schemaVersion: "chat-tools-v0.1" as const,
+          schemaVersion: "chat-tools-v0.2" as const,
           tool: "get_ride_context" as const,
           rideId: "ride",
           dimensions: ["cadence" as const],
@@ -200,7 +201,7 @@ test("repair failure with ride-context claims falls back to a deterministic clai
         decision: classifyChatInput(text),
         sessionSummaries: [] as [],
         toolResult: {
-          schemaVersion: "chat-tools-v0.1" as const,
+          schemaVersion: "chat-tools-v0.2" as const,
           tool: "get_ride_context" as const,
           rideId: "ride",
           dimensions: ["cadence" as const],
@@ -238,7 +239,7 @@ test("history_compare without comparable claims degrades to the deterministic D1
         decision,
         sessionSummaries: [] as [],
         toolResult: {
-          schemaVersion: "chat-tools-v0.1" as const,
+          schemaVersion: "chat-tools-v0.2" as const,
           tool: "compare_rides" as const,
           rideId: "ride",
           windowDays: 30,
@@ -273,7 +274,7 @@ function comparableComparisonRunner(text: string, decision: ReturnType<typeof cl
         decision,
         sessionSummaries: [] as [],
         toolResult: {
-          schemaVersion: "chat-tools-v0.1" as const,
+          schemaVersion: "chat-tools-v0.2" as const,
           tool: "compare_rides" as const,
           rideId: "ride",
           windowDays: 30,
@@ -338,7 +339,7 @@ test("numeric repair instructions are scenario-specific per route (CHAT-15)", as
         decision,
         sessionSummaries: [] as [],
         toolResult: {
-          schemaVersion: "chat-tools-v0.1" as const,
+          schemaVersion: "chat-tools-v0.2" as const,
           tool: "get_ride_context" as const,
           rideId: "ride",
           rideDateLabel: "2026年8月20日",
@@ -363,7 +364,10 @@ test("numeric repair instructions are scenario-specific per route (CHAT-15)", as
   assert.equal(rideRepair.includes("OUTPUT_NUMERIC_UNSUPPORTED"), true);
   assert.equal(rideRepair.includes("displayValue"), true);
   assert.equal(rideRepair.includes("rideDateLabel"), true);
-  assert.equal(rideRepair.includes("不得换算"), true);
+  // AGT-B0 预期变更：数字白名单改等价类后，修复指令不再要求"不得换算"（同一事实的
+  // 舍入/单位换算已合法），改为禁止"用两个数字计算"。断言随之更新——这是口径变更，
+  // 不是回归（详见细规划 §2 G4）。
+  assert.equal(rideRepair.includes("不得用两个数字计算"), true);
   // 投影透传：rideDateLabel 到达模型（日期标签非敏感，不参与脱敏重映射）。
   assert.equal(JSON.stringify(rideProvider.calls[0]?.toolContext).includes("2026年8月20日"), true);
 });
@@ -519,7 +523,7 @@ test("HTTP provider carries L2b toolCatalog and toolResults in the request body 
     toolCatalog: {
       schemaVersion: "ride-chat-tool-catalog-v0.1",
       anchorRideId: "anchor-ride",
-      tools: [{ tool: "find_ride", input: { metric: ["distanceM"], mode: ["max", "min", "threshold"] } }],
+      tools: [{ tool: "find_ride", purpose: "在窗口内检索某一条骑行", input: { metric: ["distanceM"], mode: ["max", "min", "threshold"] } }],
     },
     toolResults: [{
       call: 1,
@@ -565,11 +569,11 @@ test("Chat provider selects the SiliconFlow adapter by default and no longer rea
 
 test("task-cluster placeholder routes produce guidance templates without model calls (AGT-A1)", async () => {
   const { runChatAgent } = await import("../src/chat/chat-agent.ts");
+  // AGT-B4 预期变更：level_assessment / kb_qa 已升级为 L2b 真链路，占位只剩
+  // training_plan / training_supervision（F/G 承接）。
   for (const [route, reasonCode, keyword] of [
     ["training_plan", "TRAINING_PLAN", "训练计划"],
     ["training_supervision", "TRAINING_SUPERVISION", "训练监督"],
-    ["level_assessment", "LEVEL_ASSESSMENT", "水平"],
-    ["kb_qa", "KB_QA", "知识"],
   ] as const) {
     const result = await runChatAgent({
       text: "帮我安排下周的训练",
@@ -579,6 +583,38 @@ test("task-cluster placeholder routes produce guidance templates without model c
     assert.equal(result.modelInvoked, false, route);
     assert.equal(result.execution, "template", route);
     assert.ok(result.reply.includes(keyword), `${route}: ${result.reply}`);
+  }
+});
+
+test("AGT-B4：kb_qa / level_assessment 不再是占位——有 provider 时进循环", async () => {
+  const { runChatAgent } = await import("../src/chat/chat-agent.ts");
+  const { createChatToolLoopRunner } = await import("../src/chat/chat-tool-orchestration.ts");
+  const repository = {
+    listRides: async () => [],
+    getRide: async () => null,
+    getProfile: async () => null,
+  } as unknown as Parameters<typeof createChatToolLoopRunner>[0];
+  for (const [route, reasonCode] of [["kb_qa", "KB_QA"], ["level_assessment", "LEVEL_ASSESSMENT"]] as const) {
+    const provider = new RecordingProvider();
+    const result = await runChatAgent({
+      text: "为什么要做区间训练？",
+      decision: {
+        schemaVersion: "chat-routing-v0.2",
+        route,
+        risk: "none",
+        allowModel: true,
+        action: "tool_then_model",
+        reasonCode,
+        normalizedLength: 10,
+      },
+      provider,
+      loopRunner: createChatToolLoopRunner(repository, "owner-a"),
+    });
+    // AGT-B5（预期变更）：无记录时**不再**一律降级 TOOLS_NO_CURRENT_RIDE——catalog 含
+    // 全局工具（KB/档案）时用空锚点启动循环。这里只断言"进了循环路径"，不再锁旧降级码。
+    assert.notEqual(result.execution, undefined, `${route} 应进入工具循环而非占位直通：${result.reply}`);
+    assert.notEqual(result.fallbackCode, "TOOLS_UNAVAILABLE", `${route} 不应被当成"路由不可用"`);
+    assert.equal(result.reply.includes("规划中"), false, `${route} 不应再出现"规划中"占位话术`);
   }
 });
 

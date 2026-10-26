@@ -1,0 +1,28 @@
+{
+  "schemaVersion": "ride-chat-eval-manifest-v0.1",
+  "datasetId": "AEVAL-TOOL-ORCHESTRATION",
+  "casesFile": "cases.json",
+  "casesSha256": "f1bf7fe5229d543fac33e7d0cd30db735356e2f3f6a993100bc05f8c0c74bdb0",
+  "caseCount": 21,
+  "splitCounts": {
+    "regression": 13,
+    "boundary": 6,
+    "negative": 2
+  },
+  "repeat": 3,
+  "frozenAt": "2026-10-24",
+  "versionMatrix": {
+    "agentSchemaVersion": "ride-chat-agent-v0.1",
+    "routingSchemaVersion": "chat-routing-v0.2",
+    "outputSchemaVersion": "ride-chat-output-v0.2",
+    "toolCallSchemaVersion": "ride-chat-tool-call-v0.1",
+    "toolScope": "9 tools (autonomous_tools catalog)",
+    "promptVersion": "ride-chat-prompt-v0.2.3",
+    "provider": "siliconflow:deepseek-ai/DeepSeek-V3.2",
+    "loopBudget": "per-round 4 / total 5 / provider 6 / 45s"
+  },
+  "scoring": "requiredTools 齐全 + 无 forbiddenTools + 调用参数合法（不比序列，D-B8）",
+  "frozenApprovedAt": "2026-10-26",
+  "frozenApprovedBy": "user",
+  "freezeNote": "B5 退出条件达成：preflight 全过 + SHA 锁定 + 用户批准冻结（2026-10-26）。此后任何 cases/manifest 变更须开新版本与全新 Run（P7 制度）。"
+}

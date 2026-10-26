@@ -15,11 +15,22 @@ import {
   type HistoricalMetricComparison,
 } from "../domain/historical-comparison.ts";
 import { buildRideAnalysisContext, type AnalysisContextClaim } from "../domain/ride-analysis-context.ts";
+import type { AnalysisDimensionId } from "../domain/ride-analysis-evidence-v2.ts";
+import { buildRidePmcLoadV2, type RidePmcDailyLoadInput } from "../domain/ride-pmc-load-v2.ts";
+import { buildRideElevationSummary } from "../domain/ride-elevation.ts";
+import { buildRideRouteShapeSummary } from "../domain/ride-route-shape.ts";
+import { rideKnowledgeBaseV21 } from "../domain/ride-knowledge-base-v21.ts";
+import { computeRideTss } from "../domain/ride-training-stress.ts";
 import type { MetricKey, RideRecord } from "../domain/ride-schema.ts";
 import type { ApplicationRepository } from "../persistence/application-repository.ts";
 import { buildHistoricalRide, buildHistoricalRides } from "../persistence/persistent-history.ts";
+import type { ChatNumericFact } from "./chat-numeric-evidence.ts";
 
-export const CHAT_TOOL_SCHEMA_VERSION = "chat-tools-v0.1" as const;
+// AGT-B0：合同升 v0.2——新增 5 个只读工具、锚点两类（required/optional/none）、
+// 证据形态声明（claims/knowledge/capabilities/none）与统一的数值证据契约。
+// 工具结果结构未变（仍为脱敏 Claims 投影），版本号变更表达的是"合同集合"
+// 从 4 工具扩到 9 工具，不是既有 4 个工具的字段语义变更。
+export const CHAT_TOOL_SCHEMA_VERSION = "chat-tools-v0.2" as const;
 export const CHAT_TOOL_TIMEOUT_MS = 2_000;
 export const CHAT_TOOL_MAX_INPUT_BYTES = 4 * 1_024;
 export const CHAT_TOOL_MAX_RESULT_BYTES = 32 * 1_024;
@@ -41,10 +52,35 @@ export const CHAT_COMPARISON_WINDOW_DAYS = 30 as const;
 // 按出发时间倒序返回并设返回条数上限；极值模式至多一条（同值取最近一次）。
 export const chatFindRideModes = ["max", "min", "threshold"] as const;
 export type ChatFindRideMode = (typeof chatFindRideModes)[number];
-export const CHAT_FIND_RIDE_MAX_WINDOW_DAYS = CHAT_COMPARISON_WINDOW_DAYS;
+// AGT-B2（D-B1/P7 解冻）：检索宽度上限提到 365 天，**缺省仍 30 天**——
+// 缺省不放大保证"哪次最远"这类问法在未明示窗口时仍按近 30 天可比范围回答，
+// 只有用户/模型显式要更长窗口时才扩大（口径变更，M3 集须升版开新 Run）。
+export const CHAT_FIND_RIDE_MAX_WINDOW_DAYS = 365;
 export const CHAT_FIND_RIDE_MAX_MATCHES = 5 as const;
 
-export type ChatToolName = "get_ride_context" | "get_capabilities" | "compare_rides" | "find_ride";
+// AGT-B0：工具全集 4 → 9。前 4 个为现役（G1~G6 既有行为不变），后 5 个在 B0 只落
+// 合同（输入校验 + 结果类型 + 证据声明），数据投影由 B1（全局三件）与 B2（记录两件）实现；
+// 未实装前 executeChatTool 抛 TEMPORARY_UNAVAILABLE，且 catalog 不下发（模型无法调用）。
+export type ChatToolName =
+  | "get_ride_context"
+  | "get_capabilities"
+  | "compare_rides"
+  | "find_ride"
+  | "get_health_profile"
+  | "get_training_load"
+  | "search_knowledge_base"
+  | "get_ride_history"
+  | "get_route_overview";
+
+// AGT-B0（G3 修复）：锚点两类——required（必须绑定一条骑行记录，缺省用本轮锚点）、
+// optional（可绑定亦可全局，如跨记录窗口统计）、none（纯全局，如健康档案/知识库）。
+// 旧实现给所有调用注入 rideId 并强制有记录，导致"没有骑行记录的用户问自己的 FTP"
+// 连工具循环都进不去。
+export type ChatToolAnchorMode = "required" | "optional" | "none";
+
+// AGT-B0（G1/G2 修复）：工具结果携带哪种可引用证据。输出校验与"全空短路"都按
+// 声明判定，不再按工具名硬编码（旧 hasUsableLoopClaims 对未知工具一律 false）。
+export type ChatToolEvidenceKind = "claims" | "knowledge" | "capabilities" | "none";
 export type ChatToolErrorCode = "INVALID_INPUT" | "NOT_FOUND" | "TIMEOUT" | "TEMPORARY_UNAVAILABLE";
 
 type RideContextInput = { rideId: string; dims: RideContextDimension[] };
@@ -52,11 +88,55 @@ type CapabilitiesInput = { rideId: string; caps: AtomicCapabilityKey[] };
 type CompareRidesInput = { rideId: string; metrics: ChatComparisonMetricKey[]; windowDays: number };
 type FindRideInputBase = { rideId: string; metric: ChatComparisonMetricKey; metrics: ChatComparisonMetricKey[]; windowDays: number };
 export type FindRideInput = FindRideInputBase & ({ mode: "max" | "min" } | { mode: "threshold"; threshold: number });
+// AGT-B0：5 个新工具的输入合同（细规划 §3.2）。一律"完整键集"——可选字段也必须在
+// 调用时出现，缺省值由 normalizeLoopCall 在进入 parse 前补齐（与 compare_rides 既有模式一致），
+// 这样 parseChatToolInvocation 仍是纯精确键集校验，不引入第二套省略语义。
+export const healthProfileFields = ["weightKg", "maxHeartRate", "ftp"] as const;
+export type HealthProfileField = (typeof healthProfileFields)[number];
+
+// V2.1 KB 只覆盖 V2 九维度中的前 7 个（historicalPerformance / longTermLoadRecovery 无条目），
+// 检索枚举按 KB 实际覆盖收窄——否则模型会请求一个永远无命中的维度。
+export const chatKnowledgeDimensionIds = [
+  "pacingExecution",
+  "climbPerformance",
+  "heartRateLoad",
+  "powerOutput",
+  "intensityAndTrainingLoad",
+  "cadenceStrategy",
+  "crossSensorCoordination",
+] as const;
+export type ChatKnowledgeDimensionId = (typeof chatKnowledgeDimensionIds)[number];
+
+export const CHAT_KNOWLEDGE_MAX_ENTRIES = 3 as const;
+export const CHAT_KNOWLEDGE_MAX_KEYWORDS = 5 as const;
+export const CHAT_KNOWLEDGE_KEYWORD_MAX_CHARS = 32 as const;
+// PMC 的最小可信窗口就是 42 天（RIDE_PMC_MIN_WINDOW_DAYS），不接受更短的自定义窗口。
+export const CHAT_TRAINING_LOAD_WINDOW_DAYS = 42 as const;
+export const CHAT_RIDE_HISTORY_DEFAULT_WINDOW_DAYS = 90 as const;
+export const CHAT_RIDE_HISTORY_MAX_WINDOW_DAYS = 365 as const;
+// 逐条精简行的行数上限：365 天窗口可能命中上百条，全量逐条会顶到 32KB 结果上限。
+// 统计（次数/里程/时长/爬升）仍按窗口全量算，只截断"逐条明细"，并在 limitations 里明示。
+export const CHAT_RIDE_HISTORY_MAX_ROWS = 20 as const;
+export const CHAT_ROUTE_OVERVIEW_DEFAULT_SEGMENTS = 3 as const;
+export const CHAT_ROUTE_OVERVIEW_MAX_SEGMENTS = 5 as const;
+
+type HealthProfileInput = { fields: HealthProfileField[] };
+type TrainingLoadInput = { anchorDate: string; windowDays: number };
+type SearchKnowledgeBaseInput = { dimensionIds: ChatKnowledgeDimensionId[]; keywords: string[]; maxEntries: number };
+// rideId 为 null 表示"不锚定某一次骑行"，按窗口跨记录统计（D-B3：可选锚点）。
+type RideHistoryInput = { rideId: string | null; windowDays: number; metrics: ChatComparisonMetricKey[] };
+type RouteOverviewInput = { rideId: string; segments: number };
+
 export type ChatToolInvocation =
   | { tool: "get_ride_context"; input: RideContextInput }
   | { tool: "get_capabilities"; input: CapabilitiesInput }
   | { tool: "compare_rides"; input: CompareRidesInput }
-  | { tool: "find_ride"; input: FindRideInput };
+  | { tool: "find_ride"; input: FindRideInput }
+  | { tool: "get_health_profile"; input: HealthProfileInput }
+  | { tool: "get_training_load"; input: TrainingLoadInput }
+  | { tool: "search_knowledge_base"; input: SearchKnowledgeBaseInput }
+  | { tool: "get_ride_history"; input: RideHistoryInput }
+  | { tool: "get_route_overview"; input: RouteOverviewInput };
 
 type ChatToolClaim = Pick<AnalysisContextClaim, "claimId" | "kind" | "key" | "value" | "unit" | "confidence" | "formulaVersion" | "displayValue" | "displayUnit">;
 
@@ -87,6 +167,12 @@ export type CapabilitiesToolResult = {
   tool: "get_capabilities";
   rideId: string;
   capabilities: CapabilityToolItem[];
+  // AGT-B5（ORCH-21「最近一次记录里有功率数据吗」3/3 NO_MATCH 驱动）：**能力可用性必须可引用**。
+  // 旧实现 evidenceKind="capabilities" + hasUsableEvidence=false——模型能看到 available=[true/false]，
+  // 却没有可引用的 Claim，于是 L2b 里"empty_claims"零模型降级：**这个工具一旦被调用就注定答不出**。
+  // 现在每个能力一条 Claim（value=1/0，displayValue=可用/不可用），让"有没有功率数据"成为
+  // 可溯源事实，而不是靠模型空口断言。
+  claims: Array<{ claimId: string; kind: "metric"; key: string; value: number; unit: string; confidence: "high"; displayValue: string }>;
 };
 
 // CHAT-13：compare_rides 结果——锚点（当前记录）与 30 天窗口历史基线的比较投影。
@@ -161,7 +247,131 @@ export type FindRideToolResult = {
   privacy: ["raw_track_excluded", "precise_coordinates_excluded", "source_filename_excluded"];
 };
 
-export type ChatToolResult = RideContextToolResult | CapabilitiesToolResult | CompareRidesToolResult | FindRideToolResult;
+// ---- AGT-B0：5 个新工具的结果合同（B0 只定合同与证据，数据投影由 B1/B2 实现）----
+
+// get_health_profile：按 P4 拍板只投影 maxHR / FTP / 体重三项 + provenance；
+// 身份信息与非运动健康字段不进投影（隐私声明里显式写出，便于审计）。
+export type HealthProfileFactItem = {
+  // 事实也需要可引用标识——输出合同的 claimIds 只认这个前缀体系，
+  // 没有 claimId 的"事实"无法通过溯源校验（会给模型留下"能说但不能引"的坑）。
+  claimId: string;
+  key: HealthProfileField;
+  value: number;
+  unit: "kg" | "bpm" | "W";
+  provenance: "user_provided" | "system_estimated";
+  updatedAt: string;
+};
+
+export type HealthProfileToolResult = {
+  schemaVersion: typeof CHAT_TOOL_SCHEMA_VERSION;
+  tool: "get_health_profile";
+  facts: HealthProfileFactItem[];
+  limitations: string[];
+  privacy: ["identity_fields_excluded", "non_sport_health_fields_excluded"];
+};
+
+// search_knowledge_base：条目 ID 是唯一引用单元（输出合同的 knowledgeIds 只认它），
+// excerpt 裁到 600 字以内控 token（KB 单条 explanation 约 3KB）。
+export type KnowledgeBaseItem = {
+  knowledgeId: string;
+  // 条目维度用领域枚举（9 维）；检索入参只开放 KB 已覆盖的 7 维（chatKnowledgeDimensionIds）——
+  // 两者不同是刻意的：KB 未来扩到 9 维时，条目类型不用再改一次。
+  dimensionId: AnalysisDimensionId;
+  topic: string;
+  title: string;
+  conclusionStrength: "high" | "moderate" | "limited";
+  limitations: string[];
+  excerpt: string;
+};
+
+export type KnowledgeSearchToolResult = {
+  schemaVersion: typeof CHAT_TOOL_SCHEMA_VERSION;
+  tool: "search_knowledge_base";
+  status: "matched" | "no_match";
+  dimensionIds: ChatKnowledgeDimensionId[];
+  keywords: string[];
+  // 未命中时回传可用维度清单，让模型能改问而不是编造条目。
+  availableDimensionIds: ChatKnowledgeDimensionId[];
+  items: KnowledgeBaseItem[];
+  privacy: ["public_knowledge_only"];
+};
+
+// get_training_load：CTL/ATL/TSB 由 ride-pmc-load-v2 计算，工具只投影；
+// 四类 unavailable 原因必须原样回传（模型不得自行估算 TSS/CTL）。
+export type TrainingLoadUnavailableReason =
+  | "FTP_NOT_CONFIRMED"
+  | "NO_TSS_HISTORY"
+  | "INSUFFICIENT_WINDOW"
+  | "INSUFFICIENT_LOAD_DAYS"
+  | "INVALID_INPUT";
+
+export type TrainingLoadToolResult = {
+  schemaVersion: typeof CHAT_TOOL_SCHEMA_VERSION;
+  tool: "get_training_load";
+  status: "available" | "unavailable";
+  reason?: TrainingLoadUnavailableReason;
+  anchorDate: string;
+  windowDays: number;
+  loadDays: number;
+  ctl?: number;
+  atl?: number;
+  tsb?: number;
+  claims: ChatToolClaim[];
+  limitations: string[];
+  privacy: ["none"];
+};
+
+// get_ride_history：跨记录窗口聚合（缺省 90 天、上限 365）。汇总数字进 claims，
+// 逐条记录只给日期标签与指标（复用 find_ride 的显示空间）。
+export type RideHistoryRow = {
+  rideId: string;
+  rideDateLabel?: string;
+  claims: FindRideClaim[];
+};
+
+export type RideHistoryToolResult = {
+  schemaVersion: typeof CHAT_TOOL_SCHEMA_VERSION;
+  tool: "get_ride_history";
+  windowDays: number;
+  anchorStartTime?: string;
+  status: "matched" | "no_match";
+  reasonCodes: ("NO_RIDES_IN_WINDOW" | "METRIC_MISSING")[];
+  rideCount: number;
+  claims: ChatToolClaim[];
+  rows: RideHistoryRow[];
+  // AGT-B2：逐条行被截断时的说明（`rows_truncated:20/57`）——统计仍按窗口全量算。
+  limitations: string[];
+  privacy: ["raw_track_excluded", "precise_coordinates_excluded", "source_filename_excluded"];
+};
+
+// get_route_overview：只给里程区间与坡度概要，精坐标仍排除（沿用既有隐私口径）。
+// AGT-B2：除"最长连续爬坡段"外增加 `climbs[]`——`segments` 入参控制返回几段（1..5），
+// `longestClimb` 恒为第一段（保持 B0 定义的最小形状可用）。
+export type RouteOverviewToolResult = {
+  schemaVersion: typeof CHAT_TOOL_SCHEMA_VERSION;
+  tool: "get_route_overview";
+  rideId: string;
+  isAvailable: boolean;
+  climbDistanceM?: number;
+  flatDistanceM?: number;
+  descentDistanceM?: number;
+  longestClimb?: { startDistanceM: number; endDistanceM: number; distanceM: number };
+  climbs: Array<{ startDistanceM: number; endDistanceM: number; distanceM: number }>;
+  claims: ChatToolClaim[];
+  limitations: string[];
+  privacy: ["raw_track_excluded", "precise_coordinates_excluded", "source_filename_excluded"];
+};
+
+export type ChatToolResult =
+  | RideContextToolResult
+  | CapabilitiesToolResult
+  | CompareRidesToolResult
+  | FindRideToolResult
+  | HealthProfileToolResult
+  | TrainingLoadToolResult
+  | KnowledgeSearchToolResult
+  | RideHistoryToolResult
+  | RouteOverviewToolResult;
 
 export class ChatToolError extends Error {
   readonly code: ChatToolErrorCode;
@@ -236,6 +446,51 @@ function validThreshold(value: unknown): value is number {
   return typeof value === "number" && Number.isFinite(value);
 }
 
+// ---- AGT-B0：新工具输入校验辅助 ----
+
+// 可选锚点：null 表示"不锚定某一次骑行"（跨记录窗口统计），否则必须是合法 rideId。
+function validNullableRideId(value: unknown): value is string | null {
+  return value === null || validRideId(value);
+}
+
+// 训练负荷锚定日：只能是 "today"（由 normalize 缺省注入）或真实日历日。
+function validAnchorDate(value: unknown): value is string {
+  return value === "today"
+    || (typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value) && !Number.isNaN(Date.parse(value)));
+}
+
+function validKeywords(value: unknown): value is string[] {
+  return Array.isArray(value)
+    && value.length <= CHAT_KNOWLEDGE_MAX_KEYWORDS
+    && value.every((item): item is string =>
+      typeof item === "string" && item.length > 0 && item.length <= CHAT_KNOWLEDGE_KEYWORD_MAX_CHARS && item.trim() === item)
+    && new Set(value).size === value.length;
+}
+
+// 维度检索与关键词检索至少给一个，否则等于"无检索条件"——不让这种调用进执行层。
+function validKnowledgeDimensionIds(value: unknown): value is ChatKnowledgeDimensionId[] {
+  return Array.isArray(value)
+    && value.length <= chatKnowledgeDimensionIds.length
+    && value.every((item): item is ChatKnowledgeDimensionId => typeof item === "string" && chatKnowledgeDimensionIds.includes(item as ChatKnowledgeDimensionId))
+    && new Set(value).size === value.length;
+}
+
+function validMaxEntries(value: unknown): value is number {
+  return typeof value === "number" && Number.isInteger(value) && value >= 1 && value <= CHAT_KNOWLEDGE_MAX_ENTRIES;
+}
+
+function validRideHistoryWindowDays(value: unknown): value is number {
+  return typeof value === "number" && Number.isInteger(value) && value >= 1 && value <= CHAT_RIDE_HISTORY_MAX_WINDOW_DAYS;
+}
+
+function validTrainingLoadWindowDays(value: unknown): value is number {
+  return value === CHAT_TRAINING_LOAD_WINDOW_DAYS;
+}
+
+function validSegments(value: unknown): value is number {
+  return typeof value === "number" && Number.isInteger(value) && value >= 1 && value <= CHAT_ROUTE_OVERVIEW_MAX_SEGMENTS;
+}
+
 export function parseChatToolInvocation(value: unknown): ChatToolInvocation {
   if (!isPlainObject(value) || !hasExactKeys(value, ["tool", "input"]) || !isPlainObject(value.input)) throw new ChatToolError("INVALID_INPUT");
   if (value.tool === "get_ride_context") {
@@ -281,6 +536,56 @@ export function parseChatToolInvocation(value: unknown): ChatToolInvocation {
       return { tool: value.tool, input: { rideId: value.input.rideId, metric: value.input.metric, mode, threshold: value.input.threshold, metrics: value.input.metrics, windowDays: value.input.windowDays } };
     }
     return { tool: value.tool, input: { rideId: value.input.rideId, metric: value.input.metric, mode, metrics: value.input.metrics, windowDays: value.input.windowDays } };
+  }
+  // ---- AGT-B0：5 个新工具的输入分支（纯合同，执行由 B1/B2 填）----
+  if (value.tool === "get_health_profile") {
+    if (!hasExactKeys(value.input, ["fields"]) || !uniqueEnumValues(value.input.fields, healthProfileFields, healthProfileFields.length)) {
+      throw new ChatToolError("INVALID_INPUT");
+    }
+    return { tool: value.tool, input: { fields: value.input.fields } };
+  }
+  if (value.tool === "get_training_load") {
+    if (
+      !hasExactKeys(value.input, ["anchorDate", "windowDays"])
+      || !validAnchorDate(value.input.anchorDate)
+      || !validTrainingLoadWindowDays(value.input.windowDays)
+    ) {
+      throw new ChatToolError("INVALID_INPUT");
+    }
+    return { tool: value.tool, input: { anchorDate: value.input.anchorDate, windowDays: value.input.windowDays } };
+  }
+  if (value.tool === "search_knowledge_base") {
+    if (
+      !hasExactKeys(value.input, ["dimensionIds", "keywords", "maxEntries"])
+      || !validKnowledgeDimensionIds(value.input.dimensionIds)
+      || !validKeywords(value.input.keywords)
+      || !validMaxEntries(value.input.maxEntries)
+      // 维度与关键词都空 = 无检索条件，直接视为非法调用（不让空查询进执行层）。
+      || (value.input.dimensionIds.length === 0 && value.input.keywords.length === 0)
+    ) {
+      throw new ChatToolError("INVALID_INPUT");
+    }
+    return {
+      tool: value.tool,
+      input: { dimensionIds: value.input.dimensionIds, keywords: value.input.keywords, maxEntries: value.input.maxEntries },
+    };
+  }
+  if (value.tool === "get_ride_history") {
+    if (
+      !hasExactKeys(value.input, ["rideId", "windowDays", "metrics"])
+      || !validNullableRideId(value.input.rideId)
+      || !validRideHistoryWindowDays(value.input.windowDays)
+      || !uniqueEnumValues(value.input.metrics, chatComparisonMetricKeys, chatComparisonMetricKeys.length)
+    ) {
+      throw new ChatToolError("INVALID_INPUT");
+    }
+    return { tool: value.tool, input: { rideId: value.input.rideId, windowDays: value.input.windowDays, metrics: value.input.metrics } };
+  }
+  if (value.tool === "get_route_overview") {
+    if (!hasExactKeys(value.input, ["rideId", "segments"]) || !validRideId(value.input.rideId) || !validSegments(value.input.segments)) {
+      throw new ChatToolError("INVALID_INPUT");
+    }
+    return { tool: value.tool, input: { rideId: value.input.rideId, segments: value.input.segments } };
   }
   throw new ChatToolError("INVALID_INPUT");
 }
@@ -352,6 +657,11 @@ function comparisonClaim(metric: HistoricalMetricComparison, scope: "all" | "sam
       ? format.round(anchor.value - baseline.value)
       : Math.round((Number(anchor.displayValue) - Number(baseline.displayValue)) * 10) / 10
     : undefined;
+  // CHAT-13 契约保持：**claimId 仅可比时存在**（不可比不产生可引用趋势 claim）。
+  // AGT-B5 曾试过给不可比 claim 合成 id 让模型解释原因，结论是**不能这么做**：
+  // ① 破坏"首骑不可比无 claimId"的既有契约（CHAT-13 D1 测试立刻失败）；
+  // ② 放开后模型会把不可比答成「完全一致」并编造「相同路线」（幻觉方向）。
+  // 不可比的说明改由 chat-agent 的零模型话术 comparisonNotComparableReply 承担。
   return {
     ...(metric.claimIds.length > 0 ? { claimId: metric.claimIds[0] } : {}),
     metricKey: metric.metricKey as ChatComparisonMetricKey,
@@ -483,8 +793,594 @@ function buildFindRideResult(anchor: RideRecord, records: RideRecord[], input: F
   return { ...base, status: "matched", reasonCodes: [], candidateCount: candidates.length, matchedCount: 1, matches: [toMatch(extreme)] };
 }
 
+// ---- AGT-B0：工具规格表（合同单一事实源）----
+//
+// 三处逻辑过去各自按工具名硬编码——`hasUsableLoopClaims`（全空短路）、
+// `numericValues`/`comparisonNumericValues`/`loopNumbersAreSupported`（数字白名单）、
+// `normalizeLoopCall`（锚点注入）。新工具接入时这三处都会漏改，因此收敛成一张表：
+// 加工具只改这里 + parse 分支 + 执行分支，不再靠"记得改另一处"。
+export type ChatToolSpec = {
+  anchorMode: ChatToolAnchorMode;
+  evidenceKind: ChatToolEvidenceKind;
+  /** 该结果里可被引用的 Claim ID（输出合同 claimIds 的合法集合）。 */
+  claimIds: (result: ChatToolResult) => string[];
+  /** 该结果里可被引用的知识条目 ID（输出合同 knowledgeIds 的合法集合）。 */
+  knowledgeIds: (result: ChatToolResult) => string[];
+  /** 该结果里可被模型合法引用的数字（原始事实，等价类由 chat-numeric-evidence 统一生成）。 */
+  numericFacts: (result: ChatToolResult) => ChatNumericFact[];
+  /** 是否产出了可引用的证据——L2b "全空短路"用它判定，替代按工具名的硬编码。 */
+  hasUsableEvidence: (result: ChatToolResult) => boolean;
+};
+
+const emptyFacts: ChatNumericFact[] = [];
+const emptyIds: string[] = [];
+
+export const chatToolSpecs: Record<ChatToolName, ChatToolSpec> = {
+  get_ride_context: {
+    anchorMode: "required",
+    evidenceKind: "claims",
+    claimIds: (result) => (result.tool === "get_ride_context" ? result.claims.map((claim) => claim.claimId) : emptyIds),
+    knowledgeIds: () => emptyIds,
+    numericFacts: (result) => (result.tool === "get_ride_context"
+      ? [
+        ...result.claims.map((claim) => ({ value: claim.value, unit: claim.unit, key: claim.key, displayValue: claim.displayValue })),
+        // 日期标签数字（"2026年10月5日"）随投影提供，模型表述"10月5日这次"可溯源。
+        ...(result.rideDateLabel ? [{ displayValue: result.rideDateLabel }] : []),
+      ]
+      : emptyFacts),
+    hasUsableEvidence: (result) => result.tool === "get_ride_context" && result.claims.length > 0,
+  },
+  get_capabilities: {
+    anchorMode: "required",
+    // AGT-B5：改 claims 形态——能力可用性成为可引用事实（见 CapabilitiesToolResult 注释）。
+    evidenceKind: "claims",
+    claimIds: (result) => (result.tool === "get_capabilities" ? result.claims.map((claim) => claim.claimId) : emptyIds),
+    knowledgeIds: () => emptyIds,
+    numericFacts: (result) => (result.tool === "get_capabilities"
+      ? result.claims.map((claim) => ({ value: claim.value, unit: claim.unit, key: claim.key, displayValue: claim.displayValue }))
+      : emptyFacts),
+    hasUsableEvidence: (result) => result.tool === "get_capabilities" && result.claims.length > 0,
+  },
+  compare_rides: {
+    anchorMode: "required",
+    evidenceKind: "claims",
+    claimIds: (result) => (result.tool === "compare_rides"
+      ? result.claims.flatMap((claim) => (claim.claimId ? [claim.claimId] : []))
+      : emptyIds),
+    knowledgeIds: () => emptyIds,
+    numericFacts: (result) => (result.tool === "compare_rides"
+      ? [
+        { value: result.windowDays },
+        { value: result.sampleCount },
+        { value: result.comparability.sampleCount },
+        ...(result.anchorStartTime ? [{ displayValue: result.anchorStartTime }] : []),
+        ...result.claims.flatMap((claim) => [
+          ...(claim.anchor ? [{ value: claim.anchor.value, unit: claim.anchor.unit, displayValue: claim.anchor.displayValue }] : []),
+          ...(claim.baseline ? [
+            { value: claim.baseline.value, unit: claim.baseline.unit, displayValue: claim.baseline.displayValue },
+            { value: claim.baseline.sampleCount },
+          ] : []),
+          ...(claim.change !== undefined ? [{ value: claim.change, unit: claim.anchor?.unit }] : []),
+          ...(claim.relativeChangePercent !== undefined ? [{ value: claim.relativeChangePercent }] : []),
+        ]),
+      ]
+      : emptyFacts),
+    // AGT-B5：**保持"必须有可比 claim"**。曾试过放宽到"有 claim 即可"，实测模型会把
+    // not_comparable 答成「完全一致，没有变化」并且编造「相同路线」——不可比 ≠ 相同，
+    // 那是幻觉方向的错误，比降级更糟。不可比的说明改由**零模型降级话术**承担（见 chat-agent）。
+    hasUsableEvidence: (result) => result.tool === "compare_rides"
+      && result.claims.some((claim) => claim.status === "comparable" && Boolean(claim.claimId)),
+  },
+  find_ride: {
+    anchorMode: "required",
+    evidenceKind: "claims",
+    claimIds: (result) => (result.tool === "find_ride"
+      ? result.matches.flatMap((match) => match.claims.map((claim) => claim.claimId))
+      : emptyIds),
+    knowledgeIds: () => emptyIds,
+    numericFacts: (result) => (result.tool === "find_ride"
+      ? [
+        { value: result.windowDays },
+        { value: result.candidateCount },
+        { value: result.matchedCount },
+        ...(result.threshold !== undefined ? [{ value: result.threshold }] : []),
+        ...result.matches.flatMap((match) => [
+          ...(match.rideDateLabel ? [{ displayValue: match.rideDateLabel }] : []),
+          ...match.claims.map((claim) => ({ value: claim.value, unit: claim.unit, key: claim.metricKey, displayValue: claim.displayValue })),
+        ]),
+      ]
+      : emptyFacts),
+    hasUsableEvidence: (result) => result.tool === "find_ride" && result.status === "matched" && result.matches.length > 0,
+  },
+  get_health_profile: {
+    anchorMode: "none",
+    evidenceKind: "claims",
+    claimIds: (result) => (result.tool === "get_health_profile" ? result.facts.map((fact) => fact.claimId) : emptyIds),
+    knowledgeIds: () => emptyIds,
+    numericFacts: (result) => (result.tool === "get_health_profile"
+      ? result.facts.map((fact) => ({ value: fact.value, unit: fact.unit, key: fact.key }))
+      : emptyFacts),
+    hasUsableEvidence: (result) => result.tool === "get_health_profile" && result.facts.length > 0,
+  },
+  get_training_load: {
+    anchorMode: "none",
+    evidenceKind: "claims",
+    claimIds: (result) => (result.tool === "get_training_load"
+      ? result.claims.flatMap((claim) => (claim.claimId ? [claim.claimId] : []))
+      : emptyIds),
+    knowledgeIds: () => emptyIds,
+    numericFacts: (result) => (result.tool === "get_training_load"
+      ? [
+        { value: result.windowDays },
+        { value: result.loadDays },
+        ...(result.ctl !== undefined ? [{ value: result.ctl, key: "ctl" }] : []),
+        ...(result.atl !== undefined ? [{ value: result.atl, key: "atl" }] : []),
+        ...(result.tsb !== undefined ? [{ value: result.tsb, key: "tsb" }] : []),
+        ...result.claims.map((claim) => ({ value: claim.value, unit: claim.unit, key: claim.key, displayValue: claim.displayValue })),
+      ]
+      : emptyFacts),
+    hasUsableEvidence: (result) => result.tool === "get_training_load" && result.status === "available",
+  },
+  search_knowledge_base: {
+    anchorMode: "none",
+    evidenceKind: "knowledge",
+    claimIds: () => emptyIds,
+    knowledgeIds: (result) => (result.tool === "search_knowledge_base" && result.status === "matched"
+      ? result.items.map((item) => item.knowledgeId)
+      : emptyIds),
+    numericFacts: (result) => (result.tool === "search_knowledge_base"
+      // 知识正文里的数字（如"CTL 时间常数 42 天"）必须可被引用，否则模型解释原理
+      // 一说数字就被判幻觉。代价是这些数字也可被误当作个人数据——靠 Prompt 约束
+      // "知识数字只作原理解释"+ 离线语义判官兜（AGT-C），不在规则层解决。
+      ? result.items.map((item) => ({ displayValue: item.excerpt }))
+      : emptyFacts),
+    hasUsableEvidence: (result) => result.tool === "search_knowledge_base" && result.status === "matched" && result.items.length > 0,
+  },
+  get_ride_history: {
+    anchorMode: "optional",
+    evidenceKind: "claims",
+    claimIds: (result) => (result.tool === "get_ride_history"
+      ? [
+        ...result.claims.flatMap((claim) => (claim.claimId ? [claim.claimId] : [])),
+        ...result.rows.flatMap((row) => row.claims.map((claim) => claim.claimId)),
+      ]
+      : emptyIds),
+    knowledgeIds: () => emptyIds,
+    numericFacts: (result) => (result.tool === "get_ride_history"
+      ? [
+        { value: result.windowDays },
+        { value: result.rideCount },
+        ...result.claims.map((claim) => ({ value: claim.value, unit: claim.unit, key: claim.key, displayValue: claim.displayValue })),
+        ...result.rows.flatMap((row) => [
+          ...(row.rideDateLabel ? [{ displayValue: row.rideDateLabel }] : []),
+          ...row.claims.map((claim) => ({ value: claim.value, unit: claim.unit, key: claim.metricKey, displayValue: claim.displayValue })),
+        ]),
+      ]
+      : emptyFacts),
+    hasUsableEvidence: (result) => result.tool === "get_ride_history" && result.status === "matched",
+  },
+  get_route_overview: {
+    anchorMode: "required",
+    evidenceKind: "claims",
+    claimIds: (result) => (result.tool === "get_route_overview"
+      ? result.claims.flatMap((claim) => (claim.claimId ? [claim.claimId] : []))
+      : emptyIds),
+    knowledgeIds: () => emptyIds,
+    numericFacts: (result) => (result.tool === "get_route_overview"
+      ? [
+        ...(result.climbDistanceM !== undefined ? [{ value: result.climbDistanceM, unit: "m", key: "distanceM" }] : []),
+        ...(result.flatDistanceM !== undefined ? [{ value: result.flatDistanceM, unit: "m", key: "distanceM" }] : []),
+        ...(result.descentDistanceM !== undefined ? [{ value: result.descentDistanceM, unit: "m", key: "distanceM" }] : []),
+        // 爬坡段：起止里程与段长都要可引用（"从 12 公里到 15 公里"这类表述）。
+        ...result.climbs.flatMap((climb) => [
+          { value: climb.distanceM, unit: "m", key: "distanceM" },
+          { value: climb.startDistanceM, unit: "m", key: "distanceM" },
+          { value: climb.endDistanceM, unit: "m", key: "distanceM" },
+        ]),
+        ...result.claims.map((claim) => ({ value: claim.value, unit: claim.unit, key: claim.key, displayValue: claim.displayValue })),
+      ]
+      : emptyFacts),
+    hasUsableEvidence: (result) => result.tool === "get_route_overview" && result.isAvailable,
+  },
+};
+
+/** 一批结果的可引用 Claim ID 并集（输出合同 claimIds 的合法集合）。 */
+export function toolClaimIds(results: readonly ChatToolResult[]): Set<string> {
+  const ids = new Set<string>();
+  for (const result of results) for (const id of chatToolSpecs[result.tool].claimIds(result)) ids.add(id);
+  return ids;
+}
+
+/** 一批结果的可引用知识条目 ID 并集（输出合同 knowledgeIds 的合法集合）。 */
+export function toolKnowledgeIds(results: readonly ChatToolResult[]): Set<string> {
+  const ids = new Set<string>();
+  for (const result of results) for (const id of chatToolSpecs[result.tool].knowledgeIds(result)) ids.add(id);
+  return ids;
+}
+
+export function chatToolAnchorMode(tool: ChatToolName): ChatToolAnchorMode {
+  return chatToolSpecs[tool].anchorMode;
+}
+
+export function chatToolEvidenceKind(tool: ChatToolName): ChatToolEvidenceKind {
+  return chatToolSpecs[tool].evidenceKind;
+}
+
+// ---- AGT-B1：三个全局工具的执行投影（无锚点，不依赖某一次骑行）----
+
+const SHANGHAI_DATE = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Shanghai", year: "numeric", month: "2-digit", day: "2-digit" });
+
+/** Asia/Shanghai 日历日（YYYY-MM-DD）——与 rideDateLabel 同口径，供 TSS 按日聚合。 */
+function shanghaiDateKey(value: string | Date): string | undefined {
+  const date = typeof value === "string" ? new Date(value) : value;
+  if (Number.isNaN(date.getTime())) return undefined;
+  const parts = SHANGHAI_DATE.formatToParts(date);
+  const year = parts.find((part) => part.type === "year")?.value;
+  const month = parts.find((part) => part.type === "month")?.value;
+  const day = parts.find((part) => part.type === "day")?.value;
+  return year && month && day ? `${year}-${month}-${day}` : undefined;
+}
+
+/** 只接受 qualityStatus=valid 的有限值（低置信/降级指标不参与训练负荷计算）。 */
+function validMetricValue(record: RideRecord, key: MetricKey): number | undefined {
+  const metric = record.activity.metrics[key];
+  return metric && metric.qualityStatus === "valid" && Number.isFinite(metric.value) ? metric.value : undefined;
+}
+
+async function buildHealthProfileResult(
+  repository: ApplicationRepository,
+  ownerId: string,
+  input: { fields: HealthProfileField[] },
+): Promise<HealthProfileToolResult> {
+  const profile = await repository.getProfile(ownerId);
+  const facts: HealthProfileFactItem[] = [];
+  const limitations: string[] = [];
+  for (const field of input.fields) {
+    if (field === "weightKg") {
+      if (profile?.weightKg) {
+        facts.push({ claimId: "claim:profile:weightKg", key: field, value: profile.weightKg.value, unit: "kg", provenance: "user_provided", updatedAt: profile.weightKg.updatedAt });
+      } else {
+        limitations.push("weightKg:MISSING");
+      }
+    }
+    if (field === "maxHeartRate") {
+      if (profile?.maxHeartRate) {
+        facts.push({
+          claimId: "claim:profile:maxHeartRate",
+          key: field,
+          value: profile.maxHeartRate.valueBpm,
+          unit: "bpm",
+          // system_estimated 必须原样透出：模型不得把 220-age 估算说成用户实测值。
+          provenance: profile.maxHeartRate.source === "system_estimated" ? "system_estimated" : "user_provided",
+          updatedAt: profile.maxHeartRate.updatedAt,
+        });
+      } else {
+        limitations.push("maxHeartRate:MISSING");
+      }
+    }
+    if (field === "ftp") {
+      if (profile?.ftp) {
+        facts.push({ claimId: "claim:profile:ftp", key: field, value: profile.ftp.valueWatts, unit: "W", provenance: "user_provided", updatedAt: profile.ftp.updatedAt });
+      } else {
+        limitations.push("ftp:MISSING");
+      }
+    }
+  }
+  return {
+    schemaVersion: CHAT_TOOL_SCHEMA_VERSION,
+    tool: "get_health_profile",
+    facts,
+    limitations,
+    privacy: ["identity_fields_excluded", "non_sport_health_fields_excluded"],
+  };
+}
+
+/** 知识条目摘要：截断到 600 字并尽量落在句末，避免把半句话喂给模型。 */
+function knowledgeExcerpt(explanation: string, maxChars = 600): string {
+  if (explanation.length <= maxChars) return explanation;
+  const slice = explanation.slice(0, maxChars);
+  const boundary = Math.max(slice.lastIndexOf("。"), slice.lastIndexOf("；"), slice.lastIndexOf("\n"));
+  return (boundary > maxChars / 2 ? slice.slice(0, boundary + 1) : slice).trim();
+}
+
+function buildKnowledgeSearchResult(input: { dimensionIds: ChatKnowledgeDimensionId[]; keywords: string[]; maxEntries: number }): KnowledgeSearchToolResult {
+  const keywords = input.keywords.map((keyword) => keyword.toLowerCase());
+  // 用 Set<string> 做维度匹配：检索入参是 7 维、条目维度是 9 维领域枚举，
+  // 直接 includes 会因联合类型窄于宽而编译不过（运行时语义完全一致）。
+  const dimensionFilter = new Set<string>(input.dimensionIds);
+  const ranked = rideKnowledgeBaseV21
+    .map((entry) => {
+      const dimensionHit = dimensionFilter.has(entry.dimensionId);
+      const haystack = `${entry.topic} ${entry.title} ${entry.explanation}`.toLowerCase();
+      const keywordHits = keywords.filter((keyword) => haystack.includes(keyword)).length;
+      // 维度精确命中直接入选；否则必须至少命中一个关键词——不能把全库倒给模型。
+      if (!dimensionHit && keywordHits === 0) return undefined;
+      return { entry, dimensionHit, keywordHits };
+    })
+    .filter((item): item is { entry: (typeof rideKnowledgeBaseV21)[number]; dimensionHit: boolean; keywordHits: number } => item !== undefined)
+    // 维度命中优先，其次关键词命中数；同分保持 KB 原顺序（7 条固定，排序稳定可复现）。
+    .sort((a, b) => Number(b.dimensionHit) - Number(a.dimensionHit) || b.keywordHits - a.keywordHits);
+
+  const items: KnowledgeBaseItem[] = ranked.slice(0, input.maxEntries).map(({ entry }) => ({
+    knowledgeId: entry.knowledgeId,
+    dimensionId: entry.dimensionId,
+    topic: entry.topic,
+    title: entry.title,
+    conclusionStrength: entry.conclusionStrength,
+    limitations: [...entry.limitations],
+    excerpt: knowledgeExcerpt(entry.explanation),
+  }));
+
+  return {
+    schemaVersion: CHAT_TOOL_SCHEMA_VERSION,
+    tool: "search_knowledge_base",
+    status: items.length > 0 ? "matched" : "no_match",
+    dimensionIds: [...input.dimensionIds],
+    keywords: [...input.keywords],
+    // 未命中时回传全部可用维度，让模型能改问而不是编造条目。
+    availableDimensionIds: [...chatKnowledgeDimensionIds],
+    items,
+    privacy: ["public_knowledge_only"],
+  };
+}
+
+async function buildTrainingLoadResult(
+  repository: ApplicationRepository,
+  ownerId: string,
+  input: { anchorDate: string; windowDays: number },
+): Promise<TrainingLoadToolResult> {
+  const anchorDate = input.anchorDate === "today" ? (shanghaiDateKey(new Date()) ?? input.anchorDate) : input.anchorDate;
+  const profile = await repository.getProfile(ownerId);
+  const ftpWatts = profile?.ftp?.valueWatts;
+  // trustStatus 已是 user_confirmed 才认为 FTP 可信（PMC 对未确认 FTP 一律 unavailable）。
+  const ftpConfirmed = profile?.ftp?.trustStatus === "user_confirmed";
+  const records = (await repository.listRides(ownerId)).map((entry) => entry.record);
+
+  const dailyLoads: RidePmcDailyLoadInput[] = [];
+  const limitations: string[] = [];
+  const unavailableByReason = new Map<string, number>();
+  for (const record of records) {
+    const date = shanghaiDateKey(record.activity.startTime ?? "");
+    if (!date) {
+      limitations.push(`ride:${record.activity.rideId}:DATE_MISSING`);
+      continue;
+    }
+    // 晚于锚定日的记录不计入"截至该日"的负荷。
+    if (date > anchorDate) continue;
+    const tss = computeRideTss({
+      normalizedPowerW: validMetricValue(record, "normalizedPowerW"),
+      ftpWatts,
+      // 只传 movingTimeS：V2.1 spec 声明 intensity.tss 依赖 timing.movingTimeS，
+      // elapsed（含停歇）会把通勤骑的停歇算进负荷、系统性高估 TSS（验收修正）。
+      movingTimeS: validMetricValue(record, "movingTimeS"),
+    });
+    if (tss.status === "available") {
+      dailyLoads.push({ historyId: record.activity.rideId, date, tss: tss.tss });
+    } else {
+      unavailableByReason.set(tss.reason, (unavailableByReason.get(tss.reason) ?? 0) + 1);
+    }
+  }
+  // 逐条原因聚合成一行，避免 limitations 随记录数线性膨胀。
+  for (const [reason, count] of unavailableByReason) limitations.push(`rides_without_tss:${reason}:${count}`);
+
+  const snapshot = buildRidePmcLoadV2({
+    // PMC 是"截至某日的全局负荷"，不绑定某次骑行；固定伪 id 让 claimId 稳定可溯。
+    rideId: "training-load",
+    anchorDate,
+    ftpConfirmed,
+    dailyLoads,
+  });
+
+  const claims: ChatToolClaim[] = snapshot.claims.map((claim) => ({
+    claimId: claim.claimId,
+    kind: claim.kind === "metric" || claim.kind === "feature" || claim.kind === "history" || claim.kind === "advanced" ? claim.kind : "metric",
+    key: claim.key,
+    ...(claim.value !== undefined ? { value: claim.value } : {}),
+    ...(claim.unit ? { unit: claim.unit } : {}),
+    confidence: claim.confidence,
+    ...(claim.formulaVersion ? { formulaVersion: claim.formulaVersion } : {}),
+    ...(claim.displayValue ? { displayValue: claim.displayValue } : {}),
+    ...(claim.displayUnit ? { displayUnit: claim.displayUnit } : {}),
+  }));
+
+  return {
+    schemaVersion: CHAT_TOOL_SCHEMA_VERSION,
+    tool: "get_training_load",
+    status: snapshot.status === "available" ? "available" : "unavailable",
+    ...(snapshot.reason ? { reason: snapshot.reason } : {}),
+    anchorDate: snapshot.anchorDate,
+    windowDays: snapshot.windowDays ?? input.windowDays,
+    loadDays: snapshot.loadDays ?? dailyLoads.length,
+    ...(snapshot.ctl !== undefined ? { ctl: snapshot.ctl } : {}),
+    ...(snapshot.atl !== undefined ? { atl: snapshot.atl } : {}),
+    ...(snapshot.tsb !== undefined ? { tsb: snapshot.tsb } : {}),
+    claims,
+    limitations: [...new Set([...snapshot.limitations, ...limitations])],
+    privacy: ["none"],
+  };
+}
+
+// ---- AGT-B2：记录窗口工具组 ----
+
+const DAY_MS = 86_400_000;
+
+/** Asia/Shanghai 日历日的天数序号（用于窗口边界比较，避免跨时区/夏令时误差）。 */
+function dayIndex(dateKey: string): number {
+  return Math.floor(Date.parse(`${dateKey}T00:00:00+08:00`) / DAY_MS);
+}
+
+async function buildRideHistoryResult(
+  repository: ApplicationRepository,
+  ownerId: string,
+  input: { rideId: string | null; windowDays: number; metrics: ChatComparisonMetricKey[] },
+): Promise<RideHistoryToolResult> {
+  const records = (await repository.listRides(ownerId)).map((entry) => entry.record);
+  const anchorRecord = input.rideId ? records.find((record) => record.activity.rideId === input.rideId) : undefined;
+  if (input.rideId && !anchorRecord) throw new ChatToolError("NOT_FOUND");
+
+  // 窗口终点：锚定某条时取该条的骑行日（"那次之前的 90 天"），否则取今天。
+  const anchorDate = anchorRecord
+    ? shanghaiDateKey(anchorRecord.activity.startTime ?? "")
+    : shanghaiDateKey(new Date());
+  if (!anchorDate) throw new ChatToolError("TEMPORARY_UNAVAILABLE");
+  const anchorDay = dayIndex(anchorDate);
+  const startDay = anchorDay - input.windowDays + 1;
+
+  const inWindow = records
+    .map((record) => ({ record, date: shanghaiDateKey(record.activity.startTime ?? "") }))
+    .filter((item): item is { record: RideRecord; date: string } => item.date !== undefined)
+    .filter((item) => {
+      const day = dayIndex(item.date);
+      return day >= startDay && day <= anchorDay;
+    })
+    // 最近的在最前：模型叙述"最近 N 次"时按序取用，不必自己排序。
+    .sort((a, b) => b.date.localeCompare(a.date));
+
+  const reasonCodes: RideHistoryToolResult["reasonCodes"] = [];
+  if (inWindow.length === 0) reasonCodes.push("NO_RIDES_IN_WINDOW");
+
+  // 汇总：任一记录缺该指标就记 METRIC_MISSING（汇总值只累加 valid 值，缺失按 0 计但明示）。
+  const metricKeys = ["distanceM", "movingTimeS", "elevationGainM"] as const;
+  const totals = new Map<MetricKey, number>();
+  for (const key of metricKeys) {
+    let total = 0;
+    let missing = false;
+    for (const item of inWindow) {
+      const value = validMetricValue(item.record, key);
+      if (value === undefined) missing = true;
+      else total += value;
+    }
+    totals.set(key, total);
+    if (missing && !reasonCodes.includes("METRIC_MISSING")) reasonCodes.push("METRIC_MISSING");
+  }
+
+  // claim.key 用领域指标键（distanceM / movingTimeS / elevationGainM），
+  // 这样数值等价类会自动补上 km / 小时 的呈现换算，模型说"32 公里"不会被判幻觉。
+  const claims: ChatToolClaim[] = [
+    {
+      claimId: "claim:history:rideCount",
+      kind: "metric",
+      key: "rideCount",
+      value: inWindow.length,
+      unit: "count",
+      confidence: "high",
+      displayValue: String(inWindow.length),
+    },
+    ...(inWindow.length > 0
+      ? [
+        { claimId: "claim:history:totalDistanceM", kind: "metric" as const, key: "distanceM", value: totals.get("distanceM") ?? 0, unit: "m", confidence: "high" as const, displayValue: String(totals.get("distanceM") ?? 0) },
+        { claimId: "claim:history:totalMovingTimeS", kind: "metric" as const, key: "movingTimeS", value: totals.get("movingTimeS") ?? 0, unit: "s", confidence: "high" as const, displayValue: String(totals.get("movingTimeS") ?? 0) },
+        { claimId: "claim:history:totalElevationGainM", kind: "metric" as const, key: "elevationGainM", value: totals.get("elevationGainM") ?? 0, unit: "m", confidence: "high" as const, displayValue: String(totals.get("elevationGainM") ?? 0) },
+      ]
+      : []),
+  ];
+
+  const rows: RideHistoryRow[] = inWindow.slice(0, CHAT_RIDE_HISTORY_MAX_ROWS).map((item) => ({
+    rideId: item.record.activity.rideId,
+    ...(formatRideDateLabel(item.record.activity.startTime) ? { rideDateLabel: formatRideDateLabel(item.record.activity.startTime) } : {}),
+    claims: input.metrics
+      .map((metric) => {
+        const value = validMetricValue(item.record, metric as MetricKey);
+        return value === undefined ? undefined : findRideClaim(item.record.activity.rideId, metric, value);
+      })
+      .filter((claim): claim is FindRideClaim => claim !== undefined),
+  }));
+
+  const limitations: string[] = [];
+  if (inWindow.length > rows.length) {
+    limitations.push(`rows_truncated:${rows.length}/${inWindow.length}`);
+  }
+
+  return {
+    schemaVersion: CHAT_TOOL_SCHEMA_VERSION,
+    tool: "get_ride_history",
+    windowDays: input.windowDays,
+    ...(anchorRecord?.activity.startTime ? { anchorStartTime: anchorRecord.activity.startTime } : {}),
+    status: inWindow.length > 0 ? "matched" : "no_match",
+    reasonCodes,
+    rideCount: inWindow.length,
+    claims,
+    rows,
+    limitations,
+    privacy: ["raw_track_excluded", "precise_coordinates_excluded", "source_filename_excluded"],
+  };
+}
+
+async function buildRouteOverviewResult(
+  repository: ApplicationRepository,
+  ownerId: string,
+  input: { rideId: string; segments: number },
+): Promise<RouteOverviewToolResult> {
+  const record = await ownedRide(repository, ownerId, input.rideId);
+  // 两步都是现成函数：记录 → 海拔汇总 → 路线形状摘要（不重算任何爬坡判定规则）。
+  const shape = buildRideRouteShapeSummary(buildRideElevationSummary(record));
+
+  const limitations: string[] = [];
+  if (!shape.isAvailable) limitations.push("route_shape:NOT_AVAILABLE");
+  if (shape.needsCoverageNotice) limitations.push(`route_shape:coverage:${Math.round(shape.coverageRatio * 100)}%`);
+
+  // 爬坡段按里程降序取前 N 段（N = segments），longestClimb 恒为第一段。
+  // 里程取整到米：领域函数给的是浮点（7.142857…），投影给模型前收口，
+  // 避免模型照抄一长串小数（"可行度"由等价类的舍入覆盖，不会影响"44.98 公里"这类表述）。
+  const meters = (value: number): number => Math.round(value);
+  const climbs = shape.isAvailable
+    ? shape.segments
+      .filter((segment) => segment.type === "climb")
+      .sort((a, b) => b.distanceM - a.distanceM)
+      .slice(0, input.segments)
+      .map((segment) => ({ startDistanceM: meters(segment.startDistanceM), endDistanceM: meters(segment.endDistanceM), distanceM: meters(segment.distanceM) }))
+    : [];
+
+  const claims: ChatToolClaim[] = shape.isAvailable
+    ? [
+      { claimId: `claim:${record.activity.rideId}:route:climbDistanceM`, kind: "metric", key: "distanceM", value: meters(shape.climbDistanceM), unit: "m", confidence: "high", displayValue: String(meters(shape.climbDistanceM)) },
+      { claimId: `claim:${record.activity.rideId}:route:flatDistanceM`, kind: "metric", key: "distanceM", value: meters(shape.flatDistanceM), unit: "m", confidence: "high", displayValue: String(meters(shape.flatDistanceM)) },
+      { claimId: `claim:${record.activity.rideId}:route:descentDistanceM`, kind: "metric", key: "distanceM", value: meters(shape.descentDistanceM), unit: "m", confidence: "high", displayValue: String(meters(shape.descentDistanceM)) },
+    ]
+    : [];
+
+  return {
+    schemaVersion: CHAT_TOOL_SCHEMA_VERSION,
+    tool: "get_route_overview",
+    rideId: record.activity.rideId,
+    isAvailable: shape.isAvailable,
+    // 不可用时**不填任何里程字段**——宁可缺失也不给 0（0 会被叙述成"全是平路"）。
+    ...(shape.isAvailable
+      ? {
+        climbDistanceM: meters(shape.climbDistanceM),
+        flatDistanceM: meters(shape.flatDistanceM),
+        descentDistanceM: meters(shape.descentDistanceM),
+      }
+      : {}),
+    ...(climbs.length > 0 ? { longestClimb: climbs[0], climbs } : { climbs: [] }),
+    claims,
+    limitations,
+    privacy: ["raw_track_excluded", "precise_coordinates_excluded", "source_filename_excluded"],
+  };
+}
+
 async function executeChatToolWithinBoundary(repository: ApplicationRepository, ownerId: string, invocation: ChatToolInvocation): Promise<ChatToolResult> {
   try {
+    // AGT-B1：三个全局工具（无锚点）先处理——它们不依赖某条骑行记录，若落进下面的
+    // ownedRide 路径会因缺少 rideId 被误判 NOT_FOUND。
+    if (invocation.tool === "get_health_profile") {
+      return enforceResultSize(await buildHealthProfileResult(repository, ownerId, invocation.input));
+    }
+    if (invocation.tool === "search_knowledge_base") {
+      return enforceResultSize(buildKnowledgeSearchResult(invocation.input));
+    }
+    if (invocation.tool === "get_training_load") {
+      return enforceResultSize(await buildTrainingLoadResult(repository, ownerId, invocation.input));
+    }
+    // AGT-B2：记录窗口工具组。ride_history 的 rideId 可为 null（跨记录/不锚定），
+    // route_overview 必须锚定。
+    if (invocation.tool === "get_ride_history") {
+      return enforceResultSize(await buildRideHistoryResult(repository, ownerId, invocation.input));
+    }
+    if (invocation.tool === "get_route_overview") {
+      return enforceResultSize(await buildRouteOverviewResult(repository, ownerId, invocation.input));
+    }
+
     const record = await ownedRide(repository, ownerId, invocation.input.rideId);
     const profile = await repository.getProfile(ownerId);
 
@@ -495,6 +1391,18 @@ async function executeChatToolWithinBoundary(repository: ApplicationRepository, 
         schemaVersion: CHAT_TOOL_SCHEMA_VERSION,
         tool: invocation.tool,
         rideId: record.activity.rideId,
+        claims: invocation.input.caps
+          .filter((key) => requested.has(key))
+          .map((key) => getAtomicCapability(capabilityProfile, key))
+          .map((capability) => ({
+            claimId: `claim:caps:${capability.key}`,
+            kind: "metric" as const,
+            key: capability.key,
+            value: capability.available ? 1 : 0,
+            unit: "count",
+            confidence: "high" as const,
+            displayValue: capability.available ? "可用" : "不可用",
+          })),
         capabilities: invocation.input.caps
           .filter((key) => requested.has(key))
           .map((key) => getAtomicCapability(capabilityProfile, key))

@@ -35,20 +35,35 @@
 | 隐私投影 | 结果携带 `privacy` 排除声明数组（如 `precise_coordinates_excluded`），新工具逐一定义 | 现值 |
 | 调用校验 | 白名单 + 参数 schema 校验 + 锚点合规 + 调用预算（`TOOLS_LOOP_*` 降级码） | L2b 循环 |
 | 输入注入防护 | 工具结果回灌前视为不可信数据（沿用现有口径） | 现值 |
+| **证据形态**（AGT-B 新增） | 每个工具结果声明 `evidence: {kind: "claims" \| "knowledge" \| "capabilities" \| "none", usable}` 与 `toolNumericEvidence(result)`；校验器按声明聚合，**不再按工具名分支** | [AGT-B 细规划](开发规划/AGT-B_只读工具面_工作项规划.md) §2 |
+| **锚点类型**（AGT-B 新增） | **锚点工具**（`rideId` 必填或缺省锚点）与**全局工具**（无 `rideId`，无骑行记录也可用）两类；`TOOLS_NO_CURRENT_RIDE` 仅对锚点工具生效 | 同上 §2 G3 |
 
 ### 3.1 现役工具（4 只读，索引）
 
 `get_ride_context` / `get_capabilities` / `compare_rides` / `find_ride`——合同实现见 `src/chat/chat-tools.ts`，窗口冻结 30 天（AGT-B 放开后 `get_ride_history` 承接长窗口）。
 
-### 3.2 AGT-B 新增工具（5 只读，schema 于 AGT-B 细规划定稿后并入）
+### 3.2 AGT-B 新增工具（5 只读）
 
-| 工具 | 数据源 | 输出投影要点 | 隐私边界 | 状态 |
-| --- | --- | --- | --- | --- |
-| `get_health_profile` | `user-profile.ts` | 年龄/身高/体重/maxHR/FTP + provenance | 仅运动相关字段白名单；非运动健康信息、身份信息**绝对不给** | 骨架 |
-| `get_training_load` | `ride-pmc-load-v2.ts` | CTL/ATL/TSB + 趋势 | 无敏感项 | 骨架 |
-| `search_knowledge_base` | `ride-knowledge-base-v21.ts` | KB 条目 ID + 7 维度内容片段 | 公开知识无隐私；**引用 ID 必须可校验回条目** | 骨架 |
-| `get_ride_history` | `ride-series.ts` + `persistent-history.ts` | 跨记录窗口统计（**新窗口口径，突破 30 天冻结**） | 聚合投影沿用 | 骨架；窗口口径变更按 P7 开新 Run |
-| `get_route_overview` | `ride-route-shape.ts` | 路线形状/爬坡分段概要 | 精坐标仍排除（`precise_coordinates_excluded`） | 骨架 |
+> 完整输入/输出 schema 与验收用例见 [AGT-B 细规划](开发规划/AGT-B_只读工具面_工作项规划.md) §3~§4；本节只留合同要点，避免双台账。
+
+| 工具 | 数据源 | 锚点 | 输出投影要点 | 隐私边界 | 状态 |
+| --- | --- | --- | --- | --- | --- |
+| `get_health_profile` | `user-profile.ts` | 无（全局） | `weightKg`/`maxHeartRate`/`ftp` + provenance + 缺失明示（按 **P4 拍板**：仅现有 profile，不接外部健康数据） | `identity_fields_excluded`、`non_sport_health_fields_excluded` | 骨架（待 B1） |
+| `get_training_load` | `ride-pmc-load-v2.ts` | 可选（缺省今日） | CTL/ATL/TSB + 四类 `unavailable` 原因（FTP 未确认/无 TSS 历史/窗口不足/负荷天数不足） | 无敏感项 | 骨架（待 B1） |
+| `search_knowledge_base` | `ride-knowledge-base-v21.ts` | 无（全局） | `knowledgeId` + topic/title + `excerpt≤600 字` + limitations；`maxEntries≤3`；未命中返回维度清单 | 公开知识无隐私；**引用 ID 必须来自本轮结果** | 骨架（待 B1） |
+| `get_ride_history` | `persistent-history.ts` + `ride-series.ts` | 可选（缺省最新） | 窗口内次数/里程/时长/爬升 + 逐条精简行 + `reasonCodes`；缺省 90 天、上限 365 | 聚合投影沿用 | 骨架（待 B2） |
+| `get_route_overview` | `ride-route-shape.ts` | 必须 | 爬坡/平路/下坡里程占比 + 最长连续爬坡段概要 | 精坐标仍排除（`precise_coordinates_excluded`） | 骨架（待 B2） |
+
+**合同与实装状态（2026-10-24）**：5 个工具的**输入合同、结果类型、证据声明**（`chatToolSpecs`）已在 B0 落地；**执行投影已在 B1/B2 全部实装**——B1 完成 `get_health_profile` / `get_training_load` / `search_knowledge_base`（含新增 `src/domain/ride-training-stress.ts` 的 TSS 计算链路，`ride-pmc-load-v2` 由此首次接线；**TSS 时长严格只用 `movingTimeS`**——V2.1 spec `intensity.tss` 的依赖声明不含 `elapsedTimeS`，验收时删掉了初版的 elapsed 退回），B2 完成 `get_ride_history`（窗口统计 + 逐条行 ≤20 + 行截断说明）与 `get_route_overview`（爬坡/平路/下坡占比 + `climbs[]`，不可用不给数字）。同时 `find_ride` 窗口上限 30→**365**（**缺省仍 30**，P7 口径变更）。**catalog 尚未下发这 5 个工具**——是否对模型可见由 B3（路由裁剪）与 B4（可达性）决定，在此之前 demo 站行为零变化。
+
+### 3.2.1 窗口口径（AGT-B 落地 P7）
+
+| 能力 | 口径 |
+| --- | --- |
+| `find_ride` 窗口上限 | **365**（缺省仍 30）——纯检索，不产生比较结论 |
+| `compare_rides` 默认窗口 | **30 不变**——"进步/退步"结论的样本口径，不随检索宽度放大 |
+| `get_ride_history` | 缺省 **90**、上限 **365**——长窗口聚合的专属出口 |
+| 变更性质 | 窗口放开 = **口径变更**（P7）：M3 对话评测须**开新 Run**，旧结论标 `supersede`，不作背书 |
 
 ### 3.3 写操作工具（AGT-F 引入，**全项目首个写路径**）
 
@@ -67,7 +82,8 @@
 - 新路由 AGT-A 阶段只到确定性占位模板（`deterministic_reply`，`allowModel=false`）；能力实装按 B/C/F/G 里程碑。
 - 启用态失败分支：分类器失败/超时/限流统一"模型暂不可用"降级 + 事件码（D-A2：诚实失败优于错误猜测）；L0 快路径（红线/聚合/身份/问候）恒可用。
 - `CHAT_CLASSIFIER_ENABLED=true` 即分类器接管，单一启用语义（D-A5），无灰度中间态。
-- **复合问法（一句两意图）**：`intent` 始终是**单标签**（输出合同不允许数组）；一句含两个诉求时按主意图优先级取值——**红线 > 训练监督（存在可指涉计划/执行事实）> 训练计划 > 数据问答 > 知识解释 > 闲聊 > 域外**，次诉求由**回复层**承接（监督回复含调整建议 + 确认请求；计划回复先确认是否覆盖既有计划）。本集已含 4 例明确复合（`CLS-BLIND-45/49`、`CLS-RED-07/09`）。改 `intents[]` 需动合同 v0.3 + 判分口径 + 重跑，**重审触发点挂在 AGT-B**（工具面落地后若出现必须两次编排的复合问法）。
+- **复合问法（一句两意图）**：`intent` 始终是**单标签**（输出合同不允许数组）；一句含两个诉求时按主意图优先级取值——**红线 > 训练监督（存在可指涉计划/执行事实）> 训练计划 > 数据问答 > 知识解释 > 闲聊 > 域外**，次诉求由**回复层**承接（监督回复含调整建议 + 确认请求；计划回复先确认是否覆盖既有计划）。本集已含 4 例明确复合（`CLS-BLIND-45/49`、`CLS-RED-07/09`）。
+- **复合问法重审的触发条件（2026-10-24 修订，原表述作废）**：旧口径"出现**必须两次工具编排**的问法"**不成立**——L2b 一次循环内就能多次调用（单轮并行 4、累计 5、provider 6 轮），"两次编排"不是障碍，按此去找永远找不到问题。真正的卡点是**路由级**的三件事：K1 catalog 按路由裁剪导致次诉求的工具不在场、K2 `outputRoute` 单一、K3 证据形态要求（已澄清为"各自非空、可同时存在"，故 K3 不构成阻碍）。**因此重审聚焦 K1**，判定口径 = 给定主标签单路由，次诉求是否"无事实也无知识支撑且只能以'另外问'收场"；处置三选一：L1 扩该路由 catalog 交集（首选）/ L2 回复层承接 / L3 升 `intents[]`（需动合同 v0.3 + 判分口径 + 全新 Run，**B 内不实施**）。执行细则见 [AGT-B 细规划 §5.5](开发规划/AGT-B_只读工具面_工作项规划.md)，结论在 `AGT-B4` 卡内成文。
 
 ## 5. LLM 调用管道与 Prompt 版本索引
 
@@ -76,7 +92,7 @@
 | Prompt | 版本 | 事实源位置 | 归档副本 | 状态 |
 | --- | --- | --- | --- | --- |
 | 意图分类器 | `ride-chat-classifier-prompt-v0.4.1` | `src/chat/chat-classifier-prompt.ts`（`CHAT_CLASSIFIER_SYSTEM_PROMPT` 常量，随请求直发硅基流动） | `prompts/ride-chat-classifier-v0.2.md`（归档副本，单测断言逐字一致） | ✅ AGT-A5 定版（83/83） |
-| 主对话 | `ride-chat-workflow` v0.1 → 硅基流动版 | `src/chat/`（AGT-A0 原样搬运，语义演进挂 AGT-C） | `prompts/ride-chat-workflow-v0.1.md` | AGT-A0 搬运 |
+| 主对话 | `ride-chat-prompt-v0.2.3` | `src/chat/chat-workflow-prompt.ts` | `prompts/ride-chat-workflow-v0.1.md`（`npm run prompt:workflow:sync` 对齐，单测断言逐字一致） | **B0~B4 累计**：v0.1.8 输出六字段（`knowledgeIds`）+ 数字等价类；v0.1.9 预算 4/5；v0.2.0 能力清单（功能范围）；v0.2.1 复合问题分别取数 + 检索类参数约束；v0.2.2 kb_qa 强制先检索；v0.2.3 清单补"支持分析哪些数据"（机械比对发现缺口） |
 | 分析叙事 / 水平评估 / KB 问答 / 陪伴 | 待定 | 待定（AGT-C 落地，按任务簇分模板） | — | AGT-C 并入 |
 | 训练计划生成 | 待定 | 待定（AGT-F，附结构化输出格式约束 + few-shot 计划样例） | — | AGT-F 并入 |
 | 监督反馈 | 待定 | 待定（AGT-G，两档输出：安全自动 / 需确认） | — | AGT-G 并入 |
@@ -108,14 +124,19 @@
 
 **幻觉约束统一原则**：无法回答 → "数据未记录/知识库未覆盖/超出我的能力范围"模板，禁止编造数字与 KB 条目（与骑后解读失败模板同构）。
 
+**校验层口径（2026-10-24 定，AGT-B §2.1）**：线上输出门禁 = **纯确定性规则，零模型**，五层（schema → route → 长度 → 措辞词表 → 证据溯源）。**不引入在线 LLM 语义判官**——理由是延迟翻倍、判官错向"放行幻觉"、失败不可归因到规则、且治不了误拦根因。放宽的边界有两条红线：① 等价类只放宽**表达形式**（舍入/换单位/比例），事实来源仍必须溯源到本轮工具结果；② 语境豁免只覆盖**否定/声明短语**，词表内的危险断言照拦。**词表已知局限（2026-10-24 拍板，延后至 AGT-C）**："你患有 / 建议服用"类断言词不在 SAFETY_TERMS 内，输出层对这类越线句式不设防——输出层是**纵深**而非主防线（健康类问法在路由层被 `safety_stop` 拦，red-team 10/10）；词表校准与扩充由 C 的离线语义判官用真实样本驱动（含条件句安全话术"如果你患有…请就医"的豁免口径）。**"语义正确但被拒"的样本标注（离线语义判官）同样归 AGT-C 评测层**，不进线上门禁。
+
 ## 8. 输出校验与硬门（复用资产索引）
 
 | 机制 | 代码资产 | 复用方式 |
 | --- | --- | --- |
-| 数字白名单 + claim 溯源 | `src/chat/chat-output-validation.ts` | 所有新任务簇直接接入；AGT-D 扩展白名单来源（provenance 标 `conversation`） |
-| claim 数值等价类 | `src/ai/ride-interpretation-output-v04-candidate.ts`（`claimNumericVariants`） | 训练处方硬门直接复用（可换单位可舍入不可计算） |
+| 数字白名单 + claim 溯源 | `src/chat/chat-output-validation.ts` | 所有新任务簇直接接入；AGT-D 扩展白名单来源（provenance 标 `conversation`）；**AGT-B 起匹配口径由字面量相等升为等价类**（现 chat 层比骑后解读更严，属资产未接） |
+| claim 数值等价类 | `src/ai/ride-interpretation-output-v04-candidate.ts`（`claimNumericVariants`） | 训练处方硬门直接复用（可换单位可舍入不可计算）；**AGT-B 也用它给 chat 输出校验做数字匹配** |
+| 措辞类规则（注入/隐私/安全） | `chat-output-validation.ts` 三组正则 | **AGT-B 改造**：拆为"危险断言短语" + 窄范围否定/声明语境豁免（现规则会拦"不能做诊断""不会访问其他用户的数据"等安全声明，实测 2026-10-24） |
+| 拒绝原因观测 | `outputValidation.code` + render trace | **AGT-B 补**：`validationCode` × 轮次 × 路由入 trace，用于量化误拦率（现只落 `fallbackCode=REPAIR_FAILED`，原因未聚合） |
 | 四段校验器架构 | 解析归一 → 结构硬门 → 数值忠实 → 语言越界 | AGT-F 计划专项校验器复用此方法论 |
 | 降级码体系 | `TOOLS_LOOP_*`（预算耗尽/非法调用）+ 新增不可用事件码 | 全链路沿用 |
+| **输出合同 v0.2**（AGT-B） | `ride-chat-output-v0.2`：新增可选 `knowledgeIds[]`（≤6，`^kb-[a-z0-9-]+$`）；`claimIds` 与 `knowledgeIds` **按证据类型各自非空、可同时存在**（非互斥——复合回答"既给数据结论又给知识解释"是合法形态，见 §4 复合问法 K3 澄清）；两者皆空仍拒 | B0 实装；**动机**：`v0.1` 强制 `claimIds` 非空，KB 问答（知识无个人事实）在旧合同下必被拒 → 永远走 `REPAIR_FAILED` |
 | 安全路由 | `safety_stop`（健康异常强制拒答转就医）、`privacy_boundary`、`injection_stop` | 红线零改动，新任务簇自动继承 |
 
 ## 9. 边界与安全兜底（P0 条款）
@@ -135,6 +156,18 @@
 
 分类器标注集口径（三条轴 split/intent/kind、9 组对抗对、维护流程、已知局限）见 [`eval/ride-chat-classifier-v0.4/README.md`](../eval/ride-chat-classifier-v0.4/README.md)；变更登记见同目录 `CHANGES.md`。**`kind` 只用于错误归因，不得用于放宽门槛**。
 
+**AGT-B5 新增三套对话评测资产（2026-10-24 建，preflight 锁结构与 SHA）**：
+
+| 资产 | 规模 | 判分口径 | 状态 |
+|---|---|---|---|
+| `eval/ride-chat-tool-orchestration-v0.1/`（AEVAL-TOOL-ORCHESTRATION） | 21 例（regression 13 / boundary 6 / negative 2）× 3 | **五项**：必需工具齐全 + `requiredAnyOf` 命中 + 无禁止工具 + 无拒调用 + **最终交付成功（validated/repaired）**。**不测路由**（route 给定，路由归 M3 集） | 未冻结；三轮 Run 56.7% → 76.2%(旧口径) → **38.1%**（口径修正重算，见 `-r2.json`） |
+| `eval/ride-chat-boundary-v0.1/`（AEVAL-CHAT-BOUNDARY） | 35 例 / 9 组（含 `anchor_deixis` 指代对照、`multi_turn` 多轮继承）× 3 | 单一口径 `behavior`：tool_executed / graceful_unavailable / safety_stop / reject_write / clarify | 未冻结；**尚未跑过 Run** |
+| `eval/ride-chat-v0.7/`（AEVAL-M3-CHAT v0.7） | 34 例（继承 v0.6 cases，仅升能力面声明） | 沿用 M3 既有口径 | manifest 已锁 SHA，标 `supersedes: v0.6`；**Run 归 B6** |
+
+**判分口径的演进说明（比 D-B8 原定义多了两项，B5 实测驱动）**：① `requiredAnyOf`——同一诉求存在多条合法路径（都能答对）时不再写死单一工具（ORCH-09：`get_capabilities` 与 `get_ride_context` 任一）；② **最终交付成功**——只看"工具调没调"会把超时降级判成通过（第三轮 24/63 假阳性的来源）。`ChatOutputValidationPublic` 已补 `referencedKnowledgeCount`（B6 的 KB 引用统计前置）。
+
+**用例编写纪律（B5 踩坑三次固化）**：多记录场景的用例**禁用"这次/那回"**（会触发 `TOOLS_ANCHOR_CLARIFY`，把系统正确行为记成失败），除非显式构造 `turns` 提供可继承锚点。
+
 ## 11. 增补记录（本文档按里程碑递增）
 
 | 日期 | 里程碑 | 增补内容 | 状态 |
@@ -147,8 +180,16 @@
 | 2026-10-24 | AGT-A5 | 两轮全新 Run（数据集冻结不变）：Run 1 `82/83`（`CLS-BLIND-01` 因"表现"一词误判 history_compare）→ prompt **v0.4.1** 给 history_compare 加"必须有对比参照或变化词"硬条件 → Run 2 **`83/83` 全对**（dev 13/13 · blind 60/60 · red-team 10/10；kind positive/boundary/ambiguous 全满）。分类器按 D-A5 启用（`.env.local`） | ✅ |
 | 2026-10-24 | AGT-A5（回归） | 分类器之外三处缺陷（用户实测暴露，判定全对）：**R1** 前端本地正则兜底会猜答案（问心率答日期）→ 删除 `replyToChatInput`，失败统一诚实降级（落地 D-A2）；**R2** 主对话超时 8s→15s（实测 8.17s 成功样本）、分类器 8s→12s；**R3** `aggregate` 抽不出口径时答"我不会猜测骑行数据" → 新增 `aggregateOverviewReply` 只陈述已确定事实 | ✅ |
 | 2026-10-24 | AGT-A6 | 里程碑收口：重评报告归档 `doc_Agent/AGT-A_意图路由v0.4_重评报告.md`（8 章，含 §6 六条口径局限）；粗规划 AGT-A 标 `Done` 并登记三条执行期偏离；A0~A5 全部 `Done`。**线上 `.env.production` 仍规则基线，启用分类器待用户决定** | ✅ **AGT-A 里程碑 `Done`（7/7，2026-10-24 用户验收）** |
-| 待补 | AGT-B | 5 新工具完整参数/返回 schema、白名单与预算重标定值、catalog 精简口径 | 占位 |
-| 待补 | AGT-C | 4 生成任务簇 prompt 版本索引、KB 引用校验规则细则 | 占位 |
+| 2026-10-24 | AGT-B（细规划） | **§3.2 骨架 → 定稿口径**：5 新工具合同要点（锚点类型/证据形态/隐私声明）+ §3.2.1 窗口口径（P7：`find_ride` 365、`compare_rides` 仍 30、`get_ride_history` 90/365，口径变更须开新 Run）；**§3.0 增补两项合同项**：`evidence` 声明 + 锚点两类；**§8 新增输出合同 `v0.2`**（`knowledgeIds` + 证据形态二选一）。细规划同时核对出**五个合同缺口**（列为 B0 前置），其中 G1/G4 是"新工具接进来也跑不通"的硬阻断 | ✅ 细规划已产出（**待用户评审 + D-B1~D-B8 拍板**；实装归 B0~B2） |
+| 2026-10-24 | AGT-B（校验层实测） | **新增缺口 G6 + §7 校验层口径**：实测 8 探针 6 拒 2 过——数字严格字面量导致"大约 30 公里"（工具 30.4）、"50%"（0.5 ratio）误拦；三组措辞正则导致 `"不能做诊断"`/`"不会访问其他用户的数据"`/`"不会提供 api key"` 三类**安全声明被自身规则拦死**（会直接废掉 C 的非医疗诊断话术）；反向"三十公里"漏检。**定调：线上不加 LLM 语义判官**，B0 做等价类 + 语境豁免 + 拒绝原因观测，离线语义判官归 C | ✅ 决策已定（**D-B9**）；实装归 B0 |
+| 2026-10-24 | AGT-B（复合问法） | **§4 重审触发条件修订**：旧表述"出现必须两次工具编排的问法"作废——L2b 一次循环内即可多次调用（单轮并行 4/累计 5/provider 6 轮），该条件永不触发。改为**路由级三卡点**（K1 catalog 裁剪 / K2 `outputRoute` 单一 / K3 证据形态），其中 K3 经澄清"各自非空、可同时存在"后不再是阻碍，**重审收敛为 K1**；处置阶梯 L1 扩 catalog（首选）→ L2 回复层承接 → L3 升 `intents[]`（B 内不实施）。执行细则见 [AGT-B 细规划 §5.5](开发规划/AGT-B_只读工具面_工作项规划.md) | ✅ 口径已修订（结论待 `AGT-B4` 出） |
+| 2026-10-24 | AGT-B0 | **合同基建落地**：① `chat-tools-v0.2`（9 工具 + `chatToolSpecs` 证据声明 + 锚点两类）；② `ride-chat-output-v0.2`（`knowledgeIds`；双版本解析兼容 v0.1；证据"至少一种，仅知识证据时必须引知识条目"）；③ 数字匹配升等价类（`src/chat/chat-numeric-evidence.ts`，与 `claimNumericVariants` 有一致性单测）；④ 措辞三组正则改"未否定命中"判定（安全声明放行、危险断言照拦）；⑤ `ChatToolLoopTrace.validationRejections` 拒绝原因入 trace；⑥ 主对话 Prompt **v0.1.8** + `prompt:workflow:sync` + 归档副本一致性单测。验证：tsc 0 error、全量 **723/723**、新增 19 项正反例单测 | ✅ 已实施（`Review`，待用户验收） |
+| 2026-10-24 | AGT-B0（审查收口） | **G6 处置拍板**：SAFETY_TERMS 词表校准与扩充延后至 **AGT-C**（用户选 (b)，13:31）——输出层词表是纵深（主防线在路由层 `safety_stop`），"你患有"类断言词的扩充与条件句豁免口径由离线判官用真实样本驱动；§7 校验层口径同步改写（原句"危险断言照拦"不准确，已改为"**词表内**的危险断言照拦"+ 已知局限）。**B1 范围修正**：TSS 输入链路为新增工作（`ride-pmc-load-v2` 全库零调用方、TSS 计算函数仅有 spec 公式无实现）；**B5 顺手项登记**：`ChatOutputValidationPublic` + `referencedKnowledgeCount` | ✅ 已落地 |
+| 2026-10-24 | AGT-B1 | **三个全局工具实装 + TSS 链路补齐**：① 新增 `src/domain/ride-training-stress.ts`（`TSS = (NP/FTP)² × 时长(h) × 100`，moving 优先、四类 unavailable 不估算）——`ride-pmc-load-v2` 由此**首次接线**；② `get_health_profile` 按 D-B6 只投影三项 + `system_estimated` 原样透出；③ `search_knowledge_base` 规则检索（维度命中优先 → 关键词 → KB 原序；excerpt ≤600 字；未命中回可用维度）；④ `get_training_load` 组装 `dailyLoads`（Asia/Shanghai 日聚合）+ `ftpConfirmed` 门 + claimId `claim:training-load:v2:*`。验证：tsc 0 error、全量 **739/739**、16 项单测（四种 unavailable + KB 三态 + 32KB 上限） | ✅ 已实施（`Review`） |
+| 2026-10-24 | AGT-B1（验收） | **验收修正**：TSS 时长口径严格对齐 V2.1 spec——`intensity.tss` 的 `dependencies` 只含 `timing.movingTimeS`，初版的"缺失退回 `elapsedTimeS`"会把通勤骑停歇算进负荷、系统性高估 TSS；已删除退回（`RIDE_TSS_RULES_VERSION` → `ride-tss-v1.1`），movingTimeS 缺失即 `DURATION_MISSING`。探针实测：demo profile 三项投影正确、KB 摘要 445 字完整句、"乳酸阈"命中为 KB 真实内容 | ✅ `Done`（用户委托验收，修正后 739/739） |
+| 2026-10-24 | AGT-B2 | **窗口工具组实装 + `find_ride` 解冻**：① `get_ride_history`（Asia/Shanghai 日历日窗口、锚定日作窗口终点、汇总 claims 用领域指标键以支持 km/小时呈现、逐条行 ≤20 且截断写 `rows_truncated`、统计按全量算）；② `get_route_overview`（`buildRideElevationSummary` → `buildRideRouteShapeSummary`、`climbs[]` 按里程降序 + `segments` 截断、里程取整到米、**不可用不给任何里程字段**）；③ `find_ride` 上限 30→**365**（缺省仍 30）。验证：tsc 0 error、全量 **750/750**、12 项边界单测。⚠️ **P7**：窗口能力面变更已生效，M3 集在 B5 升 v0.7 开新 Run 前不得引用任何窗口相关旧结论 | ✅ 已实施（`Review`） |
+| 2026-10-24 | AGT-B4 | **路由可达性 + 能力面收口**：① `kb_qa`/`level_assessment` 移出 `deterministicOnly` → `allowModel` + `tool_then_model`，`startLoop` 允许三路由，`training_plan`/`training_supervision` 仍占位；② capabilities 补**功能范围固定清单**（9 项含"支持分析哪些数据"，机械比对单测锁定）；`LEVEL_ASSESSMENT`/`KB_QA`/`CAPABILITY_GAP` 降级文案改写（不再说"规划中"）；③ **§5.5 复合问法重审结论 = L1**（扩 catalog），**否决 L3**（多标签不解决实测四类根因：catalog 缺口/说明不清/编排不足/锚点澄清/单轮超时）；④ 派生修复：catalog 类型说明（数组 vs 字符串）、Prompt 强制先检索与分别取数、**主对话单轮超时 15s→20s**。验证：tsc 0 error、全量 **765/765**、真实模型探针 C1/C4/C5 修补后 validated | ✅ 已实施（`Review`） |
+| 待补 | AGT-C | 4 生成任务簇 prompt 版本索引、KB 引用校验规则细则、**离线语义判官（误拦样本标注）**、**SAFETY_TERMS 词表校准（G6 延后项）** | 占位 |
 | 待补 | AGT-D | 分层混合上下文细则、校验器白名单扩展口径（P8 拍板后） | 占位 |
 | 待补 | AGT-F | 计划 schema、`log_plan_execution` 写路径合同、处方硬门规则、确认令牌机制 | 占位 |
 | 待补 | AGT-G | 监督反馈两档输出 schema、推送频控参数、暂停机制 | 占位 |

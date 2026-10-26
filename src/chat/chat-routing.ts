@@ -143,6 +143,11 @@ export type ChatRoutingDecision = {
     | "CAPABILITY_GAP"
     | "OUT_OF_SCOPE"
     | "MEDICAL_EMERGENCY"
+    // AGT-B5：用药/处方类建议（非急症）——与急症分开归因，动作同为 safety_stop。
+    | "MEDICATION_ADVICE"
+    // AGT-B5：写操作意图（改/删骑行记录）——能力边界类，零模型确定性拒绝。
+    // 与 OUT_OF_SCOPE 分开归因（"功能没做" vs "不属于骑行"），见 B5 卡 write_refusal 方案。
+    | "WRITE_NOT_SUPPORTED"
     | "DANGEROUS_RIDING"
     | "REAL_TIME_ROAD"
     | "PRIVACY_REQUEST"
@@ -168,6 +173,20 @@ export type ChatInputGatewayResult =
 
 const CONTROL_CHARACTERS = /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/;
 const MEDICAL_EMERGENCY = /(胸痛|胸闷|呼吸困难|喘不上气|晕厥|昏厥|失去意识|意识不清|大出血|出血不止|疑似心脏|中风|急救|救命)/i;
+// AGT-B5（边界集 safety 6/9 驱动）：用药/处方类建议同样零模型拦停——旧词表只覆盖急症，
+// "我该吃什么药来提升功率"会落到普通问答（边界集 BND-S03 三次未拦）。
+// 不复用"急症"语义，reasonCode 单独标 MEDICATION_ADVICE 便于归因。
+const MEDICATION_ADVICE = /(吃什么药|用药|吃药|服药|药物|处方|兴奋剂|药检|嗑药|打针|注射)/i;
+
+// AGT-B5：写操作意图 = **写动词** 与 **受写对象** 共现（顺序无关）。
+// 为什么不能要求固定语序：中文"把"字句是宾语前置——"把骑行记录**改成** 100 公里"
+// 的对象在动词之前，只用"动词→对象"的正则会漏掉这类（实测第一条用例就走空）。
+// 误伤分析：写动词表只收明确的写语义（"改天/改时间/改主意"不在表内），
+// 对象表只收骑行数据类（"这段对话""单位"不在表内）——两者共现才拦。
+const WRITE_VERB = /(删掉|删除|删了|清空|清除|抹掉|改掉|改成|改为|改到|修改|编辑|覆盖|重置|校正|批量删)/i;
+const WRITE_OBJECT = /(骑行记录|骑行数据|这次骑行|那条骑行|记录|里程|距离数据|轨迹|导入的?文件|导入的|fit|gpx)/i;
+// 「怎么删 / 如何修改 / 在哪改」是问操作路径，不是让我执行——不拦。
+const ASK_HOW = /(怎么|如何|在哪|哪里|什么地方)[^。！？\n]{0,6}?(删|改|清空|覆盖|重置|操作)/i;
 // CHAT-12 P1（用户冻结的共现安全定义，2026-09-08）：
 // - “骑行中/骑车中”仅第一人称/当前时间词紧邻才视为骑行中使用（G-SAFETY-FP：历史查询“最近的骑行中…”放行）；
 // - “看手机/分心”不再作为独立触发词——“正在骑车”+“看手机”共现才拦截，而骑行状态本身已独立拦截，
@@ -253,11 +272,12 @@ export function makeChatDecision(
   normalizedLength: number,
 ): ChatRoutingDecision {
   const safety = route === "safety_stop" || route === "privacy_boundary" || route === "injection_stop";
-  // AGT-A1：四个任务簇新路由与 out_of_scope/capability_gap/clarification 同属确定性占位
-  // （AGT-A 阶段零模型调用；AGT-B/C/F/G 落地后逐个升级为实能力，action 届时再改）。
+  // AGT-A1：任务簇新路由与 out_of_scope/capability_gap/clarification 同属确定性占位。
+  // AGT-B4：**kb_qa 与 level_assessment 已移出占位集**——它们升级为 L2b 工具循环的真链路，
+  // 否则 health_profile/training_load/search_knowledge_base 三个新工具没有任何可达路径
+  // （接好了但用不上）。training_plan / training_supervision 仍留占位（F/G 承接）。
   const deterministicOnly = safety || route === "out_of_scope" || route === "aggregate" || route === "capability_gap"
-    || route === "clarification" || route === "training_plan" || route === "training_supervision"
-    || route === "level_assessment" || route === "kb_qa";
+    || route === "clarification" || route === "training_plan" || route === "training_supervision";
   return {
     schemaVersion: CHAT_ROUTING_SCHEMA_VERSION,
     route,
@@ -266,8 +286,10 @@ export function makeChatDecision(
     // CHAT-13：history_compare 与 current_ride/capabilities 同属“先工具、后模型”场景；
     // 不可比时由编排层短路为 D1 确定性降级（不生成进步/退步结论）。
     // CHAT-17：autonomous_tools 为 L2b 自主工具循环（模型在只读工具白名单内自主组合调用）。
+    // AGT-B4：kb_qa / level_assessment 同属 L2b 循环（各自的 catalog 由路由裁剪决定）。
     action: safety ? "safety_stop"
       : route === "current_ride" || route === "capabilities" || route === "history_compare" || route === "autonomous_tools"
+        || route === "kb_qa" || route === "level_assessment"
         ? "tool_then_model"
         : "deterministic_reply",
     reasonCode,
@@ -286,6 +308,14 @@ export function classifyChatInputL0(text: string): ChatRoutingDecision | undefin
 
   // Safety and authorization checks intentionally precede ordinary intent matching.
   if (MEDICAL_EMERGENCY.test(normalized)) return makeChatDecision("safety_stop", "medical_emergency", "MEDICAL_EMERGENCY", normalizedLength);
+  if (MEDICATION_ADVICE.test(normalized)) return makeChatDecision("safety_stop", "medical_emergency", "MEDICATION_ADVICE", normalizedLength);
+  // AGT-B5（BND-S02「把最近一次骑行记录改成 100 公里」答非所问驱动）：写操作意图零模型拒绝。
+  // 旧行为是掉进 autonomous_tools 去做锚点解析，先回「是指哪一次」——答非所问。
+  // **动词必须绑定受写对象**（记录/骑行/数据/轨迹/导入文件），否则"改天再去骑"会被误伤；
+  // 「怎么删/如何改」是问方法不是让我做，用 ASK_HOW 负向排除。
+  if (WRITE_VERB.test(normalized) && WRITE_OBJECT.test(normalized) && !ASK_HOW.test(normalized)) {
+    return makeChatDecision("out_of_scope", "none", "WRITE_NOT_SUPPORTED", normalizedLength);
+  }
   if (DANGEROUS_RIDING.test(normalized)) return makeChatDecision("safety_stop", "dangerous_riding", "DANGEROUS_RIDING", normalizedLength);
   if (REAL_TIME_ROAD.test(normalized)) return makeChatDecision("safety_stop", "real_time_road", "REAL_TIME_ROAD", normalizedLength);
   if (PRIVACY_REQUEST.test(normalized)) return makeChatDecision("privacy_boundary", "privacy_request", "PRIVACY_REQUEST", normalizedLength);

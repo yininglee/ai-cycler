@@ -1,0 +1,1842 @@
+{
+  "datasetId": "AEVAL-TOOL-ORCHESTRATION",
+  "repeat": 3,
+  "total": 63,
+  "passed": 46,
+  "avgElapsedMs": 19816,
+  "slowestElapsedMs": 45384,
+  "promptVersion": "ride-chat-prompt-v0.2.7",
+  "results": [
+    {
+      "caseId": "ORCH-01",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 21882,
+      "replyPreview": "根据2026年10月24日这次骑行的数据，平均功率是205瓦，标准化功率是218瓦。",
+      "steps": [
+        "get_ride_context:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-01",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 31505,
+      "replyPreview": "根据你的骑行记录，最近一次（2026年10月24日）的平均功率是205瓦，标准化功率为218瓦。",
+      "steps": [
+        "get_ride_context:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-01",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 25936,
+      "replyPreview": "你最近一次骑行（2026年10月24日）的平均功率是205瓦，标准化功率为218瓦。",
+      "steps": [
+        "get_ride_context:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-02",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "TOOLS_LOOP_NO_MATCH",
+      "elapsedMs": 5609,
+      "replyPreview": "这次比较缺少可比条件，我不能给出结论。可以换一个指标（例如功率或心率）再试。",
+      "steps": [
+        "compare_rides:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-02",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "TOOLS_LOOP_NO_MATCH",
+      "elapsedMs": 4807,
+      "replyPreview": "这次比较缺少可比条件，我不能给出结论。可以换一个指标（例如功率或心率）再试。",
+      "steps": [
+        "compare_rides:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-02",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "TOOLS_LOOP_NO_MATCH",
+      "elapsedMs": 3965,
+      "replyPreview": "这次比较缺少可比条件，我不能给出结论。可以换一个指标（例如功率或心率）再试。",
+      "steps": [
+        "compare_rides:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-03",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 8874,
+      "replyPreview": "根据您过去一年的骑行记录，距离最远的一次骑行发生在2026年10月24日，那次骑行的距离是50.0公里。",
+      "steps": [
+        "find_ride:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-03",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 9449,
+      "replyPreview": "根据您过去一年的骑行记录，骑得最远的一次是2026年10月24日，距离为50.0公里。",
+      "steps": [
+        "find_ride:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-03",
+      "round": 3,
+      "pass": false,
+      "detail": "未交付（exec=template fb=MODEL_TIMEOUT） 缺工具:find_ride 证据形态不符",
+      "execution": "template",
+      "fallback": "MODEL_TIMEOUT",
+      "elapsedMs": 25008,
+      "replyPreview": "对话服务暂时不可用；我不会使用未经验证的结果回答。",
+      "steps": []
+    },
+    {
+      "caseId": "ORCH-04",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 17709,
+      "replyPreview": "最近三个月（90天）你一共骑了约1001公里，累计爬升约15780米，总共进行了21次骑行。",
+      "steps": [
+        "get_ride_history:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-04",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 25886,
+      "replyPreview": "根据最近90天的骑行记录，您一共骑行了约1001公里。",
+      "steps": [
+        "get_ride_history:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-04",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 28977,
+      "replyPreview": "根据最近90天的骑行记录，您一共骑行了约1001公里。",
+      "steps": [
+        "get_ride_history:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-05",
+      "round": 1,
+      "pass": false,
+      "detail": "未交付（exec=template fb=MODEL_TIMEOUT）",
+      "execution": "template",
+      "fallback": "MODEL_TIMEOUT",
+      "elapsedMs": 38783,
+      "replyPreview": "对话服务暂时不可用；我不会使用未经验证的结果回答。",
+      "steps": [
+        "get_training_load:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-05",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 22784,
+      "replyPreview": "根据你最近18天的训练负荷数据：长期负荷（CTL）约为62 TSS/天，急性负荷（ATL）约为50 TSS/天，训练压力平衡（TSB）为12 TSS。这表明你的",
+      "steps": [
+        "get_training_load:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-05",
+      "round": 3,
+      "pass": false,
+      "detail": "未交付（exec=template fb=MODEL_TIMEOUT）",
+      "execution": "template",
+      "fallback": "MODEL_TIMEOUT",
+      "elapsedMs": 45384,
+      "replyPreview": "对话服务暂时不可用；我不会使用未经验证的结果回答。",
+      "steps": [
+        "get_training_load:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-06",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 35077,
+      "replyPreview": "根据您的健康档案，您的 FTP 是 220 瓦。",
+      "steps": [
+        "get_health_profile:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-06",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 21223,
+      "replyPreview": "根据你的健康档案，你的 FTP 是 220 瓦。",
+      "steps": [
+        "get_health_profile:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-06",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 20419,
+      "replyPreview": "你的 FTP 是 220 瓦。",
+      "steps": [
+        "get_health_profile:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-07",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 12890,
+      "replyPreview": "负分割是一种配速策略，指在骑行后半程的平均功率比前半程更高。根据知识库，后半程比前半程高 2–5% 被认为是理想的负分割，常见于耐力骑行或长距离项目，有助于避免",
+      "steps": [
+        "search_knowledge_base:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-07",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 12041,
+      "replyPreview": "负分割是一种配速策略，指在长距离骑行中，后半程的平均功率或标准化功率比前半程更高，通常高出2-5%被认为是理想的负分割。这种策略有助于避免过早耗尽体能，提升整体",
+      "steps": [
+        "search_knowledge_base:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-07",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 12996,
+      "replyPreview": "负分割是一种配速策略，指在骑行后半程的平均功率比前半程更高。根据知识库，理想负分割表现为后半程比前半程高 2–5%，这有助于在长距离骑行中节省体能、避免过早疲劳",
+      "steps": [
+        "search_knowledge_base:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-08",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 11291,
+      "replyPreview": "根据最近一次骑行的路线概要，爬坡路段约 3.3 公里，平路路段约 46.7 公里，下坡路段为 0 公里。爬坡里程占总里程的比例较低。",
+      "steps": [
+        "get_route_overview:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-08",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "repaired",
+      "fallback": "-",
+      "elapsedMs": 15702,
+      "replyPreview": "根据您最近一次骑行的路线概要，爬坡距离约为3333米，平路距离约为46667米，没有下坡路段。",
+      "steps": [
+        "get_route_overview:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-08",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 10579,
+      "replyPreview": "根据您最近一次骑行的路线概要，爬坡路段约3.3公里，平路路段约46.7公里，下坡路段为0公里。爬坡里程占总骑行距离的比例较小。",
+      "steps": [
+        "get_route_overview:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-09",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 27329,
+      "replyPreview": "你最近一次骑行（2026年10月24日）的数据包括：距离约50公里，用时2小时，爬升980米，平均速度约25公里/小时，最高速度约58公里/小时。心率方面，平均",
+      "steps": [
+        "get_ride_context:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-09",
+      "round": 2,
+      "pass": false,
+      "detail": "未交付（exec=template fb=MODEL_TIMEOUT）",
+      "execution": "template",
+      "fallback": "MODEL_TIMEOUT",
+      "elapsedMs": 30433,
+      "replyPreview": "对话服务暂时不可用；我不会使用未经验证的结果回答。",
+      "steps": [
+        "get_ride_context:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-09",
+      "round": 3,
+      "pass": false,
+      "detail": "未交付（exec=template fb=MODEL_TIMEOUT） requiredAnyOf 未命中:get_capabilities/get_ride_context",
+      "execution": "template",
+      "fallback": "MODEL_TIMEOUT",
+      "elapsedMs": 25006,
+      "replyPreview": "对话服务暂时不可用；我不会使用未经验证的结果回答。",
+      "steps": []
+    },
+    {
+      "caseId": "ORCH-10",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 27367,
+      "replyPreview": "你最近一次骑行是2026年10月24日，距离约50公里，用时2小时，爬升980米，平均速度约25公里/小时，平均心率151 bpm，平均功率205 W，标准化功",
+      "steps": [
+        "get_ride_context:completed",
+        "compare_rides:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-10",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 26314,
+      "replyPreview": "2026年10月24日这次骑行，你骑了约50公里，用时2小时，平均速度约25公里/小时，最高速度约58公里/小时。不过，由于这次骑行的数据被标记为无效，无法与过",
+      "steps": [
+        "get_ride_context:completed",
+        "compare_rides:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-10",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 19318,
+      "replyPreview": "你 2026 年 10 月 24 日的这次骑行，距离约 50 公里，用时 2 小时，爬升 980 米，平均速度约 25 公里/小时，平均心率 151 bpm，平",
+      "steps": [
+        "get_ride_context:completed",
+        "compare_rides:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-11",
+      "round": 1,
+      "pass": false,
+      "detail": "缺工具:get_route_overview",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 9994,
+      "replyPreview": "根据过去一年的记录，您在2026年10月24日有一次骑行距离最远，为50公里。关于那次骑行的爬坡情况，目前没有提供足够的信息。",
+      "steps": [
+        "find_ride:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-11",
+      "round": 2,
+      "pass": false,
+      "detail": "缺工具:get_route_overview",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 19081,
+      "replyPreview": "根据过去一年的记录，你距离最远的一次骑行是2026年10月24日，那次骑行了约50公里。关于那次骑行的爬坡情况，目前没有提供足够的信息。",
+      "steps": [
+        "find_ride:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-11",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 37845,
+      "replyPreview": "你距离最远的一次骑行是2026年10月24日，那次骑行了50.0公里。关于那次骑行的爬坡情况：路线中爬坡段的总距离约为3.3公里，平路段约为46.7公里，下坡段",
+      "steps": [
+        "find_ride:completed",
+        "get_route_overview:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-12",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 38378,
+      "replyPreview": "你的 FTP 是 220 瓦。最近 91 天的训练负荷情况是：长期负荷（CTL）为 62 TSS/天，急性负荷（ATL）为 50 TSS/天，训练压力平衡（TS",
+      "steps": [
+        "get_health_profile:completed",
+        "get_training_load:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-12",
+      "round": 2,
+      "pass": false,
+      "detail": "未交付（exec=template fb=MODEL_TIMEOUT） 缺工具:get_health_profile,get_training_load 证据形态不符",
+      "execution": "template",
+      "fallback": "MODEL_TIMEOUT",
+      "elapsedMs": 25002,
+      "replyPreview": "对话服务暂时不可用；我不会使用未经验证的结果回答。",
+      "steps": []
+    },
+    {
+      "caseId": "ORCH-12",
+      "round": 3,
+      "pass": false,
+      "detail": "未交付（exec=template fb=MODEL_TIMEOUT）",
+      "execution": "template",
+      "fallback": "MODEL_TIMEOUT",
+      "elapsedMs": 29877,
+      "replyPreview": "对话服务暂时不可用；我不会使用未经验证的结果回答。",
+      "steps": [
+        "get_health_profile:completed",
+        "get_training_load:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-13",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 14336,
+      "replyPreview": "负分割是配速策略的一种，指骑行后半程的平均功率比前半程更高，通常高2–5%被认为是理想的耐力骑行配速。根据知识库，判断负分割应使用标准化功率（NP）而非平均功率",
+      "steps": [
+        "search_knowledge_base:completed",
+        "get_ride_context:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-13",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 13729,
+      "replyPreview": "负分割是一种配速策略，指后半程的平均功率比前半程高 2–5%，这有助于在长距离骑行中节省体能。要判断您最近一次骑行（2026年10月24日）是否算负分割，需要知",
+      "steps": [
+        "search_knowledge_base:completed",
+        "get_ride_context:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-13",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 17080,
+      "replyPreview": "负分割指骑行后半程的强度（通常用标准化功率衡量）比前半程高 2–5%，是长距离耐力骑行中理想的配速策略，有助于避免过早疲劳。根据知识条目，判断负分割需比较前半程",
+      "steps": [
+        "search_knowledge_base:completed",
+        "get_ride_context:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-14",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 9881,
+      "replyPreview": "根据过去一年的骑行记录，你总共骑行了约1051公里。",
+      "steps": [
+        "get_ride_history:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-14",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 20815,
+      "replyPreview": "根据过去一年的骑行记录，您总共骑行了约1051公里。",
+      "steps": [
+        "get_ride_history:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-14",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 9843,
+      "replyPreview": "根据最近一年的骑行记录，你一共骑了约1051公里，总计22次骑行。",
+      "steps": [
+        "get_ride_history:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-15",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 10287,
+      "replyPreview": "根据你的健康档案，你的体重是 72 公斤，最大心率是 192 bpm，FTP 是 220 瓦。身高信息目前没有提供。",
+      "steps": [
+        "get_health_profile:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-15",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 10018,
+      "replyPreview": "根据您的健康档案，您的体重是72公斤。档案中没有记录您的身高信息。",
+      "steps": [
+        "get_health_profile:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-15",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "repaired",
+      "fallback": "-",
+      "elapsedMs": 37513,
+      "replyPreview": "根据您的健康档案，目前没有记录身高信息。档案中记录了体重为72公斤，最大心率估计为192 bpm，FTP为220瓦。",
+      "steps": [
+        "get_health_profile:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-16",
+      "round": 1,
+      "pass": false,
+      "detail": "未交付（exec=template fb=MODEL_TIMEOUT）",
+      "execution": "template",
+      "fallback": "MODEL_TIMEOUT",
+      "elapsedMs": 31462,
+      "replyPreview": "对话服务暂时不可用；我不会使用未经验证的结果回答。",
+      "steps": [
+        "get_training_load:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-16",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 41753,
+      "replyPreview": "根据你最近18天的训练负荷数据，你的长期训练负荷（CTL）约为每天62个训练压力分，急性训练负荷（ATL）约为每天50个训练压力分，训练压力平衡（TSB）为12",
+      "steps": [
+        "get_training_load:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-16",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 27464,
+      "replyPreview": "根据你的训练负荷数据，你当前的长期训练负荷（CTL）是每天约 62 TSS，急性训练负荷（ATL）是每天约 50 TSS，训练压力平衡（TSB）是 12 TSS",
+      "steps": [
+        "get_training_load:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-17",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 11147,
+      "replyPreview": "您问的是三年前的长途骑行，但我这里只找到了最近一年（2026年8月至10月）的骑行记录。最近一年的总里程是1051公里，包含了22次骑行。如果您想查询更早的特定",
+      "steps": [
+        "get_ride_history:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-17",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 11102,
+      "replyPreview": "根据最近一年的骑行记录，我找到了 22 次骑行，总里程约 1051 公里。但您提到的“三年前那次长途骑行”超出了当前可查询的时间范围（最近一年）。目前无法提供那",
+      "steps": [
+        "get_ride_history:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-17",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 10863,
+      "replyPreview": "根据过去一年的骑行记录，我找到了22次骑行，总里程约1051公里。不过，您提到的“三年前那次长途骑行”的具体日期和距离，在现有的记录中没有找到。",
+      "steps": [
+        "get_ride_history:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-18",
+      "round": 1,
+      "pass": false,
+      "detail": "未交付（exec=template fb=MODEL_TIMEOUT）",
+      "execution": "template",
+      "fallback": "MODEL_TIMEOUT",
+      "elapsedMs": 37460,
+      "replyPreview": "对话服务暂时不可用；我不会使用未经验证的结果回答。",
+      "steps": [
+        "get_ride_context:completed",
+        "search_knowledge_base:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-18",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 17555,
+      "replyPreview": "你询问了2026年10月24日这次骑行的心率漂移情况。目前，这次骑行的心率数据记录存在问题，无法提供有效的心率漂移分析。心率漂移通常指在恒定功率输出下，心率随时",
+      "steps": [
+        "get_ride_context:completed",
+        "search_knowledge_base:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-18",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 32328,
+      "replyPreview": "根据2026年10月24日这次骑行的数据，你的平均心率为151 bpm，最大心率为182 bpm。心率漂移（也称为有氧解耦）是指在长时间稳态骑行中，维持相同功率",
+      "steps": [
+        "get_ride_context:completed",
+        "search_knowledge_base:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-19",
+      "round": 1,
+      "pass": false,
+      "detail": "误用:get_ride_history",
+      "execution": "repaired",
+      "fallback": "-",
+      "elapsedMs": 19455,
+      "replyPreview": "我无法删除骑行记录。我的功能是帮助您分析和理解已有的骑行数据，例如查看单次骑行的详情、与历史记录比较、或检索特定条件的骑行。如果您需要管理记录，请在骑行应用或设",
+      "steps": [
+        "get_ride_history:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-19",
+      "round": 2,
+      "pass": false,
+      "detail": "未交付（exec=template fb=TOOLS_LOOP_NO_MATCH） 误用:get_ride_history",
+      "execution": "template",
+      "fallback": "TOOLS_LOOP_NO_MATCH",
+      "elapsedMs": 5566,
+      "replyPreview": "本轮查询没有返回可引用的数据结果，暂时无法回答这个问题。可以问得更具体一些，例如「距离最远的那次骑行是哪次」。",
+      "steps": [
+        "get_ride_history:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-19",
+      "round": 3,
+      "pass": false,
+      "detail": "误用:get_ride_history",
+      "execution": "repaired",
+      "fallback": "-",
+      "elapsedMs": 17007,
+      "replyPreview": "目前我无法执行删除骑行记录的操作。我的功能是帮助您分析和回顾骑行数据，例如查看单次骑行的详情、进行历史比较或检索特定记录。如果您需要管理记录，请通过骑行应用或相",
+      "steps": [
+        "get_ride_history:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-20",
+      "round": 1,
+      "pass": false,
+      "detail": "未交付（exec=template fb=REPAIR_FAILED）",
+      "execution": "template",
+      "fallback": "REPAIR_FAILED",
+      "elapsedMs": 10790,
+      "replyPreview": "对话模型输出未通过当前安全校验；已切换为受控回复。",
+      "steps": []
+    },
+    {
+      "caseId": "ORCH-20",
+      "round": 2,
+      "pass": false,
+      "detail": "未交付（exec=template fb=REPAIR_FAILED）",
+      "execution": "template",
+      "fallback": "REPAIR_FAILED",
+      "elapsedMs": 10261,
+      "replyPreview": "对话模型输出未通过当前安全校验；已切换为受控回复。",
+      "steps": []
+    },
+    {
+      "caseId": "ORCH-20",
+      "round": 3,
+      "pass": false,
+      "detail": "未交付（exec=template fb=REPAIR_FAILED）",
+      "execution": "template",
+      "fallback": "REPAIR_FAILED",
+      "elapsedMs": 12254,
+      "replyPreview": "对话模型输出未通过当前安全校验；已切换为受控回复。",
+      "steps": []
+    },
+    {
+      "caseId": "ORCH-21",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 8060,
+      "replyPreview": "根据查询，您最近一次骑行记录中没有可用的功率数据。",
+      "steps": [
+        "get_capabilities:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-21",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 7828,
+      "replyPreview": "根据查询，你最近一次骑行记录中没有可用的功率数据。",
+      "steps": [
+        "get_capabilities:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-21",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 7807,
+      "replyPreview": "根据数据记录，您最近一次的骑行记录中没有可用的功率数据。",
+      "steps": [
+        "get_capabilities:completed"
+      ]
+    }
+  ],
+  "timings": [
+    {
+      "caseId": "ORCH-01",
+      "round": 1,
+      "ok": true,
+      "headersMs": 9207,
+      "bodyMs": 2,
+      "totalMs": 9209
+    },
+    {
+      "caseId": "ORCH-01",
+      "round": 1,
+      "ok": true,
+      "headersMs": 12650,
+      "bodyMs": 1,
+      "totalMs": 12651
+    },
+    {
+      "caseId": "ORCH-01",
+      "round": 2,
+      "ok": true,
+      "headersMs": 14803,
+      "bodyMs": 1,
+      "totalMs": 14804
+    },
+    {
+      "caseId": "ORCH-01",
+      "round": 2,
+      "ok": true,
+      "headersMs": 16684,
+      "bodyMs": 0,
+      "totalMs": 16684
+    },
+    {
+      "caseId": "ORCH-01",
+      "round": 3,
+      "ok": true,
+      "headersMs": 16463,
+      "bodyMs": 1,
+      "totalMs": 16464
+    },
+    {
+      "caseId": "ORCH-01",
+      "round": 3,
+      "ok": true,
+      "headersMs": 9456,
+      "bodyMs": 1,
+      "totalMs": 9457
+    },
+    {
+      "caseId": "ORCH-02",
+      "round": 1,
+      "ok": true,
+      "headersMs": 5600,
+      "bodyMs": 1,
+      "totalMs": 5601
+    },
+    {
+      "caseId": "ORCH-02",
+      "round": 2,
+      "ok": true,
+      "headersMs": 4800,
+      "bodyMs": 0,
+      "totalMs": 4800
+    },
+    {
+      "caseId": "ORCH-02",
+      "round": 3,
+      "ok": true,
+      "headersMs": 3959,
+      "bodyMs": 1,
+      "totalMs": 3960
+    },
+    {
+      "caseId": "ORCH-03",
+      "round": 1,
+      "ok": true,
+      "headersMs": 3817,
+      "bodyMs": 0,
+      "totalMs": 3818
+    },
+    {
+      "caseId": "ORCH-03",
+      "round": 1,
+      "ok": true,
+      "headersMs": 5052,
+      "bodyMs": 0,
+      "totalMs": 5053
+    },
+    {
+      "caseId": "ORCH-03",
+      "round": 2,
+      "ok": true,
+      "headersMs": 4140,
+      "bodyMs": 0,
+      "totalMs": 4140
+    },
+    {
+      "caseId": "ORCH-03",
+      "round": 2,
+      "ok": true,
+      "headersMs": 5305,
+      "bodyMs": 1,
+      "totalMs": 5306
+    },
+    {
+      "caseId": "ORCH-03",
+      "round": 3,
+      "ok": false,
+      "totalMs": 25003,
+      "failurePhase": "headers",
+      "errorCode": "MODEL_TIMEOUT"
+    },
+    {
+      "caseId": "ORCH-04",
+      "round": 1,
+      "ok": true,
+      "headersMs": 4336,
+      "bodyMs": 0,
+      "totalMs": 4336
+    },
+    {
+      "caseId": "ORCH-04",
+      "round": 1,
+      "ok": true,
+      "headersMs": 13361,
+      "bodyMs": 0,
+      "totalMs": 13361
+    },
+    {
+      "caseId": "ORCH-04",
+      "round": 2,
+      "ok": true,
+      "headersMs": 14641,
+      "bodyMs": 1,
+      "totalMs": 14642
+    },
+    {
+      "caseId": "ORCH-04",
+      "round": 2,
+      "ok": true,
+      "headersMs": 11239,
+      "bodyMs": 0,
+      "totalMs": 11239
+    },
+    {
+      "caseId": "ORCH-04",
+      "round": 3,
+      "ok": true,
+      "headersMs": 17084,
+      "bodyMs": 0,
+      "totalMs": 17085
+    },
+    {
+      "caseId": "ORCH-04",
+      "round": 3,
+      "ok": true,
+      "headersMs": 11886,
+      "bodyMs": 1,
+      "totalMs": 11887
+    },
+    {
+      "caseId": "ORCH-05",
+      "round": 1,
+      "ok": true,
+      "headersMs": 13775,
+      "bodyMs": 0,
+      "totalMs": 13775
+    },
+    {
+      "caseId": "ORCH-05",
+      "round": 1,
+      "ok": false,
+      "totalMs": 25001,
+      "failurePhase": "headers",
+      "errorCode": "MODEL_TIMEOUT"
+    },
+    {
+      "caseId": "ORCH-05",
+      "round": 2,
+      "ok": true,
+      "headersMs": 14844,
+      "bodyMs": 0,
+      "totalMs": 14844
+    },
+    {
+      "caseId": "ORCH-05",
+      "round": 2,
+      "ok": true,
+      "headersMs": 7934,
+      "bodyMs": 0,
+      "totalMs": 7934
+    },
+    {
+      "caseId": "ORCH-05",
+      "round": 3,
+      "ok": true,
+      "headersMs": 7378,
+      "bodyMs": 0,
+      "totalMs": 7379
+    },
+    {
+      "caseId": "ORCH-05",
+      "round": 3,
+      "ok": true,
+      "headersMs": 12997,
+      "bodyMs": 0,
+      "totalMs": 12997
+    },
+    {
+      "caseId": "ORCH-05",
+      "round": 3,
+      "ok": false,
+      "totalMs": 25003,
+      "failurePhase": "headers",
+      "errorCode": "MODEL_TIMEOUT"
+    },
+    {
+      "caseId": "ORCH-06",
+      "round": 1,
+      "ok": true,
+      "headersMs": 10950,
+      "bodyMs": 1,
+      "totalMs": 10951
+    },
+    {
+      "caseId": "ORCH-06",
+      "round": 1,
+      "ok": true,
+      "headersMs": 24116,
+      "bodyMs": 0,
+      "totalMs": 24117
+    },
+    {
+      "caseId": "ORCH-06",
+      "round": 2,
+      "ok": true,
+      "headersMs": 15573,
+      "bodyMs": 0,
+      "totalMs": 15573
+    },
+    {
+      "caseId": "ORCH-06",
+      "round": 2,
+      "ok": true,
+      "headersMs": 5646,
+      "bodyMs": 0,
+      "totalMs": 5646
+    },
+    {
+      "caseId": "ORCH-06",
+      "round": 3,
+      "ok": true,
+      "headersMs": 9167,
+      "bodyMs": 0,
+      "totalMs": 9167
+    },
+    {
+      "caseId": "ORCH-06",
+      "round": 3,
+      "ok": true,
+      "headersMs": 11247,
+      "bodyMs": 1,
+      "totalMs": 11248
+    },
+    {
+      "caseId": "ORCH-07",
+      "round": 1,
+      "ok": true,
+      "headersMs": 4118,
+      "bodyMs": 1,
+      "totalMs": 4119
+    },
+    {
+      "caseId": "ORCH-07",
+      "round": 1,
+      "ok": true,
+      "headersMs": 8768,
+      "bodyMs": 0,
+      "totalMs": 8768
+    },
+    {
+      "caseId": "ORCH-07",
+      "round": 2,
+      "ok": true,
+      "headersMs": 5379,
+      "bodyMs": 0,
+      "totalMs": 5379
+    },
+    {
+      "caseId": "ORCH-07",
+      "round": 2,
+      "ok": true,
+      "headersMs": 6658,
+      "bodyMs": 1,
+      "totalMs": 6659
+    },
+    {
+      "caseId": "ORCH-07",
+      "round": 3,
+      "ok": true,
+      "headersMs": 4618,
+      "bodyMs": 0,
+      "totalMs": 4618
+    },
+    {
+      "caseId": "ORCH-07",
+      "round": 3,
+      "ok": true,
+      "headersMs": 8374,
+      "bodyMs": 0,
+      "totalMs": 8374
+    },
+    {
+      "caseId": "ORCH-08",
+      "round": 1,
+      "ok": true,
+      "headersMs": 4382,
+      "bodyMs": 1,
+      "totalMs": 4383
+    },
+    {
+      "caseId": "ORCH-08",
+      "round": 1,
+      "ok": true,
+      "headersMs": 6900,
+      "bodyMs": 0,
+      "totalMs": 6900
+    },
+    {
+      "caseId": "ORCH-08",
+      "round": 2,
+      "ok": true,
+      "headersMs": 3645,
+      "bodyMs": 0,
+      "totalMs": 3645
+    },
+    {
+      "caseId": "ORCH-08",
+      "round": 2,
+      "ok": true,
+      "headersMs": 6077,
+      "bodyMs": 0,
+      "totalMs": 6077
+    },
+    {
+      "caseId": "ORCH-08",
+      "round": 2,
+      "ok": true,
+      "headersMs": 5975,
+      "bodyMs": 0,
+      "totalMs": 5975
+    },
+    {
+      "caseId": "ORCH-08",
+      "round": 3,
+      "ok": true,
+      "headersMs": 4450,
+      "bodyMs": 0,
+      "totalMs": 4450
+    },
+    {
+      "caseId": "ORCH-08",
+      "round": 3,
+      "ok": true,
+      "headersMs": 6122,
+      "bodyMs": 1,
+      "totalMs": 6123
+    },
+    {
+      "caseId": "ORCH-09",
+      "round": 1,
+      "ok": true,
+      "headersMs": 14163,
+      "bodyMs": 0,
+      "totalMs": 14163
+    },
+    {
+      "caseId": "ORCH-09",
+      "round": 1,
+      "ok": true,
+      "headersMs": 13154,
+      "bodyMs": 0,
+      "totalMs": 13154
+    },
+    {
+      "caseId": "ORCH-09",
+      "round": 2,
+      "ok": true,
+      "headersMs": 5419,
+      "bodyMs": 0,
+      "totalMs": 5419
+    },
+    {
+      "caseId": "ORCH-09",
+      "round": 2,
+      "ok": false,
+      "totalMs": 25002,
+      "failurePhase": "headers",
+      "errorCode": "MODEL_TIMEOUT"
+    },
+    {
+      "caseId": "ORCH-09",
+      "round": 3,
+      "ok": false,
+      "totalMs": 25003,
+      "failurePhase": "headers",
+      "errorCode": "MODEL_TIMEOUT"
+    },
+    {
+      "caseId": "ORCH-10",
+      "round": 1,
+      "ok": true,
+      "headersMs": 18079,
+      "bodyMs": 0,
+      "totalMs": 18079
+    },
+    {
+      "caseId": "ORCH-10",
+      "round": 1,
+      "ok": true,
+      "headersMs": 9273,
+      "bodyMs": 0,
+      "totalMs": 9273
+    },
+    {
+      "caseId": "ORCH-10",
+      "round": 2,
+      "ok": true,
+      "headersMs": 6872,
+      "bodyMs": 0,
+      "totalMs": 6872
+    },
+    {
+      "caseId": "ORCH-10",
+      "round": 2,
+      "ok": true,
+      "headersMs": 19423,
+      "bodyMs": 0,
+      "totalMs": 19423
+    },
+    {
+      "caseId": "ORCH-10",
+      "round": 3,
+      "ok": true,
+      "headersMs": 7225,
+      "bodyMs": 0,
+      "totalMs": 7226
+    },
+    {
+      "caseId": "ORCH-10",
+      "round": 3,
+      "ok": true,
+      "headersMs": 12079,
+      "bodyMs": 1,
+      "totalMs": 12080
+    },
+    {
+      "caseId": "ORCH-11",
+      "round": 1,
+      "ok": true,
+      "headersMs": 4374,
+      "bodyMs": 0,
+      "totalMs": 4374
+    },
+    {
+      "caseId": "ORCH-11",
+      "round": 1,
+      "ok": true,
+      "headersMs": 5618,
+      "bodyMs": 0,
+      "totalMs": 5618
+    },
+    {
+      "caseId": "ORCH-11",
+      "round": 2,
+      "ok": true,
+      "headersMs": 4076,
+      "bodyMs": 0,
+      "totalMs": 4076
+    },
+    {
+      "caseId": "ORCH-11",
+      "round": 2,
+      "ok": true,
+      "headersMs": 15001,
+      "bodyMs": 1,
+      "totalMs": 15002
+    },
+    {
+      "caseId": "ORCH-11",
+      "round": 3,
+      "ok": true,
+      "headersMs": 12950,
+      "bodyMs": 0,
+      "totalMs": 12950
+    },
+    {
+      "caseId": "ORCH-11",
+      "round": 3,
+      "ok": true,
+      "headersMs": 5783,
+      "bodyMs": 0,
+      "totalMs": 5783
+    },
+    {
+      "caseId": "ORCH-11",
+      "round": 3,
+      "ok": true,
+      "headersMs": 19104,
+      "bodyMs": 1,
+      "totalMs": 19105
+    },
+    {
+      "caseId": "ORCH-12",
+      "round": 1,
+      "ok": true,
+      "headersMs": 15436,
+      "bodyMs": 1,
+      "totalMs": 15437
+    },
+    {
+      "caseId": "ORCH-12",
+      "round": 1,
+      "ok": true,
+      "headersMs": 22936,
+      "bodyMs": 0,
+      "totalMs": 22936
+    },
+    {
+      "caseId": "ORCH-12",
+      "round": 2,
+      "ok": false,
+      "totalMs": 25002,
+      "failurePhase": "headers",
+      "errorCode": "MODEL_TIMEOUT"
+    },
+    {
+      "caseId": "ORCH-12",
+      "round": 3,
+      "ok": true,
+      "headersMs": 4873,
+      "bodyMs": 0,
+      "totalMs": 4873
+    },
+    {
+      "caseId": "ORCH-12",
+      "round": 3,
+      "ok": false,
+      "totalMs": 25002,
+      "failurePhase": "headers",
+      "errorCode": "MODEL_TIMEOUT"
+    },
+    {
+      "caseId": "ORCH-13",
+      "round": 1,
+      "ok": true,
+      "headersMs": 5289,
+      "bodyMs": 0,
+      "totalMs": 5290
+    },
+    {
+      "caseId": "ORCH-13",
+      "round": 1,
+      "ok": true,
+      "headersMs": 9035,
+      "bodyMs": 1,
+      "totalMs": 9036
+    },
+    {
+      "caseId": "ORCH-13",
+      "round": 2,
+      "ok": true,
+      "headersMs": 5728,
+      "bodyMs": 0,
+      "totalMs": 5728
+    },
+    {
+      "caseId": "ORCH-13",
+      "round": 2,
+      "ok": true,
+      "headersMs": 7991,
+      "bodyMs": 1,
+      "totalMs": 7992
+    },
+    {
+      "caseId": "ORCH-13",
+      "round": 3,
+      "ok": true,
+      "headersMs": 5929,
+      "bodyMs": 0,
+      "totalMs": 5929
+    },
+    {
+      "caseId": "ORCH-13",
+      "round": 3,
+      "ok": true,
+      "headersMs": 11143,
+      "bodyMs": 0,
+      "totalMs": 11143
+    },
+    {
+      "caseId": "ORCH-14",
+      "round": 1,
+      "ok": true,
+      "headersMs": 4485,
+      "bodyMs": 0,
+      "totalMs": 4485
+    },
+    {
+      "caseId": "ORCH-14",
+      "round": 1,
+      "ok": true,
+      "headersMs": 5390,
+      "bodyMs": 0,
+      "totalMs": 5390
+    },
+    {
+      "caseId": "ORCH-14",
+      "round": 2,
+      "ok": true,
+      "headersMs": 4442,
+      "bodyMs": 0,
+      "totalMs": 4442
+    },
+    {
+      "caseId": "ORCH-14",
+      "round": 2,
+      "ok": true,
+      "headersMs": 16366,
+      "bodyMs": 0,
+      "totalMs": 16366
+    },
+    {
+      "caseId": "ORCH-14",
+      "round": 3,
+      "ok": true,
+      "headersMs": 4750,
+      "bodyMs": 0,
+      "totalMs": 4750
+    },
+    {
+      "caseId": "ORCH-14",
+      "round": 3,
+      "ok": true,
+      "headersMs": 5088,
+      "bodyMs": 0,
+      "totalMs": 5088
+    },
+    {
+      "caseId": "ORCH-15",
+      "round": 1,
+      "ok": true,
+      "headersMs": 3900,
+      "bodyMs": 0,
+      "totalMs": 3900
+    },
+    {
+      "caseId": "ORCH-15",
+      "round": 1,
+      "ok": true,
+      "headersMs": 6384,
+      "bodyMs": 0,
+      "totalMs": 6384
+    },
+    {
+      "caseId": "ORCH-15",
+      "round": 2,
+      "ok": true,
+      "headersMs": 4129,
+      "bodyMs": 1,
+      "totalMs": 4130
+    },
+    {
+      "caseId": "ORCH-15",
+      "round": 2,
+      "ok": true,
+      "headersMs": 5886,
+      "bodyMs": 1,
+      "totalMs": 5887
+    },
+    {
+      "caseId": "ORCH-15",
+      "round": 3,
+      "ok": true,
+      "headersMs": 13986,
+      "bodyMs": 0,
+      "totalMs": 13986
+    },
+    {
+      "caseId": "ORCH-15",
+      "round": 3,
+      "ok": true,
+      "headersMs": 13572,
+      "bodyMs": 1,
+      "totalMs": 13573
+    },
+    {
+      "caseId": "ORCH-15",
+      "round": 3,
+      "ok": true,
+      "headersMs": 9953,
+      "bodyMs": 0,
+      "totalMs": 9953
+    },
+    {
+      "caseId": "ORCH-16",
+      "round": 1,
+      "ok": true,
+      "headersMs": 6457,
+      "bodyMs": 0,
+      "totalMs": 6457
+    },
+    {
+      "caseId": "ORCH-16",
+      "round": 1,
+      "ok": false,
+      "totalMs": 25001,
+      "failurePhase": "headers",
+      "errorCode": "MODEL_TIMEOUT"
+    },
+    {
+      "caseId": "ORCH-16",
+      "round": 2,
+      "ok": true,
+      "headersMs": 22453,
+      "bodyMs": 0,
+      "totalMs": 22453
+    },
+    {
+      "caseId": "ORCH-16",
+      "round": 2,
+      "ok": true,
+      "headersMs": 19298,
+      "bodyMs": 0,
+      "totalMs": 19298
+    },
+    {
+      "caseId": "ORCH-16",
+      "round": 3,
+      "ok": true,
+      "headersMs": 19796,
+      "bodyMs": 0,
+      "totalMs": 19796
+    },
+    {
+      "caseId": "ORCH-16",
+      "round": 3,
+      "ok": true,
+      "headersMs": 7666,
+      "bodyMs": 0,
+      "totalMs": 7666
+    },
+    {
+      "caseId": "ORCH-17",
+      "round": 1,
+      "ok": true,
+      "headersMs": 4589,
+      "bodyMs": 0,
+      "totalMs": 4589
+    },
+    {
+      "caseId": "ORCH-17",
+      "round": 1,
+      "ok": true,
+      "headersMs": 6521,
+      "bodyMs": 0,
+      "totalMs": 6521
+    },
+    {
+      "caseId": "ORCH-17",
+      "round": 2,
+      "ok": true,
+      "headersMs": 4376,
+      "bodyMs": 0,
+      "totalMs": 4376
+    },
+    {
+      "caseId": "ORCH-17",
+      "round": 2,
+      "ok": true,
+      "headersMs": 6719,
+      "bodyMs": 1,
+      "totalMs": 6720
+    },
+    {
+      "caseId": "ORCH-17",
+      "round": 3,
+      "ok": true,
+      "headersMs": 5633,
+      "bodyMs": 0,
+      "totalMs": 5633
+    },
+    {
+      "caseId": "ORCH-17",
+      "round": 3,
+      "ok": true,
+      "headersMs": 5225,
+      "bodyMs": 0,
+      "totalMs": 5225
+    },
+    {
+      "caseId": "ORCH-18",
+      "round": 1,
+      "ok": true,
+      "headersMs": 12448,
+      "bodyMs": 0,
+      "totalMs": 12448
+    },
+    {
+      "caseId": "ORCH-18",
+      "round": 1,
+      "ok": false,
+      "totalMs": 25003,
+      "failurePhase": "headers",
+      "errorCode": "MODEL_TIMEOUT"
+    },
+    {
+      "caseId": "ORCH-18",
+      "round": 2,
+      "ok": true,
+      "headersMs": 6482,
+      "bodyMs": 0,
+      "totalMs": 6482
+    },
+    {
+      "caseId": "ORCH-18",
+      "round": 2,
+      "ok": true,
+      "headersMs": 11065,
+      "bodyMs": 0,
+      "totalMs": 11065
+    },
+    {
+      "caseId": "ORCH-18",
+      "round": 3,
+      "ok": true,
+      "headersMs": 19910,
+      "bodyMs": 0,
+      "totalMs": 19910
+    },
+    {
+      "caseId": "ORCH-18",
+      "round": 3,
+      "ok": true,
+      "headersMs": 12413,
+      "bodyMs": 1,
+      "totalMs": 12414
+    },
+    {
+      "caseId": "ORCH-19",
+      "round": 1,
+      "ok": true,
+      "headersMs": 6548,
+      "bodyMs": 1,
+      "totalMs": 6549
+    },
+    {
+      "caseId": "ORCH-19",
+      "round": 1,
+      "ok": true,
+      "headersMs": 6701,
+      "bodyMs": 0,
+      "totalMs": 6701
+    },
+    {
+      "caseId": "ORCH-19",
+      "round": 1,
+      "ok": true,
+      "headersMs": 6201,
+      "bodyMs": 0,
+      "totalMs": 6201
+    },
+    {
+      "caseId": "ORCH-19",
+      "round": 2,
+      "ok": true,
+      "headersMs": 5564,
+      "bodyMs": 0,
+      "totalMs": 5564
+    },
+    {
+      "caseId": "ORCH-19",
+      "round": 3,
+      "ok": true,
+      "headersMs": 4187,
+      "bodyMs": 0,
+      "totalMs": 4187
+    },
+    {
+      "caseId": "ORCH-19",
+      "round": 3,
+      "ok": true,
+      "headersMs": 6727,
+      "bodyMs": 0,
+      "totalMs": 6727
+    },
+    {
+      "caseId": "ORCH-19",
+      "round": 3,
+      "ok": true,
+      "headersMs": 6087,
+      "bodyMs": 0,
+      "totalMs": 6087
+    },
+    {
+      "caseId": "ORCH-20",
+      "round": 1,
+      "ok": true,
+      "headersMs": 5735,
+      "bodyMs": 0,
+      "totalMs": 5735
+    },
+    {
+      "caseId": "ORCH-20",
+      "round": 1,
+      "ok": true,
+      "headersMs": 5053,
+      "bodyMs": 0,
+      "totalMs": 5053
+    },
+    {
+      "caseId": "ORCH-20",
+      "round": 2,
+      "ok": true,
+      "headersMs": 5583,
+      "bodyMs": 0,
+      "totalMs": 5583
+    },
+    {
+      "caseId": "ORCH-20",
+      "round": 2,
+      "ok": true,
+      "headersMs": 4677,
+      "bodyMs": 0,
+      "totalMs": 4677
+    },
+    {
+      "caseId": "ORCH-20",
+      "round": 3,
+      "ok": true,
+      "headersMs": 5750,
+      "bodyMs": 1,
+      "totalMs": 5751
+    },
+    {
+      "caseId": "ORCH-20",
+      "round": 3,
+      "ok": true,
+      "headersMs": 6501,
+      "bodyMs": 1,
+      "totalMs": 6502
+    },
+    {
+      "caseId": "ORCH-21",
+      "round": 1,
+      "ok": true,
+      "headersMs": 3716,
+      "bodyMs": 0,
+      "totalMs": 3716
+    },
+    {
+      "caseId": "ORCH-21",
+      "round": 1,
+      "ok": true,
+      "headersMs": 4340,
+      "bodyMs": 0,
+      "totalMs": 4340
+    },
+    {
+      "caseId": "ORCH-21",
+      "round": 2,
+      "ok": true,
+      "headersMs": 3986,
+      "bodyMs": 1,
+      "totalMs": 3987
+    },
+    {
+      "caseId": "ORCH-21",
+      "round": 2,
+      "ok": true,
+      "headersMs": 3838,
+      "bodyMs": 0,
+      "totalMs": 3838
+    },
+    {
+      "caseId": "ORCH-21",
+      "round": 3,
+      "ok": true,
+      "headersMs": 3772,
+      "bodyMs": 0,
+      "totalMs": 3772
+    },
+    {
+      "caseId": "ORCH-21",
+      "round": 3,
+      "ok": true,
+      "headersMs": 4029,
+      "bodyMs": 1,
+      "totalMs": 4030
+    }
+  ],
+  "timingSummary": {
+    "calls": 125,
+    "headersP50Ms": 6521,
+    "headersP90Ms": 16463,
+    "bodyP50Ms": 0,
+    "bodyP90Ms": 1,
+    "failByPhase": {
+      "headers": 9
+    }
+  }
+}

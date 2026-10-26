@@ -1,8 +1,20 @@
 import {
   CHAT_COMPARISON_WINDOW_DAYS,
+  CHAT_FIND_RIDE_MAX_WINDOW_DAYS,
+  CHAT_KNOWLEDGE_KEYWORD_MAX_CHARS,
+  CHAT_KNOWLEDGE_MAX_ENTRIES,
+  CHAT_KNOWLEDGE_MAX_KEYWORDS,
+  CHAT_RIDE_HISTORY_DEFAULT_WINDOW_DAYS,
+  CHAT_RIDE_HISTORY_MAX_WINDOW_DAYS,
+  CHAT_ROUTE_OVERVIEW_DEFAULT_SEGMENTS,
+  CHAT_ROUTE_OVERVIEW_MAX_SEGMENTS,
+  CHAT_TRAINING_LOAD_WINDOW_DAYS,
   ChatToolError,
   chatComparisonMetricKeys,
+  chatKnowledgeDimensionIds,
+  chatToolSpecs,
   executeChatTool,
+  healthProfileFields,
   parseChatToolInvocation,
   rideContextDimensions,
   type ChatComparisonMetricKey,
@@ -19,17 +31,20 @@ import type { ApplicationRepository } from "../persistence/application-repositor
 export const CHAT_TOOL_ORCHESTRATION_TIMEOUT_MS = 2_000;
 export const CHAT_TOOL_ORCHESTRATION_MAX_SUMMARIES = 6;
 
-// CHAT-17 P3：L2b 自主工具循环预算（架构设计 v0.4 4.2.1 L2b 行——既有预算维度不变，显式化）：
-// 每轮工具调用数上限、单工具 2 秒/32 KB（chat-tools 既有合同）、整轮总时限、一次受限修复
-// （chat-agent 既有合同，不计入循环模型调用预算）。模型每轮可并行请求多次调用，编排层
-// 串行执行并按已完成调用数扣减工具预算；被拒绝调用（白名单外/参数非法/越权锚点）不消耗
-// 工具预算，但直接终止循环进入确定性降级。
-export const CHAT_TOOL_LOOP_MAX_TOOL_CALLS = 3;
-export const CHAT_TOOL_LOOP_MAX_PROVIDER_CALLS = 5;
-export const CHAT_TOOL_LOOP_TIMEOUT_MS = 30_000;
+// CHAT-17 P3：L2b 自主工具循环预算；AGT-B3（D-B5 拍板 2026-10-24）重标定并**拆分**：
+//   累计工具调用 5   —— 一次循环最多 5 次工具调用（原 3，装不下"检索+明细+比较"）
+//   单轮上限 4       —— 同时充当**并发上限**（先全量校验再并行，见 §5.1）
+//   provider 调用 6  —— 首轮 + 最多 5 次数据轮/修复轮
+//   整轮 45s→60s    —— 2026-10-25 用户拍板（D-B5 变更）：单次超时提到 25s 后，25s×2 轮
+//                     = 50s > 45s 会截断第二轮；60s = 2 次满额调用 + 执行余量。
+//                     依据：编排第三轮 11 次 MODEL_TIMEOUT、p50 16.1s。
+export const CHAT_TOOL_LOOP_MAX_TOOL_CALLS = 5;
+export const CHAT_TOOL_LOOP_MAX_CALLS_PER_ROUND = 4;
+export const CHAT_TOOL_LOOP_MAX_PROVIDER_CALLS = 6;
+export const CHAT_TOOL_LOOP_TIMEOUT_MS = 60_000;
 
 // CHAT-17 P3：L2b 工具调用协议——模型在循环中输出的工具请求 Schema
-// （最终回答仍用 ride-chat-output-v0.1；两者由编排层区分解析）。
+// （最终回答仍用 ride-chat-output-v0.2；两者由编排层区分解析）。
 export const CHAT_TOOL_CALL_SCHEMA_VERSION = "ride-chat-tool-call-v0.1" as const;
 export const CHAT_TOOL_CATALOG_SCHEMA_VERSION = "ride-chat-tool-catalog-v0.1" as const;
 
@@ -78,6 +93,10 @@ export type ChatToolLoopTrace = {
   toolCalls: number;
   providerCalls: number;
   summarySlots: number;
+  // AGT-B0：被输出校验拒绝的轮次与原因码。旧实现只在修复失败时落 fallbackCode=REPAIR_FAILED，
+  // 真实原因（哪条规则在拦）藏在 outputValidation.code 里且不聚合，导致"误拦率"无法量化。
+  // 有了这条，才能回答"是数字太白话、还是措辞规则误伤"。
+  validationRejections?: ReadonlyArray<{ providerCall: number; code: string }>;
 };
 
 // CHAT-17 P3：L2b 工具目录投影（chat_request.toolCatalog）——声明只读工具白名单、
@@ -87,49 +106,115 @@ export type ChatProviderToolCatalog = {
   anchorRideId: string;
   tools: ReadonlyArray<{
     tool: ChatToolName;
+    // AGT-B5：每个工具带一句"用途 + 边界"。实测（ORCH-08「最近一次骑行的路线爬坡多吗」）
+    // 模型只看到参数说明、看不到工具边界，会把"这一次的路线"读成"跨记录里爬升最大的那次"
+    // 而去调 find_ride。用途边界比参数说明更能防选错工具。
+    purpose: string;
     input: Record<string, unknown>;
   }>;
 };
 
-export function buildChatToolCatalog(anchorRideId: string): ChatProviderToolCatalog {
+// AGT-B3（§5.3）：catalog 按路由裁剪——9 工具全量上 catalog 会显著推高首轮 token，
+  // 并让模型在无关工具间犹豫。裁剪后每个路由只有 2~9 项，可选空间变窄 → 非法调用率下降。
+// 路由 → 工具集是**固定快照**（有单测锁），不随问法变化。
+export type ChatToolCatalogRoute = "autonomous_tools" | "kb_qa" | "level_assessment" | "none";
+
+export const CHAT_TOOL_CATALOG_SCOPE: Record<ChatToolCatalogRoute, readonly ChatToolName[]> = {
+  // 跨记录检索/复合问法的通用入口：全量 9 个
+  autonomous_tools: [
+    "get_ride_context", "get_capabilities", "compare_rides", "find_ride",
+    "get_health_profile", "get_training_load", "search_knowledge_base",
+    "get_ride_history", "get_route_overview",
+  ],
+  // 问知识为主，允许"结合我这次骑行"的补充。
+  // AGT-B4（§5.5 判定的 L1 处置）：**加 get_health_profile**——实测 C1「我的 FTP 多少，
+  // 另外为什么要练区间」在旧裁剪表下模型一次工具都不调、直接硬答导致整体 REPAIR_FAILED
+  // （不是少答一部分，而是整轮失败）。知识类问题天然夹"我的基线是多少"，故补齐。
+  kb_qa: ["search_knowledge_base", "get_ride_context", "get_health_profile"],
+  // 评估 = 档案 + 负荷 + 历史 + 路线四件事。
+  // AGT-B4（L1）：**加 search_knowledge_base**——实测 C2「练得多不多，这样安排合理吗」
+  // 的次诉求是"合理性"，需要知识解释；缺 KB 工具时模型只能在数据里绕。
+  level_assessment: ["get_health_profile", "get_training_load", "get_ride_history", "get_route_overview", "search_knowledge_base"],
+  // 其他路由不进循环
+  none: [],
+};
+
+// 每个工具的模型侧输入说明（catalog 下发内容）。与 parseChatToolInvocation 的严格键集对应：
+// 说明里写了"可选"的字段，由 normalizeLoopCall 补缺省值。
+const CHAT_TOOL_CATALOG_INPUTS: Record<ChatToolName, Record<string, unknown>> = {
+  get_ride_context: {
+    rideId: "可选；缺省用锚点记录，指定时必须来自本轮工具结果返回的 rideId",
+    dims: `字符串数组（可多选）：${rideContextDimensions.join("/")}`,
+  },
+  get_capabilities: {
+    rideId: "可选；缺省用锚点记录，指定时必须来自本轮工具结果返回的 rideId",
+    caps: `字符串数组（可多选）：${atomicCapabilityKeys.join("/")}`,
+  },
+  compare_rides: {
+    rideId: "可选；缺省用锚点记录，指定时必须来自本轮工具结果返回的 rideId",
+    metrics: `字符串数组（可多选）：${chatComparisonMetricKeys.join("/")}`,
+    windowDays: "可选；缺省 30（可比性口径，不放大）",
+  },
+  find_ride: {
+    rideId: "可选；缺省用锚点记录，指定时必须来自本轮工具结果返回的 rideId",
+    // AGT-B5（第四个类型陷阱）：metric 是**单选字符串**——枚举候选不要再以 JSON 数组展示，
+    // 模型会照抄格式传 ["distanceM"]（实测 ORCH-03/11/13/17 的 INVALID_TOOL_CALL 全来源）。
+    metric: `单选字符串（只填一个，**不是数组**）：${chatComparisonMetricKeys.join("/")}`,
+    mode: "单选字符串（只填一个，不是数组）：max/min/threshold",
+    threshold: "threshold 模式必填（数字，严格大于）",
+    metrics: `字符串数组（可多选，与 metric 不同——这是输出附加字段）：${chatComparisonMetricKeys.join("/")}；可选，缺省同 metric`,
+    windowDays: `可选；1-${CHAT_FIND_RIDE_MAX_WINDOW_DAYS}，缺省 30`,
+  },
+  get_health_profile: {
+    // 全局工具：无 rideId
+    fields: `字符串数组（可多选）：${healthProfileFields.join("/")}`,
+  },
+  get_training_load: {
+    anchorDate: "可选；YYYY-MM-DD 或 today（缺省），不得晚于今天",
+    windowDays: `可选；固定 ${CHAT_TRAINING_LOAD_WINDOW_DAYS}（PMC 最小可信窗口）`,
+  },
+  search_knowledge_base: {
+    dimensionIds: `字符串数组（可多选）：${chatKnowledgeDimensionIds.join("/")}`,
+    // AGT-B4：实测（C1/C5）模型把 keywords 填成字符串 "训练区间 为什么" → 类型不合法被拒。
+    // 说明必须同时讲清**类型（字符串数组）+ 与 dimensionIds 的"至少给一个"约束**。
+    keywords: `字符串数组，如 ["负分割","配速"]（不是单个字符串）；可选但与 dimensionIds 至少要给一个（两者都空会被判为非法调用）；≤${CHAT_KNOWLEDGE_MAX_KEYWORDS} 个，每个 ≤${CHAT_KNOWLEDGE_KEYWORD_MAX_CHARS} 字`,
+    maxEntries: `可选；1-${CHAT_KNOWLEDGE_MAX_ENTRIES}，缺省 ${CHAT_KNOWLEDGE_MAX_ENTRIES}`,
+  },
+  get_ride_history: {
+    rideId: "可选；缺省用锚点记录；要跨记录统计时传 null（不锚定）",
+    windowDays: `可选；1-${CHAT_RIDE_HISTORY_MAX_WINDOW_DAYS}，缺省 ${CHAT_RIDE_HISTORY_DEFAULT_WINDOW_DAYS}`,
+    metrics: `字符串数组（可多选）：${chatComparisonMetricKeys.join("/")}`,
+  },
+  get_route_overview: {
+    rideId: "必填；常来自 find_ride 命中结果",
+    segments: `可选；1-${CHAT_ROUTE_OVERVIEW_MAX_SEGMENTS}，缺省 ${CHAT_ROUTE_OVERVIEW_DEFAULT_SEGMENTS}（返回最长的 N 段爬坡）`,
+  },
+};
+
+/** 路由 → catalog 裁剪档（AGT-B4）：只有三条 L2b 路由有工具面，其余不下发。 */
+export function chatToolCatalogRouteOf(route: string): ChatToolCatalogRoute {
+  return route === "autonomous_tools" || route === "kb_qa" || route === "level_assessment" ? route : "none";
+}
+
+// 每个工具的用途与边界（catalog 下发给模型）。写"用来做什么 + 不要用它做什么"，
+// 因为实测的选错工具都发生在边界上：单次指标 vs 单次路线 vs 跨记录检索 vs 跨记录统计。
+export const CHAT_TOOL_CATALOG_PURPOSE: Record<ChatToolName, string> = {
+  get_ride_context: "查**某一次**骑行的指标明细（功率/心率/踏频/速度/距离…）。问“这次/那次多少”用它；问“这一次**算不算**/是否符合某个特征”（算不算负分割、有没有心率漂移）也用它——对单次骑行做判断要先拿到它的指标。",
+  get_capabilities: "查**数据可用性与质量**（有没有功率、心率、路线），不返回具体数值。问“能看哪些数据”用它。",
+  compare_rides: "把某一次骑行与**之前窗口的基线**比较（方向 + 差值 + 样本数）。问“比平时怎么样”用它。",
+  find_ride: "在窗口内**检索/排名某一条**骑行（哪次最远、哪次平均心率超过 X）。**只做跨记录检索，不要用它查某一次的具体指标或路线形状。**",
+  get_health_profile: "查用户**身体基线**（体重 / 最大心率 / FTP）。做评估、解释强度区间、算负荷前先用它取基准。",
+  get_training_load: "查**训练负荷**（CTL 长期 / ATL 急性 / TSB 平衡）。问“练得多不多 / 最近状态如何”用它。",
+  search_knowledge_base: "查**训练科学知识**（训练原理、区间、配速、负荷模型）。问“为什么 / 是什么原理”用它；回答必须引用返回的 knowledgeId。",
+  get_ride_history: "**跨记录窗口统计**（次数 / 总里程 / 总时长 / 总爬升 + 逐条摘要）。问“最近三个月骑了多少”用它。",
+  get_route_overview: "查**某一次骑行的路线形状**（爬坡/平路/下坡里程占比、最长连续爬坡段）。问“那次/这次路线爬坡多吗”用它，**不要用 find_ride**。",
+};
+
+export function buildChatToolCatalog(anchorRideId: string, route: ChatToolCatalogRoute = "autonomous_tools"): ChatProviderToolCatalog {
   return {
     schemaVersion: CHAT_TOOL_CATALOG_SCHEMA_VERSION,
     anchorRideId,
-    tools: [
-      {
-        tool: "find_ride",
-        input: {
-          rideId: "可选；缺省用锚点记录（目录 anchorRideId），指定时必须来自本轮工具结果返回的 rideId",
-          metric: [...chatComparisonMetricKeys],
-          mode: ["max", "min", "threshold"],
-          threshold: "threshold 模式必填（数字，严格大于）",
-          metrics: "可选；命中记录额外返回的指标，缺省同 metric",
-          windowDays: "可选；1-30，缺省 30",
-        },
-      },
-      {
-        tool: "get_ride_context",
-        input: {
-          rideId: "可选；缺省用锚点记录，指定时必须来自本轮工具结果返回的 rideId",
-          dims: [...rideContextDimensions],
-        },
-      },
-      {
-        tool: "compare_rides",
-        input: {
-          rideId: "可选；缺省用锚点记录，指定时必须来自本轮工具结果返回的 rideId",
-          metrics: [...chatComparisonMetricKeys],
-          windowDays: "可选；缺省 30",
-        },
-      },
-      {
-        tool: "get_capabilities",
-        input: {
-          rideId: "可选；缺省用锚点记录，指定时必须来自本轮工具结果返回的 rideId",
-          caps: [...atomicCapabilityKeys],
-        },
-      },
-    ],
+    tools: CHAT_TOOL_CATALOG_SCOPE[route].map((tool) => ({ tool, purpose: CHAT_TOOL_CATALOG_PURPOSE[tool], input: CHAT_TOOL_CATALOG_INPUTS[tool] })),
   };
 }
 
@@ -146,7 +231,7 @@ export function parseChatToolCallRequest(rawText: string): { calls: ChatToolLoop
     return undefined;
   }
   if (!isPlainRecord(parsed) || Object.keys(parsed).length !== 2 || parsed.schemaVersion !== CHAT_TOOL_CALL_SCHEMA_VERSION || !Array.isArray(parsed.calls)) return undefined;
-  if (parsed.calls.length < 1 || parsed.calls.length > CHAT_TOOL_LOOP_MAX_TOOL_CALLS) return undefined;
+  if (parsed.calls.length < 1 || parsed.calls.length > CHAT_TOOL_LOOP_MAX_CALLS_PER_ROUND) return undefined;
   const calls: ChatToolLoopCallRequest[] = [];
   for (const call of parsed.calls) {
     if (!isPlainRecord(call) || Object.keys(call).length !== 2 || typeof call.tool !== "string" || !call.tool || !isPlainRecord(call.input)) return undefined;
@@ -206,12 +291,26 @@ export type ChatToolLoopRunner = {
 
 // 模型调用输入的编排层补全：锚点注入（缺省）、场景化默认值（dims/caps/metrics/windowDays）、
 // 随后走 parseChatToolInvocation 的既有严格校验（白名单枚举/上限/精确键集）。
+// 模型调用输入的编排层补全：锚点注入（按工具的 anchorMode）、场景化默认值
+// （dims/caps/metrics/windowDays/fields/segments…）、随后走 parseChatToolInvocation
+// 的既有严格校验（白名单枚举/上限/精确键集）。
+//
+// AGT-B0（G3）：锚点注入不再是"给所有调用塞 rideId"，而是按 spec.anchorMode：
+//   required —— 缺省注入本轮锚点；显式指定时必须在本轮允许集合内
+//   optional —— 同上，但允许 null（表示跨记录/不锚定某一次）
+//   none     —— 全局工具，**不得携带 rideId**（携带即视为非法调用，避免歧义）
 function normalizeLoopCall(call: ChatToolLoopCallRequest, anchorRideId: string, allowedRideIds: readonly string[]): ChatToolInvocation | "INVALID_TOOL_CALL" | "RIDE_NOT_ALLOWED" {
   if (typeof call.tool !== "string" || !isPlainRecord(call.input)) return "INVALID_TOOL_CALL";
+  const toolName = call.tool as ChatToolName;
+  const spec = chatToolSpecs[toolName];
+  // 未注册工具（含 B0 只落合同、catalog 未下发的 5 个新工具）直接判非法。
+  if (!spec) return "INVALID_TOOL_CALL";
   const raw: Record<string, unknown> = { ...call.input };
-  if (raw.rideId === undefined) {
+  if (spec.anchorMode === "none") {
+    if (raw.rideId !== undefined) return "INVALID_TOOL_CALL";
+  } else if (raw.rideId === undefined) {
     raw.rideId = anchorRideId;
-  } else if (typeof raw.rideId !== "string" || !allowedRideIds.includes(raw.rideId)) {
+  } else if (raw.rideId !== null && (typeof raw.rideId !== "string" || !allowedRideIds.includes(raw.rideId))) {
     return "RIDE_NOT_ALLOWED";
   }
   if (call.tool === "get_ride_context" && raw.dims === undefined) raw.dims = ["summary"];
@@ -225,6 +324,42 @@ function normalizeLoopCall(call: ChatToolLoopCallRequest, anchorRideId: string, 
   if (call.tool === "find_ride") {
     if (raw.windowDays === undefined) raw.windowDays = CHAT_COMPARISON_WINDOW_DAYS;
     if (raw.metrics === undefined && typeof raw.metric === "string") raw.metrics = [raw.metric];
+  }
+  // ---- AGT-B0：新工具的场景化默认值 ----
+  if (call.tool === "get_health_profile" && raw.fields === undefined) raw.fields = [...healthProfileFields];
+  if (call.tool === "get_training_load") {
+    if (raw.anchorDate === undefined) raw.anchorDate = "today";
+    if (raw.windowDays === undefined) raw.windowDays = CHAT_TRAINING_LOAD_WINDOW_DAYS;
+  }
+  if (call.tool === "search_knowledge_base") {
+    if (raw.dimensionIds === undefined) raw.dimensionIds = [];
+    if (raw.keywords === undefined) raw.keywords = [];
+    if (raw.maxEntries === undefined) raw.maxEntries = CHAT_KNOWLEDGE_MAX_ENTRIES;
+  }
+  if (call.tool === "get_ride_history") {
+    if (raw.rideId === undefined) raw.rideId = anchorRideId;
+    if (raw.windowDays === undefined) raw.windowDays = CHAT_RIDE_HISTORY_DEFAULT_WINDOW_DAYS;
+    if (raw.metrics === undefined) raw.metrics = [...chatComparisonMetricKeys];
+  }
+  if (call.tool === "get_route_overview" && raw.segments === undefined) {
+    raw.segments = CHAT_ROUTE_OVERVIEW_DEFAULT_SEGMENTS;
+  }
+  // AGT-B5（首轮 Run 暴露的真缺陷）：**越界窗口钳制到上限，而不是判非法**。
+  // 实测：模型把"三年前"算成 windowDays=1095 传进来 → 超 365 → INVALID_TOOL_CALL →
+  // 整轮失败，用户拿到"这个查询请求不在允许范围内"。catalog 里写"1-365"没用，模型
+  // 是据此自己算的。正确行为是钳到上限让工具照常返回"最近 365 天"的数据，模型据
+  // 结果里的 windowDays 字段如实说明范围（比整轮失败好得多）。
+  // 非整数/非正数仍交给 parseChatToolInvocation 判非法——那是真·非法输入，不该猜。
+  if (typeof raw.windowDays === "number" && Number.isInteger(raw.windowDays) && raw.windowDays > 0) {
+    const ceiling = call.tool === "get_ride_history"
+      ? CHAT_RIDE_HISTORY_MAX_WINDOW_DAYS
+      : call.tool === "get_training_load"
+        ? CHAT_TRAINING_LOAD_WINDOW_DAYS
+        : CHAT_FIND_RIDE_MAX_WINDOW_DAYS; // find_ride / compare_rides 共用该上限
+    if (raw.windowDays > ceiling) {
+      console.log(`[chat-trace] [loop] windowDays clamped | tool=${call.tool} requested=${raw.windowDays} → ${ceiling}`);
+      raw.windowDays = ceiling;
+    }
   }
   try {
     return parseChatToolInvocation({ tool: call.tool, input: raw });
@@ -294,11 +429,26 @@ function mapToolError(error: unknown): ChatToolOrchestrationError {
 export function createChatToolLoopRunner(repository: ApplicationRepository, ownerId: string): ChatToolLoopRunner {
   return {
     async startLoop({ text, decision, summaries = [], anchor }): Promise<ChatToolLoopStartResult> {
-      if (decision.route !== "autonomous_tools") return { ok: false, code: "TOOLS_UNAVAILABLE" };
+      // AGT-B4：三条 L2b 路由都可进循环（各自的 catalog 由路由裁剪决定）；
+      // training_plan / training_supervision 仍不进（F/G 承接）。
+      if (decision.route !== "autonomous_tools" && decision.route !== "kb_qa" && decision.route !== "level_assessment") {
+        return { ok: false, code: "TOOLS_UNAVAILABLE" };
+      }
       try {
         return await withinOrchestrationTimeout((async () => {
           const entries = await repository.listRides(ownerId);
-          if (entries.length === 0) throw new ChatToolOrchestrationError("TOOLS_NO_CURRENT_RIDE");
+          if (entries.length === 0) {
+            // AGT-B5（边界集 no_records 3/9 抓到的真缺陷）：无骑行记录时不能一律降级——
+            // 问知识库原理 / 健康档案是**全局工具**（anchorMode: "none"），本就不依赖骑行记录。
+            // 只要该 route 的 catalog 里存在不依赖锚点的工具，就用**空锚点**启动循环；
+            // 模型若要查"某次骑行"，注入空 rideId 后会被 parseChatToolInvocation 判非法
+            // （INVALID_TOOL_CALL）——那是合理拒绝，比整轮零模型降级好得多。
+            const catalogTools = CHAT_TOOL_CATALOG_SCOPE[chatToolCatalogRouteOf(decision.route)];
+            const hasAnchorFreeTool = catalogTools.some((tool) => chatToolSpecs[tool].anchorMode === "none");
+            if (!hasAnchorFreeTool) throw new ChatToolOrchestrationError("TOOLS_NO_CURRENT_RIDE");
+            console.log("[chat-trace] [loop] start without anchor | no rides but catalog has anchor-free tools");
+            return { ok: true as const, anchorRideId: "", resolvedAnchor: { source: "default_latest" as const } };
+          }
           const resolution = resolveRideAnchor({ text, route: decision.route, summaries, entries, override: anchor });
           if (resolution.status === "clarify") throw new ChatToolOrchestrationError("TOOLS_ANCHOR_CLARIFY", resolution.reply);
           return {
@@ -321,26 +471,41 @@ export function createChatToolLoopRunner(repository: ApplicationRepository, owne
     },
 
     async executeLoopCalls({ calls, anchorRideId, allowedRideIds }): Promise<readonly ChatToolLoopCallReceipt[]> {
-      const receipts: ChatToolLoopCallReceipt[] = [];
+      // AGT-B3（§5.1）：**先全量校验再并行**。任一调用非法即整轮不执行——不在执行到
+      // 一半时才发现后面那个非法，这也让"被拒即整轮终止"比旧串行实现更严格。
+      const startedAt = Date.now();
+      const invocations: ChatToolInvocation[] = [];
       for (const call of calls) {
-        const startedAt = Date.now();
         const invocation = normalizeLoopCall(call, anchorRideId, allowedRideIds);
         if (typeof invocation === "string") {
-          receipts.push({ tool: typeof call.tool === "string" ? call.tool : "unknown", status: "rejected", errorCode: invocation, durationMs: Date.now() - startedAt });
-          break;
+          return [{ tool: typeof call.tool === "string" ? call.tool : "unknown", status: "rejected", errorCode: invocation, durationMs: Date.now() - startedAt }];
         }
-        try {
-          const result = await executeChatTool(repository, ownerId, invocation);
-          receipts.push({ tool: invocation.tool, status: "completed", durationMs: Date.now() - startedAt, result });
-        } catch (error) {
-          const code = error instanceof ChatToolError && error.code === "NOT_FOUND"
-            ? "TOOLS_NO_CURRENT_RIDE"
-            : error instanceof ChatToolError && error.code === "TIMEOUT"
-              ? "TOOLS_TIMEOUT"
-              : "TOOLS_UNAVAILABLE";
-          receipts.push({ tool: invocation.tool, status: "failed", errorCode: code, durationMs: Date.now() - startedAt });
-          break;
-        }
+        invocations.push(invocation);
+      }
+
+      // 分片并发：片内并行、片间串行（片大小 = 单轮上限 = 并发上限）。
+      // receipts 按**请求顺序**落位——`claim:loop:N` 编号的稳定性依赖这一点：模型引用
+      // claim:loop:2:1 必须始终指向第二次请求，不能因完成先后而漂移。
+      const receipts = new Array<ChatToolLoopCallReceipt>(invocations.length);
+      for (let offset = 0; offset < invocations.length; offset += CHAT_TOOL_LOOP_MAX_CALLS_PER_ROUND) {
+        const slice = invocations.slice(offset, offset + CHAT_TOOL_LOOP_MAX_CALLS_PER_ROUND);
+        const settled = await Promise.all(slice.map(async (invocation): Promise<ChatToolLoopCallReceipt> => {
+          const callStartedAt = Date.now();
+          try {
+            const result = await executeChatTool(repository, ownerId, invocation);
+            return { tool: invocation.tool, status: "completed", durationMs: Date.now() - callStartedAt, result };
+          } catch (error) {
+            const code = error instanceof ChatToolError && error.code === "NOT_FOUND"
+              ? "TOOLS_NO_CURRENT_RIDE"
+              : error instanceof ChatToolError && error.code === "TIMEOUT"
+                ? "TOOLS_TIMEOUT"
+                : "TOOLS_UNAVAILABLE";
+            return { tool: invocation.tool, status: "failed", errorCode: code, durationMs: Date.now() - callStartedAt };
+          }
+        }));
+        settled.forEach((receipt, index) => {
+          receipts[offset + index] = receipt;
+        });
       }
       return receipts;
     },

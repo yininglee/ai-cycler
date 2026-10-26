@@ -130,7 +130,7 @@
 
 | 去向 | 内容 |
 |---|---|
-| **AGT-B** | ① 工具面扩展后重评 **复合问法是否需多标签**（触发条件：出现必须两次工具编排的问法）；② `get_ride_history` 放开 30 天窗口后，`history_compare` / `aggregate` 的口径需重审 |
+| **AGT-B** | ① 工具面扩展后重评 **复合问法是否需多标签**（~~触发条件：出现必须两次工具编排的问法~~ → **2026-10-24 修订**：该条件不成立——L2b 一次循环内即可多次调用；改为路由级三卡点，处置阶梯见 [AGT-B 细规划 §5.5](开发规划/AGT-B_只读工具面_工作项规划.md)）；② `get_ride_history` 放开 30 天窗口后，`history_compare` / `aggregate` 的口径需重审（**2026-10-24 查证销账**：`history_compare` 口径见细规划 §4——`compare_rides` 默认窗 30 不动、`find_ride` 上限 365、长窗口归 `get_ride_history`；`aggregate` 用全量记录、无 30 天冻结，**不构成变更**，无需动） |
 | **AGT-C** | 生成层新 Run 提供**独立于本集的证据**，同时补上分类器评不到的部分（回复质量/数值忠实/硬门） |
 | **线上** | `.env.local` 已启用分类器；**`.env.production` 未动**，线上仍为规则基线。是否随下次重部署启用待定（启用后四个占位模板与"模型暂不可用"降级同时可见） |
 | **PRD（AGT-F 前置）** | 四个占位路由（`training_plan` / `training_supervision` / `level_assessment` / `kb_qa`）当前只回模板，交互设计待 AGT-F 细规划前置产出 |

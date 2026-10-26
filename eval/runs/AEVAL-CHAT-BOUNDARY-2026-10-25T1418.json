@@ -1,0 +1,22 @@
+{
+  "datasetId": "AEVAL-CHAT-BOUNDARY",
+  "repeat": 1,
+  "total": 1,
+  "passed": 1,
+  "avgElapsedMs": 1,
+  "slowestElapsedMs": 1,
+  "promptVersion": "ride-chat-prompt-v0.2.3",
+  "results": [
+    {
+      "caseId": "BND-A04",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "TOOLS_ANCHOR_CLARIFY",
+      "elapsedMs": 1,
+      "replyPreview": "你说的「这次」是指最近一次（10月23日）的骑行，还是其他某一次？可以直接告诉我日期。",
+      "steps": []
+    }
+  ]
+}

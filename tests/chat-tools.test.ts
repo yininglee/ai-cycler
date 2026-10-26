@@ -215,8 +215,10 @@ test("find_ride validates mode, metric whitelist, threshold presence and window 
   assert.throws(() => parseChatToolInvocation({ tool: "find_ride", input: { rideId: "ride-1", metric: "avgHeartRateBpm", mode: "threshold", metrics: ["avgHeartRateBpm"], windowDays: 30 } }), (error) => errorCode(error) === "INVALID_INPUT");
   assert.throws(() => parseChatToolInvocation({ tool: "find_ride", input: { rideId: "ride-1", metric: "avgHeartRateBpm", mode: "threshold", threshold: "120", metrics: ["avgHeartRateBpm"], windowDays: 30 } }), (error) => errorCode(error) === "INVALID_INPUT");
   assert.throws(() => parseChatToolInvocation({ tool: "find_ride", input: { rideId: "ride-1", metric: "distanceM", mode: "max", threshold: 120, metrics: ["distanceM"], windowDays: 30 } }), (error) => errorCode(error) === "INVALID_INPUT");
-  // 窗口上限 30 天 / 指标枚举去重与空集
-  assert.throws(() => parseChatToolInvocation({ tool: "find_ride", input: { rideId: "ride-1", metric: "distanceM", mode: "max", metrics: ["distanceM"], windowDays: 31 } }), (error) => errorCode(error) === "INVALID_INPUT");
+  // AGT-B2 预期变更：窗口上限 30 → 365（D-B1/P7 解冻）。缺省仍 30 由编排层注入，
+  // 所以这里改测"超过 365 才拒"；31~365 现在是合法输入。
+  assert.throws(() => parseChatToolInvocation({ tool: "find_ride", input: { rideId: "ride-1", metric: "distanceM", mode: "max", metrics: ["distanceM"], windowDays: 366 } }), (error) => errorCode(error) === "INVALID_INPUT");
+  assert.equal(parseChatToolInvocation({ tool: "find_ride", input: { rideId: "ride-1", metric: "distanceM", mode: "max", metrics: ["distanceM"], windowDays: 365 } }).tool, "find_ride");
   assert.throws(() => parseChatToolInvocation({ tool: "find_ride", input: { rideId: "ride-1", metric: "distanceM", mode: "max", metrics: ["distanceM", "distanceM"], windowDays: 30 } }), (error) => errorCode(error) === "INVALID_INPUT");
   assert.throws(() => parseChatToolInvocation({ tool: "find_ride", input: { rideId: "ride-1", metric: "distanceM", mode: "max", metrics: [], windowDays: 30 } }), (error) => errorCode(error) === "INVALID_INPUT");
   assert.throws(() => parseChatToolInvocation({ tool: "find_ride", input: { rideId: "ride-1", metric: "distanceM", mode: "max", metrics: ["distanceM"], windowDays: 30, userId: "other" } }), (error) => errorCode(error) === "INVALID_INPUT");

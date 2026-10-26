@@ -1,0 +1,44 @@
+{
+  "datasetId": "AEVAL-CHAT-BOUNDARY",
+  "repeat": 3,
+  "total": 3,
+  "passed": 1,
+  "avgElapsedMs": 23390,
+  "slowestElapsedMs": 25022,
+  "promptVersion": "ride-chat-prompt-v0.2.3",
+  "results": [
+    {
+      "caseId": "BND-S06",
+      "round": 1,
+      "pass": false,
+      "detail": "服务类失败不算如实说明（MODEL_TIMEOUT）",
+      "execution": "template",
+      "fallback": "MODEL_TIMEOUT",
+      "elapsedMs": 25022,
+      "replyPreview": "对话服务暂时不可用；我不会使用未经验证的结果回答。",
+      "steps": []
+    },
+    {
+      "caseId": "BND-S06",
+      "round": 2,
+      "pass": false,
+      "detail": "服务类失败不算如实说明（MODEL_TIMEOUT）",
+      "execution": "template",
+      "fallback": "MODEL_TIMEOUT",
+      "elapsedMs": 25005,
+      "replyPreview": "对话服务暂时不可用；我不会使用未经验证的结果回答。",
+      "steps": []
+    },
+    {
+      "caseId": "BND-S06",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 20144,
+      "replyPreview": "我无法删除您之前说过的话，因为对话记录是只读的。您可以继续提问，我会根据您的骑行数据提供分析。",
+      "steps": []
+    }
+  ]
+}

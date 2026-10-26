@@ -1,32 +1,60 @@
 # 项目长期记忆 · AI 骑行伙伴
 
 > 仅记录跨会话仍有效的项目事实与约定。日常流水见同目录 `YYYY-MM-DD.md`。
+> 2026-10-24 做过一次压缩合并（原文 21.7KB → 现文），过程细节以日志为准。
 
-## 当前主线：M7 对话 Agent 自主化（`doc_Agent/`，分支 `codex/m7-agent-autonomy`）
+## 主线：M7 对话 Agent 自主化（`doc_Agent/`，分支 `codex/m7-agent-autonomy`）
 
-- **需求结论**：✅ 优先引入 AI，但正确落地 = **L1 扩工具面 + 训练监督单点升 L2**，不上 L3/L4。`src/chat/` CHAT-17 L2b 已是受限单 Agent，改造是扩面非范式革命；"自主"的真实需求 = 工具自主编排（已有）+ 主动性（新，属调度基础设施）。六任务簇：问答/分析/水平评估/训练规划/训练监督/情绪价值。
-- 训练规划+监督 = 中低容错 P0：处方数值走 `claimNumericVariants` 等价类硬门 + 计划确认制 + `safety_stop`；放行四阶段（影子→只读全自动→计划人机协作→监督自动化）。
-- 新工具映射：`get_health_profile`(user-profile) / `get_training_load`(ride-pmc-load-v2 的 CTL/ATL/TSB) / `search_knowledge_base`(ride-knowledge-base-v21) / `get_ride_history`（**需放开 30 天冻结窗口**，须开新 Run）/ `get_route_overview`；计划实体+打卡为全新（第一个写操作工具）。派生指标仍由规则函数算、LLM 只叙事。
-- **目录约定**：需求分析与调研留 `doc_Agent/` 根；粗规划、各里程碑细规划、进度统一放 `doc_Agent/开发规划/`。执行事实源 = `开发规划/Agent改造开发进度.md`，**验收汇报直接写在进度文档对应工作项下**（区别于 V2.1 写规划文档的惯例）。
-- 粗规划 `VIBE_CODING_Agent_开发规划.md`：前缀 **`AGT`**，七里程碑 A（意图路由 v0.4）→ B（只读工具面 + L2b 扩展、放开 30 天窗口）→ C（生成层：分析/评估/KB问答 RAG/陪伴）→ E（影子轨 + 阶段1 放行）；D（上下文与记忆三层，前置隐私口径）可与 C 后半并行 → F（训练规划 + 写路径，阶段2）→ G（训练监督 + 主动性，阶段3）。
-- **P1/P2/P5 已拍板（10-23）**：地图录像 = 轨迹回放纯前端渲染（不进本期工具面）、定位 = 个人 demo + portfolio、skills = 领域工具面（不做通用注册框架）。
-- AGT-A 细规划：**7 工作项 A0~A6**（A5 全新 Run 需用户授权）。意图 11→**16**、路由 12→16（+4 新路由，`companion` 复用 `social`）；边界迁移：训练计划 `out_of_scope`→`training_plan`、水平评估 `capability_gap`→`level_assessment`（收窄保留）、新增 `training_supervision`/`kb_qa`、**open_chat 拆出 companion**（闲聊→social，open_chat 收窄为跨记录检索）。新路由在 A 阶段只到确定性占位模板、分类器未启用态规则基线。
-- **D-A1~D-A6 已全部拍板（10-23）；AGT-A0 已 Done（用户验收 10-23，commits f769abe+50ed2c1，全量 705/705 + L2b 端到端验证；含 prompt v0.1.7 修复：DeepSeek-V3.2 会把 catalog 枚举候选照抄成数组，L2b 规则加单选枚举标量澄清）；AGT-A1 已实施完成进 `Review`（commit 583280f，tsc + 700/700，待用户验收）**：路由/分类器 v0.2 合同（16 意图/16 路由）+ D-A5（mode 退役、`resolveChatRouting` 单一启用语义）+ D-A2（分类器失败→终局"模型暂不可用"降级，无正则硬猜）+ 4 占位模板。**时序注意：分类器中间态 false（prompt v0.3 只教 11 意图、输出 v0.1 schema 会被 v0.2 校验拒——A3 升 prompt 后才能启用/smoke）**。D-A1 = v0.3 待授权 Run 合并进 v0.4 Run（一次授权）；D-A3 = 旧 capability_gap 水平评估例改标 level_assessment；D-A4 = open_chat v0.4 顺手拆。**D-A2 = 移除启用态 P1 业务正则兜底**（用户修订）：分类器失败/超时/限流统一"模型暂不可用"降级模板 + 事件码；L0 快路径（红线/聚合/身份/问候）保留为零模型正常路径；CHAT-12"不劣于规则基线"承诺修订为"诚实失败优于错误猜测"。**D-A5 = 取消 shadow/active 双模式**（用户提出"无线上概念"）：`CHAT_CLASSIFIER_MODE` 退役，`CHAT_CLASSIFIER_ENABLED=true` 即分类器接管（单一启用语义）；未启用 = 规则基线（P1 业务正则保留为其主路径）；A5 全对后启用、无灰度中间态；原 AGT-E"切 active"步骤消失（**AGT-E 影子轨仅指新工具 trace 观测，另一层概念**）。**D-A6 = 对话链路 LLM provider 全迁硅基流动（Coze 退役）**：分类器 + 主对话走 OpenAI 兼容 API（`https://api.siliconflow.cn/v1`），**Prompt 迁入代码库为单一事实源**（新增前置工作项 AGT-A0：客户端 + prompt v0.3/v0.1 原样搬运 + env 切 `SILICONFLOW_*`）；骑后解读链路**维持 Coze 不动**（V2.1 冻结结论继续有效，迁移须独立立项重跑验证门）；模型 = 分类器 `deepseek-ai/DeepSeek-V4-Flash`、主对话 `deepseek-ai/DeepSeek-V3.2`（推荐制，实施时以硅基流动可用列表锁定）；主对话换模型 → M3 固定集 v0.5 历史结论（27/27）不再适用新链路，重验挂 AGT-C 评测新 Run。
-- 12 路由 11 意图**全部保留、无删除项**；远期重审点：`history_compare` 与通用循环分工、`aggregate` 窗口口径（均 AGT-B）、`capabilities` 清单（AGT-B/C）。
-- 标注集 v0.4 **实际 83 例**（原估 ≈78；差额来自 capability_gap 改标归零补 4 + open_chat 拆闲聊后补 2），dev 13 / blind 60 / red-team 10，5 个新意图各 8 例（dev 1 + blind 7），SHA `9a4c242f…`，**已冻结（2026-10-24，`manifest.frozenAt`）**；目录 `eval/ride-chat-classifier-v0.4/`，**口径看该目录 `README.md`、变更看 `CHANGES.md`**。签收 = 全量全对，gate 0.95 只是底线（83 例错 1 仍过门，故 gate 近乎装饰）。
-- **评测成本实测（10-24，`scripts/measure-classifier-token-usage.ts`）**：分类器单次 prompt **2157 tokens**（system prompt 约 2100 占主导）、completion 36；全量 83 例 = 输入 179k / 输出 3k。按硅基流动 `DeepSeek-V4-Flash` 分时段价：2:00–8:00 档 ¥1.5/M 入 ¥4.5/M 出 → **≈¥0.28**（前缀缓存命中可低至 ≈¥0.05）；其他时段 ¥3/M、¥9/M → **≈¥0.56**。耗时 ≈2.5 分钟。**成本不构成约束**，重跑 5 轮 <¥2。
-- **三条轴**（10-24 补全）：`split` = 谁能调 Prompt（dev 调优 / blind 放行 / red-team 安全断言）；`intent` = 正确答案；`kind` = 难度归因（positive 53 / boundary 26 / ambiguous 4，`ambiguous ⇔ intent=unclear`）。`kind` 只能用于归因，**不得用于放宽门槛**。9 组 `boundaryPairs` 写在 manifest 里（把"意图之间怎么切"变成可校验资产），preflight 校验两侧齐备且各含 boundary 例。
-- **防泄漏纪律（AGT-A3 立）**：few-shot 只取 dev split；意图定义里的示例一律泛化、不照抄 blind/red-team 原句（`tests/chat-classifier.test.ts` 有机械断言 + preflight 查跨 split 重复正文）。prompt v0.3 时代定义里抄了 blind 原句（BLIND-22/23/24、BLIND-07），已消除——否则 blind 通过率虚高。
-- **A5 结果（10-24，两轮）**：Run 1 `82/83`（`CLS-BLIND-01`「上次骑行我的心率表现怎么样」被"表现"一词带偏到 history_compare）→ prompt **v0.4.1** 给 history_compare 加"必须有对比参照或变化词"硬条件 → Run 2 **`83/83` 全对**（dev 13/13 · blind 60/60 · red-team 10/10；kind 三组全满），Run `AEVAL-CLASSIFIER-20261023233648`。分类器已按 D-A5 在 `.env.local` 启用（`CHAT_CLASSIFIER_ENABLED=true`，需重启进程），线上 `.env.production` 未动。
-- **Prompt 事实源**：分类器 prompt = `src/chat/chat-classifier-prompt.ts` 常量（**v0.4.1**）；改完跑 `npm run prompt:classifier:sync` 对齐归档副本 `prompts/ride-chat-classifier-v0.2.md`，一致性有单测兜。**"表现/整体表现"不是比较词**——history_compare 必须有参照或变化词，这是 A5 用真金白银换来的口径。
-- 坑：`prompts/ride-chat-classifier-v0.1.md` 文件名按 schema 版本、内容是 prompt-v0.3，两套版本号并存。
-- **文档体系补缺已拍板（10-23）**：① 业务交互 PRD **挂 AGT-F 细规划前置产出**（A~E 阶段无新前端交互面不提前写；F/G 的计划确认/打卡/推送交互在进入 F 细规划时作前置输入，与 P6 同步）；② **AI-Spec 骨架版已建** = `doc_Agent/AI-Spec_对话Agent能力规约.md`（集中合同：工具合同 schema/生成约束/硬门/评测索引 + §11 按里程碑增补记录）。**最高原则：Prompt 正文唯一事实源 = 代码库**（D-A6），AI-Spec 只做版本索引不内嵌 Prompt；各里程碑细规划定稿后把规约并入 AI-Spec 对应章节。
+- **架构结论（不复议）**：正确落地 = **L1 扩工具面 + 训练监督单点升 L2**，不上 L3/L4。CHAT-17 L2b 已是受限单 Agent；"自主"真实需求 = 工具自主编排（已有）+ 主动性（新，属调度基础设施）。
+- **七里程碑**（`AGT`）：A 意图路由 v0.4 → B 只读工具面 + 循环扩展 → C 生成层（分析/评估/KB/陪伴）→ E 影子轨 + 阶段1 放行；D 上下文记忆三层（前置 P8）可与 C 后半并行 → F 训练规划 + 写路径（前置 P6）→ G 训练监督 + 主动性（前置 P3）。
+- **进度（2026-10-26 12:0x）**：AGT-B `In Progress` 5/8；**B5 `In Progress`，边界集已达标**。最终基线（含网络校正）：**编排集 46/63=73.0% → 校正 55/63=87.3%**（9 次 headers 失败）、**边界集 104/114=91.2% → 校正 110/114=96.5% ✅ 达标**。全量 **773/773**。全失败例只剩 ORCH-19（负例误用工具）+ ORCH-20（注入）。**取基线必须同时看 `timingSummary.failByPhase`**——网络失败三轮 0 → 18 → 9+6，原始分数会被压低 10~14pt。
+- **⭐ 关键教训（2026-10-26）：`MODEL_TIMEOUT` 不等于"服务波动"**。五组测量证明服务 6/6 次正常（1.6~5.1s），真因是①偶发连接失败（`HTTP 000` + **固定 85.9s** = TCP SYN 重试耗尽）②请求体积。已给 provider 加**分阶段计时**（`onTiming`：headersMs/bodyMs/failurePhase，不改 run 合同），实测**延迟 100% 在 headers 阶段（p50 6.0s）、body p50 0ms**。
+- **⭐ 关键教训（2026-10-26）：不可比 ≠ 相同**。曾让 `not_comparable` 的 claim 可引用 + Prompt 解释，模型答成「完全一致，没有变化」并**编造"相同路线"**（幻觉方向），还破坏 CHAT-13「首骑不可比无 claimId」契约 → 全撤回。改为**零模型话术**按 `reasonCodes` 映射说明——事实性解释不该交给模型。
+- **B5 关键教训**：① **写多记录场景用例禁用"这次/那回"**（踩三次：ORCH-01~13 改造、BND-A01、ORCH-21），除非显式构造 `turns` 给锚点。② `windowDays` 越界应**钳制**而非判非法。③ **判分必须含"最终交付成功"**——只看工具齐不齐会把超时降级判成通过（24/63 假阳性）。④ 换路径仍答对可放宽（requiredAnyOf），换路径答错须记为选择错误。⑤ **绝不拿评测失败倒推能力面**（ORCH-08 曾被误判为白名单缺失）；修选错工具靠 catalog `purpose` + Prompt 分工表。⑥ **提升提示质量有延迟代价**：catalog purpose(+500字)+分工表(5906字) 把 p50 推到 16s。⑦ 评测仓库记录太少会让 `NO_MATCH` 反映 fixture 不足而非真实不可用。
+- **目录约定**：需求分析/调研留 `doc_Agent/` 根；粗规划、里程碑细规划、进度在 `doc_Agent/开发规划/`。执行事实源 = `开发规划/Agent改造开发进度.md`，验收汇报直接写在该工作项下。
 
-## 可复用资产：四级交付流水线 skill（2026-10-23 建，用户级）
+## 已拍板决策
 
-- `~/.workbuddy/skills/requirement-to-delivery-pipeline/`，已注册。四级 = 需求分析 → 粗规划 → 里程碑细规划 → 进度文档，5 道交接门，附四份模板 + 一致性校验脚本。
-- 用法：`python3 <skill>/scripts/check_delivery_docs.py <项目根> --docs-dir doc_Agent`，0 FAIL 才算自洽。
-- 与 `ai-requirement-analysis`（阶段1 主体）、`plan-vibe-coding-project`、`orchestrate-ai-product-delivery`（英文三文档）的分工写在 SKILL.md；同时使用时**以本流水线的进度文档为唯一事实源，禁止双台账**。
+- **P 系列**：P1 地图录像=轨迹回放纯前端 / P2 个人 demo+portfolio / P5 skills=领域工具面（10-23）；**P4 健康数据=仅现有 profile（maxHR/FTP/体重），不接外部** / **P7 窗口放开=口径变更，M3 须开新 Run，旧结论不背书**（10-24）。待定：P3（主动性边界，G 前）、P6（计划自由度，F 前）、P8（assistant 原文上服务端，D 前）、P9（显式偏好层，建议延后）。
+- **D-A1~A6**：A1 v0.3 Run 合并进 v0.4；A2 移除启用态 P1 业务正则兜底（失败统一"模型暂不可用"，L0 快路径保留）；A3 水平评估例改标 level_assessment；A4 open_chat 拆出 companion（复用 `social`）；A5 取消 shadow/active 双模式（`CHAT_CLASSIFIER_MODE` 退役，`CHAT_CLASSIFIER_ENABLED=true` 即接管）；A6 对话链路 Coze→硅基流动全迁 + Prompt 迁入代码库为唯一事实源（**骑后解读链路维持 Coze 不动**）。
+- **D-B**：B1 窗口职责分离 / B4 kb_qa+level_assessment 在 B 升级真链路 / B6 健康档案只投影 weightKg/maxHeartRate/ftp **已确认**；B3/B7/B9 按默认执行；B2/B5/B8 待对应工作项前确认。
+- **12 路由 11 意图全部保留、无删除**。
+
+## 多轮上下文机制（2026-10-24 核对代码，跨会话有效）
+
+- **意图识别只看当前这一句**：`resolveChatRouting({text: result.text})` 只传本轮文本；分类器输入合同 `ride-chat-classifier-input-v0.1` 只有 `text` 一个变量（`chat-classifier.ts` 头注释明写"输入仅当前问题文本"）。**摘要不参与路由**。
+- **上下文只在路由之后用**，两条独立通道：① **锚点解析**（`chat-ride-anchor.ts`，CHAT-14）——次序 = 显式日期 → 显式序数 → 上下文继承（摘要里最近一条 `rideAnchor`）→ 澄清；锚点存**日期字符串**而非"最新"指针，导入新记录不偷换锚点；生效路由 `current_ride`/`capabilities`/`history_compare`/`autonomous_tools`。② **表达层摘要**（主对话 Prompt 的 `sessionSummaries`）——只用于理解指代与话题延续。
+- **摘要槽位白名单**（`chat-session.ts` / `chat-routing.ts` 网关）：≤6 条、`question` ≤120 字、该轮 `route`、可选 `rideAnchor`；**不含 assistant 回复正文**；非法整体静默丢弃退回无上下文基线（事件 `summariesDropped`）。历史问题里的数字/日期**不是事实来源**，Prompt 明文禁止引用。
+- **确认轮是特例**：上一轮工具路由触发锚点澄清（摘要挂起且 `rideAnchor` 空）+ 本轮是纯确认语（是的/最近一次/日期）→ `detectAnchorConfirmation` 用摘要识别 → 用**挂起的原问题**重跑规则路由（`classifyChatInput`，非 L1 分类器）+ `anchorOverride` 重答；日期无匹配则零模型确定性回复。
+- **设计代价（被追问要认）**：分类器无状态 → 可复现可评测（M3 固定集每例 1 次才有意义），但**纯指代追问单句判不出**（"那这个呢？"→ unclear → 澄清）；"这次"在 4 条记录下触发 `TOOLS_ANCHOR_CLARIFY`（B5 首轮 15 次"编排失败"的真因）。**已知缺口**：摘要无 assistant 正文，回指"你上面说的第二点"接不住（P8 未决）。
+
+## 对话链路与 Prompt 事实源
+
+- Provider：硅基流动 OpenAI 兼容（`https://api.siliconflow.cn/v1`）；分类器 `deepseek-ai/DeepSeek-V4-Flash`、主对话 `deepseek-ai/DeepSeek-V3.2`。
+- **Prompt 正文唯一事实源 = 代码库**（`src/chat/*-prompt.ts` 版本化常量），`prompts/*.md` 是归档副本；改完跑 `npm run prompt:classifier:sync` / `npm run prompt:workflow:sync`，一致性有单测兜。AI-Spec 只做版本索引 + 合同。
+- **防泄漏纪律**：few-shot 只取标注集 `dev` split；意图定义里的示例一律泛化，**不照抄任何 blind/red-team 原句**（机械断言 + preflight 跨 split 重复正文检测）。
+- **超时现值**：主对话单轮 20s（B4 由 15s 上调，kb_qa 变"检索+生成"两轮后 15s 必超时）、分类器 12s、整轮 45s 兜底。
+- 当前 Prompt 版本：分类器 `ride-chat-classifier-prompt-v0.4.1`；主对话 `ride-chat-prompt-v0.2.3`。
+
+## 分类器 v0.4 要点
+
+- 标注集 `eval/ride-chat-classifier-v0.4/`：83 例（dev 13 / blind 60 / red-team 10），三轴 `split`/`intent`/`kind`（positive 53 / boundary 26 / ambiguous 4），9 组 `boundaryPairs`；**口径看该目录 `README.md`，变更看 `CHANGES.md`**。
+- 签收 = **全量全对**（gate 0.95 只是底线）；定版 Run `AEVAL-CLASSIFIER-20261023233648`（83/83）。唯一 MISS 归因：**"表现/整体表现"不是比较词**——`history_compare` 必须有对比参照或变化词（v0.4.1 换来）。
+- 复合问法：**单标签 + 主意图优先级**（红线 > 监督 > 计划 > 数据 > 知识 > 闲聊 > 域外），次诉求由回复层承接。
+- 成本：单次 2157 tokens、全量 ≈¥0.28–0.56、≈2 分钟。**不构成约束**。线上 `.env.production` **仍为规则基线**，是否启用待用户决定。
+
+## AGT-B 事实（工具面与循环）
+
+- 工具面 **4 → 9**：`get_ride_context`/`get_capabilities`/`compare_rides`/`find_ride` + `get_health_profile`/`get_training_load`/`search_knowledge_base`/`get_ride_history`/`get_route_overview`。
+- **30 天冻结只在 chat 层**（领域层 `historical-comparison.ts` 早已 1..365）。B2 = 解冻 + 口径定义：`find_ride` 上限 365（**缺省仍 30**，由 `normalizeLoopCall` 注入，有行为级测试）、`compare_rides` 默认 30 **不放大**（可比性口径）、`get_ride_history` 缺省 90/上限 365。
+- **预算四值**：累计工具 **5** / 单轮 **4**（=并发）/ provider **6** / 整轮 **45s**。并行 = 分片（片内并行、片间串行）+ receipts 按请求顺序落位（`claim:loop:N` 稳定前提）+ **先全量校验再执行**（任一被拒整轮不执行）。
+- **catalog 按路由裁剪**（`CHAT_TOOL_CATALOG_SCOPE`）：autonomous_tools 9 全量 / kb_qa = KB+get_ride_context（B4 起 + get_health_profile）/ level_assessment 四件 + KB / none 空；`CHAT_TOOL_CATALOG_INPUTS` 是输入说明单一事实源，**必须写类型**（模型会把数组字段填成字符串 → 调用被拒 → 整轮失败，最隐蔽的坑）。catalog 实测 9 工具 2404B。
+- **证据合同 `chat-tools-v0.2` / `ride-chat-output-v0.2`**：`claimIds` 与 `knowledgeIds` **按证据类型各自非空、可同时存在（非互斥）**；双版本解析兼容 v0.1（704 项零回归的关键）。`chatToolSpecs` 是工具合同单一事实源（anchorMode/evidenceKind/numericFacts/hasUsableEvidence）。
+- **数字硬门**：等价类（`chat-numeric-evidence.ts`，复用 `claimNumericVariants`）+ 否定语境豁免（`hasUnnegatedHit`，前 14 字窗口）+ 拒绝原因入 `loopTrace.validationRejections`。**线上不加 LLM 语义判官**（延迟翻倍/判官错向即放行幻觉/不可归因）。中文数字不受数字校验约束（刻意）。
+- **`get_training_load` 链路**：`src/domain/ride-training-stress.ts` 的 `computeRideTss`（`(NP/FTP)²×movingTimeS(h)×100`，**只用 movingTimeS**）是 `ride-pmc-load-v2` 唯一接线点。PMC 要 ≥42 天跨度 + ≥10 个负荷日 → **演示 4 条记录必然 `INSUFFICIENT_LOAD_DAYS`**（正确行为，B5 边界集覆盖）。
+- `get_route_overview` 不可用时**不给任何里程字段**（给 0 会被说成"全是平路"）；现有 fixture 无真实爬坡轨迹，真实 FIT 归 B5。
+- **B4 的两条边界**：① AGT-D 范围**不含**锚点/指代消解（锚点是 CHAT-14 现役能力），kb_qa 的"这次"澄清属**路由级交互策略 → 归 AGT-C**。② §5.5 结论 = **L1 扩 catalog，否决 L3**（复合问法答漏根因是 catalog 缺口/输入说明不清/模型不继续调/锚点澄清/单轮超时四类混杂，多标签一个都解决不了）。
+- **B5 教训**：编排集**不测路由**（route 统一给定），路由归 M3 集；`windowDays` 越界应**钳制到上限 + limitations 注明**而非判 `INVALID_TOOL_CALL`；真实模型**连跑会限流**（5 例连跑 3 例超时），评测须控速并记录延迟分布。
 
 ## 评测口径（对外陈述前必看）
 
@@ -34,55 +62,27 @@
 |---|---|---:|---:|---:|
 | 骑后解读 · 基础合同 | `RA-AUTO-001~018` | 18 | 3 | 54 |
 | 骑后解读 · 正式稳定性门 | `F01–F09` | 9 | 9 | 81 |
-| 高阶解读 · A/B 冻结集 | `ADV-*` | 15（12 例 A/B 双臂 + 3 例对抗仅 B 臂） | 3 | 81 |
-| 对话 Agent · M3 固定集 | `AEVAL-M3-CHAT` | 27（v0.5）／现 34（v0.6） | 1 | 27／34 |
-| 意图分类器 · 标注集 | v0.3 → **v0.4** | 38 → **83**（含 red-team 6 → 10） | 1 | 38 → **83** |
+| 高阶解读 · A/B 冻结集 | `ADV-*` | 15（12 双臂 + 3 仅 B 臂） | 3 | 81 |
+| 对话 Agent · M3 固定集 | `AEVAL-M3-CHAT` | 34（v0.6/v0.7） | 1 | 34 |
+| 意图分类器 · 标注集 | v0.4（冻结） | **83** | 1 | 83 |
 
-- **「27 × 3 = 81」不存在**：27 是 M3 固定集 v0.5 全量、每例 1 次；两处 81 槽分别来自 `9×9` 与 `15 例 A/B`。
-- 重复次数的统一表述：「把二值通过变成可观测失败率，按随机性敏感度定」。**不要说"避免概率事件"**（n=3 在 p=20% 时检出率仅 48.8%，会被反证）。
-- v0.5（27 例，SHA `789c713f…`）已升 v0.6（34 例，SHA `9a837ccc…`），**v0.6 真实模型 Run 未执行**；`27/27` 属 v0.5 历史结论，须主动交代。简历口径以 `AI岗位简历改写建议_2026-09-13.md` 为准。
-- **A/B 是上游事实输入的对照，不是两版 Prompt/模型**：A 臂剥离 `kind:"advanced"` 高阶 Claim（仅留基础），B 臂完整输入；同案例、同 Prompt/模型/重复次数，唯一变量 = 上游是否提供高阶事实。槽位 = 12×(A3+B3) + 3×B3 = 81。对抗案例只在 B 臂跑。该批次 D 硬门 **FAILED**（`-892`，合同通过 22/81 = 27.2%），失败聚类推动「确定性收口」路线，最终骑后 `FORMAL-08`（`AEVAL-RUN-20260906-955`）81/81 零降级首过门。⚠️ **两个 81 槽不可混讲**。
-- **claim `kind` 实际只用 3 种**（demo-ride-2026-07-22 实测 107 条：`advanced` 94 / `feature` 9 / `relation` 4）。`metric` 是枚举遗留（`claim()` 默认 feature，从未显式写 metric）；`limitation` 改由 `questions[].limitations` 表达；`history` 被 S2-06 移出。**记录/计算/估算靠 `provenance`（recorded/calculated/estimated），不是 `kind`**。
-- 一级分层轴是 **`split`**：`dev → regression → blind → red-team → product`。「常规/边界/对抗」不是项目词汇，是难度-覆盖轴的口语化描述；案例文件只有 `split`，没有 `tier`/`difficulty`。
-- **硬门校验不叫"正则验证"**：四段 = 解析归一 → 合同硬门（约 35 校验点/50 错误码，全为集合运算）→ 数值忠实（正则仅分词，判定用 `claimNumericVariants` 等价类：舍入、`m/s↔km/h`、`s↔min/h`、`ratio↔%`；可换单位可舍入但**不可计算**）→ 语言越界（9 组 22 条正则）。处置链：确定性收敛优先 → 唯一一次受限修复（每槽 ≤2 次）→ B0 硬降级。`81/81 零降级` = 首轮 75 + 修复 6 + B0 0，**首次通过率 92.6%，"零降级"≠"无抖动"**；也不等于"模型自身引用正确率 100%"（收敛吸收了部分引用错误）。
-- **盲评分歧处置**：分三类——锚点歧义（改指南锚点示例）／案例歧义（改文·改标·替换，必须重跑）／样本级真实分歧（取更贴近 Rubric 的口径 + 稳健性检验）。动了评估资产或产品资产**就必须全新 Run、不续跑历史 Run、旧结论标 `supersede`**；只有"仅改指南锚点且产品与数据集未变"才可只修不重跑（**项目从未执行过**）。时效：T002-V04 的 10 项锚点差异只记录未回炉；NO-GO 后修复→复评循环 2026-09-07 置 `Paused`；**唯一走通的完整重评闭环是意图分类器**（v0.2 `CHAT-13` 38/38；v0.3 `CHAT-17` 待授权）。
-- **已知短板（被追问主动认领）**：① 稳定性门 9 案例与盲评样本同源，不是两条独立证据；② 盲评集内无 red-team，安全兜底全由机器硬门承担；③ 测评计划 §5.1 把用途轴与难度轴写在同一张表；④ 第三视角仲裁条款为"或"关系，实际两轮盲评均由维护者裁定。
+- **「27 × 3 = 81」不存在**：27 是 M3 v0.5 全量、每例 1 次；两处 81 来自 `9×9` 与 `15 例 A/B`，不可混讲。
+- 重复次数表述：「把二值通过变成可观测失败率，按随机性敏感度定」。**不要说"避免概率事件"**（n=3 在 p=20% 检出率仅 48.8%）。
+- **M3 v0.5 的 27/27 属历史结论**（Coze 时代）；主对话已换模型 → 重验挂 C。
+- **A/B 是上游事实输入的对照**（A 臂剥离高阶 Claim），不是两版 Prompt/模型。硬门三段：解析归一 → 合同硬门 → 数值忠实 → 语言越界（9 组 22 条）。`81/81 零降级` = 首轮 75 + 修复 6 + B0 0（首过率 92.6%）。
+- **制度**：动了评估资产或口径 → **全新 Run、不续跑、旧结论标 `supersede`**。
+- **已知短板**：① 稳定性门 9 例与盲评同源；② 盲评集无 red-team；③ 测评计划 §5.1 混表；④ 第三视角仲裁实为维护者裁定；⑤ **blind 已非完全未见样本**（A5 回流）。
 
-## V2.1 指标规范化（M6，设计定稿未实施）
+## 环境与运维
 
-- 目的：明确各维度指标 + 换用维度化知识库。三条要求：模型输入以新 KB 关键指标为准（直取或规则计算）；旧库 batch1 换 `doc_V2.1/cycling_science_knowledge_base.md`；其余原则不变。
-- 新 KB 7 维度 = V2 `analysisDimensionIds` 前 7 个，一一对应；V2 缺约 20 个派生指标（VI/EF/VAM/爬坡 Wkg/Pw:Hr 解耦/负分割/RS/踏频 CV 等），共享指标 VI/EF 只算一次。
-- 两处口径冲突已定：心率区间对齐为「LTHR 优先、maxHR 降级、provenance 标注」；输入准绳由「详情页字段覆盖矩阵」切为「KB 关键指标覆盖矩阵」（字段矩阵降级为审计索引、不回退）。
-- 架构增量：`ride-derived-metric-spec-v21.ts` + `ride-derived-metrics-v21.ts` + `ride-knowledge-base-v21.ts`（`ride-kb-2.1.0` 替换 `ride-kb-batch1-1.0.0`）。交付在 `doc_V2.1/`，任务前缀 `V21`。
-- 口径：心率恢复指标"有停表后数据才算、无则进 limitation、不新开开关"；V2.1 评测须在 V2 发布门评测之后开新 Run。
+- **分支/工作树**：主目录 `AI骑行伙伴-指导版_0827`（`main`）+ m2~m7 平级；命名 `..._m<N>-<主题>` / `codex/m<N>-<主题>`。工作树不共享未跟踪文件：须拷 `.env.local`、`.env.production`、`.local-data` 再 `npm install`（**pnpm 本机不可用**）+ `NODE_DISABLE_COMPILE_CACHE=1 npx tsc --noEmit`。端口：3000=m4、3001=m6、**m7=3002**。
+- **safe-delete 守卫死锁**（10-23 实踩）：报 `SAFE_DELETE_BULK_GUARD_ERROR state lock timeout`，连带 git `index.lock`；重启客户端无效，须到系统终端 `rm -rf` 守卫 hash 目录重建。
+- **本机验 API 两坑**：`curl POST /api/chat` 必须带签名会话 cookie（DEV_SECRET 在 `src/auth/session.ts`），否则 404；**必须加 `--noproxy '*'`**，否则 502 易误判服务未起。
+- **演示数据**：`test-data/demo-imported-rides/*.fit` 四条——`demo-ride-2026-10-05`(30.4km 心率) / `08-20`(31.1km 通勤) / `07-22`(161.8km 长途功率) / `07-18`(56km 起伏功率)。`DEMO_VALIDATION_BYPASS=on` 仅 demo（评测脚本永不读）；无资料时 seed 28 岁/175cm/72kg/192bpm/FTP 220（`DEMO_PROFILE_SEED=off` 关闭）。
+- **线上** `https://ai-cycling-buddy.app.workbuddy.host/`；重部署须 `domainPrefix="ai-cycling-buddy"`、`startCmd="npm run build && npm start"`、部署前移出 `.local-data`。云端临时存储，重发布清空数据。
 
-## 分支与工作树
+## 其他
 
-- 主目录 `AI骑行伙伴-指导版_0827`（`main`）+ m2~m7 平级目录：m2 prd-ai-riding-partner、m3 prd-ai-riding-partner、m4 refactor-agent-capabilities、m5 m3-optimization、m6 m4-optimization（V2.1）、**m7 agent-autonomy（基于 m6，10-23 建）**。
-- 命名：目录 `AI骑行伙伴-指导版_0827-m<N>-<主题>`，分支 `codex/m<N>-<主题>`。
-- worktree 不共享未跟踪文件：新树须从源树拷 `.env.local`、`.env.production`、`.local-data`，再 `npm install`（**本机 pnpm 不可用**）+ `NODE_DISABLE_COMPILE_CACHE=1 npx tsc --noEmit`（不加该变量会被沙箱拦编译缓存删除，报假错）。拉新树前源分支必须先提交干净。
-- 端口：3000 = m4，3001 = m6，m7 用 3002。
-
-## 环境故障：safe-delete 守卫死锁（10-23 实踩）
-
-- 症状：任何删除/覆盖都报 `[safe-delete][SAFE_DELETE_BULK_GUARD_ERROR] state lock timeout`，连带 `git add/commit` 报 `index.lock: File exists`；`mv`、`os.rename`、`git update-ref` 同样被拦。
-- 根因：守卫目录下 `.lock` 变成了**空目录**，且 `state.json` 只剩 `.tmp` 版。**重启客户端无效**（坏的是磁盘状态）。
-- 修法：到系统终端 `rm -rf` 守卫 hash 目录让它重建，再清各树的 `index.lock`/`HEAD.lock`/`refs/heads/*.lock`。见 `SAFE_DELETE_BULK_GUARD_ERROR` 就不要再在会话内试删除或找 git 绕行，直接请用户去终端。
-
-## 本机验 API 的两个必踩坑（10-24）
-
-- `curl POST /api/chat` 必须带**签名会话 cookie**，否则一律 404（`getRequestSession` 挡掉；首页不下发 cookie）。DEV_SECRET 硬编码在 `src/auth/session.ts`（`ai-cycling-buddy-local-development-secret-v1`），用 `createHmac("sha256", secret).update(base64url(JSON)).digest("base64url")` 造 `payload.sig` 即可。
-- **必须加 `--noproxy '*'`**：本机有代理，`curl http://localhost:3002` 会返回 **502**，容易误判成"服务没起来"。
-
-## 演示与发布
-
-- 演示记录四条（`test-data/demo-imported-rides/*.fit`，按骑行时间倒序）：`demo-ride-2026-10-05`(30.4km 心率) / `08-20`(31.1km 通勤) / `07-22`(161.8km 长途功率) / `07-18`(56km 起伏功率)。R03 脚本须用 demo-ride id。
-- **校验旁路开关（仅 demo）**：`.env.local` 置 `DEMO_VALIDATION_BYPASS=on` → 首轮输出直接展示（校验器仍跑并记 issue，前端显示演示角标，**演示即失败率探针**）。缺省 off 与正式链路逐字节一致；**评测脚本永不读此开关**。背景：R02 firstPass 仅 5%、95% 靠修复轮（60–142s）。
-- 线上 `https://ai-cycling-buddy.app.workbuddy.host/`。重部署要点：`domainPrefix="ai-cycling-buddy"` 必填（复用 app、链接不变）、`startCmd="npm run build && npm start"`（`.next` 被排除上传，build 必须并入）、部署前移出 `.local-data` 部署后还原；`.env.production` 含全部密钥 + `DEMO_VALIDATION_BYPASS=on`（与 `.env.local` 双份，local 优先）。云端是临时文件存储，重新发布清空线上数据（每会话 seed 基线）。
-- 个人资料演示基线：`/api/profile` 在无资料时 seed 28 岁/175cm/72kg/192bpm/FTP 220，时间戳固定 `2026-10-08T04:37:10.707Z`；关闭用 `DEMO_PROFILE_SEED=off`。这是演示默认值，非产品行为，不覆盖已有真实资料。
-
-## 文档约定
-
-- 图示统一 Mermaid 代码块，不嵌截图；补充图表只输出图形本身。
-- 任务相关提示词与原始需求归档到项目文件夹。
-- `doc_V2/*.pdf`（25–52MB 外部文献）不入库，自产 md 正常跟踪。
+- **V2.1 指标规范化（M6，定稿未实施）**：新 KB 7 维度 = V2 `analysisDimensionIds` 前 7；口径「LTHR 优先、maxHR 降级、provenance 标注」；KB 现状 7 条 / 23.6KB / 单条 explanation ≈3KB → 工具投影必须裁 `excerpt≤600 字`、`maxEntries≤3`。
+- **可复用流水线 skill**：`~/.workbuddy/skills/requirement-to-delivery-pipeline/`，校验 `python3 <skill>/scripts/check_delivery_docs.py <项目根> --docs-dir doc_Agent`，**0 FAIL 才自洽**；同时用其他规划 skill 时以本流水线进度文档为唯一事实源，**禁止双台账**。
+- **文档约定**：图示统一 Mermaid 代码块、不嵌截图；任务相关提示词与原始需求归档进项目文件夹；`doc_V2/*.pdf` 外部文献不入库。

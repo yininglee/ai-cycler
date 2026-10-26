@@ -6,7 +6,7 @@ import { classifyChatInput } from "../src/chat/chat-routing.ts";
 import type { ChatToolResult } from "../src/chat/chat-tools.ts";
 
 const rideContext: ChatToolResult = {
-  schemaVersion: "chat-tools-v0.1",
+  schemaVersion: "chat-tools-v0.2",
   tool: "get_ride_context",
   rideId: "private-ride",
   rideDateLabel: "2026年8月17日",
@@ -17,10 +17,11 @@ const rideContext: ChatToolResult = {
 };
 
 const capabilityContext: ChatToolResult = {
-  schemaVersion: "chat-tools-v0.1",
+  schemaVersion: "chat-tools-v0.2",
   tool: "get_capabilities",
   rideId: "private-ride",
   capabilities: [{ key: "power", available: true, sources: ["ride_activity"], qualityStatus: "valid", dependencyKeys: [] }],
+  claims: [{ claimId: "claim:caps:power", kind: "metric", key: "power", value: 1, unit: "count", confidence: "high", displayValue: "可用" }],
 };
 
 function output(value: object) {
@@ -32,7 +33,8 @@ test("accepts a strict social output with no unsupported facts", () => {
     decision: classifyChatInput("你好"),
   });
   assert.equal(result.ok, true);
-  assert.deepEqual(result.publicResult, { status: "accepted", referencedClaimCount: 0, referencedCapabilityCount: 0 });
+  // AGT-B5：publicResult 补 referencedKnowledgeCount（B6 的 KB 引用统计前置）
+  assert.deepEqual(result.publicResult, { status: "accepted", referencedClaimCount: 0, referencedCapabilityCount: 0, referencedKnowledgeCount: 0 });
 });
 
 test("accepts current-ride facts only when claims and numeric literals come from this tool result", () => {
@@ -110,7 +112,7 @@ test("accepts up to 12 claimIds for summary answers, rejects 13 (CHAT-15)", () =
     displayUnit: "W",
   }));
   const summaryContext: ChatToolResult = {
-    schemaVersion: "chat-tools-v0.1",
+    schemaVersion: "chat-tools-v0.2",
     tool: "get_ride_context",
     rideId: "private-ride",
     dimensions: ["summary"],
@@ -135,7 +137,7 @@ test("accepts up to 12 claimIds for summary answers, rejects 13 (CHAT-15)", () =
 // 其中数字必须成对收编白名单；编造的时间数字仍拒绝。
 test("accepts verbatim Chinese time displayValue numbers, rejects invented times (CHAT-15 round 2)", () => {
   const timeContext: ChatToolResult = {
-    schemaVersion: "chat-tools-v0.1",
+    schemaVersion: "chat-tools-v0.2",
     tool: "get_ride_context",
     rideId: "private-ride",
     dimensions: ["summary"],
@@ -186,7 +188,7 @@ test("rejects route, capability, safety, injection and privacy violations withou
 // 模型表述“8 月 20 日这次骑行”不是幻觉；日期之外的数字仍须溯源到比较值或用户原句。
 
 const comparisonContext: ChatToolResult = {
-  schemaVersion: "chat-tools-v0.1",
+  schemaVersion: "chat-tools-v0.2",
   tool: "compare_rides",
   rideId: "private-ride",
   windowDays: 30,
@@ -232,7 +234,7 @@ test("history_compare accepts anchor date numbers, rejects invented dates and ti
 // 防御路径：elapsedTimeS 尚不在 chatComparisonMetricKeys 白名单，未来纳入时间指标时此路径生效。
 test("history_compare accepts Chinese time displayValue numbers for anchor and baseline (CHAT-15 round 2)", () => {
   const timeComparisonContext = {
-    schemaVersion: "chat-tools-v0.1",
+    schemaVersion: "chat-tools-v0.2",
     tool: "compare_rides",
     rideId: "private-ride",
     windowDays: 30,
@@ -269,7 +271,7 @@ test("history_compare accepts Chinese time displayValue numbers for anchor and b
 // 不携带能力键；零工具调用结果直接拒绝（模型不得在零工具下给出带数字的事实回答）。
 
 const loopFindRide: ChatToolResult = {
-  schemaVersion: "chat-tools-v0.1",
+  schemaVersion: "chat-tools-v0.2",
   tool: "find_ride",
   rideId: "anchor-ride",
   windowDays: 30,
@@ -288,7 +290,7 @@ const loopFindRide: ChatToolResult = {
 };
 
 const loopRideContext: ChatToolResult = {
-  schemaVersion: "chat-tools-v0.1",
+  schemaVersion: "chat-tools-v0.2",
   tool: "get_ride_context",
   rideId: "history-far",
   dimensions: ["summary"],
@@ -315,7 +317,7 @@ test("autonomous_tools accepts claims and numbers from the union of loop tool re
   // 跨调用组合：检索命中的日期/距离 + 第 2 次调用（get_ride_context）的心率。
   const valid = loopValidation("8月15日那次骑行距离 55.0 公里，平均心率 151 bpm。", ["claim:loop:1:1", "claim:loop:2:1"]);
   assert.equal(valid.ok, true);
-  assert.deepEqual(valid.ok && valid.publicResult, { status: "accepted", referencedClaimCount: 2, referencedCapabilityCount: 0 });
+  assert.deepEqual(valid.ok && valid.publicResult, { status: "accepted", referencedClaimCount: 2, referencedCapabilityCount: 0, referencedKnowledgeCount: 0 });
 
   // 用户原句数字（阈值）同样可复述。
   const echoed = loopValidation("8月15日那次骑行距离 55.0 公里，超过了你说的 50。", ["claim:loop:1:1"], { userText: "距离超过 50 公里的最远那次是哪次？" });
@@ -346,7 +348,7 @@ test("autonomous_tools rejects answers without loop tool results or with invente
 
 test("autonomous_tools accepts find_ride threshold, window and match-count numbers (CHAT-17)", () => {
   const thresholdFindRide: ChatToolResult = {
-    schemaVersion: "chat-tools-v0.1",
+    schemaVersion: "chat-tools-v0.2",
     tool: "find_ride",
     rideId: "anchor-ride",
     windowDays: 30,

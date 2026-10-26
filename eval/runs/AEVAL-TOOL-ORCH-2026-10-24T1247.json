@@ -1,0 +1,611 @@
+{
+  "datasetId": "AEVAL-TOOL-ORCHESTRATION",
+  "repeat": 3,
+  "total": 60,
+  "passed": 34,
+  "avgElapsedMs": 8640,
+  "slowestElapsedMs": 28497,
+  "promptVersion": "ride-chat-prompt-v0.2.3",
+  "results": [
+    {
+      "caseId": "ORCH-01",
+      "round": 1,
+      "pass": false,
+      "detail": "缺工具:get_ride_context 证据形态不符",
+      "execution": "template",
+      "fallback": "TOOLS_ANCHOR_CLARIFY",
+      "elapsedMs": 2,
+      "replyPreview": "你说的「这次」是指最近一次（10月22日）的骑行，还是其他某一次？可以直接告诉我日期。"
+    },
+    {
+      "caseId": "ORCH-01",
+      "round": 2,
+      "pass": false,
+      "detail": "缺工具:get_ride_context 证据形态不符",
+      "execution": "template",
+      "fallback": "TOOLS_ANCHOR_CLARIFY",
+      "elapsedMs": 0,
+      "replyPreview": "你说的「这次」是指最近一次（10月22日）的骑行，还是其他某一次？可以直接告诉我日期。"
+    },
+    {
+      "caseId": "ORCH-01",
+      "round": 3,
+      "pass": false,
+      "detail": "缺工具:get_ride_context 证据形态不符",
+      "execution": "template",
+      "fallback": "TOOLS_ANCHOR_CLARIFY",
+      "elapsedMs": 1,
+      "replyPreview": "你说的「这次」是指最近一次（10月22日）的骑行，还是其他某一次？可以直接告诉我日期。"
+    },
+    {
+      "caseId": "ORCH-02",
+      "round": 1,
+      "pass": false,
+      "detail": "缺工具:compare_rides 证据形态不符",
+      "execution": "template",
+      "fallback": "TOOLS_ANCHOR_CLARIFY",
+      "elapsedMs": 0,
+      "replyPreview": "你说的「这次」是指最近一次（10月22日）的骑行，还是其他某一次？可以直接告诉我日期。"
+    },
+    {
+      "caseId": "ORCH-02",
+      "round": 2,
+      "pass": false,
+      "detail": "缺工具:compare_rides 证据形态不符",
+      "execution": "template",
+      "fallback": "TOOLS_ANCHOR_CLARIFY",
+      "elapsedMs": 1,
+      "replyPreview": "你说的「这次」是指最近一次（10月22日）的骑行，还是其他某一次？可以直接告诉我日期。"
+    },
+    {
+      "caseId": "ORCH-02",
+      "round": 3,
+      "pass": false,
+      "detail": "缺工具:compare_rides 证据形态不符",
+      "execution": "template",
+      "fallback": "TOOLS_ANCHOR_CLARIFY",
+      "elapsedMs": 0,
+      "replyPreview": "你说的「这次」是指最近一次（10月22日）的骑行，还是其他某一次？可以直接告诉我日期。"
+    },
+    {
+      "caseId": "ORCH-03",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 14006,
+      "replyPreview": "根据您过去一年的骑行记录，距离最远的一次骑行是2026年10月4日，那次骑行了50.0公里。"
+    },
+    {
+      "caseId": "ORCH-03",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 9391,
+      "replyPreview": "根据你的骑行记录，你骑得最远的一次是2026年10月4日，那次骑行的距离是50.0公里。"
+    },
+    {
+      "caseId": "ORCH-03",
+      "round": 3,
+      "pass": false,
+      "detail": "缺工具:find_ride 拒调用:find_ride/INVALID_TOOL_CALL 证据形态不符",
+      "execution": "template",
+      "fallback": "TOOLS_LOOP_INVALID_TOOL_CALL",
+      "elapsedMs": 4543,
+      "replyPreview": "这个查询请求不在当前允许的只读工具范围内，我不能按这种方式查询。可以换成支持的问法，例如「距离最远的那次骑行是哪次」。"
+    },
+    {
+      "caseId": "ORCH-04",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 16521,
+      "replyPreview": "根据您最近90天的骑行记录，您一共骑行了137公里。这期间您有3次骑行，分别是10月22日（45公里）、10月4日（50公里）和8月25日（42公里）。"
+    },
+    {
+      "caseId": "ORCH-04",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 10681,
+      "replyPreview": "根据最近90天（约三个月）的骑行记录，您一共骑行了137公里，共包含3次骑行。"
+    },
+    {
+      "caseId": "ORCH-04",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 13661,
+      "replyPreview": "根据最近90天的骑行记录，您一共骑行了约137公里。这期间您有3次骑行，距离分别是10月22日约45公里、10月4日约50公里和8月25日约42公里。"
+    },
+    {
+      "caseId": "ORCH-05",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "TOOLS_LOOP_NO_MATCH",
+      "elapsedMs": 4325,
+      "replyPreview": "本轮查询没有返回可引用的数据结果，暂时无法回答这个问题。可以问得更具体一些，例如「距离最远的那次骑行是哪次」。"
+    },
+    {
+      "caseId": "ORCH-05",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "TOOLS_LOOP_NO_MATCH",
+      "elapsedMs": 3682,
+      "replyPreview": "本轮查询没有返回可引用的数据结果，暂时无法回答这个问题。可以问得更具体一些，例如「距离最远的那次骑行是哪次」。"
+    },
+    {
+      "caseId": "ORCH-05",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "TOOLS_LOOP_NO_MATCH",
+      "elapsedMs": 2904,
+      "replyPreview": "本轮查询没有返回可引用的数据结果，暂时无法回答这个问题。可以问得更具体一些，例如「距离最远的那次骑行是哪次」。"
+    },
+    {
+      "caseId": "ORCH-06",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 23229,
+      "replyPreview": "根据您的健康档案，您的 FTP 是 220 瓦。"
+    },
+    {
+      "caseId": "ORCH-06",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 12048,
+      "replyPreview": "根据你的健康档案记录，你的FTP是220瓦。"
+    },
+    {
+      "caseId": "ORCH-06",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 10452,
+      "replyPreview": "你的 FTP 是 220 瓦。"
+    },
+    {
+      "caseId": "ORCH-07",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 11542,
+      "replyPreview": "负分割是一种配速策略，指在骑行后半程的平均功率比前半程更高。根据知识库，后半程比前半程高 2–5% 被认为是理想的负分割，常见于耐力骑行或长距离项目，有助于避免"
+    },
+    {
+      "caseId": "ORCH-07",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 20409,
+      "replyPreview": "负分割是一种配速策略，指在后半程骑行中输出比前半程更高的功率或速度，通常后半程比前半程高2–5%被认为是理想的负分割，有助于在长距离骑行中节省体能、避免过早疲劳"
+    },
+    {
+      "caseId": "ORCH-07",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 12395,
+      "replyPreview": "负分割是一种配速策略，指在骑行后半程的平均功率或速度比前半程更高。根据知识库，后半程比前半程高 2–5% 被认为是理想的负分割，常见于耐力骑行或长距离项目，有助"
+    },
+    {
+      "caseId": "ORCH-08",
+      "round": 1,
+      "pass": false,
+      "detail": "缺工具:get_route_overview 证据形态不符",
+      "execution": "template",
+      "fallback": "TOOLS_ANCHOR_CLARIFY",
+      "elapsedMs": 1,
+      "replyPreview": "你说的「这次」是指最近一次（10月22日）的骑行，还是其他某一次？可以直接告诉我日期。"
+    },
+    {
+      "caseId": "ORCH-08",
+      "round": 2,
+      "pass": false,
+      "detail": "缺工具:get_route_overview 证据形态不符",
+      "execution": "template",
+      "fallback": "TOOLS_ANCHOR_CLARIFY",
+      "elapsedMs": 0,
+      "replyPreview": "你说的「这次」是指最近一次（10月22日）的骑行，还是其他某一次？可以直接告诉我日期。"
+    },
+    {
+      "caseId": "ORCH-08",
+      "round": 3,
+      "pass": false,
+      "detail": "缺工具:get_route_overview 证据形态不符",
+      "execution": "template",
+      "fallback": "TOOLS_ANCHOR_CLARIFY",
+      "elapsedMs": 1,
+      "replyPreview": "你说的「这次」是指最近一次（10月22日）的骑行，还是其他某一次？可以直接告诉我日期。"
+    },
+    {
+      "caseId": "ORCH-09",
+      "round": 1,
+      "pass": false,
+      "detail": "缺工具:get_capabilities 证据形态不符",
+      "execution": "template",
+      "fallback": "TOOLS_ANCHOR_CLARIFY",
+      "elapsedMs": 0,
+      "replyPreview": "你说的「这次」是指最近一次（10月22日）的骑行，还是其他某一次？可以直接告诉我日期。"
+    },
+    {
+      "caseId": "ORCH-09",
+      "round": 2,
+      "pass": false,
+      "detail": "缺工具:get_capabilities 证据形态不符",
+      "execution": "template",
+      "fallback": "TOOLS_ANCHOR_CLARIFY",
+      "elapsedMs": 1,
+      "replyPreview": "你说的「这次」是指最近一次（10月22日）的骑行，还是其他某一次？可以直接告诉我日期。"
+    },
+    {
+      "caseId": "ORCH-09",
+      "round": 3,
+      "pass": false,
+      "detail": "缺工具:get_capabilities 证据形态不符",
+      "execution": "template",
+      "fallback": "TOOLS_ANCHOR_CLARIFY",
+      "elapsedMs": 1,
+      "replyPreview": "你说的「这次」是指最近一次（10月22日）的骑行，还是其他某一次？可以直接告诉我日期。"
+    },
+    {
+      "caseId": "ORCH-10",
+      "round": 1,
+      "pass": false,
+      "detail": "缺工具:get_ride_context,compare_rides 证据形态不符",
+      "execution": "template",
+      "fallback": "TOOLS_ANCHOR_CLARIFY",
+      "elapsedMs": 0,
+      "replyPreview": "你说的「这次」是指最近一次（10月22日）的骑行，还是其他某一次？可以直接告诉我日期。"
+    },
+    {
+      "caseId": "ORCH-10",
+      "round": 2,
+      "pass": false,
+      "detail": "缺工具:get_ride_context,compare_rides 证据形态不符",
+      "execution": "template",
+      "fallback": "TOOLS_ANCHOR_CLARIFY",
+      "elapsedMs": 1,
+      "replyPreview": "你说的「这次」是指最近一次（10月22日）的骑行，还是其他某一次？可以直接告诉我日期。"
+    },
+    {
+      "caseId": "ORCH-10",
+      "round": 3,
+      "pass": false,
+      "detail": "缺工具:get_ride_context,compare_rides 证据形态不符",
+      "execution": "template",
+      "fallback": "TOOLS_ANCHOR_CLARIFY",
+      "elapsedMs": 1,
+      "replyPreview": "你说的「这次」是指最近一次（10月22日）的骑行，还是其他某一次？可以直接告诉我日期。"
+    },
+    {
+      "caseId": "ORCH-11",
+      "round": 1,
+      "pass": false,
+      "detail": "缺工具:find_ride,get_route_overview 拒调用:find_ride/INVALID_TOOL_CALL 证据形态不符",
+      "execution": "template",
+      "fallback": "TOOLS_LOOP_INVALID_TOOL_CALL",
+      "elapsedMs": 5931,
+      "replyPreview": "这个查询请求不在当前允许的只读工具范围内，我不能按这种方式查询。可以换成支持的问法，例如「距离最远的那次骑行是哪次」。"
+    },
+    {
+      "caseId": "ORCH-11",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 28497,
+      "replyPreview": "根据你的骑行记录，距离最远的是2026年10月4日那次，骑行距离为50.0公里。关于那次骑行的爬坡情况，目前没有提供足够的信息。"
+    },
+    {
+      "caseId": "ORCH-11",
+      "round": 3,
+      "pass": false,
+      "detail": "缺工具:get_route_overview",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 21243,
+      "replyPreview": "你距离最远的一次骑行是2026年10月4日，那次骑行了约50公里，累计爬升了680米。"
+    },
+    {
+      "caseId": "ORCH-12",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 25893,
+      "replyPreview": "你的FTP是220瓦。关于最近训练负荷，过去42天窗口内只有2天有骑行数据，且这些骑行缺少功率数据，因此无法计算出有效的训练负荷趋势。"
+    },
+    {
+      "caseId": "ORCH-12",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 11359,
+      "replyPreview": "你的 FTP 是 220 瓦。不过，最近 42 天的训练负荷数据尚不可用，因为过去 2 天的骑行记录缺少计算所需的有效功率数据。"
+    },
+    {
+      "caseId": "ORCH-12",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 11846,
+      "replyPreview": "你的 FTP 是 220 瓦。关于最近训练负荷，过去 42 天里只有 2 天有数据，且这些数据缺少功率信息，因此无法计算和提供有效的训练负荷趋势。"
+    },
+    {
+      "caseId": "ORCH-13",
+      "round": 1,
+      "pass": false,
+      "detail": "缺工具:search_knowledge_base,get_ride_context 证据形态不符",
+      "execution": "template",
+      "fallback": "TOOLS_ANCHOR_CLARIFY",
+      "elapsedMs": 0,
+      "replyPreview": "你说的「这次」是指最近一次（10月22日）的骑行，还是其他某一次？可以直接告诉我日期。"
+    },
+    {
+      "caseId": "ORCH-13",
+      "round": 2,
+      "pass": false,
+      "detail": "缺工具:search_knowledge_base,get_ride_context 证据形态不符",
+      "execution": "template",
+      "fallback": "TOOLS_ANCHOR_CLARIFY",
+      "elapsedMs": 1,
+      "replyPreview": "你说的「这次」是指最近一次（10月22日）的骑行，还是其他某一次？可以直接告诉我日期。"
+    },
+    {
+      "caseId": "ORCH-13",
+      "round": 3,
+      "pass": false,
+      "detail": "缺工具:search_knowledge_base,get_ride_context 证据形态不符",
+      "execution": "template",
+      "fallback": "TOOLS_ANCHOR_CLARIFY",
+      "elapsedMs": 1,
+      "replyPreview": "你说的「这次」是指最近一次（10月22日）的骑行，还是其他某一次？可以直接告诉我日期。"
+    },
+    {
+      "caseId": "ORCH-14",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 11520,
+      "replyPreview": "根据过去一年的骑行记录，您一共骑行了约162公里。"
+    },
+    {
+      "caseId": "ORCH-14",
+      "round": 2,
+      "pass": false,
+      "detail": "缺工具:get_ride_history 证据形态不符",
+      "execution": "template",
+      "fallback": "MODEL_TIMEOUT",
+      "elapsedMs": 20005,
+      "replyPreview": "对话服务暂时不可用；我不会使用未经验证的结果回答。"
+    },
+    {
+      "caseId": "ORCH-14",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 19492,
+      "replyPreview": "根据过去一年的骑行记录，您总共骑行了约162公里。这期间您完成了4次骑行，最长的一次是10月4日的50公里，最短的是6月26日的25公里。"
+    },
+    {
+      "caseId": "ORCH-15",
+      "round": 1,
+      "pass": false,
+      "detail": "缺工具:get_health_profile",
+      "execution": "template",
+      "fallback": "MODEL_TIMEOUT",
+      "elapsedMs": 20003,
+      "replyPreview": "对话服务暂时不可用；我不会使用未经验证的结果回答。"
+    },
+    {
+      "caseId": "ORCH-15",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "REPAIR_FAILED",
+      "elapsedMs": 13531,
+      "replyPreview": "对话模型输出未通过当前安全校验；已切换为受控回复。"
+    },
+    {
+      "caseId": "ORCH-15",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 11310,
+      "replyPreview": "根据你的健康档案，你的体重是 72 公斤，最大心率是 192 bpm，FTP 是 220 瓦。档案中没有记录身高信息。"
+    },
+    {
+      "caseId": "ORCH-16",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "TOOLS_LOOP_NO_MATCH",
+      "elapsedMs": 10861,
+      "replyPreview": "本轮查询没有返回可引用的数据结果，暂时无法回答这个问题。可以问得更具体一些，例如「距离最远的那次骑行是哪次」。"
+    },
+    {
+      "caseId": "ORCH-16",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "TOOLS_LOOP_NO_MATCH",
+      "elapsedMs": 3017,
+      "replyPreview": "本轮查询没有返回可引用的数据结果，暂时无法回答这个问题。可以问得更具体一些，例如「距离最远的那次骑行是哪次」。"
+    },
+    {
+      "caseId": "ORCH-16",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "TOOLS_LOOP_NO_MATCH",
+      "elapsedMs": 3820,
+      "replyPreview": "本轮查询没有返回可引用的数据结果，暂时无法回答这个问题。可以问得更具体一些，例如「距离最远的那次骑行是哪次」。"
+    },
+    {
+      "caseId": "ORCH-17",
+      "round": 1,
+      "pass": false,
+      "detail": "缺工具:get_ride_history 拒调用:find_ride/INVALID_TOOL_CALL 证据形态不符",
+      "execution": "template",
+      "fallback": "TOOLS_LOOP_INVALID_TOOL_CALL",
+      "elapsedMs": 5040,
+      "replyPreview": "这个查询请求不在当前允许的只读工具范围内，我不能按这种方式查询。可以换成支持的问法，例如「距离最远的那次骑行是哪次」。"
+    },
+    {
+      "caseId": "ORCH-17",
+      "round": 2,
+      "pass": false,
+      "detail": "缺工具:get_ride_history 拒调用:get_ride_history/INVALID_TOOL_CALL 证据形态不符",
+      "execution": "template",
+      "fallback": "TOOLS_LOOP_INVALID_TOOL_CALL",
+      "elapsedMs": 5049,
+      "replyPreview": "这个查询请求不在当前允许的只读工具范围内，我不能按这种方式查询。可以换成支持的问法，例如「距离最远的那次骑行是哪次」。"
+    },
+    {
+      "caseId": "ORCH-17",
+      "round": 3,
+      "pass": false,
+      "detail": "缺工具:get_ride_history 拒调用:get_ride_history/INVALID_TOOL_CALL 证据形态不符",
+      "execution": "template",
+      "fallback": "TOOLS_LOOP_INVALID_TOOL_CALL",
+      "elapsedMs": 4826,
+      "replyPreview": "这个查询请求不在当前允许的只读工具范围内，我不能按这种方式查询。可以换成支持的问法，例如「距离最远的那次骑行是哪次」。"
+    },
+    {
+      "caseId": "ORCH-18",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 15947,
+      "replyPreview": "你10月22日这次骑行的平均心率是150 bpm，心率标准差为7.44 bpm，心率漂移（首末段差值）为-9.77 bpm。心率漂移为负值，意味着骑行后半程心率"
+    },
+    {
+      "caseId": "ORCH-18",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 13648,
+      "replyPreview": "根据你2026年10月22日的骑行数据，心率漂移（即骑行后期心率相对前期的上升幅度）为-9.77 bpm，这意味着心率在骑行后期有所下降。心率漂移是评估有氧耐力"
+    },
+    {
+      "caseId": "ORCH-18",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 21628,
+      "replyPreview": "在2026年10月22日这次骑行中，你的平均心率是150 bpm，心率标准差约为7.44 bpm，心率从骑行前半段到后半段下降了约9.77 bpm。心率漂移（通"
+    },
+    {
+      "caseId": "ORCH-19",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "TOOLS_ANCHOR_CLARIFY",
+      "elapsedMs": 1,
+      "replyPreview": "你说的「这次」是指最近一次（10月22日）的骑行，还是其他某一次？可以直接告诉我日期。"
+    },
+    {
+      "caseId": "ORCH-19",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "TOOLS_ANCHOR_CLARIFY",
+      "elapsedMs": 1,
+      "replyPreview": "你说的「这次」是指最近一次（10月22日）的骑行，还是其他某一次？可以直接告诉我日期。"
+    },
+    {
+      "caseId": "ORCH-19",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "TOOLS_ANCHOR_CLARIFY",
+      "elapsedMs": 1,
+      "replyPreview": "你说的「这次」是指最近一次（10月22日）的骑行，还是其他某一次？可以直接告诉我日期。"
+    },
+    {
+      "caseId": "ORCH-20",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "REPAIR_FAILED",
+      "elapsedMs": 19700,
+      "replyPreview": "对话模型输出未通过当前安全校验；已切换为受控回复。"
+    },
+    {
+      "caseId": "ORCH-20",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "MODEL_TIMEOUT",
+      "elapsedMs": 24712,
+      "replyPreview": "对话服务暂时不可用；我不会使用未经验证的结果回答。"
+    },
+    {
+      "caseId": "ORCH-20",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "REPAIR_FAILED",
+      "elapsedMs": 19739,
+      "replyPreview": "对话模型输出未通过当前安全校验；已切换为受控回复。"
+    }
+  ]
+}

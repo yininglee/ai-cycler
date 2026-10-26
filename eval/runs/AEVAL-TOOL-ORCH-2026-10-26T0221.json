@@ -1,0 +1,95 @@
+{
+  "datasetId": "AEVAL-TOOL-ORCHESTRATION",
+  "repeat": 2,
+  "total": 2,
+  "passed": 2,
+  "avgElapsedMs": 15891,
+  "slowestElapsedMs": 16027,
+  "promptVersion": "ride-chat-prompt-v0.2.7",
+  "results": [
+    {
+      "caseId": "ORCH-08",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "repaired",
+      "fallback": "-",
+      "elapsedMs": 16027,
+      "replyPreview": "根据你最近一次骑行的路线数据，爬坡距离约为3.3公里，平路距离约为46.7公里，下坡距离为0公里。",
+      "steps": [
+        "get_route_overview:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-08",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "repaired",
+      "fallback": "-",
+      "elapsedMs": 15754,
+      "replyPreview": "根据路线概要，你最近一次骑行的爬坡路段约为 3333 米，平路路段约为 46667 米，没有下坡路段。",
+      "steps": [
+        "get_route_overview:completed"
+      ]
+    }
+  ],
+  "timings": [
+    {
+      "caseId": "ORCH-08",
+      "round": 1,
+      "ok": true,
+      "headersMs": 4050,
+      "bodyMs": 1,
+      "totalMs": 4051
+    },
+    {
+      "caseId": "ORCH-08",
+      "round": 1,
+      "ok": true,
+      "headersMs": 6166,
+      "bodyMs": 0,
+      "totalMs": 6166
+    },
+    {
+      "caseId": "ORCH-08",
+      "round": 1,
+      "ok": true,
+      "headersMs": 5798,
+      "bodyMs": 1,
+      "totalMs": 5799
+    },
+    {
+      "caseId": "ORCH-08",
+      "round": 2,
+      "ok": true,
+      "headersMs": 3403,
+      "bodyMs": 0,
+      "totalMs": 3403
+    },
+    {
+      "caseId": "ORCH-08",
+      "round": 2,
+      "ok": true,
+      "headersMs": 6822,
+      "bodyMs": 0,
+      "totalMs": 6822
+    },
+    {
+      "caseId": "ORCH-08",
+      "round": 2,
+      "ok": true,
+      "headersMs": 5521,
+      "bodyMs": 0,
+      "totalMs": 5521
+    }
+  ],
+  "timingSummary": {
+    "calls": 6,
+    "headersP50Ms": 5798,
+    "headersP90Ms": 6822,
+    "bodyP50Ms": 0,
+    "bodyP90Ms": 1,
+    "failByPhase": {}
+  }
+}

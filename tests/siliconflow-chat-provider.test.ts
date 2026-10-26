@@ -78,7 +78,8 @@ test("SiliconFlow chat provider sends the code-hosted prompt with a de-identifie
   assert.equal(body.messages.length, 2);
   assert.equal(body.messages[0]?.role, "system");
   assert.equal(body.messages[0]?.content, CHAT_WORKFLOW_SYSTEM_PROMPT);
-  assert.equal(CHAT_WORKFLOW_PROMPT_VERSION, "ride-chat-prompt-v0.1.7");
+  // AGT-B0/B3/B4 预期变更：Prompt 升 v0.2.0（输出合同 v0.2 + 数字等价类 + 三路由 + 预算 4/5 + 能力清单）。
+  assert.equal(CHAT_WORKFLOW_PROMPT_VERSION, "ride-chat-prompt-v0.2.7");
   const userContent = body.messages[1]?.content ?? "";
   assert.match(userContent, /<chat_request>/);
   assert.match(userContent, /<repair_instruction>\n\n<\/repair_instruction>/);
@@ -154,7 +155,7 @@ test("SiliconFlow chat errors map to stable chat error codes", async () => {
 // CHAT-17 P5：L2b 循环投影与工具调用请求输出——chat_request 随行 toolCatalog/toolResults
 // （合同不变）；ride-chat-tool-call-v0.1 是合法输出（循环首轮），不再判无效。
 test("SiliconFlow chat carries L2b toolCatalog/toolResults and repair turns (CHAT-17)", async () => {
-  const toolCallRequest = { schemaVersion: "ride-chat-tool-call-v0.1", calls: [{ tool: "find_ride", input: { metric: "distanceM", mode: "max" } }] };
+  const toolCallRequest = { schemaVersion: "ride-chat-tool-call-v0.1", calls: [{ tool: "find_ride", purpose: "在窗口内检索某一条骑行", input: { metric: "distanceM", mode: "max" } }] };
   const requests: RequestInit[] = [];
   const client = new SiliconFlowChatProvider(config, async (_url, init) => {
     requests.push(init ?? {});
@@ -168,7 +169,7 @@ test("SiliconFlow chat carries L2b toolCatalog/toolResults and repair turns (CHA
     toolCatalog: {
       schemaVersion: "ride-chat-tool-catalog-v0.1",
       anchorRideId: "anchor-ride",
-      tools: [{ tool: "find_ride", input: { metric: ["distanceM"], mode: ["max", "min", "threshold"] } }],
+      tools: [{ tool: "find_ride", purpose: "在窗口内检索某一条骑行", input: { metric: ["distanceM"], mode: ["max", "min", "threshold"] } }],
     },
     toolResults: [{
       call: 1,
@@ -199,4 +200,43 @@ test("SiliconFlow chat carries L2b toolCatalog/toolResults and repair turns (CHA
   assert.equal(request.toolResults?.length, 1);
   assert.equal(request.toolResults?.[0]?.call, 1);
   assert.doesNotMatch(JSON.stringify(request), /ownerId|chat-token/);
+});
+
+// AGT-B5（227s 预算失效修复）：provider 超时的 race 兜底。实测编排第三轮 ORCH-08 r1
+// 单次 provider 调用跑了 ~207 秒仍"成功"返回——abort 信号在某种连接状态下概率性失效。
+// 本地复现实验证明常规场景 abort 生效，因此不能依赖单一机制：race 到点必然抛 MODEL_TIMEOUT。
+test("provider 超时有 race 兜底：挂起的 fetch 在 timeoutMs 抛 MODEL_TIMEOUT（不依赖 abort 语义）", async () => {
+  const config = readSiliconFlowChatProviderConfig({ SILICONFLOW_API_TOKEN: "test-token", CHAT_MODEL_ENABLED: "true" });
+  assert.ok(config);
+  const provider = new SiliconFlowChatProvider(
+    { ...config, timeoutMs: 120 },
+    // fetch 永不 resolve，也完全忽略 signal——模拟 abort 失效的连接状态
+    (() => new Promise<Response>(() => {})) as unknown as typeof fetch,
+  );
+  const startedAt = Date.now();
+  await assert.rejects(
+    provider.run({ requestId: "hang", agentVersion: "ride-chat-agent-v0.1", route: "kb_qa", text: "hi" }),
+    (error: Error & { code?: string }) => error.code === "MODEL_TIMEOUT",
+  );
+  const elapsed = Date.now() - startedAt;
+  assert.ok(elapsed < 500, `挂起 fetch 应在 ~120ms 被掐断，实际 ${elapsed}ms（227s 预算失效的回归）`);
+});
+
+test("provider 超时 race 兜底覆盖 body 读取阶段（慢速滴流响应体）", async () => {
+  const config = readSiliconFlowChatProviderConfig({ SILICONFLOW_API_TOKEN: "test-token", CHAT_MODEL_ENABLED: "true" });
+  assert.ok(config);
+  const provider = new SiliconFlowChatProvider(
+    { ...config, timeoutMs: 120 },
+    // headers 立即返回，body 永不结束
+    (async () => new Response(new ReadableStream({ start() {} }), {
+      headers: { "content-type": "application/json" },
+    })) as unknown as typeof fetch,
+  );
+  const startedAt = Date.now();
+  await assert.rejects(
+    provider.run({ requestId: "slow-body", agentVersion: "ride-chat-agent-v0.1", route: "kb_qa", text: "hi" }),
+    (error: Error & { code?: string }) => error.code === "MODEL_TIMEOUT",
+  );
+  const elapsed = Date.now() - startedAt;
+  assert.ok(elapsed < 500, `挂起 body 应在 ~120ms 被掐断，实际 ${elapsed}ms`);
 });

@@ -1,0 +1,46 @@
+{
+  "schemaVersion": "ride-chat-eval-manifest-v0.1",
+  "datasetId": "AEVAL-M3-CHAT",
+  "casesFile": "cases.json",
+  "casesSha256": "9a837ccc74c4b69d4533daa28d0eacd07a863011e9b4b503a451dea4d933f261",
+  "caseCount": 34,
+  "splitCounts": {
+    "dev": 2,
+    "regression": 25,
+    "blind": 4,
+    "red-team": 3
+  },
+  "version": "v0.7",
+  "supersedes": "eval/ride-chat-v0.1/manifest.json (v0.6)",
+  "note": "AGT-B5：工具面 4→9、输出合同 v0.1→v0.2；cases 继承 v0.6 未改动，仅升 versionMatrix 与能力面声明。P7：本版起旧窗口相关结论全部 supersede。",
+  "frozenAt": "2026-10-24",
+  "versionMatrix": {
+    "agentSchemaVersion": "ride-chat-agent-v0.1",
+    "routingSchemaVersion": "chat-routing-v0.2",
+    "outputSchemaVersion": "ride-chat-output-v0.2",
+    "toolCallSchemaVersion": "ride-chat-tool-call-v0.1",
+    "toolScope": "get_ride_context,get_capabilities,compare_rides,find_ride,get_health_profile,get_training_load,search_knowledge_base,get_ride_history,get_route_overview",
+    "promptVersion": "ride-chat-prompt-v0.2.3",
+    "provider": "siliconflow:deepseek-ai/DeepSeek-V3.2"
+  },
+  "allowedTools": [
+    "get_ride_context",
+    "get_capabilities",
+    "compare_rides",
+    "find_ride",
+    "get_health_profile",
+    "get_training_load",
+    "search_knowledge_base",
+    "get_ride_history",
+    "get_route_overview"
+  ],
+  "forbiddenCapabilities": [
+    "training_plan",
+    "training_supervision",
+    "write_tool",
+    "multi_agent"
+  ],
+  "frozenApprovedAt": "2026-10-26",
+  "frozenApprovedBy": "user",
+  "freezeNote": "B5 退出条件达成：preflight 全过 + SHA 锁定 + 用户批准冻结（2026-10-26）。此后任何 cases/manifest 变更须开新版本与全新 Run（P7 制度）。"
+}

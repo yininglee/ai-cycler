@@ -216,11 +216,10 @@ test("v0.2 route enum accepts the four task-cluster routes and summary slots rou
 });
 
 test("the four task-cluster routes are deterministic placeholders with zero model calls (AGT-A1)", () => {
+  // AGT-B4 预期变更：只剩两个占位（训练计划 / 训练监督，F/G 承接）。
   for (const [route, reasonCode] of [
     ["training_plan", "TRAINING_PLAN"],
     ["training_supervision", "TRAINING_SUPERVISION"],
-    ["level_assessment", "LEVEL_ASSESSMENT"],
-    ["kb_qa", "KB_QA"],
   ] as const) {
     const decision = makeChatDecision(route, "none", reasonCode, 10);
     assert.deepEqual({ route: decision.route, reasonCode: decision.reasonCode, allowModel: decision.allowModel, action: decision.action }, {
@@ -228,6 +227,20 @@ test("the four task-cluster routes are deterministic placeholders with zero mode
       reasonCode,
       allowModel: false,
       action: "deterministic_reply",
+    }, route);
+  }
+});
+
+test("AGT-B4：kb_qa / level_assessment 升级为 L2b 循环真链路（allowModel + tool_then_model）", () => {
+  for (const [route, reasonCode] of [
+    ["kb_qa", "KB_QA"],
+    ["level_assessment", "LEVEL_ASSESSMENT"],
+  ] as const) {
+    const decision = makeChatDecision(route, "none", reasonCode, 10);
+    assert.deepEqual({ route: decision.route, allowModel: decision.allowModel, action: decision.action }, {
+      route,
+      allowModel: true,
+      action: "tool_then_model",
     }, route);
   }
 });

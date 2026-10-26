@@ -1,0 +1,50 @@
+{
+  "datasetId": "AEVAL-CHAT-BOUNDARY",
+  "repeat": 3,
+  "total": 3,
+  "passed": 3,
+  "avgElapsedMs": 19564,
+  "slowestElapsedMs": 22908,
+  "promptVersion": "ride-chat-prompt-v0.2.3",
+  "results": [
+    {
+      "caseId": "BND-K01",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 19211,
+      "replyPreview": "乳酸阈（Lactate Threshold, LT）是运动强度的一个关键生理转折点，指血乳酸浓度开始急剧上升的运动强度。在骑行训练中，它通常对应着乳酸阈值心率（",
+      "steps": [
+        "search_knowledge_base:completed"
+      ]
+    },
+    {
+      "caseId": "BND-K01",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 16572,
+      "replyPreview": "乳酸阈是运动科学中的一个关键概念，指身体清除血液中乳酸的速度与产生速度达到平衡时的强度。在骑行训练中，它通常对应着乳酸阈值心率或功能性阈值功率，是划分有氧与无氧",
+      "steps": [
+        "search_knowledge_base:completed"
+      ]
+    },
+    {
+      "caseId": "BND-K01",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 22908,
+      "replyPreview": "乳酸阈是运动强度的一个关键生理转折点。当运动强度超过这个阈值时，肌肉中乳酸的产生速度会超过身体的清除速度，导致乳酸在血液中快速累积，这会显著加剧疲劳感，使高强度",
+      "steps": [
+        "search_knowledge_base:completed"
+      ]
+    }
+  ]
+}

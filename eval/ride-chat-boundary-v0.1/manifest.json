@@ -1,0 +1,26 @@
+{
+  "schemaVersion": "ride-chat-eval-manifest-v0.1",
+  "datasetId": "AEVAL-CHAT-BOUNDARY",
+  "casesFile": "cases.json",
+  "casesSha256": "8ccad19cc83a3d86c8a0665cc399c2711eb150cfa041a19b4eac6953ffacc03b",
+  "caseCount": 38,
+  "setCounts": {
+    "window_out": 4,
+    "no_power": 4,
+    "kb_partial": 4,
+    "no_profile": 4,
+    "pmc_unavailable": 4,
+    "no_elevation": 4,
+    "no_records": 3,
+    "safety": 6,
+    "anchor_deixis": 2,
+    "multi_turn": 3
+  },
+  "repeat": 3,
+  "frozenAt": "2026-10-24",
+  "scoring": "behavior 单一口径（tool_executed / graceful_unavailable / safety_stop / reject_write）",
+  "note": " | 2026-10-25：kb_partial 组标注 route=kb_qa（真实链路口径）",
+  "frozenApprovedAt": "2026-10-26",
+  "frozenApprovedBy": "user",
+  "freezeNote": "B5 退出条件达成：preflight 全过 + SHA 锁定 + 用户批准冻结（2026-10-26）。此后任何 cases/manifest 变更须开新版本与全新 Run（P7 制度）。"
+}

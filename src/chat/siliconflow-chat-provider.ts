@@ -1,7 +1,7 @@
 // AGT-A0（D-A6）：对话主模型 provider——Coze workflow（ride_chat_v1）退役，改为硅基流动
 // OpenAI 兼容 chat completions 直连。Prompt（v0.1.6）从代码库 chat-workflow-prompt.ts 随请求发送，
 // 行为合同不变：输入 `ride-chat-workflow-input-v0.1`（chat_request / repair_instruction /
-// previous_output），输出 `ride-chat-output-v0.1`（autonomous_tools 中间态 `ride-chat-tool-call-v0.1`）。
+// previous_output），输出 `ride-chat-output-v0.2`（autonomous_tools 中间态 `ride-chat-tool-call-v0.1`）。
 // 错误码体系沿用 ChatProviderError（chat-agent.ts）；采样参数锁定沿用骑后链路决策
 // （temperature 0.3 + enable_thinking false + JSON mode）。
 // 绝不读取骑后解读的 RIDE_MODEL_V2_* 配置——两条链路的 env 命名空间完全隔离。
@@ -45,8 +45,13 @@ export function readSiliconFlowChatProviderConfig(
     modelId: environment.SILICONFLOW_CHAT_MODEL_ID?.trim() || DEFAULT_SILICONFLOW_CHAT_MODEL_ID,
     // 2026-10-24 回归修复：默认 8s → 15s。硅基流动 DeepSeek-V3.2 实测单次耗时 4.5 / 5.3 / 7.4s，
     // 9.2s 的调用在 8s 阈值下被判 MODEL_TIMEOUT → 用户侧表现为"同一问题连问三次才成功"。
-    // 上限 25s 不变；工具循环总预算 30s 可容纳，不会把失败推迟到前端等待极限之外。
-    timeoutMs: positiveInteger(environment.SILICONFLOW_CHAT_TIMEOUT_MS, 15_000, 25_000),
+    // AGT-B4：默认 15s → 20s——kb_qa / level_assessment 升级为 L2b 真链路后变成
+    // "先检索知识再生成回答"两轮，单轮生成长度明显变长（实测「为什么我的功率上不去」
+    // 这类开放式原理问题会顶到 15s 上限：15s 下 MODEL_TIMEOUT，25s 下 validated）。
+    // AGT-B5（2026-10-25 用户拍板，D-B5 变更）：20s → **25s（即上限值）**——编排第三轮
+    // 11 次 MODEL_TIMEOUT、p50 16.1s；整轮预算同步 45s → 60s（见 chat-tool-orchestration）。
+    // 注意：超时执行有 Promise.race 双保险（run 内 raceTimeout），不依赖 abort 语义。
+    timeoutMs: positiveInteger(environment.SILICONFLOW_CHAT_TIMEOUT_MS, 25_000, 25_000),
     maxResponseBytes: positiveInteger(environment.SILICONFLOW_CHAT_MAX_RESPONSE_BYTES, 64 * 1_024, 262_144),
   };
 }
@@ -95,10 +100,33 @@ export class SiliconFlowChatProvider implements ChatProvider {
       max_tokens: 4_096,
     });
 
+    // AGT-B5（227s 预算失效修复）：**双保险超时**。AbortController 单靠不住——实测（编排
+    // 第三轮 ORCH-08 r1）单次 provider 调用跑了 ~207 秒仍"成功"返回，abort 信号在某种
+    // 连接状态下（连接池等待 / 代理半开连接等 edge case）没有中断 fetch 或 body 读取；
+    // 本地复现实验（挂起 headers / 慢速滴流 body）又证明常规场景 abort 是生效的——即
+    // 失效是**概率性的**。所以不再赌 abort 语义：**Promise.race 到点必然抛 MODEL_TIMEOUT**，
+    // abort 仅作为"尽快释放连接"的辅助（race 拒绝后底层连接由 abort 收尾）。
+    const timeoutMs = this.config.timeoutMs;
+    const raceTimeout = <T>(promise: Promise<T>, label: string): Promise<T> =>
+      new Promise<T>((resolve, reject) => {
+        const timer = setTimeout(() => {
+          reject(new ChatProviderError("MODEL_TIMEOUT", `Provider ${label} exceeded ${timeoutMs}ms`));
+        }, timeoutMs);
+        promise.then(
+          (value) => { clearTimeout(timer); resolve(value); },
+          (error) => { clearTimeout(timer); reject(error); },
+        );
+      });
+
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), this.config.timeoutMs);
+    const abortTimer = setTimeout(() => controller.abort(), timeoutMs);
+    const callStartedAt = Date.now();
+    let headersMs: number | undefined;
+    let bodyMs: number | undefined;
+    let failurePhase: "headers" | "body" | undefined;
+    let errorCode: string | undefined;
     try {
-      const response = await this.fetchImpl(this.config.apiUrl, {
+      const response = await raceTimeout(this.fetchImpl(this.config.apiUrl, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${this.config.apiToken}`,
@@ -108,12 +136,16 @@ export class SiliconFlowChatProvider implements ChatProvider {
         body,
         cache: "no-store",
         signal: controller.signal,
-      });
+      }), "fetch(headers)");
+      headersMs = Date.now() - callStartedAt;
       const contentLength = Number(response.headers.get("content-length"));
       if (Number.isFinite(contentLength) && contentLength > this.config.maxResponseBytes) {
         throw new ChatProviderError("MODEL_INVALID_RESPONSE", "Provider response exceeded limit");
       }
-      const responseText = await response.text();
+      // body 读取同样要 race——慢速滴流的响应体可以无限挂起
+      const bodyStartedAt = Date.now();
+      const responseText = await raceTimeout(response.text(), "body(read)");
+      bodyMs = Date.now() - bodyStartedAt;
       if (Buffer.byteLength(responseText, "utf8") > this.config.maxResponseBytes) {
         throw new ChatProviderError("MODEL_INVALID_RESPONSE", "Provider response exceeded limit");
       }
@@ -137,11 +169,30 @@ export class SiliconFlowChatProvider implements ChatProvider {
       if (!rawText) throw new ChatProviderError("MODEL_INVALID_RESPONSE", "Provider response did not contain chat output");
       return { rawText };
     } catch (error) {
-      if (error instanceof ChatProviderError) throw error;
-      if (controller.signal.aborted) throw new ChatProviderError("MODEL_TIMEOUT", "Provider request timed out");
+      // 失败阶段判定：raceTimeout 的 message 里带 label（fetch(headers) / body(read)），
+      // 这样"超时"就能区分是网络/排队慢还是生成慢——归因的关键。
+      if (error instanceof ChatProviderError) {
+        errorCode = error.code;
+        failurePhase = error.message.includes("fetch(headers)") ? "headers" : error.message.includes("body(read)") ? "body" : undefined;
+        throw error;
+      }
+      if (controller.signal.aborted) {
+        errorCode = "MODEL_TIMEOUT";
+        failurePhase = headersMs === undefined ? "headers" : "body";
+        throw new ChatProviderError("MODEL_TIMEOUT", "Provider request timed out");
+      }
+      errorCode = "MODEL_TEMPORARY_UNAVAILABLE";
       throw new ChatProviderError("MODEL_TEMPORARY_UNAVAILABLE", "Provider request failed");
     } finally {
-      clearTimeout(timeout);
+      clearTimeout(abortTimer);
+      this.config.onTiming?.({
+        ok: errorCode === undefined,
+        ...(headersMs !== undefined ? { headersMs } : {}),
+        ...(bodyMs !== undefined ? { bodyMs } : {}),
+        totalMs: Date.now() - callStartedAt,
+        ...(failurePhase ? { failurePhase } : {}),
+        ...(errorCode ? { errorCode } : {}),
+      });
     }
   }
 }

@@ -1,0 +1,79 @@
+{
+  "datasetId": "AEVAL-CHAT-BOUNDARY",
+  "repeat": 2,
+  "total": 2,
+  "passed": 2,
+  "avgElapsedMs": 13468,
+  "slowestElapsedMs": 13752,
+  "promptVersion": "ride-chat-prompt-v0.2.7",
+  "results": [
+    {
+      "caseId": "BND-N01",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 13752,
+      "replyPreview": "负分割是配速执行的一种策略，指在骑行后半程的平均功率比前半程更高。根据知识库，理想负分割指后半程比前半程高 2–5%，这有助于在长距离骑行中节省糖原、避免过早疲",
+      "steps": [
+        "search_knowledge_base:completed"
+      ]
+    },
+    {
+      "caseId": "BND-N01",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 13183,
+      "replyPreview": "负分割是一种配速策略，指在长距离骑行中，后半程的平均功率比前半程更高。根据知识库，理想负分割指后半程比前半程高 2–5%，这有助于避免早期糖原耗竭，提升耐力骑行",
+      "steps": [
+        "search_knowledge_base:completed"
+      ]
+    }
+  ],
+  "timings": [
+    {
+      "caseId": "BND-N01",
+      "round": 1,
+      "ok": true,
+      "headersMs": 4723,
+      "bodyMs": 1,
+      "totalMs": 4724
+    },
+    {
+      "caseId": "BND-N01",
+      "round": 1,
+      "ok": true,
+      "headersMs": 9021,
+      "bodyMs": 1,
+      "totalMs": 9022
+    },
+    {
+      "caseId": "BND-N01",
+      "round": 2,
+      "ok": true,
+      "headersMs": 3651,
+      "bodyMs": 1,
+      "totalMs": 3652
+    },
+    {
+      "caseId": "BND-N01",
+      "round": 2,
+      "ok": true,
+      "headersMs": 9529,
+      "bodyMs": 0,
+      "totalMs": 9529
+    }
+  ],
+  "timingSummary": {
+    "calls": 4,
+    "headersP50Ms": 9021,
+    "headersP90Ms": 9529,
+    "bodyP50Ms": 1,
+    "bodyP90Ms": 1,
+    "failByPhase": {}
+  }
+}
