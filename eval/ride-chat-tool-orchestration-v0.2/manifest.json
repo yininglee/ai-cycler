@@ -22,8 +22,10 @@
     "loopBudget": "per-round 4 / total 5 / provider 6 / 45s"
   },
   "scoring": "requiredTools 齐全 + 无 forbiddenTools + 调用参数合法（不比序列，D-B8）",
-  "freezeNote": "v0.2：ORCH-17 期望改为 requiredAnyOf（两条合法路径），其余 20 例与 v0.1 完全一致。待用户批准冻结。",
+  "freezeNote": "B5 收口：ORCH-17 判分口径修正（单路径 requiredTools → 双路径 requiredAnyOf），其余 20 例与 v0.1 逐字段一致。用户 2026-10-26 批准冻结。P7：此后任何 cases/manifest 变更须开新版本与全新 Run。",
   "version": "v0.2",
   "supersedes": "eval/ride-chat-tool-orchestration-v0.1",
-  "note": "AGT-B5：ORCH-17 判分口径修正（一条路径 → 两条合法路径）"
+  "note": "AGT-B5：ORCH-17 判分口径修正（一条路径 → 两条合法路径）",
+  "frozenApprovedAt": "2026-10-26",
+  "frozenApprovedBy": "user"
 }

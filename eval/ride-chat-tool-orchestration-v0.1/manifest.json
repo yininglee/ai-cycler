@@ -24,5 +24,8 @@
   "scoring": "requiredTools 齐全 + 无 forbiddenTools + 调用参数合法（不比序列，D-B8）",
   "frozenApprovedAt": "2026-10-26",
   "frozenApprovedBy": "user",
-  "freezeNote": "B5 退出条件达成：preflight 全过 + SHA 锁定 + 用户批准冻结（2026-10-26）。此后任何 cases/manifest 变更须开新版本与全新 Run（P7 制度）。"
+  "freezeNote": "B5 退出条件达成：preflight 全过 + SHA 锁定 + 用户批准冻结（2026-10-26）。此后任何 cases/manifest 变更须开新版本与全新 Run（P7 制度）。",
+  "supersededBy": "eval/ride-chat-tool-orchestration-v0.2",
+  "supersededAt": "2026-10-26",
+  "supersedeReason": "ORCH-17 期望只认 get_ride_history 单路径，实测模型用 find_ride(max) 同样答对 → 口径过僵。v0.2 修正。本版冻结记录保留作历史，不再作为 B5 背书。"
 }
