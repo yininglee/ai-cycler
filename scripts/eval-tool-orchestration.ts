@@ -351,6 +351,7 @@ async function main() {
       const startedAt = Date.now();
       let outcome: { pass: boolean; detail: string } = { pass: false, detail: "未执行" };
       let execution = "-"; let fallback = "-"; let replyPreview = ""; let steps: string[] = [];
+      let rateLimitRetries = 0;
       // turns → 会话摘要：让"这次/那次"能走链点继承（AGT-B5 多轮用例）
       const turns = "turns" in item && item.turns ? item.turns : [];
       const summaries = turns.map((turn) => ({
@@ -362,7 +363,12 @@ async function main() {
           : {}),
       }));
       try {
-        const result = await runChatAgent({
+        // AGT-B5（2026-10-26 实测教训）：**限流要退避重试，不能判失败**。
+        // V4.1-Flash 单次 1.1s，sleep 1.5s 时实际间隔约 2.6s → 撞平台限流，
+        // 一度把编排集假性打到 22/63 = 34.9%（全是 MODEL_RATE_LIMITED）。
+        // 真实用户不会 2.6s 连问 189 遍，所以这是**评测节奏问题，不是产品问题**。
+        // 退避 8s / 16s / 24s，最多 3 次；仍限流则照实记录（报告里能区分）。
+        const invoke = () => runChatAgent({
           text: item.input,
           decision: decideFor(item),
           provider,
@@ -371,6 +377,18 @@ async function main() {
           requestId: `${item.caseId}-r${round}`,
           ...(summaries.length ? { summaries } : {}),
         });
+        const MAX_RATE_LIMIT_RETRIES = 3;
+        let result = await invoke();
+        while (result.fallbackCode === "MODEL_RATE_LIMITED" && rateLimitRetries < MAX_RATE_LIMIT_RETRIES) {
+          rateLimitRetries += 1;
+          const waitMs = 8_000 * rateLimitRetries;
+          console.log(`  ↻ ${item.caseId} r${round} 命中限流，退避 ${waitMs}ms 后重试（${rateLimitRetries}/${MAX_RATE_LIMIT_RETRIES}）`);
+          await sleep(waitMs);
+          result = await invoke();
+        }
+        if (rateLimitRetries > 0) {
+          console.log(`  ↺ ${item.caseId} r${round} 限流重试 ${rateLimitRetries} 次 → ${result.fallbackCode === "MODEL_RATE_LIMITED" ? "仍限流（如实记录）" : "已通过"}`);
+        }
         execution = result.execution;
         fallback = result.fallbackCode ?? "-";
         replyPreview = (result.reply ?? "").slice(0, 80);
@@ -382,7 +400,7 @@ async function main() {
         outcome = { pass: false, detail: `异常: ${(error as Error).message}` };
       }
       const elapsedMs = Date.now() - startedAt;
-      results.push({ caseId: item.caseId, round, pass: outcome.pass, detail: outcome.detail, execution, fallback, elapsedMs, replyPreview, steps });
+      results.push({ caseId: item.caseId, round, pass: outcome.pass, detail: outcome.detail, execution, fallback, elapsedMs, replyPreview, steps, ...(rateLimitRetries > 0 ? { rateLimitRetries } : {}) });
       const mark = outcome.pass ? "✓" : "✗";
       console.log(`  ${mark} ${item.caseId} r${round} ${elapsedMs}ms exec=${execution} fb=${fallback}${outcome.detail ? ` | ${outcome.detail}` : ""}`);
       await sleep(sleepMs);

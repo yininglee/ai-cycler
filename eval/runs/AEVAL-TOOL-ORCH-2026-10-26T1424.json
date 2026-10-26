@@ -1,0 +1,50 @@
+{
+  "datasetId": "AEVAL-TOOL-ORCHESTRATION",
+  "repeat": 1,
+  "total": 1,
+  "passed": 1,
+  "avgElapsedMs": 3501,
+  "slowestElapsedMs": 3501,
+  "promptVersion": "ride-chat-prompt-v0.2.7",
+  "results": [
+    {
+      "caseId": "ORCH-01",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 3501,
+      "replyPreview": "10 月 24 日这次骑行的平均功率是 230 W，标准化功率为 244 W。不过这两项功率数据被标记为记录异常，数值可能存在偏差，建议结合其他指标一起参考。",
+      "steps": [
+        "get_ride_context:completed"
+      ]
+    }
+  ],
+  "timings": [
+    {
+      "caseId": "ORCH-01",
+      "round": 1,
+      "ok": true,
+      "headersMs": 1351,
+      "bodyMs": 2,
+      "totalMs": 1353
+    },
+    {
+      "caseId": "ORCH-01",
+      "round": 1,
+      "ok": true,
+      "headersMs": 2128,
+      "bodyMs": 1,
+      "totalMs": 2129
+    }
+  ],
+  "timingSummary": {
+    "calls": 2,
+    "headersP50Ms": 2128,
+    "headersP90Ms": 2128,
+    "bodyP50Ms": 2,
+    "bodyP90Ms": 2,
+    "failByPhase": {}
+  }
+}
