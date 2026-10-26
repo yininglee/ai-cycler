@@ -41,7 +41,9 @@ export const CHAT_TOOL_ORCHESTRATION_MAX_SUMMARIES = 6;
 export const CHAT_TOOL_LOOP_MAX_TOOL_CALLS = 5;
 export const CHAT_TOOL_LOOP_MAX_CALLS_PER_ROUND = 4;
 export const CHAT_TOOL_LOOP_MAX_PROVIDER_CALLS = 6;
-export const CHAT_TOOL_LOOP_TIMEOUT_MS = 60_000;
+// AGT-B5（2026-10-26）：60s → 90s——单次超时提到 35s 后，复合问法需要 2~3 次调用，
+  // 60s 会先卡住循环预算（这也是"工具调了但整轮超时"的来源之一）。
+  export const CHAT_TOOL_LOOP_TIMEOUT_MS = 90_000;
 
 // CHAT-17 P3：L2b 工具调用协议——模型在循环中输出的工具请求 Schema
 // （最终回答仍用 ride-chat-output-v0.2；两者由编排层区分解析）。

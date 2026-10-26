@@ -54,7 +54,9 @@ test("AGT-B3 预算：D-B5 四个值落地，且单轮上限与累计预算已�
   assert.equal(CHAT_TOOL_LOOP_MAX_CALLS_PER_ROUND, 4);
   assert.equal(CHAT_TOOL_LOOP_MAX_PROVIDER_CALLS, 6);
   // AGT-B5 预期变更（2026-10-25 用户拍板）：45s → 60s（单次 25s×2 轮不再被整轮截断）
-  assert.equal(CHAT_TOOL_LOOP_TIMEOUT_MS, 60_000);
+  // AGT-B5（2026-10-26）：60s → 90s——单次超时提到 35s 后复合问法需要 2~3 次调用，
+  // 60s 会先撞循环预算。改这一行属于预期变更，依据见 provider 超时上限注释。
+  assert.equal(CHAT_TOOL_LOOP_TIMEOUT_MS, 90_000);
   // 拆分后的独立性：单轮上限必须 ≤ 累计预算，否则"一轮就超预算"。
   assert.ok(CHAT_TOOL_LOOP_MAX_CALLS_PER_ROUND <= CHAT_TOOL_LOOP_MAX_TOOL_CALLS);
 });

@@ -51,7 +51,11 @@ export function readSiliconFlowChatProviderConfig(
     // AGT-B5（2026-10-25 用户拍板，D-B5 变更）：20s → **25s（即上限值）**——编排第三轮
     // 11 次 MODEL_TIMEOUT、p50 16.1s；整轮预算同步 45s → 60s（见 chat-tool-orchestration）。
     // 注意：超时执行有 Promise.race 双保险（run 内 raceTimeout），不依赖 abort 语义。
-    timeoutMs: positiveInteger(environment.SILICONFLOW_CHAT_TIMEOUT_MS, 25_000, 25_000),
+    // AGT-B5（2026-10-26 实测修正）：单次超时上限 25s → 40s。证据：评测内成功调用的
+    // headers p50 9.0s / p90 22.1s / max 24.9s——25s 紧贴分布尾部，一批"正常但偏慢"的
+    // 调用被判超时（16 次失败全是 25.00s 到点，无一次 TCP 超时），又被误读成"网络问题"。
+    // 默认值仍 25s（不改线上行为）；评测/本地用 env 设 35s。
+    timeoutMs: positiveInteger(environment.SILICONFLOW_CHAT_TIMEOUT_MS, 25_000, 40_000),
     maxResponseBytes: positiveInteger(environment.SILICONFLOW_CHAT_MAX_RESPONSE_BYTES, 64 * 1_024, 262_144),
   };
 }

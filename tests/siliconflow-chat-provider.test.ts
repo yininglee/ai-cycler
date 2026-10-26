@@ -111,7 +111,10 @@ test("SiliconFlow chat configuration is gated by the chat flag, defaults to the 
   assert.ok(loaded);
   assert.equal(loaded.apiUrl, "https://api.siliconflow.cn/v1/chat/completions");
   assert.equal(loaded.modelId, DEFAULT_SILICONFLOW_CHAT_MODEL_ID);
-  assert.equal(loaded.timeoutMs, 25_000);
+  // AGT-B5：本行测的是**上限钳制**（输入 99999 → 钳到上限）。上限从 25s 提到 40s，
+  // 理由：实测服务端 headers p90 22.1s / max 24.9s，25s 会把一批"正常但偏慢"的调用
+  // 误判为 MODEL_TIMEOUT（16 次失败全是 25.00s 到点，无一次 TCP 超时）。
+  assert.equal(loaded.timeoutMs, 40_000);
   assert.equal(readSiliconFlowChatProviderConfig({
     CHAT_MODEL_ENABLED: "true",
     SILICONFLOW_API_TOKEN: "chat-token",
