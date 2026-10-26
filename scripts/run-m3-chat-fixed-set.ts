@@ -36,7 +36,7 @@ import type { ServerEnvironment } from "../src/ai/coze-workflow-error.ts";
 // 锚点（脚本化 Provider 确定性注入，真实模型无法稳定触发预算边界）、Demo 无模型降级。
 //
 // 与 app/api/chat/route.ts 同构的完整链路（网关 → active 分类器路由 → 工具/L2b 循环 → 真实 provider
-// → 输出校验），逐条执行 eval/ride-chat-v0.1/cases.json 冻结的 34 条固定集用例并按冻结期望断言：
+// → 输出校验），逐条执行 eval/ride-chat-v0.7/cases.json 冻结的 34 条固定集用例并按冻结期望断言：
 // - G1-C：路由/红线模板/澄清/聚合/能力缺口全部零模型直答（真实分类器接管下复核）；
 // - G2-C：只读工具范围（单工具 + L2b 循环步骤）、锚点解析（显式日期/序数/指涉澄清）、owner 隔离探针；
 // - G3-C：模型路径输出必须通过 ride-chat-output-v0.1 校验（validated/repaired），一次修复边界；
@@ -90,13 +90,13 @@ type FixedCase = {
   };
 };
 
-const manifest = JSON.parse(readFileSync("eval/ride-chat-v0.1/manifest.json", "utf8")) as {
+const manifest = JSON.parse(readFileSync("eval/ride-chat-v0.7/manifest.json", "utf8")) as {
   datasetId: string;
   casesSha256: string;
   caseCount: number;
   splitCounts: Record<string, number>;
 };
-const casesRaw = readFileSync("eval/ride-chat-v0.1/cases.json", "utf8");
+const casesRaw = readFileSync("eval/ride-chat-v0.7/cases.json", "utf8");
 const casesSha256 = createHash("sha256").update(casesRaw).digest("hex");
 const fixedSet = JSON.parse(casesRaw) as { datasetId: string; cases: FixedCase[] };
 if (manifest.datasetId !== "AEVAL-M3-CHAT" || fixedSet.datasetId !== "AEVAL-M3-CHAT") {
