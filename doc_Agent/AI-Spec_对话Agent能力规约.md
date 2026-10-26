@@ -38,25 +38,28 @@
 | **证据形态**（AGT-B 新增） | 每个工具结果声明 `evidence: {kind: "claims" \| "knowledge" \| "capabilities" \| "none", usable}` 与 `toolNumericEvidence(result)`；校验器按声明聚合，**不再按工具名分支** | [AGT-B 细规划](开发规划/AGT-B_只读工具面_工作项规划.md) §2 |
 | **锚点类型**（AGT-B 新增） | **锚点工具**（`rideId` 必填或缺省锚点）与**全局工具**（无 `rideId`，无骑行记录也可用）两类；`TOOLS_NO_CURRENT_RIDE` 仅对锚点工具生效 | 同上 §2 G3 |
 
-### 3.1 现役工具（4 只读，索引）
+### 3.1 工具面全表（9 只读，AGT-B 实装完成）
 
-`get_ride_context` / `get_capabilities` / `compare_rides` / `find_ride`——合同实现见 `src/chat/chat-tools.ts`，窗口冻结 30 天（AGT-B 放开后 `get_ride_history` 承接长窗口）。
+> 合同单一事实源 = `src/chat/chat-tools.ts`（`chatToolSpecs` + 各工具结果类型）；本节是**索引与要点**，改合同必须同步此处。
+> `anchorMode`：`required` = 必须绑定某次骑行；`optional` = 可绑定可全局；`none` = 全局工具。
 
-### 3.2 AGT-B 新增工具（5 只读）
+| # | 工具 | anchorMode | 输入（键集） | 输出关键字段 | 证据形态 | 窗口 | 关键约束 |
+|---|---|---|---|---:|---|---|---|
+| 1 | `get_ride_context` | required | `rideId?` / `dims[]` | `claims[]` / `limitations` | claims | — | 单次指标明细；问"这次/那次多少"用它 |
+| 2 | `get_capabilities` | required | `rideId?` / `caps[]`（**≤18 即全集**） | `capabilities[]`（含 `available`）/ `claims[]` | claims | — | 能力可用性；每个能力一条 claim（value 1/0）。**caps 上限已由 8 放宽到全集**——旧上限让"有哪些数据可看"的正确请求被判非法 |
+| 3 | `compare_rides` | required | `rideId?` / `metrics[]` / `windowDays?` | `claims[]`（含 `status` / `reasonCodes` / `baseline`）/ `comparability` | claims | **30 固定** | 跨期比较；**速度类 `routeSensitivity=high` → 跨路线不可比（`ROUTE_SCOPE_REQUIRED`）是正确判定**；不可比走零模型话术，不放给模型解释 |
+| 4 | `find_ride` | required | `rideId?` / `metric`（**单选字符串，非数组**）/ `mode` / `threshold?` / `metrics[]?` / `windowDays?` | `status` / `matches[].claims[]` / `reasonCodes` | claims | 缺省 30 / **上限 365** | 跨记录检索/排名；**只做检索，不查单次明细与路线形状**（写进 catalog purpose） |
+| 5 | `get_health_profile` | none | `fields[]` | `facts[]`（含 provenance）/ 缺失明示 | claims | — | P4 拍板：**仅现有 profile**（weightKg / maxHeartRate / ftp），不接外部健康数据；不投影病理性字段 |
+| 6 | `get_training_load` | none | `anchorDate?`（YYYY-MM-DD 或 today） | `ctl`/`atl`/`tsb` / **`ridesWithoutTss[{reason,count}]`** / 四类 `unavailable` 原因 | claims | PMC 口径 | TSS 时长**严格只用 `movingTimeS`**；PMC 需 ≥42 天跨度 + ≥10 负荷日。**`ridesWithoutTss` 必须结构化**——只在 limitations 里写字符串会让模型"说 4 次"时撞数字红线 |
+| 7 | `search_knowledge_base` | none | `query` / `dimensions[]?` | `items[]`（`knowledgeId` + topic + `excerpt≤600 字`）/ 未命中返回维度清单 | **knowledge** | — | `maxEntries≤3`；**引用的 ID 必须来自本轮结果**（合法率 100%） |
+| 8 | `get_ride_history` | optional | `rideId?` / `windowDays?` / `metrics[]` | 汇总 `claims[]`（次数/里程/时长/爬升）+ `rows[]`（≤20，逐条带 claims）+ `limitations` | claims | 缺省 **90** / 上限 **365** | 长窗口聚合专属出口；**`numericFacts` 必须包含 `rows[].claims`**——只给总计会让模型列明细时撞数字红线 |
+| 9 | `get_route_overview` | required | `rideId`（**必填**）/ `segments?`（1~5，缺省 3） | 爬坡/平路/下坡里程占比 + `climbs[]` + `longestClimb` | claims | — | 路线形状；**不可用时不返回任何里程字段**（给 0 会被读成"全是平路"）；精坐标排除 |
 
-> 完整输入/输出 schema 与验收用例见 [AGT-B 细规划](开发规划/AGT-B_只读工具面_工作项规划.md) §3~§4；本节只留合同要点，避免双台账。
+**证据形态说明**：`claims` = 可引用 Claim（数字白名单来源）；`knowledge` = 可引用知识条目。两类**各自非空、可同时存在**（输出合同 v0.2）。`capabilities` 这一旧形态已于 2026-10-26 废弃——它不产生可引用证据，导致工具"可调用但不可作答"。
 
-| 工具 | 数据源 | 锚点 | 输出投影要点 | 隐私边界 | 状态 |
-| --- | --- | --- | --- | --- | --- |
-| `get_health_profile` | `user-profile.ts` | 无（全局） | `weightKg`/`maxHeartRate`/`ftp` + provenance + 缺失明示（按 **P4 拍板**：仅现有 profile，不接外部健康数据） | `identity_fields_excluded`、`non_sport_health_fields_excluded` | 骨架（待 B1） |
-| `get_training_load` | `ride-pmc-load-v2.ts` | 可选（缺省今日） | CTL/ATL/TSB + 四类 `unavailable` 原因（FTP 未确认/无 TSS 历史/窗口不足/负荷天数不足） | 无敏感项 | 骨架（待 B1） |
-| `search_knowledge_base` | `ride-knowledge-base-v21.ts` | 无（全局） | `knowledgeId` + topic/title + `excerpt≤600 字` + limitations；`maxEntries≤3`；未命中返回维度清单 | 公开知识无隐私；**引用 ID 必须来自本轮结果** | 骨架（待 B1） |
-| `get_ride_history` | `persistent-history.ts` + `ride-series.ts` | 可选（缺省最新） | 窗口内次数/里程/时长/爬升 + 逐条精简行 + `reasonCodes`；缺省 90 天、上限 365 | 聚合投影沿用 | 骨架（待 B2） |
-| `get_route_overview` | `ride-route-shape.ts` | 必须 | 爬坡/平路/下坡里程占比 + 最长连续爬坡段概要 | 精坐标仍排除（`precise_coordinates_excluded`） | 骨架（待 B2） |
+**阶段（B0~B5）分工回顾**：B0 落地合同与证据链基建（`chat-tools-v0.2` / `ride-chat-output-v0.2` 双形态）；B1 实装三个全局工具（含新增 `src/domain/ride-training-stress.ts`，`ride-pmc-load-v2` 由此首次接线）；B2 实装 `get_ride_history` / `get_route_overview` 并完成窗口解冻（P7）；B3 做循环扩展（分片并行 / 四值预算 / catalog 按路由裁剪）；B4 打通路由可达性（`kb_qa` / `level_assessment` 升真链路）；B5 完成评测资产与达标验证。
 
-**合同与实装状态（2026-10-24）**：5 个工具的**输入合同、结果类型、证据声明**（`chatToolSpecs`）已在 B0 落地；**执行投影已在 B1/B2 全部实装**——B1 完成 `get_health_profile` / `get_training_load` / `search_knowledge_base`（含新增 `src/domain/ride-training-stress.ts` 的 TSS 计算链路，`ride-pmc-load-v2` 由此首次接线；**TSS 时长严格只用 `movingTimeS`**——V2.1 spec `intensity.tss` 的依赖声明不含 `elapsedTimeS`，验收时删掉了初版的 elapsed 退回），B2 完成 `get_ride_history`（窗口统计 + 逐条行 ≤20 + 行截断说明）与 `get_route_overview`（爬坡/平路/下坡占比 + `climbs[]`，不可用不给数字）。同时 `find_ride` 窗口上限 30→**365**（**缺省仍 30**，P7 口径变更）。**catalog 尚未下发这 5 个工具**——是否对模型可见由 B3（路由裁剪）与 B4（可达性）决定，在此之前 demo 站行为零变化。
-
-### 3.2.1 窗口口径（AGT-B 落地 P7）
+### 3.2 窗口口径（AGT-B 落地 P7）
 
 | 能力 | 口径 |
 | --- | --- |
@@ -156,13 +159,18 @@
 
 分类器标注集口径（三条轴 split/intent/kind、9 组对抗对、维护流程、已知局限）见 [`eval/ride-chat-classifier-v0.4/README.md`](../eval/ride-chat-classifier-v0.4/README.md)；变更登记见同目录 `CHANGES.md`。**`kind` 只用于错误归因，不得用于放宽门槛**。
 
-**AGT-B5 新增三套对话评测资产（2026-10-24 建，preflight 锁结构与 SHA）**：
+**AGT-B 三套对话评测资产（2026-10-26 全部冻结，preflight 锁结构与 SHA）**：
 
-| 资产 | 规模 | 判分口径 | 状态 |
+| 资产 | 规模 | 判分口径 | 状态与基线 |
 |---|---|---|---|
-| `eval/ride-chat-tool-orchestration-v0.1/`（AEVAL-TOOL-ORCHESTRATION） | 21 例（regression 13 / boundary 6 / negative 2）× 3 | **五项**：必需工具齐全 + `requiredAnyOf` 命中 + 无禁止工具 + 无拒调用 + **最终交付成功（validated/repaired）**。**不测路由**（route 给定，路由归 M3 集） | 未冻结；三轮 Run 56.7% → 76.2%(旧口径) → **38.1%**（口径修正重算，见 `-r2.json`） |
-| `eval/ride-chat-boundary-v0.1/`（AEVAL-CHAT-BOUNDARY） | 35 例 / 9 组（含 `anchor_deixis` 指代对照、`multi_turn` 多轮继承）× 3 | 单一口径 `behavior`：tool_executed / graceful_unavailable / safety_stop / reject_write / clarify | 未冻结；**尚未跑过 Run** |
-| `eval/ride-chat-v0.7/`（AEVAL-M3-CHAT v0.7） | 34 例（继承 v0.6 cases，仅升能力面声明） | 沿用 M3 既有口径 | manifest 已锁 SHA，标 `supersedes: v0.6`；**Run 归 B6** |
+| `eval/ride-chat-tool-orchestration-v0.2/`（AEVAL-TOOL-ORCHESTRATION） | 21 例（regression 13 / boundary 6 / negative 2）× 3 | **五项**：必需工具齐全 + `requiredAnyOf` 命中 + 无禁止工具 + 无拒调用 + **最终交付成功**（负例允许 `template` 且无 fallbackCode）。**不测路由**（route 给定，路由归 M3 集） | **已冻结 2026-10-26**（SHA `121c4b2f…`）；基线 **61/63 = 96.8%**（V4.1-Flash）。v0.1 标 `superseded`（ORCH-17 期望过僵） |
+| `eval/ride-chat-boundary-v0.1/`（AEVAL-CHAT-BOUNDARY） | **38 例 / 10 组**（含 `anchor_deixis` 指代对照、`multi_turn` 多轮继承、写拒绝 3 例）× 3 | 单一口径 `behavior`：tool_executed / graceful_unavailable / safety_stop / reject_write / clarify / **no_write_refusal** | **已冻结 2026-10-26**；基线 **110/114 = 96.5%**（V4.1-Flash） |
+| `eval/ride-chat-v0.7/`（AEVAL-M3-CHAT v0.7） | 34 例（继承 v0.6 cases，仅升能力面声明） | 沿用 M3 既有口径 | **已冻结 2026-10-24**（标 `supersedes: v0.6`）；Run 归 B6 |
+
+**模型与基础设施（2026-10-26 B5 收口新增）**：
+- **主对话模型 = `deepseek-ai/DeepSeek-V4.1-Flash`**。选型实测：V3.2 7/8 @26.0s、V4.1-Flash 7/8 @4.4s、V4-Pro 6/8 @9.0s（4 个工具选择用例 × 2 次）——**Flash 版判断力不弱于 V3.2、优于 Pro**。
+- **provider 分阶段计时**（`onTiming` 回传 `headersMs` / `bodyMs` / `failurePhase` / `errorCode`）：**这是「网络 vs 平台 vs 我方」归因的唯一可靠依据**。判失败必须看 `totalMs` 是否恰等于 timeout 值（= 误杀）还是 85s 级固定值（= TCP 超时）；只看 `failurePhase` 分不出这三者。
+- **限流退避重试**：`MODEL_RATE_LIMITED` 时按 8s / 16s / 24s 退避（最多 3 次），评测间隔需 **≥4s**。**注意：退避分支尚未被实测触发**（sleep=0 极限测试未见限流），仅经代码审查。
 
 **判分口径的演进说明（比 D-B8 原定义多了两项，B5 实测驱动）**：① `requiredAnyOf`——同一诉求存在多条合法路径（都能答对）时不再写死单一工具（ORCH-09：`get_capabilities` 与 `get_ride_context` 任一）；② **最终交付成功**——只看"工具调没调"会把超时降级判成通过（第三轮 24/63 假阳性的来源）。`ChatOutputValidationPublic` 已补 `referencedKnowledgeCount`（B6 的 KB 引用统计前置）。
 
@@ -180,6 +188,7 @@
 | 2026-10-24 | AGT-A5 | 两轮全新 Run（数据集冻结不变）：Run 1 `82/83`（`CLS-BLIND-01` 因"表现"一词误判 history_compare）→ prompt **v0.4.1** 给 history_compare 加"必须有对比参照或变化词"硬条件 → Run 2 **`83/83` 全对**（dev 13/13 · blind 60/60 · red-team 10/10；kind positive/boundary/ambiguous 全满）。分类器按 D-A5 启用（`.env.local`） | ✅ |
 | 2026-10-24 | AGT-A5（回归） | 分类器之外三处缺陷（用户实测暴露，判定全对）：**R1** 前端本地正则兜底会猜答案（问心率答日期）→ 删除 `replyToChatInput`，失败统一诚实降级（落地 D-A2）；**R2** 主对话超时 8s→15s（实测 8.17s 成功样本）、分类器 8s→12s；**R3** `aggregate` 抽不出口径时答"我不会猜测骑行数据" → 新增 `aggregateOverviewReply` 只陈述已确定事实 | ✅ |
 | 2026-10-24 | AGT-A6 | 里程碑收口：重评报告归档 `doc_Agent/AGT-A_意图路由v0.4_重评报告.md`（8 章，含 §6 六条口径局限）；粗规划 AGT-A 标 `Done` 并登记三条执行期偏离；A0~A5 全部 `Done`。**线上 `.env.production` 仍规则基线，启用分类器待用户决定** | ✅ **AGT-A 里程碑 `Done`（7/7，2026-10-24 用户验收）** |
+| 2026-10-26 | **AGT-B6** | 里程碑收口：§3.1 骨架 → **9 工具完整合同表**（含新增四条「事实必须可引用」约束）；§3.2 窗口口径保留；§10 三套资产全部冻结（编排集 v0.2 / 边界集 v0.1 / M3 v0.7）并登记交付基线（**编排 96.8% / 边界 96.5%**）；新增模型选型、分阶段计时、限流退避三项基础设施说明；评测报告归档 `doc_Agent/AGT-B_只读工具面_评测报告.md`；粗规划 AGT-B 标 `Done` | ✅ **AGT-B 里程碑 `Done`（8/8，2026-10-26）** |
 | 2026-10-24 | AGT-B（细规划） | **§3.2 骨架 → 定稿口径**：5 新工具合同要点（锚点类型/证据形态/隐私声明）+ §3.2.1 窗口口径（P7：`find_ride` 365、`compare_rides` 仍 30、`get_ride_history` 90/365，口径变更须开新 Run）；**§3.0 增补两项合同项**：`evidence` 声明 + 锚点两类；**§8 新增输出合同 `v0.2`**（`knowledgeIds` + 证据形态二选一）。细规划同时核对出**五个合同缺口**（列为 B0 前置），其中 G1/G4 是"新工具接进来也跑不通"的硬阻断 | ✅ 细规划已产出（**待用户评审 + D-B1~D-B8 拍板**；实装归 B0~B2） |
 | 2026-10-24 | AGT-B（校验层实测） | **新增缺口 G6 + §7 校验层口径**：实测 8 探针 6 拒 2 过——数字严格字面量导致"大约 30 公里"（工具 30.4）、"50%"（0.5 ratio）误拦；三组措辞正则导致 `"不能做诊断"`/`"不会访问其他用户的数据"`/`"不会提供 api key"` 三类**安全声明被自身规则拦死**（会直接废掉 C 的非医疗诊断话术）；反向"三十公里"漏检。**定调：线上不加 LLM 语义判官**，B0 做等价类 + 语境豁免 + 拒绝原因观测，离线语义判官归 C | ✅ 决策已定（**D-B9**）；实装归 B0 |
 | 2026-10-24 | AGT-B（复合问法） | **§4 重审触发条件修订**：旧表述"出现必须两次工具编排的问法"作废——L2b 一次循环内即可多次调用（单轮并行 4/累计 5/provider 6 轮），该条件永不触发。改为**路由级三卡点**（K1 catalog 裁剪 / K2 `outputRoute` 单一 / K3 证据形态），其中 K3 经澄清"各自非空、可同时存在"后不再是阻碍，**重审收敛为 K1**；处置阶梯 L1 扩 catalog（首选）→ L2 回复层承接 → L3 升 `intents[]`（B 内不实施）。执行细则见 [AGT-B 细规划 §5.5](开发规划/AGT-B_只读工具面_工作项规划.md) | ✅ 口径已修订（结论待 `AGT-B4` 出） |
