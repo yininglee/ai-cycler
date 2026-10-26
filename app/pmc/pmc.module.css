@@ -1,0 +1,8 @@
+.placeholder { min-height: 220px; padding: 24px; border: 1px solid var(--line); border-radius: var(--radius-card); background: var(--surface); box-shadow: var(--shadow); }
+.moduleTag { display: inline-flex; min-height: 28px; align-items: center; padding: 0 10px; border: 1px solid var(--line); border-radius: var(--radius-control); color: var(--muted); font-size: 11px; font-weight: 750; }
+.placeholder h2 { margin: 36px 0 8px; font-size: 22px; line-height: 1.25; }
+.placeholder p { max-width: 420px; margin: 0; color: var(--muted); font-size: 14px; line-height: 1.65; }
+
+@media (min-width: 600px) {
+  .placeholder { padding: 30px; }
+}

@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
-  calendarDate, calendarMonthDates, distanceHeatLevel, ridesByDate,
+  calendarDate, calendarMonthDates, calendarWeekStart, distanceHeatLevel, ridesByDate,
   shiftCalendarMonth, summarizeCalendarRides, type CalendarRide,
 } from "../src/ui/ride-calendar.ts";
 
@@ -67,4 +67,10 @@ test("monthly heatmap dates are sequential and include leap days", () => {
   assert.equal(calendarMonthDates("2025-02").length, 28);
   assert.equal(calendarMonthDates("2026-10")[0], "2026-10-01");
   assert.equal(calendarMonthDates("2026-10").at(-1), "2026-10-31");
+});
+
+test("week summary starts on Monday across month and year boundaries", () => {
+  assert.equal(calendarWeekStart("2026-10-26"), "2026-10-26");
+  assert.equal(calendarWeekStart("2026-11-01"), "2026-10-26");
+  assert.equal(calendarWeekStart("2027-01-01"), "2026-12-28");
 });

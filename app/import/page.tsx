@@ -1,19 +1,13 @@
 import Link from "next/link";
 
 import { AppShell } from "../components/app-shell";
-import { ArrowIcon, CheckIcon } from "../components/icons";
-import { PendingLink } from "../components/pending-link";
+import { BikeIcon } from "../components/icons";
 import { RideFileUpload } from "../components/ride-file-upload";
 import { getNextSessionUserId } from "../../src/auth/next-session.ts";
 import { getRideRepository } from "../../src/persistence/demo-ride-repository.ts";
 import { RideCalendar } from "../components/ride-calendar-heatmap";
 import { calendarDate, toCalendarRide } from "../../src/ui/ride-calendar.ts";
-
-const samples = [
-  { id: "l1-built-in-sample", capability: "轨迹", title: "只有轨迹", note: "距离、时间、速度、爬升" },
-  { id: "l2-built-in-sample", capability: "心率", title: "包含心率", note: "在基础数据上增加心率" },
-  { id: "l3-power-preview", capability: "功率", title: "包含功率", note: "在心率上增加完整功率数据" },
-] as const;
+import styles from "../components/ride-calendar.module.css";
 
 export default async function ImportPage({ searchParams }: { searchParams: Promise<{ state?: string }> }) {
   const state = (await searchParams).state ?? "empty";
@@ -24,6 +18,16 @@ export default async function ImportPage({ searchParams }: { searchParams: Promi
 
   return (
     <AppShell active="rides">
+      <header className={styles.pageHeader}>
+        <Link href="/" className={`brand ${styles.pageIdentity}`} aria-label="返回首页">
+          <span className="brand-mark"><BikeIcon /></span>
+          <h1 className={styles.pageTitle}>骑行记录</h1>
+        </Link>
+        <nav className={styles.pageActions} aria-label="快捷入口">
+          <Link className="eyebrow" href="/profile">个人资料</Link>
+          <Link className="eyebrow" href="/pmc" aria-label="PMC 表现状态管理">PMC</Link>
+        </nav>
+      </header>
       {state === "loading" && <div className="state-card" aria-live="polite"><span className="spinner" /><h2>正在读取记录</h2><p>基础事实会优先出现，不需要等待 AI。</p></div>}
       {state === "error" && <div className="state-card error-state" role="alert"><span>!</span><h2>文件暂时无法读取</h2><p>请确认文件完整，且格式为 FIT 或 GPX。你的文件没有上传给模型。</p><Link className="secondary-button" href="/import">重新选择</Link></div>}
       {state !== "loading" && state !== "error" && (
@@ -31,15 +35,6 @@ export default async function ImportPage({ searchParams }: { searchParams: Promi
           rides={importedRides.map(({ record }) => toCalendarRide(record))}
           initialToday={calendarDate(new Date().toISOString())!}
           upload={<RideFileUpload />}
-          extra={<>
-            <details>
-              <summary>体验更多示例记录</summary>
-              <div className="sample-list">
-                {samples.map((sample) => <PendingLink key={sample.id} className="sample-card" href={`/rides/${sample.id}`} transitionKey="ride-detail"><span className="level-badge">{sample.capability}</span><div><h3>{sample.title}</h3><p>{sample.note}</p></div><ArrowIcon /></PendingLink>)}
-              </div>
-            </details>
-          <details className="state-preview"><summary>预览异常与降级状态</summary><div className="state-links"><Link href="/rides/gpx-no-timestamps"><CheckIcon />GPX 无时间戳</Link><Link href="/rides/fit-truncated-file">! FIT 文件损坏</Link><Link href="/rides/l1-built-in-sample?ai=b0">! AI 降级到 B0</Link><Link href="/import?state=loading">加载状态</Link><Link href="/import?state=error">错误状态</Link></div></details>
-          </>}
         />
       )}
     </AppShell>

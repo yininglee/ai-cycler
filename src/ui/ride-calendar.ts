@@ -84,6 +84,12 @@ export function calendarMonthDates(month: string): string[] {
   return Array.from({ length: days }, (_, index) => `${month}-${String(index + 1).padStart(2, "0")}`);
 }
 
+export function calendarWeekStart(date: string): string {
+  const day = new Date(date + "T00:00:00Z");
+  day.setUTCDate(day.getUTCDate() - (day.getUTCDay() + 6) % 7);
+  return day.getUTCFullYear() + "-" + String(day.getUTCMonth() + 1).padStart(2, "0") + "-" + String(day.getUTCDate()).padStart(2, "0");
+}
+
 export function calendarNumber(value: number): string {
   return new Intl.NumberFormat("zh-CN", { maximumFractionDigits: 1 }).format(value);
 }
