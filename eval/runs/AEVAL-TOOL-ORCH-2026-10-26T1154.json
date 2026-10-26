@@ -1,0 +1,97 @@
+{
+  "datasetId": "AEVAL-TOOL-ORCHESTRATION",
+  "repeat": 2,
+  "total": 2,
+  "passed": 2,
+  "avgElapsedMs": 5802,
+  "slowestElapsedMs": 6196,
+  "promptVersion": "ride-chat-prompt-v0.2.7",
+  "results": [
+    {
+      "caseId": "ORCH-11",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 6196,
+      "replyPreview": "在最近一年的记录里，距离最远的是2026年10月24日那次，里程56.0公里，累计爬升980米。从路线形状看，这次爬坡并不多：爬坡里程约3333米，平路约466",
+      "steps": [
+        "find_ride:completed",
+        "get_route_overview:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-11",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 5407,
+      "replyPreview": "在最近一年的记录里，距离最远的是2026年10月24日那次，骑了56.0公里，累计爬升980米。那次路线以平路为主，平路约46667米，爬坡约3333米，下坡为",
+      "steps": [
+        "find_ride:completed",
+        "get_route_overview:completed"
+      ]
+    }
+  ],
+  "timings": [
+    {
+      "caseId": "ORCH-11",
+      "round": 1,
+      "ok": true,
+      "headersMs": 1975,
+      "bodyMs": 1,
+      "totalMs": 1976
+    },
+    {
+      "caseId": "ORCH-11",
+      "round": 1,
+      "ok": true,
+      "headersMs": 1463,
+      "bodyMs": 1,
+      "totalMs": 1464
+    },
+    {
+      "caseId": "ORCH-11",
+      "round": 1,
+      "ok": true,
+      "headersMs": 2744,
+      "bodyMs": 0,
+      "totalMs": 2744
+    },
+    {
+      "caseId": "ORCH-11",
+      "round": 2,
+      "ok": true,
+      "headersMs": 1266,
+      "bodyMs": 0,
+      "totalMs": 1266
+    },
+    {
+      "caseId": "ORCH-11",
+      "round": 2,
+      "ok": true,
+      "headersMs": 1531,
+      "bodyMs": 1,
+      "totalMs": 1532
+    },
+    {
+      "caseId": "ORCH-11",
+      "round": 2,
+      "ok": true,
+      "headersMs": 2601,
+      "bodyMs": 0,
+      "totalMs": 2601
+    }
+  ],
+  "timingSummary": {
+    "calls": 6,
+    "headersP50Ms": 1975,
+    "headersP90Ms": 2744,
+    "bodyP50Ms": 1,
+    "bodyP90Ms": 1,
+    "failByPhase": {}
+  }
+}

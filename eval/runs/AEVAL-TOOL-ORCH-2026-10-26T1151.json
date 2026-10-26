@@ -1,0 +1,87 @@
+{
+  "datasetId": "AEVAL-TOOL-ORCHESTRATION",
+  "repeat": 2,
+  "total": 2,
+  "passed": 2,
+  "avgElapsedMs": 12184,
+  "slowestElapsedMs": 14504,
+  "promptVersion": "ride-chat-prompt-v0.2.7",
+  "results": [
+    {
+      "caseId": "ORCH-08",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 9863,
+      "replyPreview": "根据您最近一次骑行的路线概要，爬坡路段约3333米，平路约46667米，下坡路段为0米。因此，这次骑行以平路为主，爬坡路段相对较少。",
+      "steps": [
+        "get_route_overview:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-08",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "repaired",
+      "fallback": "-",
+      "elapsedMs": 14504,
+      "replyPreview": "根据最近一次骑行的路线数据，这次骑行中爬坡路段约3.3公里，平路路段约46.7公里，没有下坡路段。",
+      "steps": [
+        "get_route_overview:completed"
+      ]
+    }
+  ],
+  "timings": [
+    {
+      "caseId": "ORCH-08",
+      "round": 1,
+      "ok": true,
+      "headersMs": 3688,
+      "bodyMs": 1,
+      "totalMs": 3689
+    },
+    {
+      "caseId": "ORCH-08",
+      "round": 1,
+      "ok": true,
+      "headersMs": 6161,
+      "bodyMs": 0,
+      "totalMs": 6161
+    },
+    {
+      "caseId": "ORCH-08",
+      "round": 2,
+      "ok": true,
+      "headersMs": 2886,
+      "bodyMs": 1,
+      "totalMs": 2887
+    },
+    {
+      "caseId": "ORCH-08",
+      "round": 2,
+      "ok": true,
+      "headersMs": 5972,
+      "bodyMs": 0,
+      "totalMs": 5972
+    },
+    {
+      "caseId": "ORCH-08",
+      "round": 2,
+      "ok": true,
+      "headersMs": 5636,
+      "bodyMs": 1,
+      "totalMs": 5637
+    }
+  ],
+  "timingSummary": {
+    "calls": 5,
+    "headersP50Ms": 5636,
+    "headersP90Ms": 6161,
+    "bodyP50Ms": 1,
+    "bodyP90Ms": 1,
+    "failByPhase": {}
+  }
+}

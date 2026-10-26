@@ -150,7 +150,10 @@ const CHAT_TOOL_CATALOG_INPUTS: Record<ChatToolName, Record<string, unknown>> = 
   },
   get_capabilities: {
     rideId: "可选；缺省用锚点记录，指定时必须来自本轮工具结果返回的 rideId",
-    caps: `字符串数组（可多选）：${atomicCapabilityKeys.join("/")}`,
+    // AGT-B5（ORCH-09 三连 INVALID_TOOL_CALL 驱动）：上限原为 8，而合法能力有 18 个——
+    // "最近一次骑行有哪些数据可以看"的正确答案就是**全部**，模型传 18 个反被判非法。
+    // 放宽到全部（结果约 3~4KB，远低于 32KB 预算），并在说明里写明可一次传全部。
+    caps: `字符串数组（可多选，**最多 ${atomicCapabilityKeys.length} 个即全部**；问"有哪些数据可看"就全传）：${atomicCapabilityKeys.join("/")}`,
   },
   compare_rides: {
     rideId: "可选；缺省用锚点记录，指定时必须来自本轮工具结果返回的 rideId",

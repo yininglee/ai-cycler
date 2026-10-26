@@ -500,7 +500,7 @@ export function parseChatToolInvocation(value: unknown): ChatToolInvocation {
     return { tool: value.tool, input: { rideId: value.input.rideId, dims: value.input.dims } };
   }
   if (value.tool === "get_capabilities") {
-    if (!hasExactKeys(value.input, ["rideId", "caps"]) || !validRideId(value.input.rideId) || !uniqueEnumValues(value.input.caps, atomicCapabilityKeys, 8)) {
+    if (!hasExactKeys(value.input, ["rideId", "caps"]) || !validRideId(value.input.rideId) || !uniqueEnumValues(value.input.caps, atomicCapabilityKeys, atomicCapabilityKeys.length)) {
       throw new ChatToolError("INVALID_INPUT");
     }
     return { tool: value.tool, input: { rideId: value.input.rideId, caps: value.input.caps } };

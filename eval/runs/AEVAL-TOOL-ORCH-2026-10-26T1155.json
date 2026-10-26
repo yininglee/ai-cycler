@@ -1,0 +1,63 @@
+{
+  "datasetId": "AEVAL-TOOL-ORCHESTRATION",
+  "repeat": 2,
+  "total": 2,
+  "passed": 0,
+  "avgElapsedMs": 5994,
+  "slowestElapsedMs": 7837,
+  "promptVersion": "ride-chat-prompt-v0.2.7",
+  "results": [
+    {
+      "caseId": "ORCH-09",
+      "round": 1,
+      "pass": false,
+      "detail": "未交付（exec=template fb=TOOLS_LOOP_INVALID_TOOL_CALL） requiredAnyOf 未命中:get_capabilities/get_ride_context 拒调用:get_capabilities/INVALID_TOOL_CALL",
+      "execution": "template",
+      "fallback": "TOOLS_LOOP_INVALID_TOOL_CALL",
+      "elapsedMs": 7837,
+      "replyPreview": "这个查询请求不在当前允许的只读工具范围内，我不能按这种方式查询。可以换成支持的问法，例如「距离最远的那次骑行是哪次」。",
+      "steps": [
+        "get_capabilities:rejected"
+      ]
+    },
+    {
+      "caseId": "ORCH-09",
+      "round": 2,
+      "pass": false,
+      "detail": "未交付（exec=template fb=TOOLS_LOOP_INVALID_TOOL_CALL） requiredAnyOf 未命中:get_capabilities/get_ride_context 拒调用:get_capabilities/INVALID_TOOL_CALL",
+      "execution": "template",
+      "fallback": "TOOLS_LOOP_INVALID_TOOL_CALL",
+      "elapsedMs": 4151,
+      "replyPreview": "这个查询请求不在当前允许的只读工具范围内，我不能按这种方式查询。可以换成支持的问法，例如「距离最远的那次骑行是哪次」。",
+      "steps": [
+        "get_capabilities:rejected"
+      ]
+    }
+  ],
+  "timings": [
+    {
+      "caseId": "ORCH-09",
+      "round": 1,
+      "ok": true,
+      "headersMs": 7834,
+      "bodyMs": 1,
+      "totalMs": 7835
+    },
+    {
+      "caseId": "ORCH-09",
+      "round": 2,
+      "ok": true,
+      "headersMs": 4147,
+      "bodyMs": 0,
+      "totalMs": 4147
+    }
+  ],
+  "timingSummary": {
+    "calls": 2,
+    "headersP50Ms": 7834,
+    "headersP90Ms": 7834,
+    "bodyP50Ms": 1,
+    "bodyP90Ms": 1,
+    "failByPhase": {}
+  }
+}

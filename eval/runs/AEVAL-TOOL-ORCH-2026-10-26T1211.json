@@ -1,0 +1,108 @@
+{
+  "datasetId": "AEVAL-TOOL-ORCHESTRATION",
+  "repeat": 3,
+  "total": 3,
+  "passed": 3,
+  "avgElapsedMs": 4954,
+  "slowestElapsedMs": 6077,
+  "promptVersion": "ride-chat-prompt-v0.2.7",
+  "results": [
+    {
+      "caseId": "ORCH-09",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 6077,
+      "replyPreview": "这次骑行目前没有可用的数据可以展示。路线、距离、时长、速度、爬升、心率、功率、踏频、训练负荷、历史对比等各项都显示不可用，原因是这条记录本身无效。建议先检查记录",
+      "steps": [
+        "get_capabilities:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-09",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 4374,
+      "replyPreview": "这次骑行记录目前无法读取有效数据，路线、距离、时长、速度、爬升、心率、功率、踏频、训练负荷等各项都显示为不可用，原因可能是记录本身不完整或无效。所以暂时没法给你",
+      "steps": [
+        "get_capabilities:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-09",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 4411,
+      "replyPreview": "这次骑行记录目前无法读取有效数据，路线、距离、时长、速度、爬升、心率、功率、踏频、训练负荷等各项都显示不可用，因此暂时没法给你解读具体指标。可能是这条记录本身不",
+      "steps": [
+        "get_capabilities:completed"
+      ]
+    }
+  ],
+  "timings": [
+    {
+      "caseId": "ORCH-09",
+      "round": 1,
+      "ok": true,
+      "headersMs": 1622,
+      "bodyMs": 0,
+      "totalMs": 1622
+    },
+    {
+      "caseId": "ORCH-09",
+      "round": 1,
+      "ok": true,
+      "headersMs": 4450,
+      "bodyMs": 0,
+      "totalMs": 4450
+    },
+    {
+      "caseId": "ORCH-09",
+      "round": 2,
+      "ok": true,
+      "headersMs": 1705,
+      "bodyMs": 0,
+      "totalMs": 1706
+    },
+    {
+      "caseId": "ORCH-09",
+      "round": 2,
+      "ok": true,
+      "headersMs": 2665,
+      "bodyMs": 0,
+      "totalMs": 2665
+    },
+    {
+      "caseId": "ORCH-09",
+      "round": 3,
+      "ok": true,
+      "headersMs": 1761,
+      "bodyMs": 0,
+      "totalMs": 1761
+    },
+    {
+      "caseId": "ORCH-09",
+      "round": 3,
+      "ok": true,
+      "headersMs": 2647,
+      "bodyMs": 0,
+      "totalMs": 2647
+    }
+  ],
+  "timingSummary": {
+    "calls": 6,
+    "headersP50Ms": 2647,
+    "headersP90Ms": 4450,
+    "bodyP50Ms": 0,
+    "bodyP90Ms": 0,
+    "failByPhase": {}
+  }
+}

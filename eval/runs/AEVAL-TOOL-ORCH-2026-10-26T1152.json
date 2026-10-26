@@ -1,0 +1,79 @@
+{
+  "datasetId": "AEVAL-TOOL-ORCHESTRATION",
+  "repeat": 2,
+  "total": 2,
+  "passed": 2,
+  "avgElapsedMs": 33530,
+  "slowestElapsedMs": 42284,
+  "promptVersion": "ride-chat-prompt-v0.2.7",
+  "results": [
+    {
+      "caseId": "ORCH-09",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 24775,
+      "replyPreview": "根据2026年10月24日的骑行记录，你可以查看以下数据：距离约56公里，用时约1小时53分钟，爬升980米，平均速度约29.7公里/小时，最高速度约68.8公",
+      "steps": [
+        "get_ride_context:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-09",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 42284,
+      "replyPreview": "根据2026年10月24日这次骑行，可以看到距离为56公里，用时约1小时53分钟，爬升980米。平均速度约29.7公里/小时，最高速度约68.8公里/小时。平均",
+      "steps": [
+        "get_ride_context:completed"
+      ]
+    }
+  ],
+  "timings": [
+    {
+      "caseId": "ORCH-09",
+      "round": 1,
+      "ok": true,
+      "headersMs": 14060,
+      "bodyMs": 0,
+      "totalMs": 14060
+    },
+    {
+      "caseId": "ORCH-09",
+      "round": 1,
+      "ok": true,
+      "headersMs": 10692,
+      "bodyMs": 0,
+      "totalMs": 10692
+    },
+    {
+      "caseId": "ORCH-09",
+      "round": 2,
+      "ok": true,
+      "headersMs": 31563,
+      "bodyMs": 1,
+      "totalMs": 31564
+    },
+    {
+      "caseId": "ORCH-09",
+      "round": 2,
+      "ok": true,
+      "headersMs": 10705,
+      "bodyMs": 0,
+      "totalMs": 10705
+    }
+  ],
+  "timingSummary": {
+    "calls": 4,
+    "headersP50Ms": 14060,
+    "headersP90Ms": 31563,
+    "bodyP50Ms": 0,
+    "bodyP90Ms": 1,
+    "failByPhase": {}
+  }
+}

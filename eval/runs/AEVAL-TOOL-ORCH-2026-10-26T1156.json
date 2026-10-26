@@ -1,0 +1,105 @@
+{
+  "datasetId": "AEVAL-TOOL-ORCHESTRATION",
+  "repeat": 2,
+  "total": 2,
+  "passed": 2,
+  "avgElapsedMs": 13766,
+  "slowestElapsedMs": 14076,
+  "promptVersion": "ride-chat-prompt-v0.2.7",
+  "results": [
+    {
+      "caseId": "ORCH-11",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 13456,
+      "replyPreview": "在最近一年里，距离最远的是2026年10月24日那次骑行，骑了56.0公里。那次路线的爬坡段有3333米，平路46667米，没有下坡，整体以平路为主，爬坡占比不",
+      "steps": [
+        "find_ride:completed",
+        "get_route_overview:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-11",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "repaired",
+      "fallback": "-",
+      "elapsedMs": 14076,
+      "replyPreview": "在过去一年里，你距离最远的一次是 10 月 24 日这次骑行，骑了 56.0 公里。这次骑行的路线爬坡不多，全程中爬坡路段约 3.3 公里，其余都是平路，没有下",
+      "steps": [
+        "find_ride:completed",
+        "get_route_overview:completed"
+      ]
+    }
+  ],
+  "timings": [
+    {
+      "caseId": "ORCH-11",
+      "round": 1,
+      "ok": true,
+      "headersMs": 4333,
+      "bodyMs": 1,
+      "totalMs": 4334
+    },
+    {
+      "caseId": "ORCH-11",
+      "round": 1,
+      "ok": true,
+      "headersMs": 2633,
+      "bodyMs": 0,
+      "totalMs": 2633
+    },
+    {
+      "caseId": "ORCH-11",
+      "round": 1,
+      "ok": true,
+      "headersMs": 6477,
+      "bodyMs": 1,
+      "totalMs": 6478
+    },
+    {
+      "caseId": "ORCH-11",
+      "round": 2,
+      "ok": true,
+      "headersMs": 2922,
+      "bodyMs": 1,
+      "totalMs": 2923
+    },
+    {
+      "caseId": "ORCH-11",
+      "round": 2,
+      "ok": true,
+      "headersMs": 2201,
+      "bodyMs": 1,
+      "totalMs": 2202
+    },
+    {
+      "caseId": "ORCH-11",
+      "round": 2,
+      "ok": true,
+      "headersMs": 4117,
+      "bodyMs": 1,
+      "totalMs": 4118
+    },
+    {
+      "caseId": "ORCH-11",
+      "round": 2,
+      "ok": true,
+      "headersMs": 4827,
+      "bodyMs": 0,
+      "totalMs": 4827
+    }
+  ],
+  "timingSummary": {
+    "calls": 7,
+    "headersP50Ms": 4117,
+    "headersP90Ms": 6477,
+    "bodyP50Ms": 1,
+    "bodyP90Ms": 1,
+    "failByPhase": {}
+  }
+}

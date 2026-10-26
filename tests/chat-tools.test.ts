@@ -44,7 +44,9 @@ test("chat tool invocation rejects unknown fields, dimensions, capabilities and 
   assert.throws(() => parseChatToolInvocation({ tool: "get_ride_context", input: { rideId: "ride-1", dims: ["summary"], userId: "other" } }), (error) => errorCode(error) === "INVALID_INPUT");
   assert.throws(() => parseChatToolInvocation({ tool: "get_ride_context", input: { rideId: "ride-1", dims: ["route"] } }), (error) => errorCode(error) === "INVALID_INPUT");
   assert.throws(() => parseChatToolInvocation({ tool: "get_capabilities", input: { rideId: "ride-1", caps: ["distance", "distance"] } }), (error) => errorCode(error) === "INVALID_INPUT");
-  assert.throws(() => parseChatToolInvocation({ tool: "get_capabilities", input: { rideId: "ride-1", caps: ["distance", "timing", "speed", "elevation", "heartRate", "power", "cadence", "route", "trend"] } }), (error) => errorCode(error) === "INVALID_INPUT");
+  // AGT-B5（ORCH-09 驱动）：caps 上限已从 8 放宽到全集（18）——
+  // "最近一次骑行有哪些数据可以看"的正确答案就是全部能力，旧上限会让正确请求被判非法。
+  // 因此不再存在"少于全集但超上限"的用例；长度相关的非法只剩"重复"（上一行已覆盖）。
 });
 
 test("get_ride_context returns only requested dimensions and no private raw data", async () => {
