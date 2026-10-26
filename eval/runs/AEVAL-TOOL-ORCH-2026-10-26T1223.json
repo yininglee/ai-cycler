@@ -1,0 +1,108 @@
+{
+  "datasetId": "AEVAL-TOOL-ORCHESTRATION",
+  "repeat": 3,
+  "total": 3,
+  "passed": 3,
+  "avgElapsedMs": 4290,
+  "slowestElapsedMs": 4637,
+  "promptVersion": "ride-chat-prompt-v0.2.7",
+  "results": [
+    {
+      "caseId": "ORCH-05",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 4637,
+      "replyPreview": "从最近这段训练负荷看，你的长期负荷（CTL）约 62，急性负荷（ATL）约 54，平衡值（TSB）约 9，说明近期训练量略低于长期积累的水平，整体处于相对轻松、",
+      "steps": [
+        "get_training_load:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-05",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 3890,
+      "replyPreview": "从最近这段训练负荷看，你的长期负荷（CTL）约为 62.3 TSS/天，急性负荷（ATL）约为 53.5 TSS/天，平衡值（TSB）为 8.8 TSS，说明近",
+      "steps": [
+        "get_training_load:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-05",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 4344,
+      "replyPreview": "从最近这段训练负荷看：长期负荷（CTL）约 62.3，急性负荷（ATL）约 53.5，平衡值（TSB）约 8.8。急性负荷低于长期负荷，说明近期训练量比长期积累",
+      "steps": [
+        "get_training_load:completed"
+      ]
+    }
+  ],
+  "timings": [
+    {
+      "caseId": "ORCH-05",
+      "round": 1,
+      "ok": true,
+      "headersMs": 1988,
+      "bodyMs": 1,
+      "totalMs": 1989
+    },
+    {
+      "caseId": "ORCH-05",
+      "round": 1,
+      "ok": true,
+      "headersMs": 2643,
+      "bodyMs": 0,
+      "totalMs": 2643
+    },
+    {
+      "caseId": "ORCH-05",
+      "round": 2,
+      "ok": true,
+      "headersMs": 1130,
+      "bodyMs": 0,
+      "totalMs": 1130
+    },
+    {
+      "caseId": "ORCH-05",
+      "round": 2,
+      "ok": true,
+      "headersMs": 2757,
+      "bodyMs": 0,
+      "totalMs": 2757
+    },
+    {
+      "caseId": "ORCH-05",
+      "round": 3,
+      "ok": true,
+      "headersMs": 1210,
+      "bodyMs": 1,
+      "totalMs": 1211
+    },
+    {
+      "caseId": "ORCH-05",
+      "round": 3,
+      "ok": true,
+      "headersMs": 3132,
+      "bodyMs": 0,
+      "totalMs": 3132
+    }
+  ],
+  "timingSummary": {
+    "calls": 6,
+    "headersP50Ms": 2643,
+    "headersP90Ms": 3132,
+    "bodyP50Ms": 0,
+    "bodyP90Ms": 1,
+    "failByPhase": {}
+  }
+}

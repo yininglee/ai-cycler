@@ -951,6 +951,15 @@ export const chatToolSpecs: Record<ChatToolName, ChatToolSpec> = {
         { value: result.windowDays },
         { value: result.rideCount },
         ...result.claims.map((claim) => ({ value: claim.value, unit: claim.unit, key: claim.key, displayValue: claim.displayValue })),
+        // AGT-B5（第 14 个缺陷）：**逐条明细的数值也要可溯源**。原来只放了总计 claims，
+        // 模型一罗列单次明细（"10月24日一次 50.0 公里"）就必然被判数字越权 →
+        // ORCH-05/12/16 三连 REPAIR_FAILED。V4.1-Flash 比 V3.2 更爱列明细，所以这个洞
+        // 在换模型后才暴露（V3.2 用户侧同样会踩，只是它更少主动罗列）。
+        ...result.rows.flatMap((row) => row.claims.map((claim) => ({
+          value: claim.value,
+          unit: claim.unit,
+          ...(claim.displayValue !== undefined ? { displayValue: claim.displayValue } : {}),
+        }))),
         ...result.rows.flatMap((row) => [
           ...(row.rideDateLabel ? [{ displayValue: row.rideDateLabel }] : []),
           ...row.claims.map((claim) => ({ value: claim.value, unit: claim.unit, key: claim.metricKey, displayValue: claim.displayValue })),

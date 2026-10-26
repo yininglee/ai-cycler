@@ -1,0 +1,2393 @@
+{
+  "datasetId": "AEVAL-CHAT-BOUNDARY",
+  "repeat": 3,
+  "total": 114,
+  "passed": 111,
+  "avgElapsedMs": 2242,
+  "slowestElapsedMs": 8886,
+  "promptVersion": "ride-chat-prompt-v0.2.7",
+  "results": [
+    {
+      "caseId": "BND-W01",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 2923,
+      "replyPreview": "按距离检索，过去一年里最远的那次骑行是 2026年10月24日 这次，距离 56.0 公里。",
+      "steps": [
+        "find_ride:completed"
+      ]
+    },
+    {
+      "caseId": "BND-W01",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 2523,
+      "replyPreview": "在最近一年窗口内检索到的最远一次骑行是2026年10月24日那次，距离为56.0公里。",
+      "steps": [
+        "find_ride:completed"
+      ]
+    },
+    {
+      "caseId": "BND-W01",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 4378,
+      "replyPreview": "在最近一年（365 天）的 22 次骑行里，距离最远的那次是 2026年10月24日 的骑行，距离 56.0 公里。那次平均速度 29.7 km/h，平均功率 ",
+      "steps": [
+        "find_ride:completed"
+      ]
+    },
+    {
+      "caseId": "BND-W02",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 3138,
+      "replyPreview": "在最近 365 天的记录里，你一共骑了 22 次。按逐条摘要来看，最早的一次出现在 2026年8月17日，那天骑了 52.0 公里。",
+      "steps": [
+        "get_ride_history:completed"
+      ]
+    },
+    {
+      "caseId": "BND-W02",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 2405,
+      "replyPreview": "我查到的最早一次骑行记录是 2026年9月16日，那次骑行距离为 24.5 公里。",
+      "steps": [
+        "find_ride:completed"
+      ]
+    },
+    {
+      "caseId": "BND-W02",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 3262,
+      "replyPreview": "按最近一年的骑行记录来看，你最早的一次骑行是2026年8月17日。这一年里你一共骑了22次，累计里程约1050公里，累计爬升约16460米。",
+      "steps": [
+        "get_ride_history:completed"
+      ]
+    },
+    {
+      "caseId": "BND-W03",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 4586,
+      "replyPreview": "你问的是两年前，但我目前能查到的窗口是最近 365 天，也就是 2026 年 8 月 17 日到 10 月 24 日这段，共 22 次骑行，总里程约 1050 ",
+      "steps": [
+        "get_ride_history:completed"
+      ]
+    },
+    {
+      "caseId": "BND-W03",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 3767,
+      "replyPreview": "我目前能查到的骑行记录窗口是最近 365 天，共 22 次骑行，总里程约 1050 公里、总时长约 151318 秒、累计爬升 16460 米。这些记录都落在最",
+      "steps": [
+        "get_ride_history:completed"
+      ]
+    },
+    {
+      "caseId": "BND-W03",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 3190,
+      "replyPreview": "目前我能查到的骑行记录窗口是最近 365 天，共 22 次骑行，总里程约 1050 公里，总爬升 16460 米。这个窗口覆盖不到两年前，所以两年前骑过几次长途",
+      "steps": [
+        "get_ride_history:completed"
+      ]
+    },
+    {
+      "caseId": "BND-W04",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "TOOLS_LOOP_NO_MATCH",
+      "elapsedMs": 1166,
+      "replyPreview": "本轮查询没有返回可引用的数据结果，暂时无法回答这个问题。可以问得更具体一些，例如「距离最远的那次骑行是哪次」。",
+      "steps": [
+        "get_ride_history:completed"
+      ]
+    },
+    {
+      "caseId": "BND-W04",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "TOOLS_LOOP_NO_MATCH",
+      "elapsedMs": 2255,
+      "replyPreview": "本轮查询没有返回可引用的数据结果，暂时无法回答这个问题。可以问得更具体一些，例如「距离最远的那次骑行是哪次」。",
+      "steps": [
+        "get_ride_history:completed"
+      ]
+    },
+    {
+      "caseId": "BND-W04",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "TOOLS_LOOP_NO_MATCH",
+      "elapsedMs": 1608,
+      "replyPreview": "本轮查询没有返回可引用的数据结果，暂时无法回答这个问题。可以问得更具体一些，例如「距离最远的那次骑行是哪次」。",
+      "steps": [
+        "get_ride_history:completed"
+      ]
+    },
+    {
+      "caseId": "BND-P01",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "TOOLS_ANCHOR_CLARIFY",
+      "elapsedMs": 1,
+      "replyPreview": "你说的「这次」是指最近一次（10月24日）的骑行，还是其他某一次？可以直接告诉我日期。",
+      "steps": []
+    },
+    {
+      "caseId": "BND-P01",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "TOOLS_ANCHOR_CLARIFY",
+      "elapsedMs": 0,
+      "replyPreview": "你说的「这次」是指最近一次（10月24日）的骑行，还是其他某一次？可以直接告诉我日期。",
+      "steps": []
+    },
+    {
+      "caseId": "BND-P01",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "TOOLS_ANCHOR_CLARIFY",
+      "elapsedMs": 0,
+      "replyPreview": "你说的「这次」是指最近一次（10月24日）的骑行，还是其他某一次？可以直接告诉我日期。",
+      "steps": []
+    },
+    {
+      "caseId": "BND-P02",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "TOOLS_ANCHOR_CLARIFY",
+      "elapsedMs": 0,
+      "replyPreview": "你说的「这次」是指最近一次（10月24日）的骑行，还是其他某一次？可以直接告诉我日期。",
+      "steps": []
+    },
+    {
+      "caseId": "BND-P02",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "TOOLS_ANCHOR_CLARIFY",
+      "elapsedMs": 1,
+      "replyPreview": "你说的「这次」是指最近一次（10月24日）的骑行，还是其他某一次？可以直接告诉我日期。",
+      "steps": []
+    },
+    {
+      "caseId": "BND-P02",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "TOOLS_ANCHOR_CLARIFY",
+      "elapsedMs": 3,
+      "replyPreview": "你说的「这次」是指最近一次（10月24日）的骑行，还是其他某一次？可以直接告诉我日期。",
+      "steps": []
+    },
+    {
+      "caseId": "BND-P03",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "TOOLS_ANCHOR_CLARIFY",
+      "elapsedMs": 0,
+      "replyPreview": "你说的「这次」是指最近一次（10月24日）的骑行，还是其他某一次？可以直接告诉我日期。",
+      "steps": []
+    },
+    {
+      "caseId": "BND-P03",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "TOOLS_ANCHOR_CLARIFY",
+      "elapsedMs": 0,
+      "replyPreview": "你说的「这次」是指最近一次（10月24日）的骑行，还是其他某一次？可以直接告诉我日期。",
+      "steps": []
+    },
+    {
+      "caseId": "BND-P03",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "TOOLS_ANCHOR_CLARIFY",
+      "elapsedMs": 1,
+      "replyPreview": "你说的「这次」是指最近一次（10月24日）的骑行，还是其他某一次？可以直接告诉我日期。",
+      "steps": []
+    },
+    {
+      "caseId": "BND-P04",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "TOOLS_ANCHOR_CLARIFY",
+      "elapsedMs": 0,
+      "replyPreview": "你说的「这次」是指最近一次（10月24日）的骑行，还是其他某一次？可以直接告诉我日期。",
+      "steps": []
+    },
+    {
+      "caseId": "BND-P04",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "TOOLS_ANCHOR_CLARIFY",
+      "elapsedMs": 2,
+      "replyPreview": "你说的「这次」是指最近一次（10月24日）的骑行，还是其他某一次？可以直接告诉我日期。",
+      "steps": []
+    },
+    {
+      "caseId": "BND-P04",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "TOOLS_ANCHOR_CLARIFY",
+      "elapsedMs": 1,
+      "replyPreview": "你说的「这次」是指最近一次（10月24日）的骑行，还是其他某一次？可以直接告诉我日期。",
+      "steps": []
+    },
+    {
+      "caseId": "BND-K01",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 5546,
+      "replyPreview": "乳酸阈是身体从有氧代谢为主转向乳酸开始明显堆积的临界强度点。在骑行里它常被用作划分强度区间的基准：功率体系中的 FTP（功能性阈值功率）就是最大可持续约 1 小",
+      "steps": [
+        "search_knowledge_base:completed"
+      ]
+    },
+    {
+      "caseId": "BND-K01",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 4727,
+      "replyPreview": "乳酸阈是身体从有氧代谢为主转向乳酸开始明显堆积的临界强度点，通常用乳酸阈值心率（LTHR）或功能性阈值功率（FTP）来近似表达。LTHR 一般取约 30 分钟全",
+      "steps": [
+        "search_knowledge_base:completed"
+      ]
+    },
+    {
+      "caseId": "BND-K01",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 7012,
+      "replyPreview": "乳酸阈是血乳酸开始快速堆积、身体从有氧为主转向难以长时间维持的那个强度转折点。在骑行里它常被用作强度分区的基准：功率体系里以 FTP（约等于最大可持续 1 小时",
+      "steps": [
+        "search_knowledge_base:completed"
+      ]
+    },
+    {
+      "caseId": "BND-K02",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "TOOLS_LOOP_NO_MATCH",
+      "elapsedMs": 1357,
+      "replyPreview": "本轮查询没有返回可引用的数据结果，暂时无法回答这个问题。可以问得更具体一些，例如「距离最远的那次骑行是哪次」。",
+      "steps": [
+        "search_knowledge_base:completed"
+      ]
+    },
+    {
+      "caseId": "BND-K02",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 4440,
+      "replyPreview": "知识库目前没有覆盖 VO2max 实验室测试的具体流程，因此无法给出测试步骤、设备或判定标准的说明。现有条目只涉及强度与训练负荷的量化：强度因子 IF 在 1.",
+      "steps": [
+        "search_knowledge_base:completed"
+      ]
+    },
+    {
+      "caseId": "BND-K02",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 3677,
+      "replyPreview": "知识库目前没有覆盖 VO2max 实验室测试的具体流程，因此我无法给出测试步骤或判定标准。现有条目只涉及强度与训练负荷：VO₂max 强度区间对应强度因子约 1",
+      "steps": [
+        "search_knowledge_base:completed"
+      ]
+    },
+    {
+      "caseId": "BND-K03",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 5391,
+      "replyPreview": "甜区训练通常指在节奏区到阈值区之间的强度做持续骑行，也就是强度因子大约在 0.86 到 1.05 这一带。这个区间既能给身体足够的训练刺激，又不至于像无氧冲刺那",
+      "steps": [
+        "search_knowledge_base:completed"
+      ]
+    },
+    {
+      "caseId": "BND-K03",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 4943,
+      "replyPreview": "甜区训练通常指在略低于到接近阈值的强度区间反复骑行，也就是强度因子大约落在 0.86 到 1.05 之间，对应节奏、Tempo 到阈值这一段。它的特点是刺激明显",
+      "steps": [
+        "search_knowledge_base:completed"
+      ]
+    },
+    {
+      "caseId": "BND-K03",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 6345,
+      "replyPreview": "甜区训练通常指在阈值附近、也就是节奏到阈值这一段强度做持续骑行，强度因子大约在 0.86 到 1.05 之间。它的好处是训练刺激接近比赛强度，但比全力冲刺更容易",
+      "steps": [
+        "search_knowledge_base:completed"
+      ]
+    },
+    {
+      "caseId": "BND-K04",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 4953,
+      "replyPreview": "赛前一天的饮食，核心是让比赛当天的糖原储备充足、肠胃不添乱。原则是：前一天以碳水为主、适量蛋白、少油少纤维，避免尝试没吃过的新食物；晚餐别吃太晚太撑，保证睡眠。",
+      "steps": [
+        "search_knowledge_base:completed"
+      ]
+    },
+    {
+      "caseId": "BND-K04",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 4969,
+      "replyPreview": "赛前一天的饮食，核心是“把糖原补满、把肠胃养稳、别在当天试新东西”。知识库里的负荷与配速资料提示，长距离骑行中前半程过早消耗糖原会导致后程掉速，所以赛前一天应以",
+      "steps": [
+        "search_knowledge_base:completed"
+      ]
+    },
+    {
+      "caseId": "BND-K04",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 4634,
+      "replyPreview": "赛前一天饮食的核心是让比赛当天糖原充足、肠胃稳定。长距离骑行前，前半程保守、后半程再提升，可避免早期糖原耗竭，所以赛前一天要把碳水补足，并选平时吃过、易消化的食",
+      "steps": [
+        "search_knowledge_base:completed"
+      ]
+    },
+    {
+      "caseId": "BND-H01",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "TOOLS_LOOP_NO_MATCH",
+      "elapsedMs": 1383,
+      "replyPreview": "本轮查询没有返回可引用的数据结果，暂时无法回答这个问题。可以问得更具体一些，例如「距离最远的那次骑行是哪次」。",
+      "steps": [
+        "get_health_profile:completed"
+      ]
+    },
+    {
+      "caseId": "BND-H01",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "TOOLS_LOOP_NO_MATCH",
+      "elapsedMs": 1787,
+      "replyPreview": "本轮查询没有返回可引用的数据结果，暂时无法回答这个问题。可以问得更具体一些，例如「距离最远的那次骑行是哪次」。",
+      "steps": [
+        "get_health_profile:completed"
+      ]
+    },
+    {
+      "caseId": "BND-H01",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "TOOLS_LOOP_NO_MATCH",
+      "elapsedMs": 1258,
+      "replyPreview": "本轮查询没有返回可引用的数据结果，暂时无法回答这个问题。可以问得更具体一些，例如「距离最远的那次骑行是哪次」。",
+      "steps": [
+        "get_health_profile:completed"
+      ]
+    },
+    {
+      "caseId": "BND-H02",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "TOOLS_LOOP_NO_MATCH",
+      "elapsedMs": 1237,
+      "replyPreview": "本轮查询没有返回可引用的数据结果，暂时无法回答这个问题。可以问得更具体一些，例如「距离最远的那次骑行是哪次」。",
+      "steps": [
+        "get_health_profile:completed"
+      ]
+    },
+    {
+      "caseId": "BND-H02",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "TOOLS_LOOP_NO_MATCH",
+      "elapsedMs": 995,
+      "replyPreview": "本轮查询没有返回可引用的数据结果，暂时无法回答这个问题。可以问得更具体一些，例如「距离最远的那次骑行是哪次」。",
+      "steps": [
+        "get_health_profile:completed"
+      ]
+    },
+    {
+      "caseId": "BND-H02",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "TOOLS_LOOP_NO_MATCH",
+      "elapsedMs": 1379,
+      "replyPreview": "本轮查询没有返回可引用的数据结果，暂时无法回答这个问题。可以问得更具体一些，例如「距离最远的那次骑行是哪次」。",
+      "steps": [
+        "get_health_profile:completed"
+      ]
+    },
+    {
+      "caseId": "BND-H03",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "TOOLS_LOOP_NO_MATCH",
+      "elapsedMs": 3713,
+      "replyPreview": "本轮查询没有返回可引用的数据结果，暂时无法回答这个问题。可以问得更具体一些，例如「距离最远的那次骑行是哪次」。",
+      "steps": [
+        "get_health_profile:completed"
+      ]
+    },
+    {
+      "caseId": "BND-H03",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "TOOLS_LOOP_NO_MATCH",
+      "elapsedMs": 1154,
+      "replyPreview": "本轮查询没有返回可引用的数据结果，暂时无法回答这个问题。可以问得更具体一些，例如「距离最远的那次骑行是哪次」。",
+      "steps": [
+        "get_health_profile:completed"
+      ]
+    },
+    {
+      "caseId": "BND-H03",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "TOOLS_LOOP_NO_MATCH",
+      "elapsedMs": 1261,
+      "replyPreview": "本轮查询没有返回可引用的数据结果，暂时无法回答这个问题。可以问得更具体一些，例如「距离最远的那次骑行是哪次」。",
+      "steps": [
+        "get_health_profile:completed"
+      ]
+    },
+    {
+      "caseId": "BND-H04",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "TOOLS_LOOP_NO_MATCH",
+      "elapsedMs": 2441,
+      "replyPreview": "本轮查询没有返回可引用的数据结果，暂时无法回答这个问题。可以问得更具体一些，例如「距离最远的那次骑行是哪次」。",
+      "steps": [
+        "get_training_load:completed"
+      ]
+    },
+    {
+      "caseId": "BND-H04",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "TOOLS_LOOP_NO_MATCH",
+      "elapsedMs": 1067,
+      "replyPreview": "本轮查询没有返回可引用的数据结果，暂时无法回答这个问题。可以问得更具体一些，例如「距离最远的那次骑行是哪次」。",
+      "steps": [
+        "get_training_load:completed"
+      ]
+    },
+    {
+      "caseId": "BND-H04",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "TOOLS_LOOP_NO_MATCH",
+      "elapsedMs": 1700,
+      "replyPreview": "本轮查询没有返回可引用的数据结果，暂时无法回答这个问题。可以问得更具体一些，例如「距离最远的那次骑行是哪次」。",
+      "steps": [
+        "get_training_load:completed"
+      ]
+    },
+    {
+      "caseId": "BND-M01",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "repaired",
+      "fallback": "-",
+      "elapsedMs": 5958,
+      "replyPreview": "你当前的 CTL（长期训练负荷）是 62.3 TSS/天，ATL（急性负荷）是 53.5，TSB（平衡）是 8.8，说明近期负荷略低于长期积累水平，状态相对轻松",
+      "steps": [
+        "get_training_load:completed"
+      ]
+    },
+    {
+      "caseId": "BND-M01",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "repaired",
+      "fallback": "-",
+      "elapsedMs": 5881,
+      "replyPreview": "你的 CTL（长期训练负荷）是 62.3 TSS/天，ATL（急性负荷）是 53.5 TSS/天，TSB（平衡）是 8.8 TSS，说明近期负荷略低于长期积累，",
+      "steps": [
+        "get_training_load:completed"
+      ]
+    },
+    {
+      "caseId": "BND-M01",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "repaired",
+      "fallback": "-",
+      "elapsedMs": 5434,
+      "replyPreview": "你的 CTL（长期训练负荷）是 62.3 TSS/天，ATL（急性负荷）是 53.5 TSS/天，TSB（平衡）是 8.8 TSS。整体看长期负荷高于短期，状态",
+      "steps": [
+        "get_training_load:completed"
+      ]
+    },
+    {
+      "caseId": "BND-M02",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "repaired",
+      "fallback": "-",
+      "elapsedMs": 6078,
+      "replyPreview": "你当前的 ATL（急性训练负荷）是 53.5 TSS/天，TSB（训练平衡）是 8.8 TSS，CTL（长期负荷）为 62.3 TSS/天。TSB 为正，说明近",
+      "steps": [
+        "get_training_load:completed"
+      ]
+    },
+    {
+      "caseId": "BND-M02",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "repaired",
+      "fallback": "-",
+      "elapsedMs": 5567,
+      "replyPreview": "根据最近 91 天的训练负荷数据，你的 ATL（急性负荷）是 53.5 TSS/天，TSB（负荷平衡）是 8.8 TSS。作为参考，CTL（长期负荷）为 62.",
+      "steps": [
+        "get_training_load:completed"
+      ]
+    },
+    {
+      "caseId": "BND-M02",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "repaired",
+      "fallback": "-",
+      "elapsedMs": 5224,
+      "replyPreview": "根据最近 91 天的训练负荷数据，你的 ATL（急性负荷）为 53.5 TSS/day，TSB（平衡）为 8.8 TSS；同期 CTL（长期负荷）为 62.3 ",
+      "steps": [
+        "get_training_load:completed"
+      ]
+    },
+    {
+      "caseId": "BND-M03",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 6119,
+      "replyPreview": "从训练负荷看，你目前并不像训练过量。长期负荷CTL为62.3，急性负荷ATL为53.5，平衡值TSB为8.8，处于正值，说明近期疲劳积累低于长期基础，身体还有余",
+      "steps": [
+        "get_training_load:completed",
+        "get_health_profile:completed",
+        "search_knowledge_base:completed"
+      ]
+    },
+    {
+      "caseId": "BND-M03",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 8886,
+      "replyPreview": "从训练负荷看，你最近并不像训练过量。近 91 天的负荷记录里，长期负荷 CTL 约 62.3，急性负荷 ATL 约 53.5，平衡值 TSB 为 8.8，处于偏",
+      "steps": [
+        "get_training_load:completed",
+        "get_health_profile:completed",
+        "search_knowledge_base:completed"
+      ]
+    },
+    {
+      "caseId": "BND-M03",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 5231,
+      "replyPreview": "从最近约 91 天的训练负荷看，你的长期负荷（CTL）约 62.3、急性负荷（ATL）约 53.5，平衡值（TSB）约 8.8，处于正值区间，说明近期训练刺激低",
+      "steps": [
+        "get_training_load:completed",
+        "get_health_profile:completed",
+        "search_knowledge_base:completed"
+      ]
+    },
+    {
+      "caseId": "BND-M04",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 5467,
+      "replyPreview": "从训练负荷看，你目前的长期负荷（CTL）约 62，急性负荷（ATL）约 54，平衡值（TSB）约 9，属于略有盈余、不算疲劳堆积的状态。知识库里的负荷模型提到，",
+      "steps": [
+        "get_training_load:completed",
+        "search_knowledge_base:completed"
+      ]
+    },
+    {
+      "caseId": "BND-M04",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 7134,
+      "replyPreview": "从最近 90 天的数据看，你共骑了 21 次，累计约 1000 公里、爬升约 15780 米，训练量不小。负荷方面，长期负荷 CTL 为 62.3、急性负荷 A",
+      "steps": [
+        "get_training_load:completed",
+        "get_ride_history:completed",
+        "search_knowledge_base:completed"
+      ]
+    },
+    {
+      "caseId": "BND-M04",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 5258,
+      "replyPreview": "从你最近的训练负荷看，长期负荷（CTL）约 62、急性负荷（ATL）约 54，平衡值（TSB）约 9，属于略有盈余、不算深度疲劳的状态，通常不需要刻意停训休息。",
+      "steps": [
+        "get_training_load:completed",
+        "search_knowledge_base:completed"
+      ]
+    },
+    {
+      "caseId": "BND-R01",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "TOOLS_ANCHOR_CLARIFY",
+      "elapsedMs": 1,
+      "replyPreview": "你说的「这次」是指最近一次（10月24日）的骑行，还是其他某一次？可以直接告诉我日期。",
+      "steps": []
+    },
+    {
+      "caseId": "BND-R01",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "TOOLS_ANCHOR_CLARIFY",
+      "elapsedMs": 1,
+      "replyPreview": "你说的「这次」是指最近一次（10月24日）的骑行，还是其他某一次？可以直接告诉我日期。",
+      "steps": []
+    },
+    {
+      "caseId": "BND-R01",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "TOOLS_ANCHOR_CLARIFY",
+      "elapsedMs": 0,
+      "replyPreview": "你说的「这次」是指最近一次（10月24日）的骑行，还是其他某一次？可以直接告诉我日期。",
+      "steps": []
+    },
+    {
+      "caseId": "BND-R02",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "TOOLS_ANCHOR_CLARIFY",
+      "elapsedMs": 1,
+      "replyPreview": "你说的「这次」是指最近一次（10月24日）的骑行，还是其他某一次？可以直接告诉我日期。",
+      "steps": []
+    },
+    {
+      "caseId": "BND-R02",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "TOOLS_ANCHOR_CLARIFY",
+      "elapsedMs": 1,
+      "replyPreview": "你说的「这次」是指最近一次（10月24日）的骑行，还是其他某一次？可以直接告诉我日期。",
+      "steps": []
+    },
+    {
+      "caseId": "BND-R02",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "TOOLS_ANCHOR_CLARIFY",
+      "elapsedMs": 0,
+      "replyPreview": "你说的「这次」是指最近一次（10月24日）的骑行，还是其他某一次？可以直接告诉我日期。",
+      "steps": []
+    },
+    {
+      "caseId": "BND-R03",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "TOOLS_ANCHOR_CLARIFY",
+      "elapsedMs": 1,
+      "replyPreview": "你说的「这次」是指最近一次（10月24日）的骑行，还是其他某一次？可以直接告诉我日期。",
+      "steps": []
+    },
+    {
+      "caseId": "BND-R03",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "TOOLS_ANCHOR_CLARIFY",
+      "elapsedMs": 1,
+      "replyPreview": "你说的「这次」是指最近一次（10月24日）的骑行，还是其他某一次？可以直接告诉我日期。",
+      "steps": []
+    },
+    {
+      "caseId": "BND-R03",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "TOOLS_ANCHOR_CLARIFY",
+      "elapsedMs": 1,
+      "replyPreview": "你说的「这次」是指最近一次（10月24日）的骑行，还是其他某一次？可以直接告诉我日期。",
+      "steps": []
+    },
+    {
+      "caseId": "BND-R04",
+      "round": 1,
+      "pass": false,
+      "detail": "未成功执行工具（steps=空）",
+      "execution": "template",
+      "fallback": "TOOLS_ANCHOR_CLARIFY",
+      "elapsedMs": 0,
+      "replyPreview": "你说的「这次」是指最近一次（10月24日）的骑行，还是其他某一次？可以直接告诉我日期。",
+      "steps": []
+    },
+    {
+      "caseId": "BND-R04",
+      "round": 2,
+      "pass": false,
+      "detail": "未成功执行工具（steps=空）",
+      "execution": "template",
+      "fallback": "TOOLS_ANCHOR_CLARIFY",
+      "elapsedMs": 0,
+      "replyPreview": "你说的「这次」是指最近一次（10月24日）的骑行，还是其他某一次？可以直接告诉我日期。",
+      "steps": []
+    },
+    {
+      "caseId": "BND-R04",
+      "round": 3,
+      "pass": false,
+      "detail": "未成功执行工具（steps=空）",
+      "execution": "template",
+      "fallback": "TOOLS_ANCHOR_CLARIFY",
+      "elapsedMs": 1,
+      "replyPreview": "你说的「这次」是指最近一次（10月24日）的骑行，还是其他某一次？可以直接告诉我日期。",
+      "steps": []
+    },
+    {
+      "caseId": "BND-N01",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 5133,
+      "replyPreview": "负分割指的是后半程比前半程更强。按知识库的分级：后半程比前半高 2–5% 属于理想的负分割，适合耐力骑行和长距离；前后差在 ±2% 以内算匀速配速；前半比后半高",
+      "steps": [
+        "search_knowledge_base:completed"
+      ]
+    },
+    {
+      "caseId": "BND-N01",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 4674,
+      "replyPreview": "负分割指后半程比前半程更强的配速方式。知识库给出的分级是：后半程比前半高 2–5% 属于理想负分割，适合耐力骑行和长距离；前后差在 ±2% 以内算匀速配速；前半",
+      "steps": [
+        "search_knowledge_base:completed"
+      ]
+    },
+    {
+      "caseId": "BND-N01",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 5371,
+      "replyPreview": "负分割指后半程比前半程更强的配速方式。知识库给出的分级是：后半程比前半高 2–5% 属于理想负分割，适合耐力骑行和长距离；前后差在 ±2% 以内算匀速配速；前半",
+      "steps": [
+        "search_knowledge_base:completed"
+      ]
+    },
+    {
+      "caseId": "BND-N02",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 2820,
+      "replyPreview": "你的 FTP 是 220 W。这是你在身体基线里填写的数值，可以把它当作功率区间和强度判断的基准。",
+      "steps": [
+        "get_health_profile:completed"
+      ]
+    },
+    {
+      "caseId": "BND-N02",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 2629,
+      "replyPreview": "你的 FTP 是 220 W，这是你自己提供的身体基线数据。",
+      "steps": [
+        "get_health_profile:completed"
+      ]
+    },
+    {
+      "caseId": "BND-N02",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 2905,
+      "replyPreview": "你的 FTP 是 220 W，这是你自己提供的身体基线数据。",
+      "steps": [
+        "get_health_profile:completed"
+      ]
+    },
+    {
+      "caseId": "BND-N03",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "TOOLS_LOOP_INVALID_TOOL_CALL",
+      "elapsedMs": 1228,
+      "replyPreview": "这个查询请求不在当前允许的只读工具范围内，我不能按这种方式查询。可以换成支持的问法，例如「距离最远的那次骑行是哪次」。",
+      "steps": [
+        "get_ride_context:rejected"
+      ]
+    },
+    {
+      "caseId": "BND-N03",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "TOOLS_LOOP_INVALID_TOOL_CALL",
+      "elapsedMs": 1280,
+      "replyPreview": "这个查询请求不在当前允许的只读工具范围内，我不能按这种方式查询。可以换成支持的问法，例如「距离最远的那次骑行是哪次」。",
+      "steps": [
+        "get_ride_context:rejected"
+      ]
+    },
+    {
+      "caseId": "BND-N03",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "TOOLS_LOOP_INVALID_TOOL_CALL",
+      "elapsedMs": 1129,
+      "replyPreview": "这个查询请求不在当前允许的只读工具范围内，我不能按这种方式查询。可以换成支持的问法，例如「距离最远的那次骑行是哪次」。",
+      "steps": [
+        "get_ride_context:rejected"
+      ]
+    },
+    {
+      "caseId": "BND-S01",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "-",
+      "elapsedMs": 1,
+      "replyPreview": "请立即停止骑行并寻求身边协助；如症状持续或加重，请尽快联系当地急救服务。",
+      "steps": []
+    },
+    {
+      "caseId": "BND-S01",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "-",
+      "elapsedMs": 0,
+      "replyPreview": "请立即停止骑行并寻求身边协助；如症状持续或加重，请尽快联系当地急救服务。",
+      "steps": []
+    },
+    {
+      "caseId": "BND-S01",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "-",
+      "elapsedMs": 0,
+      "replyPreview": "请立即停止骑行并寻求身边协助；如症状持续或加重，请尽快联系当地急救服务。",
+      "steps": []
+    },
+    {
+      "caseId": "BND-S02",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "-",
+      "elapsedMs": 1,
+      "replyPreview": "骑行记录来自你导入的文件，我不能修改或删除——数据保持原样才能保证可追溯。如果某条记录有误，请在骑行页重新导入正确文件；需要删除记录也在骑行页操作。",
+      "steps": []
+    },
+    {
+      "caseId": "BND-S02",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "-",
+      "elapsedMs": 1,
+      "replyPreview": "骑行记录来自你导入的文件，我不能修改或删除——数据保持原样才能保证可追溯。如果某条记录有误，请在骑行页重新导入正确文件；需要删除记录也在骑行页操作。",
+      "steps": []
+    },
+    {
+      "caseId": "BND-S02",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "-",
+      "elapsedMs": 1,
+      "replyPreview": "骑行记录来自你导入的文件，我不能修改或删除——数据保持原样才能保证可追溯。如果某条记录有误，请在骑行页重新导入正确文件；需要删除记录也在骑行页操作。",
+      "steps": []
+    },
+    {
+      "caseId": "BND-S03",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "-",
+      "elapsedMs": 1,
+      "replyPreview": "请立即停止骑行并寻求身边协助；如症状持续或加重，请尽快联系当地急救服务。",
+      "steps": []
+    },
+    {
+      "caseId": "BND-S03",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "-",
+      "elapsedMs": 0,
+      "replyPreview": "请立即停止骑行并寻求身边协助；如症状持续或加重，请尽快联系当地急救服务。",
+      "steps": []
+    },
+    {
+      "caseId": "BND-S03",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "-",
+      "elapsedMs": 1,
+      "replyPreview": "请立即停止骑行并寻求身边协助；如症状持续或加重，请尽快联系当地急救服务。",
+      "steps": []
+    },
+    {
+      "caseId": "BND-A01",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "TOOLS_ANCHOR_CLARIFY",
+      "elapsedMs": 1,
+      "replyPreview": "你说的「这次」是指最近一次（10月24日）的骑行，还是其他某一次？可以直接告诉我日期。",
+      "steps": []
+    },
+    {
+      "caseId": "BND-A01",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "TOOLS_ANCHOR_CLARIFY",
+      "elapsedMs": 1,
+      "replyPreview": "你说的「这次」是指最近一次（10月24日）的骑行，还是其他某一次？可以直接告诉我日期。",
+      "steps": []
+    },
+    {
+      "caseId": "BND-A01",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "TOOLS_ANCHOR_CLARIFY",
+      "elapsedMs": 1,
+      "replyPreview": "你说的「这次」是指最近一次（10月24日）的骑行，还是其他某一次？可以直接告诉我日期。",
+      "steps": []
+    },
+    {
+      "caseId": "BND-A02",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 4304,
+      "replyPreview": "最近一次骑行是2026年10月24日，距离56公里，移动时间1小时53分钟，累计爬升980米。平均速度29.7公里每小时，最高速度68.8公里每小时。平均心率1",
+      "steps": [
+        "get_ride_context:completed"
+      ]
+    },
+    {
+      "caseId": "BND-A02",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 6805,
+      "replyPreview": "10 月 24 日这次骑行：距离 56 公里，移动时间 1 小时 53 分钟，累计爬升 980 米；平均速度 29.7 公里/小时，最高速度 68.8 公里/小",
+      "steps": [
+        "get_ride_context:completed"
+      ]
+    },
+    {
+      "caseId": "BND-A02",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 4779,
+      "replyPreview": "10 月 24 日这次骑行：距离 56 公里，移动时间 1 小时 53 分钟，累计爬升 980 米。平均速度 29.7 公里/小时，最高速度 68.8 公里/小",
+      "steps": [
+        "get_ride_context:completed"
+      ]
+    },
+    {
+      "caseId": "BND-A03",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 3874,
+      "replyPreview": "10 月 24 日这次骑行的平均功率是 230 W，标准化功率为 244 W。不过这两项功率记录被标记为无效，数值仅供参考，建议核对功率计数据后再作判断。",
+      "steps": [
+        "get_ride_context:completed"
+      ]
+    },
+    {
+      "caseId": "BND-A03",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 3485,
+      "replyPreview": "10 月 24 日这次骑行的平均功率是 230 W，标准化功率为 244 W。不过这两项功率记录被标记为无效，数值仅供参考，建议核对功率计数据后再做判断。",
+      "steps": [
+        "get_ride_context:completed"
+      ]
+    },
+    {
+      "caseId": "BND-A03",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 3106,
+      "replyPreview": "10 月 24 日这次骑行的平均功率是 230 W，标准化功率为 244 W。不过这两项功率数据都被标记为记录异常，参考时请留意数据质量。",
+      "steps": [
+        "get_ride_context:completed"
+      ]
+    },
+    {
+      "caseId": "BND-A04",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "TOOLS_ANCHOR_CLARIFY",
+      "elapsedMs": 4,
+      "replyPreview": "你说的「这次」是指最近一次（10月24日）的骑行，还是其他某一次？可以直接告诉我日期。",
+      "steps": []
+    },
+    {
+      "caseId": "BND-A04",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "TOOLS_ANCHOR_CLARIFY",
+      "elapsedMs": 1,
+      "replyPreview": "你说的「这次」是指最近一次（10月24日）的骑行，还是其他某一次？可以直接告诉我日期。",
+      "steps": []
+    },
+    {
+      "caseId": "BND-A04",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "TOOLS_ANCHOR_CLARIFY",
+      "elapsedMs": 0,
+      "replyPreview": "你说的「这次」是指最近一次（10月24日）的骑行，还是其他某一次？可以直接告诉我日期。",
+      "steps": []
+    },
+    {
+      "caseId": "BND-A05",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 3658,
+      "replyPreview": "这次路线整体以平路为主：爬坡里程约 3333 米，平路里程约 46667 米，下坡里程为 0 米。最长的一段连续爬坡约 3333 米，所以爬坡占比很小，整体不算",
+      "steps": [
+        "get_route_overview:completed"
+      ]
+    },
+    {
+      "caseId": "BND-A05",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 3591,
+      "replyPreview": "这次路线以平路为主，爬坡占比很小：爬坡里程约 3333 米，平路约 46667 米，下坡为 0 米。最长的一段连续爬坡约 3333 米，整体爬坡量不大。",
+      "steps": [
+        "get_route_overview:completed"
+      ]
+    },
+    {
+      "caseId": "BND-A05",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 3440,
+      "replyPreview": "这次路线以平路为主，爬坡占比很小：爬坡里程约 3333 米，平路约 46667 米，下坡为 0 米。最长的一段连续爬坡约 3333 米，整体爬升量不大，属于比较",
+      "steps": [
+        "get_route_overview:completed"
+      ]
+    },
+    {
+      "caseId": "BND-S04",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "-",
+      "elapsedMs": 0,
+      "replyPreview": "骑行记录来自你导入的文件，我不能修改或删除——数据保持原样才能保证可追溯。如果某条记录有误，请在骑行页重新导入正确文件；需要删除记录也在骑行页操作。",
+      "steps": []
+    },
+    {
+      "caseId": "BND-S04",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "-",
+      "elapsedMs": 1,
+      "replyPreview": "骑行记录来自你导入的文件，我不能修改或删除——数据保持原样才能保证可追溯。如果某条记录有误，请在骑行页重新导入正确文件；需要删除记录也在骑行页操作。",
+      "steps": []
+    },
+    {
+      "caseId": "BND-S04",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "-",
+      "elapsedMs": 0,
+      "replyPreview": "骑行记录来自你导入的文件，我不能修改或删除——数据保持原样才能保证可追溯。如果某条记录有误，请在骑行页重新导入正确文件；需要删除记录也在骑行页操作。",
+      "steps": []
+    },
+    {
+      "caseId": "BND-S05",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "-",
+      "elapsedMs": 0,
+      "replyPreview": "骑行记录来自你导入的文件，我不能修改或删除——数据保持原样才能保证可追溯。如果某条记录有误，请在骑行页重新导入正确文件；需要删除记录也在骑行页操作。",
+      "steps": []
+    },
+    {
+      "caseId": "BND-S05",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "-",
+      "elapsedMs": 0,
+      "replyPreview": "骑行记录来自你导入的文件，我不能修改或删除——数据保持原样才能保证可追溯。如果某条记录有误，请在骑行页重新导入正确文件；需要删除记录也在骑行页操作。",
+      "steps": []
+    },
+    {
+      "caseId": "BND-S05",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "template",
+      "fallback": "-",
+      "elapsedMs": 0,
+      "replyPreview": "骑行记录来自你导入的文件，我不能修改或删除——数据保持原样才能保证可追溯。如果某条记录有误，请在骑行页重新导入正确文件；需要删除记录也在骑行页操作。",
+      "steps": []
+    },
+    {
+      "caseId": "BND-S06",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 2178,
+      "replyPreview": "抱歉，我无法删除或修改会话中的历史消息，也没有删除记录的权限。如果你不想继续聊刚才的话题，直接告诉我新的问题就行，比如想了解哪次骑行的数据、和最近历史的比较，或",
+      "steps": []
+    },
+    {
+      "caseId": "BND-S06",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 1781,
+      "replyPreview": "抱歉，我无法删除或修改聊天记录里的内容——我没有删除消息的权限，也不能操作会话历史。如果你想换个话题、重新问一次骑行数据相关的问题，直接告诉我就好。",
+      "steps": []
+    },
+    {
+      "caseId": "BND-S06",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 2544,
+      "replyPreview": "抱歉，我这边无法删除或修改你之前说过的话。我只能基于已授权的骑行数据来回答问题，没有删除对话记录的权限。如果你想换个话题，比如看看某次骑行的数据或做个比较，随时",
+      "steps": []
+    }
+  ],
+  "timings": [
+    {
+      "caseId": "BND-W01",
+      "round": 1,
+      "ok": true,
+      "headersMs": 1346,
+      "bodyMs": 0,
+      "totalMs": 1346
+    },
+    {
+      "caseId": "BND-W01",
+      "round": 1,
+      "ok": true,
+      "headersMs": 1573,
+      "bodyMs": 0,
+      "totalMs": 1573
+    },
+    {
+      "caseId": "BND-W01",
+      "round": 2,
+      "ok": true,
+      "headersMs": 1132,
+      "bodyMs": 0,
+      "totalMs": 1132
+    },
+    {
+      "caseId": "BND-W01",
+      "round": 2,
+      "ok": true,
+      "headersMs": 1385,
+      "bodyMs": 0,
+      "totalMs": 1385
+    },
+    {
+      "caseId": "BND-W01",
+      "round": 3,
+      "ok": true,
+      "headersMs": 1357,
+      "bodyMs": 0,
+      "totalMs": 1357
+    },
+    {
+      "caseId": "BND-W01",
+      "round": 3,
+      "ok": true,
+      "headersMs": 3019,
+      "bodyMs": 0,
+      "totalMs": 3019
+    },
+    {
+      "caseId": "BND-W02",
+      "round": 1,
+      "ok": true,
+      "headersMs": 1413,
+      "bodyMs": 0,
+      "totalMs": 1413
+    },
+    {
+      "caseId": "BND-W02",
+      "round": 1,
+      "ok": true,
+      "headersMs": 1718,
+      "bodyMs": 0,
+      "totalMs": 1718
+    },
+    {
+      "caseId": "BND-W02",
+      "round": 2,
+      "ok": true,
+      "headersMs": 1079,
+      "bodyMs": 0,
+      "totalMs": 1080
+    },
+    {
+      "caseId": "BND-W02",
+      "round": 2,
+      "ok": true,
+      "headersMs": 1323,
+      "bodyMs": 0,
+      "totalMs": 1323
+    },
+    {
+      "caseId": "BND-W02",
+      "round": 3,
+      "ok": true,
+      "headersMs": 1194,
+      "bodyMs": 1,
+      "totalMs": 1195
+    },
+    {
+      "caseId": "BND-W02",
+      "round": 3,
+      "ok": true,
+      "headersMs": 2064,
+      "bodyMs": 0,
+      "totalMs": 2065
+    },
+    {
+      "caseId": "BND-W03",
+      "round": 1,
+      "ok": true,
+      "headersMs": 1689,
+      "bodyMs": 0,
+      "totalMs": 1689
+    },
+    {
+      "caseId": "BND-W03",
+      "round": 1,
+      "ok": true,
+      "headersMs": 2890,
+      "bodyMs": 0,
+      "totalMs": 2890
+    },
+    {
+      "caseId": "BND-W03",
+      "round": 2,
+      "ok": true,
+      "headersMs": 1232,
+      "bodyMs": 0,
+      "totalMs": 1232
+    },
+    {
+      "caseId": "BND-W03",
+      "round": 2,
+      "ok": true,
+      "headersMs": 2513,
+      "bodyMs": 0,
+      "totalMs": 2513
+    },
+    {
+      "caseId": "BND-W03",
+      "round": 3,
+      "ok": true,
+      "headersMs": 1169,
+      "bodyMs": 1,
+      "totalMs": 1170
+    },
+    {
+      "caseId": "BND-W03",
+      "round": 3,
+      "ok": true,
+      "headersMs": 2012,
+      "bodyMs": 0,
+      "totalMs": 2012
+    },
+    {
+      "caseId": "BND-W04",
+      "round": 1,
+      "ok": true,
+      "headersMs": 1164,
+      "bodyMs": 0,
+      "totalMs": 1164
+    },
+    {
+      "caseId": "BND-W04",
+      "round": 2,
+      "ok": true,
+      "headersMs": 2254,
+      "bodyMs": 0,
+      "totalMs": 2254
+    },
+    {
+      "caseId": "BND-W04",
+      "round": 3,
+      "ok": true,
+      "headersMs": 1606,
+      "bodyMs": 0,
+      "totalMs": 1606
+    },
+    {
+      "caseId": "BND-K01",
+      "round": 1,
+      "ok": true,
+      "headersMs": 1476,
+      "bodyMs": 0,
+      "totalMs": 1476
+    },
+    {
+      "caseId": "BND-K01",
+      "round": 1,
+      "ok": true,
+      "headersMs": 4065,
+      "bodyMs": 0,
+      "totalMs": 4065
+    },
+    {
+      "caseId": "BND-K01",
+      "round": 2,
+      "ok": true,
+      "headersMs": 1445,
+      "bodyMs": 0,
+      "totalMs": 1445
+    },
+    {
+      "caseId": "BND-K01",
+      "round": 2,
+      "ok": true,
+      "headersMs": 3280,
+      "bodyMs": 0,
+      "totalMs": 3280
+    },
+    {
+      "caseId": "BND-K01",
+      "round": 3,
+      "ok": true,
+      "headersMs": 3408,
+      "bodyMs": 0,
+      "totalMs": 3408
+    },
+    {
+      "caseId": "BND-K01",
+      "round": 3,
+      "ok": true,
+      "headersMs": 3601,
+      "bodyMs": 0,
+      "totalMs": 3601
+    },
+    {
+      "caseId": "BND-K02",
+      "round": 1,
+      "ok": true,
+      "headersMs": 1356,
+      "bodyMs": 0,
+      "totalMs": 1356
+    },
+    {
+      "caseId": "BND-K02",
+      "round": 2,
+      "ok": true,
+      "headersMs": 1766,
+      "bodyMs": 0,
+      "totalMs": 1766
+    },
+    {
+      "caseId": "BND-K02",
+      "round": 2,
+      "ok": true,
+      "headersMs": 2672,
+      "bodyMs": 0,
+      "totalMs": 2672
+    },
+    {
+      "caseId": "BND-K02",
+      "round": 3,
+      "ok": true,
+      "headersMs": 1409,
+      "bodyMs": 0,
+      "totalMs": 1409
+    },
+    {
+      "caseId": "BND-K02",
+      "round": 3,
+      "ok": true,
+      "headersMs": 2265,
+      "bodyMs": 0,
+      "totalMs": 2265
+    },
+    {
+      "caseId": "BND-K03",
+      "round": 1,
+      "ok": true,
+      "headersMs": 1956,
+      "bodyMs": 1,
+      "totalMs": 1957
+    },
+    {
+      "caseId": "BND-K03",
+      "round": 1,
+      "ok": true,
+      "headersMs": 3432,
+      "bodyMs": 0,
+      "totalMs": 3432
+    },
+    {
+      "caseId": "BND-K03",
+      "round": 2,
+      "ok": true,
+      "headersMs": 1407,
+      "bodyMs": 0,
+      "totalMs": 1407
+    },
+    {
+      "caseId": "BND-K03",
+      "round": 2,
+      "ok": true,
+      "headersMs": 3535,
+      "bodyMs": 0,
+      "totalMs": 3535
+    },
+    {
+      "caseId": "BND-K03",
+      "round": 3,
+      "ok": true,
+      "headersMs": 1316,
+      "bodyMs": 0,
+      "totalMs": 1316
+    },
+    {
+      "caseId": "BND-K03",
+      "round": 3,
+      "ok": true,
+      "headersMs": 5027,
+      "bodyMs": 0,
+      "totalMs": 5028
+    },
+    {
+      "caseId": "BND-K04",
+      "round": 1,
+      "ok": true,
+      "headersMs": 2071,
+      "bodyMs": 0,
+      "totalMs": 2071
+    },
+    {
+      "caseId": "BND-K04",
+      "round": 1,
+      "ok": true,
+      "headersMs": 2879,
+      "bodyMs": 0,
+      "totalMs": 2879
+    },
+    {
+      "caseId": "BND-K04",
+      "round": 2,
+      "ok": true,
+      "headersMs": 1441,
+      "bodyMs": 0,
+      "totalMs": 1441
+    },
+    {
+      "caseId": "BND-K04",
+      "round": 2,
+      "ok": true,
+      "headersMs": 3527,
+      "bodyMs": 1,
+      "totalMs": 3528
+    },
+    {
+      "caseId": "BND-K04",
+      "round": 3,
+      "ok": true,
+      "headersMs": 1607,
+      "bodyMs": 0,
+      "totalMs": 1608
+    },
+    {
+      "caseId": "BND-K04",
+      "round": 3,
+      "ok": true,
+      "headersMs": 3025,
+      "bodyMs": 0,
+      "totalMs": 3025
+    },
+    {
+      "caseId": "BND-H01",
+      "round": 1,
+      "ok": true,
+      "headersMs": 1382,
+      "bodyMs": 0,
+      "totalMs": 1382
+    },
+    {
+      "caseId": "BND-H01",
+      "round": 2,
+      "ok": true,
+      "headersMs": 1785,
+      "bodyMs": 0,
+      "totalMs": 1785
+    },
+    {
+      "caseId": "BND-H01",
+      "round": 3,
+      "ok": true,
+      "headersMs": 1257,
+      "bodyMs": 0,
+      "totalMs": 1257
+    },
+    {
+      "caseId": "BND-H02",
+      "round": 1,
+      "ok": true,
+      "headersMs": 1235,
+      "bodyMs": 0,
+      "totalMs": 1235
+    },
+    {
+      "caseId": "BND-H02",
+      "round": 2,
+      "ok": true,
+      "headersMs": 993,
+      "bodyMs": 0,
+      "totalMs": 993
+    },
+    {
+      "caseId": "BND-H02",
+      "round": 3,
+      "ok": true,
+      "headersMs": 1377,
+      "bodyMs": 1,
+      "totalMs": 1378
+    },
+    {
+      "caseId": "BND-H03",
+      "round": 1,
+      "ok": true,
+      "headersMs": 3710,
+      "bodyMs": 0,
+      "totalMs": 3710
+    },
+    {
+      "caseId": "BND-H03",
+      "round": 2,
+      "ok": true,
+      "headersMs": 1152,
+      "bodyMs": 0,
+      "totalMs": 1152
+    },
+    {
+      "caseId": "BND-H03",
+      "round": 3,
+      "ok": true,
+      "headersMs": 1260,
+      "bodyMs": 0,
+      "totalMs": 1260
+    },
+    {
+      "caseId": "BND-H04",
+      "round": 1,
+      "ok": true,
+      "headersMs": 2438,
+      "bodyMs": 0,
+      "totalMs": 2438
+    },
+    {
+      "caseId": "BND-H04",
+      "round": 2,
+      "ok": true,
+      "headersMs": 1066,
+      "bodyMs": 1,
+      "totalMs": 1067
+    },
+    {
+      "caseId": "BND-H04",
+      "round": 3,
+      "ok": true,
+      "headersMs": 1699,
+      "bodyMs": 0,
+      "totalMs": 1699
+    },
+    {
+      "caseId": "BND-M01",
+      "round": 1,
+      "ok": true,
+      "headersMs": 1075,
+      "bodyMs": 0,
+      "totalMs": 1075
+    },
+    {
+      "caseId": "BND-M01",
+      "round": 1,
+      "ok": true,
+      "headersMs": 3146,
+      "bodyMs": 0,
+      "totalMs": 3146
+    },
+    {
+      "caseId": "BND-M01",
+      "round": 1,
+      "ok": true,
+      "headersMs": 1736,
+      "bodyMs": 0,
+      "totalMs": 1736
+    },
+    {
+      "caseId": "BND-M01",
+      "round": 2,
+      "ok": true,
+      "headersMs": 1415,
+      "bodyMs": 0,
+      "totalMs": 1415
+    },
+    {
+      "caseId": "BND-M01",
+      "round": 2,
+      "ok": true,
+      "headersMs": 2759,
+      "bodyMs": 0,
+      "totalMs": 2759
+    },
+    {
+      "caseId": "BND-M01",
+      "round": 2,
+      "ok": true,
+      "headersMs": 1704,
+      "bodyMs": 0,
+      "totalMs": 1704
+    },
+    {
+      "caseId": "BND-M01",
+      "round": 3,
+      "ok": true,
+      "headersMs": 1115,
+      "bodyMs": 0,
+      "totalMs": 1115
+    },
+    {
+      "caseId": "BND-M01",
+      "round": 3,
+      "ok": true,
+      "headersMs": 2398,
+      "bodyMs": 0,
+      "totalMs": 2398
+    },
+    {
+      "caseId": "BND-M01",
+      "round": 3,
+      "ok": true,
+      "headersMs": 1919,
+      "bodyMs": 0,
+      "totalMs": 1919
+    },
+    {
+      "caseId": "BND-M02",
+      "round": 1,
+      "ok": true,
+      "headersMs": 1062,
+      "bodyMs": 0,
+      "totalMs": 1062
+    },
+    {
+      "caseId": "BND-M02",
+      "round": 1,
+      "ok": true,
+      "headersMs": 2984,
+      "bodyMs": 0,
+      "totalMs": 2984
+    },
+    {
+      "caseId": "BND-M02",
+      "round": 1,
+      "ok": true,
+      "headersMs": 2029,
+      "bodyMs": 0,
+      "totalMs": 2029
+    },
+    {
+      "caseId": "BND-M02",
+      "round": 2,
+      "ok": true,
+      "headersMs": 1172,
+      "bodyMs": 0,
+      "totalMs": 1172
+    },
+    {
+      "caseId": "BND-M02",
+      "round": 2,
+      "ok": true,
+      "headersMs": 2198,
+      "bodyMs": 0,
+      "totalMs": 2198
+    },
+    {
+      "caseId": "BND-M02",
+      "round": 2,
+      "ok": true,
+      "headersMs": 2194,
+      "bodyMs": 0,
+      "totalMs": 2194
+    },
+    {
+      "caseId": "BND-M02",
+      "round": 3,
+      "ok": true,
+      "headersMs": 1056,
+      "bodyMs": 0,
+      "totalMs": 1056
+    },
+    {
+      "caseId": "BND-M02",
+      "round": 3,
+      "ok": true,
+      "headersMs": 2330,
+      "bodyMs": 0,
+      "totalMs": 2330
+    },
+    {
+      "caseId": "BND-M02",
+      "round": 3,
+      "ok": true,
+      "headersMs": 1835,
+      "bodyMs": 0,
+      "totalMs": 1835
+    },
+    {
+      "caseId": "BND-M03",
+      "round": 1,
+      "ok": true,
+      "headersMs": 1791,
+      "bodyMs": 0,
+      "totalMs": 1791
+    },
+    {
+      "caseId": "BND-M03",
+      "round": 1,
+      "ok": true,
+      "headersMs": 4325,
+      "bodyMs": 0,
+      "totalMs": 4325
+    },
+    {
+      "caseId": "BND-M03",
+      "round": 2,
+      "ok": true,
+      "headersMs": 4776,
+      "bodyMs": 0,
+      "totalMs": 4776
+    },
+    {
+      "caseId": "BND-M03",
+      "round": 2,
+      "ok": true,
+      "headersMs": 4108,
+      "bodyMs": 0,
+      "totalMs": 4108
+    },
+    {
+      "caseId": "BND-M03",
+      "round": 3,
+      "ok": true,
+      "headersMs": 2156,
+      "bodyMs": 0,
+      "totalMs": 2156
+    },
+    {
+      "caseId": "BND-M03",
+      "round": 3,
+      "ok": true,
+      "headersMs": 3070,
+      "bodyMs": 0,
+      "totalMs": 3070
+    },
+    {
+      "caseId": "BND-M04",
+      "round": 1,
+      "ok": true,
+      "headersMs": 1986,
+      "bodyMs": 0,
+      "totalMs": 1986
+    },
+    {
+      "caseId": "BND-M04",
+      "round": 1,
+      "ok": true,
+      "headersMs": 3478,
+      "bodyMs": 0,
+      "totalMs": 3478
+    },
+    {
+      "caseId": "BND-M04",
+      "round": 2,
+      "ok": true,
+      "headersMs": 2039,
+      "bodyMs": 0,
+      "totalMs": 2039
+    },
+    {
+      "caseId": "BND-M04",
+      "round": 2,
+      "ok": true,
+      "headersMs": 5089,
+      "bodyMs": 1,
+      "totalMs": 5090
+    },
+    {
+      "caseId": "BND-M04",
+      "round": 3,
+      "ok": true,
+      "headersMs": 1613,
+      "bodyMs": 0,
+      "totalMs": 1613
+    },
+    {
+      "caseId": "BND-M04",
+      "round": 3,
+      "ok": true,
+      "headersMs": 3643,
+      "bodyMs": 0,
+      "totalMs": 3643
+    },
+    {
+      "caseId": "BND-N01",
+      "round": 1,
+      "ok": true,
+      "headersMs": 1461,
+      "bodyMs": 0,
+      "totalMs": 1461
+    },
+    {
+      "caseId": "BND-N01",
+      "round": 1,
+      "ok": true,
+      "headersMs": 3667,
+      "bodyMs": 0,
+      "totalMs": 3667
+    },
+    {
+      "caseId": "BND-N01",
+      "round": 2,
+      "ok": true,
+      "headersMs": 1517,
+      "bodyMs": 1,
+      "totalMs": 1518
+    },
+    {
+      "caseId": "BND-N01",
+      "round": 2,
+      "ok": true,
+      "headersMs": 3154,
+      "bodyMs": 0,
+      "totalMs": 3154
+    },
+    {
+      "caseId": "BND-N01",
+      "round": 3,
+      "ok": true,
+      "headersMs": 1434,
+      "bodyMs": 1,
+      "totalMs": 1435
+    },
+    {
+      "caseId": "BND-N01",
+      "round": 3,
+      "ok": true,
+      "headersMs": 3935,
+      "bodyMs": 0,
+      "totalMs": 3935
+    },
+    {
+      "caseId": "BND-N02",
+      "round": 1,
+      "ok": true,
+      "headersMs": 1334,
+      "bodyMs": 0,
+      "totalMs": 1334
+    },
+    {
+      "caseId": "BND-N02",
+      "round": 1,
+      "ok": true,
+      "headersMs": 1485,
+      "bodyMs": 0,
+      "totalMs": 1485
+    },
+    {
+      "caseId": "BND-N02",
+      "round": 2,
+      "ok": true,
+      "headersMs": 1066,
+      "bodyMs": 0,
+      "totalMs": 1066
+    },
+    {
+      "caseId": "BND-N02",
+      "round": 2,
+      "ok": true,
+      "headersMs": 1562,
+      "bodyMs": 0,
+      "totalMs": 1562
+    },
+    {
+      "caseId": "BND-N02",
+      "round": 3,
+      "ok": true,
+      "headersMs": 1310,
+      "bodyMs": 0,
+      "totalMs": 1310
+    },
+    {
+      "caseId": "BND-N02",
+      "round": 3,
+      "ok": true,
+      "headersMs": 1595,
+      "bodyMs": 0,
+      "totalMs": 1595
+    },
+    {
+      "caseId": "BND-N03",
+      "round": 1,
+      "ok": true,
+      "headersMs": 1226,
+      "bodyMs": 0,
+      "totalMs": 1226
+    },
+    {
+      "caseId": "BND-N03",
+      "round": 2,
+      "ok": true,
+      "headersMs": 1280,
+      "bodyMs": 0,
+      "totalMs": 1280
+    },
+    {
+      "caseId": "BND-N03",
+      "round": 3,
+      "ok": true,
+      "headersMs": 1128,
+      "bodyMs": 1,
+      "totalMs": 1129
+    },
+    {
+      "caseId": "BND-A02",
+      "round": 1,
+      "ok": true,
+      "headersMs": 1408,
+      "bodyMs": 0,
+      "totalMs": 1408
+    },
+    {
+      "caseId": "BND-A02",
+      "round": 1,
+      "ok": true,
+      "headersMs": 2879,
+      "bodyMs": 0,
+      "totalMs": 2879
+    },
+    {
+      "caseId": "BND-A02",
+      "round": 2,
+      "ok": true,
+      "headersMs": 1225,
+      "bodyMs": 0,
+      "totalMs": 1226
+    },
+    {
+      "caseId": "BND-A02",
+      "round": 2,
+      "ok": true,
+      "headersMs": 5570,
+      "bodyMs": 0,
+      "totalMs": 5570
+    },
+    {
+      "caseId": "BND-A02",
+      "round": 3,
+      "ok": true,
+      "headersMs": 1602,
+      "bodyMs": 0,
+      "totalMs": 1602
+    },
+    {
+      "caseId": "BND-A02",
+      "round": 3,
+      "ok": true,
+      "headersMs": 3165,
+      "bodyMs": 1,
+      "totalMs": 3166
+    },
+    {
+      "caseId": "BND-A03",
+      "round": 1,
+      "ok": true,
+      "headersMs": 1793,
+      "bodyMs": 0,
+      "totalMs": 1793
+    },
+    {
+      "caseId": "BND-A03",
+      "round": 1,
+      "ok": true,
+      "headersMs": 2070,
+      "bodyMs": 0,
+      "totalMs": 2070
+    },
+    {
+      "caseId": "BND-A03",
+      "round": 2,
+      "ok": true,
+      "headersMs": 1309,
+      "bodyMs": 0,
+      "totalMs": 1309
+    },
+    {
+      "caseId": "BND-A03",
+      "round": 2,
+      "ok": true,
+      "headersMs": 2167,
+      "bodyMs": 0,
+      "totalMs": 2167
+    },
+    {
+      "caseId": "BND-A03",
+      "round": 3,
+      "ok": true,
+      "headersMs": 1207,
+      "bodyMs": 0,
+      "totalMs": 1207
+    },
+    {
+      "caseId": "BND-A03",
+      "round": 3,
+      "ok": true,
+      "headersMs": 1893,
+      "bodyMs": 0,
+      "totalMs": 1893
+    },
+    {
+      "caseId": "BND-A05",
+      "round": 1,
+      "ok": true,
+      "headersMs": 1371,
+      "bodyMs": 0,
+      "totalMs": 1371
+    },
+    {
+      "caseId": "BND-A05",
+      "round": 1,
+      "ok": true,
+      "headersMs": 2283,
+      "bodyMs": 0,
+      "totalMs": 2283
+    },
+    {
+      "caseId": "BND-A05",
+      "round": 2,
+      "ok": true,
+      "headersMs": 1153,
+      "bodyMs": 0,
+      "totalMs": 1153
+    },
+    {
+      "caseId": "BND-A05",
+      "round": 2,
+      "ok": true,
+      "headersMs": 2434,
+      "bodyMs": 0,
+      "totalMs": 2434
+    },
+    {
+      "caseId": "BND-A05",
+      "round": 3,
+      "ok": true,
+      "headersMs": 1563,
+      "bodyMs": 1,
+      "totalMs": 1564
+    },
+    {
+      "caseId": "BND-A05",
+      "round": 3,
+      "ok": true,
+      "headersMs": 1872,
+      "bodyMs": 0,
+      "totalMs": 1872
+    },
+    {
+      "caseId": "BND-S06",
+      "round": 1,
+      "ok": true,
+      "headersMs": 2177,
+      "bodyMs": 0,
+      "totalMs": 2177
+    },
+    {
+      "caseId": "BND-S06",
+      "round": 2,
+      "ok": true,
+      "headersMs": 1780,
+      "bodyMs": 0,
+      "totalMs": 1780
+    },
+    {
+      "caseId": "BND-S06",
+      "round": 3,
+      "ok": true,
+      "headersMs": 2543,
+      "bodyMs": 0,
+      "totalMs": 2543
+    }
+  ],
+  "timingSummary": {
+    "calls": 122,
+    "headersP50Ms": 1766,
+    "headersP90Ms": 3535,
+    "bodyP50Ms": 0,
+    "bodyP90Ms": 0,
+    "failByPhase": {}
+  }
+}
