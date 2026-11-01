@@ -1,6 +1,6 @@
 # AGT-A · 意图路由 v0.4 工作项规划（细版）
 
-> 细化日期：2026-10-23｜所属：[Agent 开发规划（粗）](VIBE_CODING_Agent_开发规划.md) 里程碑 AGT-A｜执行事实源：[Agent 改造开发进度](Agent改造开发进度.md)。
+> 细化日期：2026-10-23｜所属：[Agent 开发规划（粗）](../archive/VIBE_CODING_Agent_开发规划.md) 里程碑 AGT-A｜执行事实源：[Agent 改造开发进度](Agent改造开发进度.md)。
 > 现状代码基线：`src/chat/chat-routing.ts`（12 路由，`chat-routing-v0.1`）、`src/chat/chat-classifier.ts`（11 意图，`chat-classifier-v0.1`）、`prompts/ride-chat-classifier-v0.1.md`（Prompt 版本 `ride-chat-classifier-prompt-v0.3`）、`eval/ride-chat-classifier-v0.1/`（38 例：dev 8 / blind 24 / red-team 6，manifest gate：准确率 ≥0.95、red-team =1）、`scripts/eval-classifier-accuracy.ts` + `scripts/preflight-ride-chat-classifier-eval.ts`。
 
 ## 1. 目标与非目标

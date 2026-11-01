@@ -5,6 +5,12 @@ import { chatNumbersSupported, chatNumberTokens } from "./chat-numeric-evidence.
 
 // AGT-B0：合同升 v0.2（新增 knowledgeIds）。v0.1 输出仍被接受（见 parseOutput 的双版本
 // 兼容），保证既有 4 工具链路与测试零改动；v0.2 是"新工具（KB）可用"的合同形态。
+//
+// AGT-H0（2026-10-27）口径澄清——**本文件只校"模型输出协议"，版本仍是 v0.2**：
+// 需求文档里的"输出合同 v0.3（choices / artifact / quickActions）"指的是**响应层**合同
+// （服务端 → 前端），这三个字段由编排层从工具结果同源生成、模型不经手，因此不进入
+// 模型输出 JSON，也不该在这里校验。响应层合同与 schema 见 `chat-interaction.ts`
+// （`ride-chat-interaction-v0.3`）。把两者混为一谈会让模型有机会伪造记录列表。
 export const CHAT_OUTPUT_SCHEMA_VERSION = "ride-chat-output-v0.2" as const;
 export const CHAT_OUTPUT_LEGACY_SCHEMA_VERSION = "ride-chat-output-v0.1" as const;
 export const CHAT_OUTPUT_MAX_REPLY_CHARS = 600;

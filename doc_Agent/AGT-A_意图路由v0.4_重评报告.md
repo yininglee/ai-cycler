@@ -124,7 +124,7 @@
 | 预检 | `scripts/preflight-ride-chat-classifier-eval.ts`（`npm run eval:classifier:preflight`） |
 | 评测执行 | `scripts/eval-classifier-accuracy.ts`（`npm run eval:classifier:accuracy`） |
 | 探针 / 成本 / smoke | `scripts/probe-classifier-texts.ts` / `scripts/measure-classifier-token-usage.ts` / `scripts/smoke-classifier-v04.ts` |
-| 合同索引 | [AI-Spec_对话Agent能力规约.md](AI-Spec_对话Agent能力规约.md) §5 Prompt 版本索引、§11 增补记录 |
+| 合同索引 | [AI-Spec v1（归档）](archive/AI-Spec_对话Agent能力规约.md) §5 Prompt 版本索引、§11 增补记录 |
 
 ## 8. 后续衔接
 

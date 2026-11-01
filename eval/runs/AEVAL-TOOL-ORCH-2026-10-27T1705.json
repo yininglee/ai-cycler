@@ -1,0 +1,166 @@
+{
+  "datasetId": "AEVAL-TOOL-ORCHESTRATION",
+  "repeat": 5,
+  "total": 5,
+  "passed": 3,
+  "avgElapsedMs": 3535,
+  "slowestElapsedMs": 5075,
+  "promptVersion": "ride-chat-prompt-v0.2.7",
+  "results": [
+    {
+      "caseId": "ORCH-21",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 5075,
+      "replyPreview": "这次记录里没有可用的功率数据：功率、标准化功率、已验证 FTP 和功率区间都显示为不可用，原因是该记录本身未通过校验。因此这次骑行无法做功率相关的解读。",
+      "steps": [
+        "get_capabilities:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-21",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 3409,
+      "replyPreview": "这次记录里没有可用的功率数据：功率、标准化功率、已核验 FTP 和功率区间都显示为不可用，原因是该记录本身未通过校验。因此这次骑行无法解读功率相关指标。",
+      "steps": [
+        "get_capabilities:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-21",
+      "round": 3,
+      "pass": false,
+      "detail": "缺工具:get_capabilities 证据形态不符",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 3495,
+      "replyPreview": "有。10 月 26 日这次骑行记录了功率数据：平均功率 230 W，标准化功率 244 W。不过系统对这次记录的距离、计时、速度和功率都标注了记录异常，所以这些",
+      "steps": [
+        "get_ride_context:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-21",
+      "round": 4,
+      "pass": false,
+      "detail": "缺工具:get_capabilities 证据形态不符",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 2732,
+      "replyPreview": "最近一次记录是2026年10月26日那次骑行，有功率数据：平均功率230W，标准化功率244W。不过这两项功率记录被标记为无效，数值仅供参考，不宜作为可靠依据。",
+      "steps": [
+        "get_ride_context:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-21",
+      "round": 5,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 2962,
+      "replyPreview": "最近这次记录里没有可用的功率数据。功率、标准化功率、已验证 FTP 和功率区间都显示为不可用，原因是该记录本身未通过校验，因此无法解读功率相关内容。",
+      "steps": [
+        "get_capabilities:completed"
+      ]
+    }
+  ],
+  "timings": [
+    {
+      "caseId": "ORCH-21",
+      "round": 1,
+      "ok": true,
+      "headersMs": 1533,
+      "bodyMs": 1,
+      "totalMs": 1534
+    },
+    {
+      "caseId": "ORCH-21",
+      "round": 1,
+      "ok": true,
+      "headersMs": 3534,
+      "bodyMs": 1,
+      "totalMs": 3535
+    },
+    {
+      "caseId": "ORCH-21",
+      "round": 2,
+      "ok": true,
+      "headersMs": 1446,
+      "bodyMs": 0,
+      "totalMs": 1447
+    },
+    {
+      "caseId": "ORCH-21",
+      "round": 2,
+      "ok": true,
+      "headersMs": 1956,
+      "bodyMs": 0,
+      "totalMs": 1956
+    },
+    {
+      "caseId": "ORCH-21",
+      "round": 3,
+      "ok": true,
+      "headersMs": 1467,
+      "bodyMs": 1,
+      "totalMs": 1468
+    },
+    {
+      "caseId": "ORCH-21",
+      "round": 3,
+      "ok": true,
+      "headersMs": 2007,
+      "bodyMs": 1,
+      "totalMs": 2008
+    },
+    {
+      "caseId": "ORCH-21",
+      "round": 4,
+      "ok": true,
+      "headersMs": 1137,
+      "bodyMs": 1,
+      "totalMs": 1138
+    },
+    {
+      "caseId": "ORCH-21",
+      "round": 4,
+      "ok": true,
+      "headersMs": 1582,
+      "bodyMs": 0,
+      "totalMs": 1583
+    },
+    {
+      "caseId": "ORCH-21",
+      "round": 5,
+      "ok": true,
+      "headersMs": 1358,
+      "bodyMs": 0,
+      "totalMs": 1358
+    },
+    {
+      "caseId": "ORCH-21",
+      "round": 5,
+      "ok": true,
+      "headersMs": 1598,
+      "bodyMs": 0,
+      "totalMs": 1599
+    }
+  ],
+  "timingSummary": {
+    "calls": 10,
+    "headersP50Ms": 1582,
+    "headersP90Ms": 3534,
+    "bodyP50Ms": 1,
+    "bodyP90Ms": 1,
+    "failByPhase": {}
+  }
+}

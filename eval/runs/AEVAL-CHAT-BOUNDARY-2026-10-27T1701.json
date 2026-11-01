@@ -1,0 +1,108 @@
+{
+  "datasetId": "AEVAL-CHAT-BOUNDARY",
+  "repeat": 3,
+  "total": 3,
+  "passed": 3,
+  "avgElapsedMs": 29816,
+  "slowestElapsedMs": 83124,
+  "promptVersion": "ride-chat-prompt-v0.2.7",
+  "results": [
+    {
+      "caseId": "BND-A05",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 83124,
+      "replyPreview": "这次路线以平路为主：爬坡里程约 3333 米，平路里程约 46667 米，下坡里程为 0 米。最长的一段连续爬坡约 3333 米，从约 16667 米处开始，到",
+      "steps": [
+        "get_route_overview:completed"
+      ]
+    },
+    {
+      "caseId": "BND-A05",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 3085,
+      "replyPreview": "这次路线以平路为主，爬坡占比很小：爬坡里程约 3333 米，平路约 46667 米，下坡为 0 米。最长的一段连续爬坡约 3333 米，整体爬升不多，属于偏平缓",
+      "steps": [
+        "get_route_overview:completed"
+      ]
+    },
+    {
+      "caseId": "BND-A05",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 3238,
+      "replyPreview": "这次路线以平路为主，爬坡占比很小：爬坡里程约 3333 米，平路约 46667 米，下坡为 0 米。最长的一段连续爬坡约 3333 米，整体爬升量不大，属于偏平",
+      "steps": [
+        "get_route_overview:completed"
+      ]
+    }
+  ],
+  "timings": [
+    {
+      "caseId": "BND-A05",
+      "round": 1,
+      "ok": true,
+      "headersMs": 1296,
+      "bodyMs": 1,
+      "totalMs": 1298
+    },
+    {
+      "caseId": "BND-A05",
+      "round": 1,
+      "ok": true,
+      "headersMs": 2327,
+      "bodyMs": 1,
+      "totalMs": 2328
+    },
+    {
+      "caseId": "BND-A05",
+      "round": 2,
+      "ok": true,
+      "headersMs": 1367,
+      "bodyMs": 1,
+      "totalMs": 1368
+    },
+    {
+      "caseId": "BND-A05",
+      "round": 2,
+      "ok": true,
+      "headersMs": 1705,
+      "bodyMs": 0,
+      "totalMs": 1706
+    },
+    {
+      "caseId": "BND-A05",
+      "round": 3,
+      "ok": true,
+      "headersMs": 1419,
+      "bodyMs": 1,
+      "totalMs": 1420
+    },
+    {
+      "caseId": "BND-A05",
+      "round": 3,
+      "ok": true,
+      "headersMs": 1804,
+      "bodyMs": 1,
+      "totalMs": 1805
+    }
+  ],
+  "timingSummary": {
+    "calls": 6,
+    "headersP50Ms": 1705,
+    "headersP90Ms": 2327,
+    "bodyP50Ms": 1,
+    "bodyP90Ms": 1,
+    "failByPhase": {}
+  }
+}

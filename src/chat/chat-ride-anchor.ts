@@ -1,16 +1,42 @@
 import type { RideRecord } from "../domain/ride-schema.ts";
 import { classifyChatInput, type ChatRoute, type ChatRoutingDecision, type ChatSessionSummary } from "./chat-routing.ts";
+import {
+  chatRideCandidateLabel,
+  chatRideCandidates,
+  chatRideRefReply,
+  findRideRecordsByDate,
+  latestRideRecord,
+  rideAnchorDate,
+  rideAnchorDateLabel,
+  parseRideAnchorDate,
+  type ChatRideCandidate,
+  type ChatRideRefReason,
+  type RideAnchorDate,
+} from "./chat-ride-ref.ts";
 
 // CHAT-14 P2（G-RIDE-DEIXIS，架构设计 v0.4 4.2.2 节）：骑乘指涉解析——
 // “本次/这次/当前”与裸指标词不再静默锚定最新记录；锚点来源次序：
 // 显式日期 → 显式序数 → 上下文继承 → 确认/澄清。锚点以记录日期（Asia/Shanghai 的
 // YYYY-MM-DD）存储而非“最新”指针：会话中导入新记录不偷换已建立锚点。
 // 锚点解析只做服务端 owner 范围内的记录选择，路由仍只看本轮 text。
+//
+// AGT-H1（SD-4）：**记录选择下沉**——日期/序数的解析与候选构造移到 `chat-ride-ref.ts`，
+// 本模块只保留"从这句话里读出指涉"的语用判断（显式日期 / 序数词 / 指示代词 / 继承）。
+// 同时修掉旧实现的静默猜测：**同一天有多条记录不再取最晚一条**，改为列出候选让用户点选
+// （旧行为是"另一次你问不到"的根因）。日期工具沿用原实现，经本模块 re-export 保持既有导入不变。
+
+// 日期与"最新记录"工具（实现在 chat-ride-ref，此处 re-export 供既有调用方无感迁移）。
+export {
+  findRideRecordsByDate,
+  latestRideRecord,
+  parseRideAnchorDate,
+  rideAnchorDate,
+  rideAnchorDateLabel,
+  type RideAnchorDate,
+} from "./chat-ride-ref.ts";
 
 // CHAT-17 P3：autonomous_tools（L2b 循环）同样走锚点解析——挂起轮确认与摘要锚点继承同规则。
 export const RIDE_ANCHOR_TOOL_ROUTES: readonly ChatRoute[] = ["current_ride", "capabilities", "history_compare", "autonomous_tools"];
-
-export type RideAnchorDate = { year?: number; month: number; day: number };
 
 export type RideAnchorOverride = { latest: true } | { date: string };
 
@@ -21,32 +47,16 @@ export type RideAnchorResolution =
     date?: string;
     source: "override" | "explicit_date" | "explicit_ordinal" | "inherited" | "default_latest";
   }
-  | { status: "clarify"; reply: string };
+  | {
+    status: "clarify";
+    reply: string;
+    // AGT-H1：需要用户再指一次时，区分"同一天多条 / 日期没找到 / 根本没有指涉"，
+    // 并带上候选（H2 把它转成响应 choices；H1 只用确定性话术，零模型）。
+    reason?: ChatRideRefReason;
+    candidates?: ChatRideCandidate[];
+  };
 
-// ---- 日期工具 ----
-
-// Asia/Shanghai 日历日（YYYY-MM-DD）——锚点存储口径，与摘要网关合同（chat-routing）一致。
-export function rideAnchorDate(startTime: string | undefined): string | undefined {
-  if (!startTime || Number.isNaN(Date.parse(startTime))) return undefined;
-  const parts = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Shanghai", year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(new Date(startTime));
-  const year = parts.find((part) => part.type === "year")?.value;
-  const month = parts.find((part) => part.type === "month")?.value;
-  const day = parts.find((part) => part.type === "day")?.value;
-  return year && month && day ? `${year}-${month}-${day}` : undefined;
-}
-
-export function parseRideAnchorDate(date: string): RideAnchorDate | undefined {
-  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(date);
-  if (!match) return undefined;
-  return { year: Number(match[1]), month: Number(match[2]), day: Number(match[3]) };
-}
-
-// “2026-08-20” → “8月20日”——回复展示口径（月/日），与 /chat 首页 latestRideDateLabel 一致。
-export function rideAnchorDateLabel(date: string): string {
-  const parsed = parseRideAnchorDate(date);
-  if (!parsed) return date;
-  return `${parsed.month}月${parsed.day}日`;
-}
+// ---- 日期工具（实现已下移到 chat-ride-ref.ts，见顶部 re-export）----
 
 // 显式日期提取：2026年8月15日 / 8月15日 / 8月15号 / 2026-08-15。
 // 不支持裸 “08-15”（与编号、时刻等歧义）；到达本层的问题已被路由到工具场景，日期即锚点指涉。
@@ -65,34 +75,46 @@ export function extractExplicitRideDate(text: string): RideAnchorDate | undefine
   return candidates.find((candidate) => candidate.month >= 1 && candidate.month <= 12 && candidate.day >= 1 && candidate.day <= 31);
 }
 
-// 按日期在本人记录中查找：显式年份精确匹配；未给年份时依次尝试当前/上一年（跨年同月日取最近），
-// 同一天多条记录取出发时间最晚的一条（与“最新”选择口径一致）。
+// 按日期查找**单条**记录（兼容保留）：同一天多条时取出发时间最晚的一条。
+// AGT-H1 起，锚点解析路径**不再使用它**（改用 findRideRecordsByDate 判多条），
+// 只有"日期粒度足够"的场景（骑行身份问答）仍用它。
 export function findRideRecordByDate(entries: ReadonlyArray<{ record: RideRecord }>, target: RideAnchorDate, now = new Date()): RideRecord | undefined {
-  const dated = entries
-    .map((entry) => ({ record: entry.record, date: rideAnchorDate(entry.record.activity.startTime) }))
-    .filter((entry): entry is { record: RideRecord; date: string } => entry.date !== undefined);
-  const years = target.year ? [target.year] : [now.getFullYear(), now.getFullYear() - 1];
-  for (const year of years) {
-    const sameDay = dated.filter((entry) => {
-      const parsed = parseRideAnchorDate(entry.date)!;
-      return parsed.year === year && parsed.month === target.month && parsed.day === target.day;
-    });
-    if (sameDay.length > 0) {
-      return sameDay
-        .map((entry) => ({ record: entry.record, time: Date.parse(entry.record.activity.startTime ?? "") }))
-        .sort((left, right) => right.time - left.time)[0]!.record;
-    }
-  }
-  return undefined;
+  return findRideRecordsByDate(entries, target, now)[0];
 }
 
-// 出发时间最新记录（CHAT-15 口径）：无有效 startTime 的记录不参与“最新”判定，全部缺失时回退存储顺序首条。
-export function latestRideRecord(entries: ReadonlyArray<{ record: RideRecord }>): RideRecord | undefined {
-  const dated = entries
-    .map((entry) => ({ record: entry.record, time: entry.record.activity.startTime ? Date.parse(entry.record.activity.startTime) : Number.NaN }))
-    .filter((entry) => Number.isFinite(entry.time))
-    .sort((left, right) => right.time - left.time);
-  return (dated[0] ?? entries[0])?.record;
+/**
+ * AGT-H1：日期 → 记录，**多条不再静默取最晚**。
+ * 返回 resolved（唯一）/ clarify（同日多条，列候选）/ clarify（没有该日记录）。
+ */
+function resolveByDate(
+  entries: ReadonlyArray<{ record: RideRecord }>,
+  target: RideAnchorDate,
+  options: { dateLabel: string; now?: Date },
+): RideAnchorResolution {
+  const matches = findRideRecordsByDate(entries, target, options.now);
+  if (matches.length === 0) {
+    return {
+      status: "clarify",
+      reason: "date_not_found",
+      candidates: chatRideCandidates(entries),
+      reply: chatRideRefReply(
+        { status: "not_found", reason: "date_not_found", candidates: chatRideCandidates(entries) },
+        { dateLabel: options.dateLabel },
+      ),
+    };
+  }
+  const record = matches[0]!;
+  // 同日多条：两条都摆出来，让用户点选（旧实现在这里偷偷选了出发较晚的那条）。
+  if (matches.length > 1) {
+    const candidates = matches.map((match) => chatRideCandidates([{ record: match }], 1)[0]!);
+    return {
+      status: "clarify",
+      reason: "same_day_multiple",
+      candidates,
+      reply: `${options.dateLabel}有 ${matches.length} 条骑行记录：${candidates.map((candidate) => chatRideCandidateLabel(candidate)).join("；")}。你想看哪一条？`,
+    };
+  }
+  return { status: "resolved", record, ...(rideAnchorDate(record.activity.startTime) ? { date: rideAnchorDate(record.activity.startTime) } : {}), source: "explicit_date" };
 }
 
 // 上下文继承：从最近一轮摘要向前找已建立的锚点日期（锚点跨轮持续，直到被新锚点替换）。
@@ -138,35 +160,39 @@ export function resolveRideAnchor(input: {
       return { status: "resolved", record: latest, ...(rideAnchorDate(latest.activity.startTime) ? { date: rideAnchorDate(latest.activity.startTime) } : {}), source: "override" };
     }
     const target = parseRideAnchorDate(input.override.date);
-    const record = target ? findRideRecordByDate(entries, target, input.now) : undefined;
-    if (!record) {
-      return { status: "clarify", reply: `没有找到 ${rideAnchorDateLabel(input.override.date)} 的骑行记录。可以换个日期，或直接问我最近一次。` };
+    if (!target) {
+      return { status: "clarify", reason: "date_not_found", reply: `没有找到 ${rideAnchorDateLabel(input.override.date)} 的骑行记录。可以换个日期，或直接问我最近一次。` };
     }
-    return { status: "resolved", record, date: input.override.date, source: "override" };
+    // AGT-H1：确认轮给的日期同样要判多条——同一天两条时不能替用户选（原实现取最晚）。
+    const byDate = resolveByDate(entries, target, { dateLabel: rideAnchorDateLabel(input.override.date), ...(input.now ? { now: input.now } : {}) });
+    if (byDate.status !== "resolved") return byDate;
+    return { ...byDate, date: input.override.date, source: "override" };
   }
 
-  // ① 显式日期：本人记录查找，无匹配澄清。
+  // ① 显式日期：本人记录查找；**同日多条 → 列候选**（AGT-H1 修掉的静默猜测）。
   const explicit = extractExplicitRideDate(text);
   if (explicit) {
-    const record = findRideRecordByDate(entries, explicit, input.now);
-    if (!record) {
-      const label = `${explicit.year ? `${explicit.year}年` : ""}${explicit.month}月${explicit.day}日`;
-      return { status: "clarify", reply: `没有找到 ${label} 的骑行记录。可以换个日期，或直接问我最近一次。` };
-    }
-    return { status: "resolved", record, date: rideAnchorDate(record.activity.startTime), source: "explicit_date" };
+    const label = `${explicit.year ? `${explicit.year}年` : ""}${explicit.month}月${explicit.day}日`;
+    return resolveByDate(entries, explicit, { dateLabel: label, ...(input.now ? { now: input.now } : {}) });
   }
 
   const inheritAnchor = (): RideAnchorResolution => {
     const anchorDate = lastSummarizedAnchor(summaries);
     if (!anchorDate) {
-      return { status: "clarify", reply: latestClarifyReply(DEIXIS_PATTERN.exec(text)?.[0], latest) };
+      return { status: "clarify", reason: "reference_missing", candidates: chatRideCandidates(entries), reply: latestClarifyReply(DEIXIS_PATTERN.exec(text)?.[0], latest) };
     }
     const target = parseRideAnchorDate(anchorDate);
-    const record = target ? findRideRecordByDate(entries, target, input.now) : undefined;
-    if (!record) {
-      return { status: "clarify", reply: `之前提到的 ${rideAnchorDateLabel(anchorDate)} 那次骑行的记录已经不在了。可以告诉我其他日期，或问我最近一次。` };
+    if (!target) {
+      return { status: "clarify", reason: "date_not_found", reply: `之前提到的 ${rideAnchorDateLabel(anchorDate)} 那次骑行的记录已经不在了。可以告诉我其他日期，或问我最近一次。` };
     }
-    return { status: "resolved", record, date: anchorDate, source: "inherited" };
+    const byDate = resolveByDate(entries, target, { dateLabel: rideAnchorDateLabel(anchorDate), ...(input.now ? { now: input.now } : {}) });
+    // 继承路径的"记录已不在"要说明是**之前提到的**那次——沿用旧话术骨架，避免用户以为是新问题。
+    if (byDate.status === "clarify" && byDate.reason === "date_not_found") {
+      return { ...byDate, reply: `之前提到的 ${rideAnchorDateLabel(anchorDate)} 那次骑行的记录已经不在了。可以告诉我其他日期，或问我最近一次。` };
+    }
+    if (byDate.status !== "resolved") return byDate;
+    // 继承路径保留"锚点是一整段上下文"的语义：日期命中唯一记录时沿用摘要里的日期串。
+    return { ...byDate, date: anchorDate, source: "inherited" };
   };
 
   if (route === "history_compare") {
@@ -240,11 +266,18 @@ export function resolveAnchorConfirmation(input: {
   if (confirmation.type === "latest") {
     return { kind: "complete", text: confirmation.question, decision: classifyChatInput(confirmation.question), anchor: { latest: true } };
   }
-  const record = findRideRecordByDate(input.entries, confirmation.date, input.now);
-  if (!record) {
-    const label = `${confirmation.date.year ? `${confirmation.date.year}年` : ""}${confirmation.date.month}月${confirmation.date.day}日`;
+  const label = `${confirmation.date.year ? `${confirmation.date.year}年` : ""}${confirmation.date.month}月${confirmation.date.day}日`;
+  // AGT-H1：确认轮给的日期要判"同日多条"——同一天两条时不能替用户选最晚那条，
+  // 直接按候选列表确定性回复（零模型），让用户说出时间或（H3 起）点选。
+  const matches = findRideRecordsByDate(input.entries, confirmation.date, input.now);
+  if (matches.length === 0) {
     return { kind: "reply", reply: `没有找到 ${label} 的骑行记录。可以换个日期，或直接问我最近一次。` };
   }
+  if (matches.length > 1) {
+    const candidates = matches.map((match) => chatRideCandidates([{ record: match }], 1)[0]!);
+    return { kind: "reply", reply: `${label}有 ${matches.length} 条骑行记录：${candidates.map((candidate) => chatRideCandidateLabel(candidate)).join("；")}。你想看哪一条？` };
+  }
+  const record = matches[0]!;
   const date = rideAnchorDate(record.activity.startTime);
   if (!date) return { kind: "reply", reply: "这条骑行记录缺少有效日期，暂时无法定位。可以直接问我最近一次。" };
   return { kind: "complete", text: confirmation.question, decision: classifyChatInput(confirmation.question), anchor: { date } };

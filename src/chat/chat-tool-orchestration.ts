@@ -15,9 +15,11 @@ import {
   chatToolSpecs,
   executeChatTool,
   healthProfileFields,
+  isRideReferencePending,
   parseChatToolInvocation,
   rideContextDimensions,
   type ChatComparisonMetricKey,
+  type ChatToolExecutionResult,
   type ChatToolInvocation,
   type ChatToolName,
   type ChatToolResult,
@@ -25,6 +27,8 @@ import {
 } from "./chat-tools.ts";
 import type { ChatRoutingDecision, ChatSessionSummary } from "./chat-routing.ts";
 import { resolveRideAnchor, rideAnchorDateLabel, type RideAnchorOverride } from "./chat-ride-anchor.ts";
+import type { ChatRideCandidate, ChatRideRefReason } from "./chat-ride-ref.ts";
+import { parseChatRideRef } from "./chat-ride-ref.ts";
 import { atomicCapabilityKeys, type AtomicCapabilityKey } from "../domain/atomic-capabilities.ts";
 import type { ApplicationRepository } from "../persistence/application-repository.ts";
 
@@ -83,14 +87,15 @@ export type ChatToolTrace = {
 // 该轨迹（脱敏：仅工具名/状态/错误码/耗时，不含输入输出内容）。
 export type ChatToolLoopStep = {
   tool: string;
-  status: "completed" | "rejected" | "failed";
+  // AGT-H1：`reference_pending` = 工具要求先指定哪一条记录（不是失败，也不是空结果）。
+  status: "completed" | "rejected" | "failed" | "reference_pending";
   errorCode?: string;
   durationMs: number;
 };
 
 export type ChatToolLoopTrace = {
   kind: "autonomous_tools";
-  status: "completed" | "budget_exhausted" | "no_match" | "invalid_tool_call" | "failed";
+  status: "completed" | "budget_exhausted" | "no_match" | "invalid_tool_call" | "failed" | "reference_pending";
   steps: ChatToolLoopStep[];
   toolCalls: number;
   providerCalls: number;
@@ -145,7 +150,7 @@ export const CHAT_TOOL_CATALOG_SCOPE: Record<ChatToolCatalogRoute, readonly Chat
 // 说明里写了"可选"的字段，由 normalizeLoopCall 补缺省值。
 const CHAT_TOOL_CATALOG_INPUTS: Record<ChatToolName, Record<string, unknown>> = {
   get_ride_context: {
-    rideId: "可选；缺省用锚点记录，指定时必须来自本轮工具结果返回的 rideId",
+    rideRef: "可选；缺省用本轮锚点记录。显式指定某一次时传对象，**三选一**：{\"date\":\"2026-08-20\"}（绝对日期）｜{\"ordinal\":-1}（-1=最近一次，-2=倒数第二次）｜{\"rideId\":\"…\"}（必须是本轮工具结果返回过的 rideId）",
     dims: `字符串数组（可多选）：${rideContextDimensions.join("/")}`,
   },
   get_capabilities: {
@@ -191,7 +196,7 @@ const CHAT_TOOL_CATALOG_INPUTS: Record<ChatToolName, Record<string, unknown>> = 
     metrics: `字符串数组（可多选）：${chatComparisonMetricKeys.join("/")}`,
   },
   get_route_overview: {
-    rideId: "必填；常来自 find_ride 命中结果",
+    rideRef: "必填（同上三选一）；常来自 find_ride 命中结果，或用 {\"date\":\"YYYY-MM-DD\"} 指定某一天",
     segments: `可选；1-${CHAT_ROUTE_OVERVIEW_MAX_SEGMENTS}，缺省 ${CHAT_ROUTE_OVERVIEW_DEFAULT_SEGMENTS}（返回最长的 N 段爬坡）`,
   },
 };
@@ -291,7 +296,17 @@ export type ChatToolLoopStartResult =
 export type ChatToolLoopCallReceipt =
   | { tool: ChatToolName; status: "completed"; durationMs: number; result: ChatToolResult }
   | { tool: string; status: "rejected"; errorCode: "INVALID_TOOL_CALL" | "RIDE_NOT_ALLOWED"; durationMs: number }
-  | { tool: ChatToolName; status: "failed"; errorCode: "TOOLS_NO_CURRENT_RIDE" | "TOOLS_TIMEOUT" | "TOOLS_UNAVAILABLE"; durationMs: number };
+  | { tool: ChatToolName; status: "failed"; errorCode: "TOOLS_NO_CURRENT_RIDE" | "TOOLS_TIMEOUT" | "TOOLS_UNAVAILABLE"; durationMs: number }
+  // AGT-H1：记录选择未定（同日多条 / 没这条 / 没给指涉）——不是失败，也不是"查了但没有"。
+  // 循环遇到它立即以候选话术确定性收口（零模型），H2 再把候选提升为响应 choices。
+  | {
+    tool: ChatToolName;
+    status: "reference_pending";
+    durationMs: number;
+    pendingStatus: "ambiguous" | "need_reference" | "not_found";
+    reason: ChatRideRefReason;
+    candidates: ChatRideCandidate[];
+  };
 
 export type ChatToolLoopRunner = {
   startLoop(input: { text: string; decision: ChatRoutingDecision; summaries?: ChatSessionSummary[]; anchor?: RideAnchorOverride }): Promise<ChatToolLoopStartResult>;
@@ -315,12 +330,28 @@ function normalizeLoopCall(call: ChatToolLoopCallRequest, anchorRideId: string, 
   // 未注册工具（含 B0 只落合同、catalog 未下发的 5 个新工具）直接判非法。
   if (!spec) return "INVALID_TOOL_CALL";
   const raw: Record<string, unknown> = { ...call.input };
+  // AGT-H1：两个记录类工具的锚点注入改为 `rideRef`——**显式表达**"用这一条"，
+  // 而不是让工具内部默默当"最新一次"处理。锚点为空（无记录）时**不注入**，
+  // 让工具返回 need_reference + 候选，由上层决定怎么问。
+  const anchorRefTools = call.tool === "get_ride_context" || call.tool === "get_route_overview";
   if (spec.anchorMode === "none") {
     if (raw.rideId !== undefined) return "INVALID_TOOL_CALL";
-  } else if (raw.rideId === undefined) {
-    raw.rideId = anchorRideId;
-  } else if (raw.rideId !== null && (typeof raw.rideId !== "string" || !allowedRideIds.includes(raw.rideId))) {
+    if (raw.rideRef !== undefined) return "INVALID_TOOL_CALL";
+  } else if (raw.rideRef === undefined && raw.rideId === undefined) {
+    if (anchorRefTools) {
+      if (anchorRideId) raw.rideRef = { rideId: anchorRideId };
+    } else {
+      raw.rideId = anchorRideId;
+    }
+  } else if (raw.rideId !== undefined && raw.rideId !== null && (typeof raw.rideId !== "string" || !allowedRideIds.includes(raw.rideId))) {
+    // 迁移期糖：模型回传的 rideId 必须是本轮工具结果返回过的记录（防越权/防编造）。
     return "RIDE_NOT_ALLOWED";
+  }
+  if (raw.rideRef !== undefined) {
+    const ref = parseChatRideRef(raw.rideRef);
+    if (!ref) return "INVALID_TOOL_CALL";
+    // `{date}` / `{ordinal}` 由服务端在本人记录里查，不存在越权读；`{rideId}` 与裸 rideId 同口径。
+    if ("rideId" in ref && !allowedRideIds.includes(ref.rideId)) return "RIDE_NOT_ALLOWED";
   }
   if (call.tool === "get_ride_context" && raw.dims === undefined) raw.dims = ["summary"];
   if (call.tool === "get_capabilities" && raw.caps === undefined) raw.caps = ["route", "distance", "timing", "speed", "elevation", "heartRate", "power", "cadence"];
@@ -424,6 +455,13 @@ async function withinOrchestrationTimeout<T>(operation: Promise<T>): Promise<T> 
   }
 }
 
+// AGT-H1：单工具链路只传具体记录（`{rideId}`），理论上不会拿到"记录选择未定"。
+// 真拿到说明"先解析锚点再取数"的顺序被破坏——宁可确定性降级，也不拿错记录作答。
+function expectToolResult(result: ChatToolExecutionResult): ChatToolResult {
+  if (isRideReferencePending(result)) throw new ChatToolOrchestrationError("TOOLS_UNAVAILABLE");
+  return result;
+}
+
 function mapToolError(error: unknown): ChatToolOrchestrationError {
   if (error instanceof ChatToolOrchestrationError) return error;
   if (error instanceof ChatToolError && error.code === "NOT_FOUND") return new ChatToolOrchestrationError("TOOLS_NO_CURRENT_RIDE");
@@ -502,6 +540,18 @@ export function createChatToolLoopRunner(repository: ApplicationRepository, owne
           const callStartedAt = Date.now();
           try {
             const result = await executeChatTool(repository, ownerId, invocation);
+            // AGT-H1：记录选择未定 → 单独一种回执（不是失败、不是空结果），
+            // 循环据此以候选话术收口，避免落进通用 no_match 话术。
+            if (isRideReferencePending(result)) {
+              return {
+                tool: invocation.tool,
+                status: "reference_pending",
+                durationMs: Date.now() - callStartedAt,
+                pendingStatus: result.status,
+                reason: result.reason,
+                candidates: result.candidates,
+              };
+            }
             return { tool: invocation.tool, status: "completed", durationMs: Date.now() - callStartedAt, result };
           } catch (error) {
             const code = error instanceof ChatToolError && error.code === "NOT_FOUND"
@@ -547,8 +597,11 @@ export function createChatToolRunner(repository: ApplicationRepository, ownerId:
             const dimensions = currentRideDimensions(text.toLowerCase());
             const toolResult = await executeChatTool(repository, ownerId, {
               tool: "get_ride_context",
-              input: { rideId: currentRide.activity.rideId, dims: dimensions },
+              input: { rideRef: { rideId: currentRide.activity.rideId }, dims: dimensions },
             });
+            // AGT-H1：锚点已在上面解析为唯一记录，`{rideId}` 必然命中——走到 pending 说明
+            // 归属或解析被破坏，宁可确定性追问也不拿错记录作答。
+            if (isRideReferencePending(toolResult)) throw new ChatToolOrchestrationError("TOOLS_ANCHOR_CLARIFY", "这条记录的明细暂时取不到。可以换成最近一次，或直接告诉我日期。");
             return {
               context: { schemaVersion: "ride-chat-tool-context-v0.1", question: text, decision, sessionSummaries: summaries, toolResult },
               trace: { tool: "get_ride_context", status: "completed", dimensions, summarySlots: summaries.length },
@@ -560,10 +613,10 @@ export function createChatToolRunner(repository: ApplicationRepository, ownerId:
           // 不可比性由工具结果原因码承载，编排层不在此拦截。
           if (decision.route === "history_compare") {
             const metrics = comparisonMetrics(text.toLowerCase());
-            const toolResult = await executeChatTool(repository, ownerId, {
+            const toolResult = expectToolResult(await executeChatTool(repository, ownerId, {
               tool: "compare_rides",
               input: { rideId: currentRide.activity.rideId, metrics, windowDays: CHAT_COMPARISON_WINDOW_DAYS },
-            });
+            }));
             return {
               context: { schemaVersion: "ride-chat-tool-context-v0.1", question: text, decision, sessionSummaries: summaries, toolResult },
               trace: { tool: "compare_rides", status: "completed", comparisonMetrics: metrics, summarySlots: summaries.length },
@@ -572,10 +625,10 @@ export function createChatToolRunner(repository: ApplicationRepository, ownerId:
           }
 
           const scope = capabilityScope(text.toLowerCase());
-          const toolResult = await executeChatTool(repository, ownerId, {
+          const toolResult = expectToolResult(await executeChatTool(repository, ownerId, {
             tool: "get_capabilities",
             input: { rideId: currentRide.activity.rideId, caps: scope },
-          });
+          }));
           return {
             context: { schemaVersion: "ride-chat-tool-context-v0.1", question: text, decision, sessionSummaries: summaries, toolResult },
             trace: { tool: "get_capabilities", status: "completed", capabilityScope: scope, summarySlots: summaries.length },

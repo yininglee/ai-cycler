@@ -2,10 +2,10 @@ import Link from "next/link";
 
 import { Brand } from "../../components/app-shell";
 import { getNextSessionUserId } from "../../../src/auth/next-session.ts";
-import { CHAT_COMPARISON_WINDOW_DAYS, chatComparisonMetricKeys, executeChatTool, type ChatToolResult } from "../../../src/chat/chat-tools.ts";
+import { CHAT_COMPARISON_WINDOW_DAYS, chatComparisonMetricKeys, executeChatTool, type ChatToolExecutionResult } from "../../../src/chat/chat-tools.ts";
 import { getApplicationRepository } from "../../../src/persistence/application-repository.ts";
 
-function ToolResult({ title, result }: { title: string; result: ChatToolResult }) {
+function ToolResult({ title, result }: { title: string; result: ChatToolExecutionResult }) {
   return <section className="chat-tool-result">
     <header>
       <div><p className="kicker">READ ONLY</p><h2>{title}</h2></div>
@@ -19,12 +19,12 @@ export default async function ChatToolsPreviewPage() {
   const userId = await getNextSessionUserId();
   const repository = getApplicationRepository();
   const latestRide = userId ? (await repository.listRides(userId))[0]?.record : undefined;
-  let results: ChatToolResult[] = [];
+  let results: ChatToolExecutionResult[] = [];
   if (userId && latestRide) {
     results = await Promise.all([
       executeChatTool(repository, userId, {
         tool: "get_ride_context",
-        input: { rideId: latestRide.activity.rideId, dims: ["summary", "heart_rate", "power", "cadence", "elevation"] },
+        input: { rideRef: { rideId: latestRide.activity.rideId }, dims: ["summary", "heart_rate", "power", "cadence", "elevation"] },
       }),
       executeChatTool(repository, userId, {
         tool: "get_capabilities",

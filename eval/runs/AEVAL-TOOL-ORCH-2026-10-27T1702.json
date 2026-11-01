@@ -1,0 +1,166 @@
+{
+  "datasetId": "AEVAL-TOOL-ORCHESTRATION",
+  "repeat": 5,
+  "total": 5,
+  "passed": 1,
+  "avgElapsedMs": 3521,
+  "slowestElapsedMs": 5620,
+  "promptVersion": "ride-chat-prompt-v0.2.7",
+  "results": [
+    {
+      "caseId": "ORCH-21",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 3319,
+      "replyPreview": "最近一次记录里没有可用的功率数据。功率、标准化功率、已验证 FTP 和功率区间这几项都显示为不可用，原因是该条记录本身无效，无法从中读取功率相关信息。如果你换一",
+      "steps": [
+        "get_capabilities:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-21",
+      "round": 2,
+      "pass": false,
+      "detail": "缺工具:get_capabilities 证据形态不符",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 2665,
+      "replyPreview": "最近一次记录是 10 月 26 日这次骑行，有功率数据：平均功率 230 W，标准化功率 244 W。不过这两项功率指标被标记为记录无效，数值仅供参考，不建议当",
+      "steps": [
+        "get_ride_context:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-21",
+      "round": 3,
+      "pass": false,
+      "detail": "缺工具:get_capabilities 证据形态不符",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 2786,
+      "replyPreview": "10 月 26 日这次骑行有功率数据，平均功率 230 W，标准化功率 244 W。不过服务端把这条记录的功率与标准化功率标记为记录无效，所以这两个数值的可靠性",
+      "steps": [
+        "get_ride_context:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-21",
+      "round": 4,
+      "pass": false,
+      "detail": "缺工具:get_capabilities 证据形态不符",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 3214,
+      "replyPreview": "最近一次记录是 10 月 26 日这次骑行，有功率数据：平均功率 230 W，标准化功率 244 W。不过系统对这次记录的功率、距离、时间与速度都标注了记录异常",
+      "steps": [
+        "get_ride_context:completed"
+      ]
+    },
+    {
+      "caseId": "ORCH-21",
+      "round": 5,
+      "pass": false,
+      "detail": "缺工具:get_capabilities 证据形态不符",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 5620,
+      "replyPreview": "10 月 26 日这次骑行有功率数据：平均功率 230 W，标准化功率 244 W。不过系统同时标注了功率与标准化功率的记录校验未通过，这两个数值的可靠性有限，",
+      "steps": [
+        "get_ride_context:completed"
+      ]
+    }
+  ],
+  "timings": [
+    {
+      "caseId": "ORCH-21",
+      "round": 1,
+      "ok": true,
+      "headersMs": 1467,
+      "bodyMs": 2,
+      "totalMs": 1469
+    },
+    {
+      "caseId": "ORCH-21",
+      "round": 1,
+      "ok": true,
+      "headersMs": 1841,
+      "bodyMs": 1,
+      "totalMs": 1842
+    },
+    {
+      "caseId": "ORCH-21",
+      "round": 2,
+      "ok": true,
+      "headersMs": 1100,
+      "bodyMs": 1,
+      "totalMs": 1101
+    },
+    {
+      "caseId": "ORCH-21",
+      "round": 2,
+      "ok": true,
+      "headersMs": 1541,
+      "bodyMs": 0,
+      "totalMs": 1541
+    },
+    {
+      "caseId": "ORCH-21",
+      "round": 3,
+      "ok": true,
+      "headersMs": 1107,
+      "bodyMs": 1,
+      "totalMs": 1108
+    },
+    {
+      "caseId": "ORCH-21",
+      "round": 3,
+      "ok": true,
+      "headersMs": 1664,
+      "bodyMs": 0,
+      "totalMs": 1664
+    },
+    {
+      "caseId": "ORCH-21",
+      "round": 4,
+      "ok": true,
+      "headersMs": 1296,
+      "bodyMs": 1,
+      "totalMs": 1297
+    },
+    {
+      "caseId": "ORCH-21",
+      "round": 4,
+      "ok": true,
+      "headersMs": 1905,
+      "bodyMs": 1,
+      "totalMs": 1906
+    },
+    {
+      "caseId": "ORCH-21",
+      "round": 5,
+      "ok": true,
+      "headersMs": 3365,
+      "bodyMs": 1,
+      "totalMs": 3366
+    },
+    {
+      "caseId": "ORCH-21",
+      "round": 5,
+      "ok": true,
+      "headersMs": 2246,
+      "bodyMs": 0,
+      "totalMs": 2247
+    }
+  ],
+  "timingSummary": {
+    "calls": 10,
+    "headersP50Ms": 1664,
+    "headersP90Ms": 3365,
+    "bodyP50Ms": 1,
+    "bodyP90Ms": 2,
+    "failByPhase": {}
+  }
+}

@@ -9,6 +9,7 @@ import {
   CHAT_TOOL_MAX_RESULT_BYTES,
   ChatToolError,
   executeChatTool,
+  isRideReferencePending,
   parseChatToolInvocation,
 } from "../src/chat/chat-tools.ts";
 import { getRideFixture } from "../src/fixtures/rides.ts";
@@ -57,7 +58,9 @@ test("get_ride_context returns only requested dimensions and no private raw data
     const invocation = parseChatToolInvocation({ tool: "get_ride_context", input: { rideId: "private-ride", dims: ["power"] } });
     const result = await executeChatTool(repository, "owner-a", invocation);
     assert.equal(result.tool, "get_ride_context");
-    if (result.tool !== "get_ride_context") return;
+    // AGT-H1：`{rideId}` 一定唯一解析，不会落到"记录选择未定"。
+    assert.equal(isRideReferencePending(result), false);
+    if (result.tool !== "get_ride_context" || isRideReferencePending(result)) return;
     assert.deepEqual(result.dimensions, ["power"]);
     // CHAT-15：日期标签来自 activity.startTime（Asia/Shanghai 口径，与详情页一致）。
     assert.equal(result.rideDateLabel, "2026年8月12日");

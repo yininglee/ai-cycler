@@ -1,5 +1,7 @@
 # AI-Spec · 对话 Agent 能力规约（集中合同文档 · 骨架版）
 
+> ⚠️ **已归档（2026-10-27）**：本文档为 v1（16 路由 + catalog 按路由裁剪口径），已被 **[AI-Spec v2](../AI-Spec_对话Agent能力规约_v2.md)**（三路由 + 交互合同 + rideRef）取代，移入 `archive/` 仅供追溯。v1 的工具合同表、Prompt 版本索引、评测资产索引仍被 v2 继承；路由/交互相关合同以 v2 为准。
+
 > 建立日期：2026-10-23｜形态决策（2026-10-23 用户拍板）：骨架版——已定规约写实，未定部分留占位、随对应里程碑细规划定稿后递增（§11 增补记录）。
 > 上游：[自主 Agent 改造需求分析](2026-10-23_骑行伙伴自主Agent改造_需求分析.md) §3/§4/§7｜[粗规划](开发规划/VIBE_CODING_Agent_开发规划.md)｜[AGT-A 细规划](开发规划/AGT-A_意图路由v0.4_工作项规划.md)｜[记忆调研](2026-10-23_会话上下文与记忆机制调研.md)。
 >
@@ -90,12 +92,14 @@
 
 ## 5. LLM 调用管道与 Prompt 版本索引
 
-**Provider（D-A6）**：对话链路（分类器 + 主对话）全迁硅基流动 OpenAI 兼容 API（`https://api.siliconflow.cn/v1`）；骑后解读链路维持 Coze 不动。模型选型推荐制：分类器 `deepseek-ai/DeepSeek-V4-Flash`、主对话 `deepseek-ai/DeepSeek-V3.2`，实施以硅基流动可用列表锁定。
+**Provider（D-A6）**：对话链路（分类器 + 主对话）全迁硅基流动 OpenAI 兼容 API（`https://api.siliconflow.cn/v1`）；骑后解读链路维持 Coze 不动。**现行模型（2026-10-26 B5 收口）**：分类器 `deepseek-ai/DeepSeek-V4-Flash`、主对话 **`deepseek-ai/DeepSeek-V4.1-Flash`**（原 V3.2 已弃用：选型实测 Flash 版判断力不弱于 V3.2、优于 V4-Pro，且快 4~5 倍）。
+
+> **版本索引漂移（AGT-C 细规划核对发现并修正，2026-10-26）**：本表原写主对话 `v0.2.3`，实测代码常量为 `v0.2.7`；归档副本 `prompts/ride-chat-workflow-v0.1.md` 头部版本行仍写 `v0.1.8`（正文已同步）。**代码常量为 Prompt 版本唯一事实源**，本表与归档头部行属登记项，须随每次同步更新——C1 把"头部版本行一致性"纳入单测（避免同一坑第三次复现）。
 
 | Prompt | 版本 | 事实源位置 | 归档副本 | 状态 |
 | --- | --- | --- | --- | --- |
 | 意图分类器 | `ride-chat-classifier-prompt-v0.4.1` | `src/chat/chat-classifier-prompt.ts`（`CHAT_CLASSIFIER_SYSTEM_PROMPT` 常量，随请求直发硅基流动） | `prompts/ride-chat-classifier-v0.2.md`（归档副本，单测断言逐字一致） | ✅ AGT-A5 定版（83/83） |
-| 主对话 | `ride-chat-prompt-v0.2.3` | `src/chat/chat-workflow-prompt.ts` | `prompts/ride-chat-workflow-v0.1.md`（`npm run prompt:workflow:sync` 对齐，单测断言逐字一致） | **B0~B4 累计**：v0.1.8 输出六字段（`knowledgeIds`）+ 数字等价类；v0.1.9 预算 4/5；v0.2.0 能力清单（功能范围）；v0.2.1 复合问题分别取数 + 检索类参数约束；v0.2.2 kb_qa 强制先检索；v0.2.3 清单补"支持分析哪些数据"（机械比对发现缺口） |
+| 主对话 | `ride-chat-prompt-v0.2.7` | `src/chat/chat-workflow-prompt.ts` | `prompts/ride-chat-workflow-v0.1.md`（`npm run prompt:workflow:sync` 对齐，单测断言逐字一致） | **B0~B5 累计**：v0.1.8 输出六字段（`knowledgeIds`）+ 数字等价类；v0.1.9 预算 4/5；v0.2.0 能力清单；v0.2.1 复合问题分别取数 + 检索类参数约束；v0.2.2 kb_qa 强制先检索；v0.2.3 清单补"支持分析哪些数据"；v0.2.5 删分工表（体积治理）；v0.2.6 数字规则补聚合条款（禁代算）；v0.2.7 跨调用依赖必须分轮。**AGT-C1 起升 v0.3.0 并拆为 base + 任务簇段（本表随之改为"模块清单 + 组装规则"）** |
 | 分析叙事 / 水平评估 / KB 问答 / 陪伴 | 待定 | 待定（AGT-C 落地，按任务簇分模板） | — | AGT-C 并入 |
 | 训练计划生成 | 待定 | 待定（AGT-F，附结构化输出格式约束 + few-shot 计划样例） | — | AGT-F 并入 |
 | 监督反馈 | 待定 | 待定（AGT-G，两档输出：安全自动 / 需确认） | — | AGT-G 并入 |
@@ -198,7 +202,8 @@
 | 2026-10-24 | AGT-B1（验收） | **验收修正**：TSS 时长口径严格对齐 V2.1 spec——`intensity.tss` 的 `dependencies` 只含 `timing.movingTimeS`，初版的"缺失退回 `elapsedTimeS`"会把通勤骑停歇算进负荷、系统性高估 TSS；已删除退回（`RIDE_TSS_RULES_VERSION` → `ride-tss-v1.1`），movingTimeS 缺失即 `DURATION_MISSING`。探针实测：demo profile 三项投影正确、KB 摘要 445 字完整句、"乳酸阈"命中为 KB 真实内容 | ✅ `Done`（用户委托验收，修正后 739/739） |
 | 2026-10-24 | AGT-B2 | **窗口工具组实装 + `find_ride` 解冻**：① `get_ride_history`（Asia/Shanghai 日历日窗口、锚定日作窗口终点、汇总 claims 用领域指标键以支持 km/小时呈现、逐条行 ≤20 且截断写 `rows_truncated`、统计按全量算）；② `get_route_overview`（`buildRideElevationSummary` → `buildRideRouteShapeSummary`、`climbs[]` 按里程降序 + `segments` 截断、里程取整到米、**不可用不给任何里程字段**）；③ `find_ride` 上限 30→**365**（缺省仍 30）。验证：tsc 0 error、全量 **750/750**、12 项边界单测。⚠️ **P7**：窗口能力面变更已生效，M3 集在 B5 升 v0.7 开新 Run 前不得引用任何窗口相关旧结论 | ✅ 已实施（`Review`） |
 | 2026-10-24 | AGT-B4 | **路由可达性 + 能力面收口**：① `kb_qa`/`level_assessment` 移出 `deterministicOnly` → `allowModel` + `tool_then_model`，`startLoop` 允许三路由，`training_plan`/`training_supervision` 仍占位；② capabilities 补**功能范围固定清单**（9 项含"支持分析哪些数据"，机械比对单测锁定）；`LEVEL_ASSESSMENT`/`KB_QA`/`CAPABILITY_GAP` 降级文案改写（不再说"规划中"）；③ **§5.5 复合问法重审结论 = L1**（扩 catalog），**否决 L3**（多标签不解决实测四类根因：catalog 缺口/说明不清/编排不足/锚点澄清/单轮超时）；④ 派生修复：catalog 类型说明（数组 vs 字符串）、Prompt 强制先检索与分别取数、**主对话单轮超时 15s→20s**。验证：tsc 0 error、全量 **765/765**、真实模型探针 C1/C4/C5 修补后 validated | ✅ 已实施（`Review`） |
-| 待补 | AGT-C | 4 生成任务簇 prompt 版本索引、KB 引用校验规则细则、**离线语义判官（误拦样本标注）**、**SAFETY_TERMS 词表校准（G6 延后项）** | 占位 |
+| 2026-10-26 | AGT-C（细规划） | **细规划产出 + 三处核对修正**：① **§5 版本索引漂移修正**（主对话实为 `v0.2.7`，原写 v0.2.3；归档头部行写 v0.1.8）+ provider 模型更正为 `V4.1-Flash`；② 细规划新增两项错误码提案 **`OUTPUT_ASSESSMENT_OVERREACH`**（评估越界，仅 `level_assessment` 生效、完整短语匹配）与 **`CRISIS_REFERRAL`**（危机转介，走 L0 零模型）——定稿随 C3/C4 并入 §8；③ 生成约束按任务簇拆段（`base` + 8 段）与 KB 引用命中率口径（条目级 recall@3、边界组 ≥50% 权重、`graceful_uncovered` 不计入）待 D-C1/D-C2 拍板后并入 §7。**核查结论**：M3 v0.7 的 10 个失败全为判分口径/观测问题（0 产品缺陷），且该集无 kb/评估/陪伴用例 | 🔶 细规划已产出（待评审 + D-C1~D-C7）+ 版本漂移已修 |
+| 待补 | AGT-C | 4 生成任务簇 prompt 版本索引、KB 引用校验规则细则、**离线语义判官（误拦样本标注）**、**SAFETY_TERMS 词表校准（G6 延后项）** | 占位（细规划已产出，定稿随 C1/C2/C3/C4 分批并入） |
 | 待补 | AGT-D | 分层混合上下文细则、校验器白名单扩展口径（P8 拍板后） | 占位 |
 | 待补 | AGT-F | 计划 schema、`log_plan_execution` 写路径合同、处方硬门规则、确认令牌机制 | 占位 |
 | 待补 | AGT-G | 监督反馈两档输出 schema、推送频控参数、暂停机制 | 占位 |

@@ -1,0 +1,108 @@
+{
+  "datasetId": "AEVAL-CHAT-BOUNDARY",
+  "repeat": 3,
+  "total": 3,
+  "passed": 3,
+  "avgElapsedMs": 3632,
+  "slowestElapsedMs": 4985,
+  "promptVersion": "ride-chat-prompt-v0.2.7",
+  "results": [
+    {
+      "caseId": "BND-A03",
+      "round": 1,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 4985,
+      "replyPreview": "10 月 26 日这次骑行的平均功率是 230 W，标准化功率为 244 W。不过这两项功率数据都被标记为记录异常，数值可能不够可靠，建议谨慎参考。",
+      "steps": [
+        "get_ride_context:completed"
+      ]
+    },
+    {
+      "caseId": "BND-A03",
+      "round": 2,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 2864,
+      "replyPreview": "10 月 26 日这次骑行的平均功率是 230 W，标准化功率为 244 W。不过这条记录的数据质量校验未通过，功率相关指标被标记为无效，数值仅供参考。",
+      "steps": [
+        "get_ride_context:completed"
+      ]
+    },
+    {
+      "caseId": "BND-A03",
+      "round": 3,
+      "pass": true,
+      "detail": "",
+      "execution": "validated",
+      "fallback": "-",
+      "elapsedMs": 3047,
+      "replyPreview": "10 月 26 日这次骑行的平均功率是 230 W，标准化功率为 244 W。不过这两项功率数据当前被标记为记录无效，参考时请留意。",
+      "steps": [
+        "get_ride_context:completed"
+      ]
+    }
+  ],
+  "timings": [
+    {
+      "caseId": "BND-A03",
+      "round": 1,
+      "ok": true,
+      "headersMs": 1386,
+      "bodyMs": 1,
+      "totalMs": 1387
+    },
+    {
+      "caseId": "BND-A03",
+      "round": 1,
+      "ok": true,
+      "headersMs": 3574,
+      "bodyMs": 1,
+      "totalMs": 3575
+    },
+    {
+      "caseId": "BND-A03",
+      "round": 2,
+      "ok": true,
+      "headersMs": 1084,
+      "bodyMs": 1,
+      "totalMs": 1085
+    },
+    {
+      "caseId": "BND-A03",
+      "round": 2,
+      "ok": true,
+      "headersMs": 1760,
+      "bodyMs": 1,
+      "totalMs": 1761
+    },
+    {
+      "caseId": "BND-A03",
+      "round": 3,
+      "ok": true,
+      "headersMs": 1429,
+      "bodyMs": 1,
+      "totalMs": 1430
+    },
+    {
+      "caseId": "BND-A03",
+      "round": 3,
+      "ok": true,
+      "headersMs": 1601,
+      "bodyMs": 1,
+      "totalMs": 1602
+    }
+  ],
+  "timingSummary": {
+    "calls": 6,
+    "headersP50Ms": 1601,
+    "headersP90Ms": 3574,
+    "bodyP50Ms": 1,
+    "bodyP90Ms": 1,
+    "failByPhase": {}
+  }
+}

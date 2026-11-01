@@ -1,3 +1,5 @@
+import { isChatChoiceRef, type ChatChoiceRef } from "./chat-interaction.ts";
+
 export const CHAT_ROUTING_SCHEMA_VERSION = "chat-routing-v0.2" as const;
 export const CHAT_INPUT_MAX_CHARS = 1_200;
 export const CHAT_INPUT_MAX_BYTES = 4 * 1_024;
@@ -45,6 +47,10 @@ export type ChatSessionSummary = {
   question: string;
   route: ChatRoute;
   rideAnchor?: string;
+  // AGT-H0（摘要槽位 v0.3）：跨轮选择记忆——用户点选的记录/目标/计划槽位。
+  // `rideAnchor`（日期）自此降级为纯展示与日志；**"用户选的是哪条记录"以 choice.id 为准**
+  // （日期在"同一天骑两次"时无法唯一定位，这是 H3 要修的根本问题）。
+  choice?: ChatChoiceRef;
 };
 
 const CHAT_ROUTE_VALUES: readonly ChatRoute[] = [
@@ -95,7 +101,7 @@ export function sanitizeChatSummaries(value: unknown): { summaries: ChatSessionS
     if (typeof item !== "object" || item === null || Array.isArray(item)) return { summaries: [], dropped: true };
     const record = item as Record<string, unknown>;
     const keys = Object.keys(record);
-    if (keys.some((key) => key !== "kind" && key !== "question" && key !== "route" && key !== "rideAnchor")) {
+    if (keys.some((key) => key !== "kind" && key !== "question" && key !== "route" && key !== "rideAnchor" && key !== "choice")) {
       return { summaries: [], dropped: true };
     }
     if (record.kind !== "session_turn") return { summaries: [], dropped: true };
@@ -109,11 +115,17 @@ export function sanitizeChatSummaries(value: unknown): { summaries: ChatSessionS
         return { summaries: [], dropped: true };
       }
     }
+    // AGT-H0：choice 是 v0.3 新增槽位——形状校验与 rideAnchor 同刻度（任一违规整体丢弃，
+    // 不"降级为无 choice"继续用：半截上下文比没有上下文更容易答错对象）。
+    if (record.choice !== undefined && !isChatChoiceRef(record.choice)) {
+      return { summaries: [], dropped: true };
+    }
     summaries.push({
       kind: "session_turn",
       question: record.question,
       route: record.route as ChatRoute,
       ...(record.rideAnchor !== undefined ? { rideAnchor: record.rideAnchor } : {}),
+      ...(record.choice !== undefined ? { choice: record.choice as ChatChoiceRef } : {}),
     });
   }
   return { summaries, dropped: false };
@@ -129,12 +141,45 @@ export type ChatRisk =
   // CHAT-12 P3：分类器语义判定的安全停止（L0 正则未覆盖的语义红线，纵深防御）。
   | "semantic_safety";
 
+// AGT-H0（SD-3 动作合同）：action 由 4 值扩到 7 值。
+//   deterministic_reply / tool_then_model / safety_stop / reject  —— 原 4 值，含义不变
+//   select             —— 出选项让用户选（指涉不明或要素缺失）
+//   produce_artifact   —— 产出结构化交付物（记录列表/计划），走 artifact 通道
+//   confirm_write      —— 请求用户确认一次写操作（计划生效，AGT-F）
+// 契约与行为的关系（刻意分离）：H0 只把**取值范围**放开，`makeChatDecision` 仍只产出原 4 值；
+// 新值由 H2（select / produce_artifact）与 F（confirm_write）在具体工作项里开始产出。
+// 这样类型层先就位，行为层零变化——不满足退出条件"全量单测零回归"的风险最小。
+export type ChatRoutingAction =
+  | "deterministic_reply"
+  | "tool_then_model"
+  | "safety_stop"
+  | "reject"
+  | "select"
+  | "produce_artifact"
+  | "confirm_write";
+
+export const CHAT_ROUTING_ACTIONS: readonly ChatRoutingAction[] = [
+  "deterministic_reply",
+  "tool_then_model",
+  "safety_stop",
+  "reject",
+  "select",
+  "produce_artifact",
+  "confirm_write",
+];
+
+const CHAT_ROUTING_ACTION_SET = new Set<string>(CHAT_ROUTING_ACTIONS);
+
+export function isChatRoutingAction(value: unknown): value is ChatRoutingAction {
+  return typeof value === "string" && CHAT_ROUTING_ACTION_SET.has(value);
+}
+
 export type ChatRoutingDecision = {
   schemaVersion: typeof CHAT_ROUTING_SCHEMA_VERSION;
   route: ChatRoute;
   risk: ChatRisk;
   allowModel: boolean;
-  action: "deterministic_reply" | "tool_then_model" | "safety_stop" | "reject";
+  action: ChatRoutingAction;
   reasonCode:
     | "SOCIAL"
     | "CURRENT_RIDE"

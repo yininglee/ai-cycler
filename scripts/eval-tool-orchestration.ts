@@ -14,6 +14,7 @@ import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { runChatAgent } from "../src/chat/chat-agent.ts";
 import { readSiliconFlowChatProviderConfig, SiliconFlowChatProvider } from "../src/chat/siliconflow-chat-provider.ts";
 import { createChatToolLoopRunner } from "../src/chat/chat-tool-orchestration.ts";
+import { rideAnchorDate } from "../src/chat/chat-ride-anchor.ts";
 import { classifyChatInputL0, makeChatDecision } from "../src/chat/chat-routing.ts";
 import { createUserProfile } from "../src/domain/user-profile.ts";
 import { getRideFixture } from "../src/fixtures/rides.ts";
@@ -358,8 +359,13 @@ async function main() {
         kind: "session_turn" as const,
         question: turn.question,
         route: turn.route as never,
+        // AGT-H1 回归修掉的**评测构造缺陷**（2026-10-28）：摘要锚点过去取 `toISOString().slice(0,10)`
+        // ——那是 **UTC 日期**，而记录落库后锚点用 `rideAnchorDate`（Asia/Shanghai）取日期。UTC 16:00
+        // 之后两者差一天，于是"2 天前那次"的摘要锚点指向的记录根本不存在 → A03/A05 稳定 clarify。
+        // 基线 Run 跑在 UTC 14:16 没跨天，所以一直没暴露（改前 A03/A05 都是 3/3）。线上不存在此错位：
+        // 前端写入的 `rideAnchor` 来自服务端 `result.rideAnchor`（已按上海日历日解析）。
         ...(turn.anchorDaysAgo !== undefined
-          ? { rideAnchor: new Date(Date.now() - turn.anchorDaysAgo * 86_400_000).toISOString().slice(0, 10) }
+          ? { rideAnchor: rideAnchorDate(new Date(Date.now() - turn.anchorDaysAgo * 86_400_000).toISOString()) }
           : {}),
       }));
       try {

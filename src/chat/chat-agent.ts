@@ -1,5 +1,6 @@
 import { CHAT_ROUTING_SCHEMA_VERSION, RIDE_IDENTITY, type ChatRoutingDecision, type ChatSessionSummary } from "./chat-routing.ts";
 import { rideIdentityReply, type RideAnchorOverride } from "./chat-ride-anchor.ts";
+import { chatRideRefReply } from "./chat-ride-ref.ts";
 import {
   CHAT_TOOL_LOOP_MAX_PROVIDER_CALLS,
   CHAT_TOOL_LOOP_MAX_TOOL_CALLS,
@@ -19,6 +20,8 @@ import {
 } from "./chat-tool-orchestration.ts";
 import { validateChatOutput, type ChatOutputValidationPublic } from "./chat-output-validation.ts";
 import type { ChatOutputRoute } from "./chat-output-validation.ts";
+// AGT-H0：交互平面载荷类型（合同事实源见 chat-interaction.ts）。
+import { sanitizeChatInteractionPayload, type ChatArtifact, type ChatChoice, type ChatQuickAction } from "./chat-interaction.ts";
 import {
   CHAT_COMPARISON_WINDOW_DAYS,
   chatToolSpecs,
@@ -150,10 +153,16 @@ export type ChatAgentResult = {
   // TOOLS_LOOP_INVALID_TOOL_CALL（白名单外/参数非法/越权锚点调用被拒）、
   // TOOLS_LOOP_NO_MATCH（检索无命中/无可用 Claims 的零模型降级）、
   // TOOLS_LOOP_FAILED（工具执行失败）。
-  fallbackCode?: ChatProviderErrorCode | "TOOLS_PENDING" | "TOOLS_NO_CURRENT_RIDE" | "TOOLS_TIMEOUT" | "TOOLS_UNAVAILABLE" | "TOOLS_EMPTY_CLAIMS" | "TOOLS_ANCHOR_CLARIFY" | "REPAIR_FAILED" | "TOOLS_LOOP_BUDGET_EXHAUSTED" | "TOOLS_LOOP_INVALID_TOOL_CALL" | "TOOLS_LOOP_NO_MATCH" | "TOOLS_LOOP_FAILED";
+  fallbackCode?: ChatProviderErrorCode | "TOOLS_PENDING" | "TOOLS_NO_CURRENT_RIDE" | "TOOLS_TIMEOUT" | "TOOLS_UNAVAILABLE" | "TOOLS_EMPTY_CLAIMS" | "TOOLS_ANCHOR_CLARIFY" | "REPAIR_FAILED" | "TOOLS_LOOP_BUDGET_EXHAUSTED" | "TOOLS_LOOP_INVALID_TOOL_CALL" | "TOOLS_LOOP_NO_MATCH" | "TOOLS_LOOP_FAILED" | "TOOLS_REFERENCE_NEEDED";
   // CHAT-14 P2：本轮解析的骑乘锚点日期（YYYY-MM-DD）——前端写入摘要槽位供后续继承；
   // 锚点澄清轮/无记录轮缺省。公开结果保留（无敏感信息）。
   rideAnchor?: string;
+  // AGT-H0（交互平面，合同 `ride-chat-interaction-v0.3`）：三个结构化载荷字段，全部可选。
+  // **由编排层从工具结果同源生成，模型不经手**（模型输出协议仍是 v0.2）；旧前端忽略即兼容。
+  // 未产出时这些键不出现——旧响应形状逐字节不变。
+  choices?: ChatChoice[];
+  artifact?: ChatArtifact;
+  quickActions?: ChatQuickAction[];
   providerRawOutput?: string;
   toolContext?: ChatToolContext;
   toolTrace?: ChatToolTrace;
@@ -1087,6 +1096,20 @@ async function runAutonomousToolLoop(input: {
       }
       const receipts: readonly ChatToolLoopCallReceipt[] = await input.loopRunner.executeLoopCalls({ calls: request.calls, anchorRideId, allowedRideIds });
       for (const receipt of receipts) {
+        // AGT-H1：记录选择未定——直接以候选话术收口（零模型、零降级话术）。
+        // 这是"需要你先选一条"的正常路径，不该落到 no_match 的"暂时无法回答"。
+        if (receipt.status === "reference_pending") {
+          steps.push({ tool: receipt.tool, status: "reference_pending", errorCode: `REFERENCE:${receipt.reason}`, durationMs: receipt.durationMs });
+          console.log(`${tag} → L2b reference_pending | tool=${receipt.tool} reason=${receipt.reason} candidates=${receipt.candidates.length}`);
+          return withLoop({
+            schemaVersion: CHAT_AGENT_SCHEMA_VERSION,
+            decision,
+            execution: "template",
+            modelInvoked: true,
+            reply: chatRideRefReply({ status: receipt.pendingStatus, reason: receipt.reason, candidates: receipt.candidates }),
+            fallbackCode: "TOOLS_REFERENCE_NEEDED",
+          }, "reference_pending");
+        }
         steps.push({
           tool: receipt.tool,
           status: receipt.status,
@@ -1387,6 +1410,14 @@ export async function runChatAgent(input: {
 }
 
 export function publicChatAgentResult(result: ChatAgentResult): ChatAgentPublicResult {
-  const { providerRawOutput: _providerRawOutput, toolContext: _toolContext, ...publicResult } = result;
-  return publicResult;
+  const { providerRawOutput: _providerRawOutput, toolContext: _toolContext, choices, artifact, quickActions, ...publicResult } = result;
+  // AGT-H0：出口统一净化——编排层即便误传了原始候选数据，非法载荷也不会到前端
+  // （非法 = 整个字段剔除，响应退回纯文本，用户重述一次即可恢复）。
+  const interaction = sanitizeChatInteractionPayload({ choices, artifact, quickActions });
+  return {
+    ...publicResult,
+    ...(interaction.choices !== undefined ? { choices: interaction.choices } : {}),
+    ...(interaction.artifact !== undefined ? { artifact: interaction.artifact } : {}),
+    ...(interaction.quickActions !== undefined ? { quickActions: interaction.quickActions } : {}),
+  };
 }

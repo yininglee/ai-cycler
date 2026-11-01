@@ -1,6 +1,6 @@
 # AGT-B · 只读工具面与 L2b 循环扩展（细版）
 
-> 细化日期：2026-10-24｜所属：[Agent 开发规划（粗）](VIBE_CODING_Agent_开发规划.md) 里程碑 AGT-B｜执行事实源：[Agent 改造开发进度](Agent改造开发进度.md)。
+> 细化日期：2026-10-24｜所属：[Agent 开发规划（粗）](../archive/VIBE_CODING_Agent_开发规划.md) 里程碑 AGT-B｜执行事实源：[Agent 改造开发进度](Agent改造开发进度.md)。
 > 现状代码基线（已实地核对，非文档转述）：`src/chat/chat-tools.ts`（4 只读工具、`chat-tools-v0.1`、`CHAT_COMPARISON_WINDOW_DAYS=30`、`CHAT_FIND_RIDE_MAX_WINDOW_DAYS=30`）；`src/chat/chat-tool-orchestration.ts`（L2b 循环、预算 3/5/30s、**串行执行**、catalog 4 工具）；`src/chat/chat-agent.ts`（`runAutonomousToolLoop`、`hasUsableLoopClaims` 硬编码 4 工具）；`src/chat/chat-output-validation.ts`（`ride-chat-output-v0.1`、五路由硬编码分派、`autonomous_tools` 要求 `claimIds` 非空）。
 > 已拍板前提：**P4（2026-10-24 用户）**健康数据范围 = 仅使用现有 profile（maxHR / FTP / 体重），不接外部健康数据；**P7（2026-10-24 用户）**30 天窗口放开属口径变更，M3 对话评测须开新 Run，不给旧口径结论背书。
 
