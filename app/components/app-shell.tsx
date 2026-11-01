@@ -9,16 +9,18 @@ export { Brand } from "./brand";
 // 不需要底部导航，且底部会留出多余空白。
 export function AppShell({
   children,
-  active = "today",
+  active = "partner",
   showNav = true,
+  pageClassName = "",
 }: {
   children: ReactNode;
   active?: NavKey;
   showNav?: boolean;
+  pageClassName?: string;
 }) {
   return (
     <div className={showNav ? "app-viewport" : "app-viewport app-viewport-no-nav"}>
-      <main className="page-content">{children}</main>
+      <main className={`page-content ${pageClassName}`}>{children}</main>
       {showNav && <BottomNav active={active} />}
     </div>
   );

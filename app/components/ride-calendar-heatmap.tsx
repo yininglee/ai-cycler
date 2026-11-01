@@ -1,5 +1,7 @@
 "use client";
 
+import { CloseButton } from "./close-button";
+
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { calendarDate, calendarDuration, calendarMonthDates, calendarNumber, calendarWeekStart, distanceHeatLevel, ridesByDate, shiftCalendarMonth, summarizeCalendarRides, type CalendarRide } from "../../src/ui/ride-calendar.ts";
 import { isDemoImportedRideId } from "../../src/fixtures/demo-imported-ride-manifest.ts";
@@ -143,6 +145,6 @@ export function RideCalendar({ rides, initialToday, upload }: { rides: CalendarR
     <section className={styles.recordsSection} aria-label="全部骑行记录">
       <RideTimeline rides={rides} onUpload={() => dialog.current?.showModal()} />
     </section>
-    <dialog ref={dialog} aria-labelledby="ride-import-title" className={styles.importDialog} onClick={(event) => { if (event.target === event.currentTarget) dialog.current?.close(); }}><div className={styles.dialogHeader}><h2 id="ride-import-title">记录一次出发</h2><button className={styles.iconButton} aria-label="关闭导入" onClick={() => dialog.current?.close()}>×</button></div>{upload}</dialog>
+    <dialog ref={dialog} aria-labelledby="ride-import-title" className={styles.importDialog} onClick={(event) => { if (event.target === event.currentTarget) dialog.current?.close(); }}><div className={styles.dialogHeader}><h2 id="ride-import-title">记录一次出发</h2><CloseButton label="关闭导入" onClick={() => dialog.current?.close()} /></div>{upload}</dialog>
   </div>;
 }

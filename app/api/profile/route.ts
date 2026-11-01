@@ -1,6 +1,6 @@
 import { AuthConfigurationError, getRequestSession, resolveOrCreateRequestSession, sessionCookieHeader } from "../../../src/auth/session.ts";
 import { getApplicationRepository } from "../../../src/persistence/application-repository.ts";
-import { createUserProfile, demoBaselineProfile, hasAnyProfileFact, updateUserProfile, ProfileValidationError, type ProfileInput } from "../../../src/domain/user-profile.ts";
+import { createUserProfile, demoBaselineProfile, updateUserProfile, ProfileValidationError, type ProfileInput } from "../../../src/domain/user-profile.ts";
 
 export const runtime = "nodejs";
 const headers = { "Cache-Control": "no-store" };
@@ -19,7 +19,7 @@ export async function GET(request: Request): Promise<Response> {
     const session = resolveOrCreateRequestSession(request);
     const repository = getApplicationRepository();
     const stored = await repository.getProfile(session.userId);
-    if (!hasAnyProfileFact(stored) && demoSeedEnabled()) {
+    if (!stored && demoSeedEnabled()) {
       const seeded = demoBaselineProfile();
       await repository.saveProfile(session.userId, seeded);
       return Response.json(seeded, { headers: { ...headers, ...sessionCookieHeader(session) } });

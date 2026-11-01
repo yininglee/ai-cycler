@@ -48,7 +48,7 @@ export function chatHomeSnapshotFingerprint(snapshot: ChatHomeSnapshot): string 
 function initialConversation(snapshot: ChatHomeSnapshot): ChatConversation {
   return {
     id: "conversation-1",
-    messages: [{ role: "assistant", text: chatInitialMessage(snapshot) }],
+    messages: [{ role: "assistant", kind: "welcome", text: chatInitialMessage(snapshot) }],
     summarySlots: [],
   };
 }
@@ -74,6 +74,7 @@ export function startChatConversation(state: ChatSessionState, snapshot: ChatHom
   };
   return {
     ...state,
+    snapshotFingerprint: chatHomeSnapshotFingerprint(snapshot),
     conversations: [...state.conversations, conversation],
     activeConversationId: conversation.id,
     nextConversationIndex: state.nextConversationIndex + 1,

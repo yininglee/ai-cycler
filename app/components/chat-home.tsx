@@ -1,13 +1,19 @@
 "use client";
 
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 
 import {
   type ChatHomeSnapshot,
   type ChatMessage,
 } from "../../src/chat/chat-home.ts";
-import { Brand } from "./app-shell";
-import { CheckIcon, InfoIcon } from "./icons";
+import { CloseButton } from "./close-button";
+import { ChatReplyText } from "./chat-reply-text";
+import { readProfile } from "./profile-client";
+import { Onboarding, PrototypeSettings } from "./ux-onboarding";
+import { proposeProfile, PROFILE_LABELS } from "../../src/chat/profile-proposal";
+import type { ProfileInput } from "../../src/domain/user-profile";
+import Link from "next/link";
+import { BikeIcon, InfoIcon } from "./icons";
 import {
   appendChatTurn,
   buildChatSessionSummaries,
@@ -54,44 +60,8 @@ async function requestChatReply(text: string, summaries: ChatSessionSummary[]): 
   }
 }
 
-// CHAT 等待态：服务端是一次请求（路由判定 → 工具取数 → 模型生成），拿不到细粒度进度，
-// 这里按固定节奏模拟三段状态，让等待过程可感知。最后一段保持转圈直到响应返回。
-const CHAT_PENDING_STEPS = [
-  { label: "理解你的问题", active: "正在理解你的问题…" },
-  { label: "获取本次骑行数据", active: "正在获取本次骑行数据…" },
-  { label: "生成回复", active: "生成回复中…" },
-];
-const CHAT_PENDING_STEP_DELAYS_MS = [1100, 3400];
-
 function ChatPendingReply() {
-  const [activeStep, setActiveStep] = useState(0);
-
-  useEffect(() => {
-    const timers = CHAT_PENDING_STEP_DELAYS_MS.map((delay, index) =>
-      window.setTimeout(() => setActiveStep(index + 1), delay),
-    );
-    return () => timers.forEach((timer) => window.clearTimeout(timer));
-  }, []);
-
-  return <article className="chat-message chat-message-assistant">
-    <span className="chat-message-label">AI 伙伴</span>
-    <ol className="chat-pending-list" role="status" aria-live="polite">
-      {CHAT_PENDING_STEPS.map((step, index) => {
-        const status = index < activeStep ? "done" : index === activeStep ? "active" : "pending";
-        return <li className={`chat-pending-step is-${status}`} key={step.label}>
-          <span className="chat-pending-mark" aria-hidden="true">{status === "done" && <CheckIcon />}</span>
-          <span className="chat-pending-text">{status === "active" ? step.active : step.label}</span>
-        </li>;
-      })}
-    </ol>
-  </article>;
-}
-
-function MessageBubble({ message }: { message: ChatMessage }) {
-  return <article className={`chat-message chat-message-${message.role}`}>
-    {message.role === "assistant" && <span className="chat-message-label">AI 伙伴</span>}
-    <p>{message.text}</p>
-  </article>;
+  return <article className="chat-message chat-message-assistant" role="status"><span className="chat-message-label">Cycler</span><p>正在处理你的问题，请稍候…</p></article>;
 }
 
 function conversationTitle(messages: ChatMessage[]) {
@@ -99,27 +69,107 @@ function conversationTitle(messages: ChatMessage[]) {
 }
 
 export function ChatHome({ snapshot }: { snapshot: ChatHomeSnapshot }) {
+  const [previousProfile, setPreviousProfile] = useState<ProfileInput>({});
+  const [proposal, setProposal] = useState<ProfileInput | null>(null);
+  const [proposalMessage, setProposalMessage] = useState("");
+  const [savingProfile, setSavingProfile] = useState(false);
   const [session, setSession] = useState(() => createChatSession(snapshot));
   const [input, setInput] = useState("");
+  const [revealingMessage, setRevealingMessage] = useState<{ conversationId: string; index: number } | null>(null);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [disclosureOpen, setDisclosureOpen] = useState(false);
   const [pendingTurn, setPendingTurn] = useState<{ userText: string } | null>(null);
   const [hydrated, setHydrated] = useState(false);
+  const drawerRef = useRef<HTMLDialogElement>(null);
+  const drawerPanelRef = useRef<HTMLElement>(null);
+  const drawerScrimRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesRef = useRef<HTMLDivElement>(null);
+  const followRepliesRef = useRef(true);
+  const finishReveal = useCallback(() => setRevealingMessage(null), []);
+  const followReply = useCallback(() => {
+    const container = messagesRef.current;
+    if (container && followRepliesRef.current) container.scrollTop = container.scrollHeight;
+  }, []);
   const snapshotFingerprint = chatHomeSnapshotFingerprint(snapshot);
 
   const activeConversation = getActiveChatConversation(session);
   const messages = activeConversation.messages;
-  const pending = pendingTurn !== null;
+  const pending = pendingTurn !== null || revealingMessage !== null;
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ block: "end" });
-  }, [messages, pendingTurn]);
+    const drawer = drawerRef.current;
+    const panel = drawerPanelRef.current;
+    const scrim = drawerScrimRef.current;
+    if (!drawer || !panel || !scrim || (!historyOpen && !drawer.open)) return;
+    if (historyOpen && !drawer.open) {
+      // A closed dialog has no layout. Restore the CSS off-screen position
+      // before showing it instead of reading a finished animation while hidden.
+      panel.style.removeProperty("transform");
+      scrim.style.opacity = "0";
+      drawer.showModal();
+    }
+
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const openingDurationMs = 720;
+    const startX = new DOMMatrixReadOnly(getComputedStyle(panel).transform).m41;
+    const targetX = historyOpen ? 0 : -panel.getBoundingClientRect().width - 24;
+    // A damped spring starts at rest, carries a little momentum, then settles.
+    // Begin at the current position so reversing an unfinished motion cannot jump.
+    const frames: Keyframe[] = historyOpen
+      ? Array.from({ length: 61 }, (_, index) => {
+        const t = index / 60 * openingDurationMs / 1000;
+        const damping = 0.82;
+        const omega = 14;
+        const dampedOmega = omega * Math.sqrt(1 - damping * damping);
+        const remaining = Math.exp(-damping * omega * t)
+          * (Math.cos(dampedOmega * t) + damping * omega / dampedOmega * Math.sin(dampedOmega * t));
+        return { offset: index / 60, transform: `translate3d(${index === 60 ? targetX : targetX + (startX - targetX) * remaining}px, 0, 0)` };
+      })
+      : [{ transform: `translate3d(${startX}px, 0, 0)` }, { transform: `translate3d(${targetX}px, 0, 0)` }];
+    const slide = panel.animate(frames, {
+      duration: reducedMotion ? 0 : historyOpen ? openingDurationMs : 220,
+      easing: historyOpen ? "linear" : "cubic-bezier(0.4, 0, 0.8, 0.4)",
+      fill: "both",
+    });
+    const fade = scrim.animate([
+      { opacity: getComputedStyle(scrim).opacity },
+      { opacity: historyOpen ? 1 : 0 },
+    ], { duration: reducedMotion ? 0 : historyOpen ? 420 : 220, easing: "ease-out", fill: "both" });
+    let cancelled = false;
+    void Promise.all([slide.finished, fade.finished]).then(() => {
+      if (cancelled) return;
+      // Persist the endpoint before removing the dialog from layout. Otherwise
+      // its finished fill animation can disappear and expose the old open pose.
+      panel.style.transform = `translate3d(${targetX}px, 0, 0)`;
+      scrim.style.opacity = historyOpen ? "1" : "0";
+      slide.cancel();
+      fade.cancel();
+      if (!historyOpen) drawer.close();
+    }).catch(() => { /* Interrupted motions are replaced by the next transition. */ });
+    return () => {
+      cancelled = true;
+      if (drawer.open) {
+        panel.style.transform = getComputedStyle(panel).transform;
+        scrim.style.opacity = getComputedStyle(scrim).opacity;
+      }
+      slide.cancel();
+      fade.cancel();
+    };
+  }, [historyOpen]);
+
+  useEffect(() => {
+    if (messages.some(m => m.role === "user") && followRepliesRef.current) followReply();
+  }, [messages, pendingTurn, proposal, followReply]);
 
   // 刷新后从本地浏览器恢复对话；骑行数据已变化时保留历史、自动开启带最新摘要的新对话
   useEffect(() => {
+    try { const draft = sessionStorage.getItem("cycler-profile-proposal"); if (draft) setProposal(JSON.parse(draft)); } catch {}
     const stored = readStoredChatSession();
-    if (stored) setSession(isChatSessionStale(stored, snapshot) ? startChatConversation(stored, snapshot) : stored);
+    if (sessionStorage.getItem("cycler-reset-chat")) {
+      sessionStorage.removeItem("cycler-reset-chat");
+      setSession(stored ? startChatConversation(stored, snapshot) : createChatSession(snapshot));
+    } else if (stored) setSession(isChatSessionStale(stored, snapshot) ? startChatConversation(stored, snapshot) : stored);
     setHydrated(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -135,6 +185,8 @@ export function ChatHome({ snapshot }: { snapshot: ChatHomeSnapshot }) {
   // CHAT-14 P1：turn 携带服务端返回的 route/rideAnchor 时记 session_turn 槽位（供后续继承与挂起确认识别）。
   function addReply(userText: string, reply: string | null, source: ChatSessionSummarySource, turn?: { route?: string; rideAnchor?: string }) {
     if (!reply) return;
+    followRepliesRef.current = true;
+    setRevealingMessage({ conversationId: activeConversation.id, index: messages.length + 1 });
     const slotTurn = turn && isChatRoute(turn.route)
       ? { route: turn.route, ...(turn.rideAnchor ? { rideAnchor: turn.rideAnchor } : {}) }
       : undefined;
@@ -142,6 +194,26 @@ export function ChatHome({ snapshot }: { snapshot: ChatHomeSnapshot }) {
   }
 
   async function ask(userText: string, source: ChatSessionSummarySource) {
+    followRepliesRef.current = true;
+    const resultProfile = proposeProfile(userText);
+    if (resultProfile) {
+      if (resultProfile.input) {
+        try {
+          const saved = await readProfile();
+          setPreviousProfile({ age: saved.age?.value, heightCm: saved.heightCm?.value, weightKg: saved.weightKg?.value, maxHeartRateBpm: saved.maxHeartRate?.valueBpm, ftpWatts: saved.ftp?.valueWatts });
+        } catch { addReply(userText, "资料暂时无法读取，请稍后重试；本次内容尚未保存。", source); return; }
+        setProposal(resultProfile.input);
+        sessionStorage.setItem("cycler-profile-proposal", JSON.stringify(resultProfile.input));
+        setProposalMessage("");
+      }
+      addReply(userText, resultProfile.clarification ?? "我整理了待保存资料。请核对下方卡片；已有字段将被替换，确认前不会写入。", source);
+      return;
+    }
+    if (/(?:我的目标|设置目标|修改目标|目标是)/.test(userText)) {
+      addReply(userText, "请通过「设置目标」卡片补充并核对主要目标，也可以到「我的」修改。目标确认后才会保存。", source);
+      window.dispatchEvent(new CustomEvent("cycler-goal-draft", { detail: userText }));
+      return;
+    }
     setPendingTurn({ userText });
     // CHAT-14 P1：携带当前对话白名单摘要请求服务端（指代消解/锚点继承依赖）。
     const summaries = buildChatSessionSummaries(activeConversation);
@@ -161,13 +233,6 @@ export function ChatHome({ snapshot }: { snapshot: ChatHomeSnapshot }) {
     setHistoryOpen(false);
   }
 
-  const quickQuestions = ["当前可以分析哪些数据？", "骑行解读", "水平评估", "训练计划"];
-
-  function askQuickQuestion(label: string) {
-    if (pending) return;
-    void ask(label, "quick_question");
-  }
-
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const value = input.trim();
@@ -180,37 +245,62 @@ export function ChatHome({ snapshot }: { snapshot: ChatHomeSnapshot }) {
 
   return <section className="chat-home" aria-label="AI 骑行伙伴">
     <header className="topbar">
-      <Brand />
-      <div className="chat-header-actions">
-        <button type="button" className="chat-header-button" onClick={startConversation}>＋ 新对话</button>
-        <button type="button" className="chat-header-button" onClick={() => setHistoryOpen((open) => !open)} aria-expanded={historyOpen}>对话记录</button>
-      </div>
+      <button type="button" className="brand chat-brand" aria-label="Cycler，打开侧边抽屉" aria-haspopup="dialog" aria-expanded={historyOpen} aria-controls="chat-sidebar" onClick={() => setHistoryOpen(true)}>
+        <span className="brand-mark"><BikeIcon /></span><span>Cycler</span>
+      </button>
     </header>
 
-    {historyOpen && <aside className="chat-history" aria-label="对话记录">
-      <div className="chat-history-heading"><strong>对话记录</strong><span>当前标签页</span></div>
+    <dialog ref={drawerRef} id="chat-sidebar" className="chat-drawer-layer" aria-labelledby="chat-sidebar-title" onCancel={event => { event.preventDefault(); setHistoryOpen(false); }} onClose={() => setHistoryOpen(false)} onClick={event => { if (event.target === event.currentTarget || event.target === drawerScrimRef.current) setHistoryOpen(false); }}>
+      <div ref={drawerScrimRef} className="chat-drawer-scrim" aria-hidden="true" />
+      <aside ref={drawerPanelRef} className="chat-drawer">
+        <div className="chat-drawer-heading"><strong id="chat-sidebar-title">Cycler</strong><CloseButton label="关闭侧边抽屉" onClick={() => setHistoryOpen(false)} /></div>
+        <button type="button" className="primary-button chat-new-conversation" disabled={pending} onClick={startConversation}>＋ 新对话</button>
+        <h2 className="chat-drawer-section-title">对话记录</h2>
       <div className="chat-history-list">
         {session.conversations.slice().reverse().map((conversation) => <button
           className={conversation.id === session.activeConversationId ? "active" : ""}
           key={conversation.id}
           type="button"
+          disabled={pending}
+          aria-current={conversation.id === session.activeConversationId ? "true" : undefined}
           onClick={() => openConversation(conversation.id)}
         >
           <span>{conversationTitle(conversation.messages)}</span>
           <small>{conversation.messages.filter((message) => message.role === "user").length} 条提问</small>
         </button>)}
       </div>
+      <PrototypeSettings />
       <p className="chat-history-note">对话记录保存在本浏览器本地；骑行数据变化后会自动开始新对话。</p>
-    </aside>}
+      </aside>
+    </dialog>
 
-    <dl className="chat-summary" aria-label="最小骑行摘要">
-      <div><dt>累计骑行</dt><dd>{snapshot.totalRideCount} 次</dd></div>
-      <div><dt>总里程</dt><dd>{snapshot.totalDistanceKm} km</dd></div>
-      <div><dt>本周</dt><dd>{snapshot.weekRideCount} 次 · {snapshot.weekDistanceKm} km</dd></div>
-    </dl>
-
-    <div className="chat-messages" aria-live="polite">
-      {messages.map((message, index) => <MessageBubble key={`${message.role}-${index}-${message.text}`} message={message} />)}
+    <div className="chat-messages" ref={messagesRef} role="log" aria-label="与 Cycler 的对话" aria-live="off" onScroll={event => {
+      const container = event.currentTarget;
+      followRepliesRef.current = container.scrollHeight - container.clientHeight - container.scrollTop < 80;
+    }}>
+      {messages.map((message, index) => {
+        const welcome = message.role === "assistant" && (message.kind === "welcome" || index === 0);
+        const revealing = revealingMessage?.conversationId === activeConversation.id && revealingMessage.index === index;
+        return <article key={`${activeConversation.id}-${index}`} className={`chat-message chat-message-${message.role}${welcome ? " chat-message-welcome" : ""}`} aria-label={message.role === "assistant" ? "Cycler 的消息" : "你的消息"} aria-busy={revealing || undefined}>
+          {message.role === "assistant" && <span className="chat-message-label">Cycler</span>}
+          {welcome ? <Onboarding rideCount={snapshot.totalRideCount} /> : message.role === "assistant" ? <ChatReplyText text={message.text} reveal={revealing} onComplete={finishReveal} onProgress={followReply} /> : <p>{message.text}</p>}
+        </article>;
+      })}
+      {proposal && <section className="ux-card" aria-label="待确认个人资料">
+        <p className="kicker">聊天资料补充 · 规则识别原型</p><h2>核对后再保存</h2>
+        <p>以下内容将替换对应的已保存值。若有冲突，请先修改或取消；未列出的字段保留。</p>
+        <dl>{Object.entries(proposal).map(([key, value]) => <div key={key}><dt>{PROFILE_LABELS[key as keyof ProfileInput]}</dt><dd>{previousProfile[key as keyof ProfileInput] !== undefined && previousProfile[key as keyof ProfileInput] !== value ? `${previousProfile[key as keyof ProfileInput]} → ${value}（请确认变更）` : value}</dd></div>)}</dl>
+        <div className="ux-actions"><button className="primary-button" disabled={savingProfile} onClick={async () => {
+          setSavingProfile(true); setProposalMessage("");
+          try {
+            const r = await fetch("/api/profile", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(proposal) });
+            if (!r.ok) throw Error();
+            setProposal(null); sessionStorage.removeItem("cycler-profile-proposal"); setProposalMessage("已确认保存，可在「我的」查看来源与更新时间。");
+            window.dispatchEvent(new Event("cycler-profile-saved"));
+          } catch { setProposalMessage("保存失败，待确认内容已保留，请重试。"); } finally { setSavingProfile(false); }
+        }}>确认保存资料</button><Link href="/profile" onClick={() => { setProposal(null); sessionStorage.removeItem("cycler-profile-proposal"); }}>到资料页修改</Link><button disabled={savingProfile} onClick={() => { setProposal(null); sessionStorage.removeItem("cycler-profile-proposal"); }}>取消</button></div>
+      </section>}
+      {proposalMessage && <p role="status">{proposalMessage}</p>}
       {pendingTurn && <>
         <article className="chat-message chat-message-user"><p>{pendingTurn.userText}</p></article>
         <ChatPendingReply />
@@ -219,12 +309,6 @@ export function ChatHome({ snapshot }: { snapshot: ChatHomeSnapshot }) {
     </div>
 
     <div className="chat-composer">
-      <section className="chat-quick-questions" aria-label="常用问题">
-        <div className="chat-question-list">
-          {quickQuestions.map((label) => <button key={label} type="button" onClick={() => askQuickQuestion(label)}>{label}</button>)}
-        </div>
-      </section>
-
       <form className="chat-input-form" onSubmit={submit}>
         {disclosureOpen && <p className="chat-disclosure-popover" role="note">单次骑行与能力问题调用对话模型（扣子 Workflow，服务端校验并降级）；累计/本周类问题由服务端确定性计算；跨次比较与水平评估属后续能力；对话记录保存在本浏览器。</p>}
         <label className="sr-only" htmlFor="chat-input">输入问题</label>

@@ -71,6 +71,7 @@ test("getDemoImportedRide 只认清单内的 id", async () => {
 
 test("仓储装饰器把演示记录合并进 listRides，并按 storedAt 倒序", async () => {
   const base = {
+    async getProfile() { return null; },
     async listRides() {
       return [{ record: { activity: { rideId: "upload-owned" } }, storedAt: "2026-09-01T00:00:00.000Z" }] as never;
     },

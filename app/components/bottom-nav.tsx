@@ -9,7 +9,8 @@ import { beginRouteTransition } from "./route-transition";
 import type { NavKey } from "./route-loading";
 
 const TABS: Record<NavKey, { href: string; label: string }> = {
-  today: { href: "/", label: "今日" },
+  today: { href: "/chat", label: "伙伴" },
+  profile: { href: "/profile", label: "我的" },
   rides: { href: "/import", label: "骑行" },
   partner: { href: "/chat", label: "伙伴" },
 };
@@ -21,7 +22,7 @@ function isModifiedClick(event: MouseEvent<HTMLAnchorElement>): boolean {
   return event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0;
 }
 
-export function BottomNav({ active = "today" }: { active?: NavKey }) {
+export function BottomNav({ active = "partner" }: { active?: NavKey }) {
   const pathname = usePathname();
   const router = useRouter();
   const [pendingKey, setPendingKey] = useState<NavKey | null>(null);
@@ -71,16 +72,15 @@ export function BottomNav({ active = "today" }: { active?: NavKey }) {
         onTouchStart={() => warmUp(href)}
         onFocus={() => warmUp(href)}
       >
-        {key === "today" ? <span className="nav-dot" /> : key === "rides" ? <BikeIcon /> : <SparkIcon />}
+        {key === "profile" ? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><circle cx="12" cy="8" r="3.5" /><path d="M5 21v-2a7 7 0 0 1 14 0v2" /></svg> : key === "rides" ? <BikeIcon /> : <SparkIcon />}
         {label}
       </Link>
     );
   }
 
   return <nav className="bottom-nav" aria-label="主导航">
-    {tab("today")}
-    {tab("rides")}
-    <span className="nav-main" aria-hidden="true"><SparkIcon /></span>
     {tab("partner")}
+    {tab("rides")}
+    {tab("profile")}
   </nav>;
 }

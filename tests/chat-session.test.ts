@@ -34,6 +34,8 @@ test("chat session starts new conversations and switches only within the current
   assert.equal(second.conversations.length, 2);
   assert.equal(getActiveChatConversation(second).id, "conversation-2");
   assert.equal(getActiveChatConversation(second).messages.length, 1);
+  assert.equal(getActiveChatConversation(second).messages[0]?.kind, "welcome");
+  assert.equal(getActiveChatConversation(selectChatConversation(second, "conversation-1")).messages[0]?.kind, "welcome");
   assert.equal(getActiveChatConversation(selectChatConversation(second, "conversation-1")).messages.length, 3);
   assert.equal(selectChatConversation(second, "missing"), second);
 });

@@ -16,7 +16,7 @@ export type ChatHomeSnapshot = {
   capabilities: ChatCapability[];
 };
 
-export type ChatMessage = { role: "assistant" | "user"; text: string };
+export type ChatMessage = { role: "assistant" | "user"; text: string; kind?: "welcome" };
 
 export type ChatQuickQuestion = { id: ChatQuickQuestionId; label: string };
 

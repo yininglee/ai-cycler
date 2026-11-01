@@ -11,7 +11,7 @@ export default async function ChatPage() {
   const rides = await (await getRideRepository()).listRides(userId ?? "");
   const snapshot = buildChatHomeSnapshot(rides.map(({ record }) => record));
 
-  return <AppShell active="partner">
+  return <AppShell active="partner" pageClassName="chat-page-content">
     <ChatHome snapshot={snapshot} />
   </AppShell>;
 }

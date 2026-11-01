@@ -24,7 +24,6 @@ export default async function ImportPage({ searchParams }: { searchParams: Promi
           <h1 className={styles.pageTitle}>骑行记录</h1>
         </Link>
         <nav className={styles.pageActions} aria-label="快捷入口">
-          <Link className="eyebrow" href="/profile">个人资料</Link>
           <Link className="eyebrow" href="/pmc" aria-label="PMC 表现状态管理">PMC</Link>
         </nav>
       </header>

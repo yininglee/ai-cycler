@@ -19,12 +19,14 @@ export function withDemoImportedRides(base: ApplicationRepository): ApplicationR
     get(target, property) {
       if (property === "listRides") {
         return async (ownerId: string) => {
+          const profile = await target.getProfile(ownerId);
           const [owned, demo] = await Promise.all([
             target.listRides(ownerId),
             listDemoImportedRideEntries(),
           ]);
           // 演示记录 id 形如 demo-ride-*，用户导入记录形如 upload-*，两类不会同名，
           // 因此直接合并后按 storedAt 倒序即可（演示记录用骑行开始时间做排序键）。
+          if (profile?.ux?.mode === "blank") return owned.filter((entry) => entry.storedAt >= (profile.ux?.blankSince ?? ""));
           return [...owned, ...demo].sort((left, right) => right.storedAt.localeCompare(left.storedAt));
         };
       }
