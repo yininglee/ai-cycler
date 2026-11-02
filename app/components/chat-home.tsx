@@ -7,21 +7,21 @@ import {
   type ChatHomeSnapshot,
   type ChatMessage,
 } from "../../src/chat/chat-home.ts";
+import { CHAT_IMPORT_QUEUE_KEY, parseImportReceipts, restoreImportReceipts } from "../../src/chat/chat-import";
 import { ChatRideList } from "./chat-ride-list";
 import { sanitizeChatInteractionPayload, isChatChoiceRef, type ChatChoiceRef, type ChatAgentInteraction } from "../../src/chat/chat-interaction";
 import { RideSyncLauncher } from "./ride-sync";
-import { RideRecordCards } from "./ride-record-cards";
 import { SideDrawer } from "./side-drawer";
 import { ChatReplyText } from "./chat-reply-text";
-import { readProfile } from "./profile-client";
 import { Onboarding, PrototypeSettings } from "./ux-onboarding";
-import { proposeProfile, PROFILE_LABELS } from "../../src/chat/profile-proposal";
+import { PROFILE_LABELS } from "../../src/chat/profile-proposal";
 import type { ProfileInput } from "../../src/domain/user-profile";
 import Link from "next/link";
 import { BikeIcon, InfoIcon } from "./icons";
 import {
   appendChatTurn,
   appendImportedRides,
+  rememberChatRideSelection,
   refreshChatSnapshot,
   buildChatSessionSummaries,
   chatHomeSnapshotFingerprint,
@@ -105,7 +105,7 @@ export function ChatHome({ snapshot }: { snapshot: ChatHomeSnapshot }) {
 
   const activeConversation = getActiveChatConversation(session);
   const messages = activeConversation.messages;
-  const pending = pendingTurn !== null || revealingMessage !== null;
+  const pending = pendingTurn !== null || revealingMessage?.conversationId === activeConversation.id;
 
   useEffect(() => {
     if (messages.some(m => m.role === "user") && followRepliesRef.current) followReply();
@@ -115,21 +115,29 @@ export function ChatHome({ snapshot }: { snapshot: ChatHomeSnapshot }) {
   useEffect(() => {
     if (restoredSessionRef.current) return;
     restoredSessionRef.current = true;
-    try { const draft = sessionStorage.getItem("cycler-profile-proposal"); if (draft) setProposal(JSON.parse(draft)); } catch {}
-    const stored = readStoredChatSession();
-    if (sessionStorage.getItem("cycler-reset-chat")) {
-      sessionStorage.removeItem("cycler-reset-chat");
-      setSession(stored ? startChatConversation(stored, snapshot) : createChatSession(snapshot));
-    } else if (stored) setSession(isChatSessionStale(stored, snapshot) ? refreshChatSnapshot(stored, snapshot) : stored);
     try {
-      const pending: unknown = JSON.parse(sessionStorage.getItem("cycler-import-results") ?? "[]");
-      sessionStorage.removeItem("cycler-import-results");
-      if (Array.isArray(pending)) for (const item of pending) {
-        if (typeof item?.text === "string" && Array.isArray(item.ids) && item.ids.every((id: unknown) => typeof id === "string")) {
-          setSession(current => appendImportedRides(current, item.ids, item.text, typeof item.conversationId === "string" ? item.conversationId : current.activeConversationId));
-        }
+      const raw = sessionStorage.getItem("cycler-profile-proposal");
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        const { artifact } = sanitizeChatInteractionPayload({ artifact: { kind: "profile_proposal", payload: parsed.input ? parsed : { input: parsed, previous: {} } } });
+        if (artifact?.kind === "profile_proposal") { setProposal(artifact.payload.input); setPreviousProfile(artifact.payload.previous); }
       }
     } catch {}
+    const stored = readStoredChatSession();
+    let restored = stored ? refreshChatSnapshot(stored, snapshot) : createChatSession(snapshot);
+    if (sessionStorage.getItem("cycler-reset-chat")) {
+      sessionStorage.removeItem("cycler-reset-chat");
+      restored = stored ? startChatConversation(restored, snapshot) : restored;
+    }
+    try {
+      const receipts = parseImportReceipts(JSON.parse(sessionStorage.getItem(CHAT_IMPORT_QUEUE_KEY) ?? "[]"), restored.activeConversationId);
+      const returnTo = new URLSearchParams(window.location.search).get("conversation") ?? undefined;
+      restored = restoreImportReceipts(restored, receipts, returnTo);
+      // Persist before acknowledgement; receipt IDs make a repeated restore harmless.
+      if (storeChatSession(restored)) sessionStorage.removeItem(CHAT_IMPORT_QUEUE_KEY);
+      if (returnTo) { const url = new URL(window.location.href); url.searchParams.delete("conversation"); window.history.replaceState(window.history.state, "", `${url.pathname}${url.search}`); }
+    } catch {}
+    setSession(restored);
     setHydrated(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -176,41 +184,33 @@ export function ChatHome({ snapshot }: { snapshot: ChatHomeSnapshot }) {
     const slotTurn = turn && isChatRoute(turn.route)
       ? { route: turn.route, ...(turn.rideAnchor ? { rideAnchor: turn.rideAnchor } : {}), ...(turn.choice ? { choice: turn.choice } : {}), ...(turn.rideScope ? { rideScope: turn.rideScope } : {}) }
       : undefined;
-    setSession((current) => appendChatTurn(current, userText, reply, source, slotTurn, interaction));
+    setSession((current) => appendChatTurn(current, userText, reply, source, slotTurn, interaction, activeConversation.id));
   }
 
-  function imported(ids: string[], text: string) {
+  function imported(ids: string[], text: string, conversationId = activeConversation.id) {
     pendingScrollRestore.current = null;
     followRepliesRef.current = true;
-    setSession(current => appendImportedRides(current, ids, text));
+    setSession(current => appendImportedRides(current, ids, text, conversationId));
+  }
+
+  function inspectRide(rideId: string) {
+    const next = rememberChatRideSelection(session, rideId, activeConversation.id);
+    storeChatSession(next); // A detail link can unmount chat before its persistence effect runs.
+    setSession(next);
   }
 
   async function ask(userText: string, source: ChatSessionSummarySource, choice?: ChatChoiceRef) {
     followRepliesRef.current = true;
-    const resultProfile = proposeProfile(userText);
-    if (resultProfile) {
-      if (resultProfile.input) {
-        try {
-          const saved = await readProfile();
-          setPreviousProfile({ age: saved.age?.value, heightCm: saved.heightCm?.value, weightKg: saved.weightKg?.value, maxHeartRateBpm: saved.maxHeartRate?.valueBpm, ftpWatts: saved.ftp?.valueWatts });
-        } catch { addReply(userText, "资料暂时无法读取，请稍后重试；本次内容尚未保存。", source); return; }
-        setProposal(resultProfile.input);
-        sessionStorage.setItem("cycler-profile-proposal", JSON.stringify(resultProfile.input));
-        setProposalMessage("");
-      }
-      addReply(userText, resultProfile.clarification ?? "我整理了待保存资料。请核对下方卡片；已有字段将被替换，确认前不会写入。", source);
-      return;
-    }
-    if (/(?:我的目标|设置目标|修改目标|目标是)/.test(userText)) {
-      addReply(userText, "请通过「设置目标」卡片补充并核对主要目标，也可以到「我的」修改。目标确认后才会保存。", source);
-      window.dispatchEvent(new CustomEvent("cycler-goal-draft", { detail: userText }));
-      return;
-    }
     setPendingTurn({ userText });
     // CHAT-14 P1：携带当前对话白名单摘要请求服务端（指代消解/锚点继承依赖）。
     const summaries = buildChatSessionSummaries(activeConversation);
     const result = await requestChatReply(userText, summaries, choice);
     setPendingTurn(null);
+    if (result.interaction?.artifact?.kind === "profile_proposal") {
+      const payload = result.interaction.artifact.payload;
+      setProposal(payload.input); setPreviousProfile(payload.previous); setProposalMessage("");
+      sessionStorage.setItem("cycler-profile-proposal", JSON.stringify(payload));
+    }
     addReply(userText, result.reply, source, { route: result.route, rideAnchor: result.rideAnchor, choice: result.choice, rideScope: result.rideScope }, result.interaction);
   }
 
@@ -280,15 +280,28 @@ export function ChatHome({ snapshot }: { snapshot: ChatHomeSnapshot }) {
         const revealing = revealingMessage?.conversationId === activeConversation.id && revealingMessage.index === index;
         return <article key={`${activeConversation.id}-${index}`} className={`chat-message chat-message-${message.role}${welcome ? " chat-message-welcome" : ""}`} aria-label={message.role === "assistant" ? "Cycler 的消息" : "你的消息"} aria-busy={revealing || undefined}>
           {message.role === "assistant" && <span className="chat-message-label">Cycler</span>}
-          {welcome ? <Onboarding rideCount={snapshot.totalRideCount} onImported={imported} /> : message.role === "assistant" ? <ChatReplyText text={message.text} reveal={revealing} onComplete={finishReveal} onProgress={followReply} /> : <p>{message.text}</p>}
-          {message.interaction && <ChatRideList {...message.interaction} pending={pending} onChoose={choice => { if (!pending) void ask("请分析我选择的这次骑行。", "typed_input", choice); }} />}
-          {message.kind === "rides" && message.rideIds?.length ? <RideRecordCards ids={message.rideIds} fromChat /> : null}
+          {welcome ? <Onboarding rideCount={snapshot.totalRideCount} onImported={imported} conversationId={activeConversation.id} /> : message.role === "assistant" ? <ChatReplyText text={message.text} reveal={revealing} onComplete={finishReveal} onProgress={followReply} /> : <p>{message.text}</p>}
+          {message.interaction && <ChatRideList {...message.interaction} pending={pending} conversationId={activeConversation.id} onInspect={inspectRide} onChoose={choice => { if (!pending) void ask("请分析我选择的这次骑行。", "typed_input", choice); }} />}
+          {message.interaction?.artifact?.kind === "onboarding" && <div className="ux-actions" aria-label="首次使用引导入口">
+            <button disabled={pending} onClick={() => window.dispatchEvent(new Event("cycler-open-profile"))}>完善／查看资料</button>
+            <RideSyncLauncher label="同步／导入骑行" onComplete={imported} conversationId={activeConversation.id} />
+            <button disabled={pending} onClick={() => window.dispatchEvent(new CustomEvent("cycler-goal-draft", { detail: null }))}>设置／查看目标</button>
+          </div>}
+          {message.interaction?.artifact?.kind === "ride_import" && <div className="ux-actions" aria-label="骑行同步导入入口">
+            <RideSyncLauncher onComplete={imported} conversationId={activeConversation.id} />
+          </div>}
+          {message.interaction?.artifact?.kind === "goal_editor" && <div className="ux-actions" aria-label="目标编辑入口">
+            <button disabled={pending} onClick={() => window.dispatchEvent(new CustomEvent("cycler-goal-draft", { detail: message.interaction?.artifact?.kind === "goal_editor" ? message.interaction.artifact.payload.draft : null }))}>查看／修改目标</button>
+            <span>核对后点击保存才会更新目标</span>
+          </div>}
+          {message.kind === "rides" && message.rideIds?.length ? <div className="ux-actions"><Link href="/import">查看骑行记录</Link></div> : null}
         </article>;
       })}
       {proposal && <section className="ux-card" aria-label="待确认个人资料">
-        <p className="kicker">聊天资料补充 · 规则识别原型</p><h2>核对后再保存</h2>
+        <p className="kicker">聊天资料补充 · 待确认</p><h2>核对后再保存</h2>
         <p>以下内容将替换对应的已保存值。若有冲突，请先修改或取消；未列出的字段保留。</p>
-        <dl>{Object.entries(proposal).map(([key, value]) => <div key={key}><dt>{PROFILE_LABELS[key as keyof ProfileInput]}</dt><dd>{previousProfile[key as keyof ProfileInput] !== undefined && previousProfile[key as keyof ProfileInput] !== value ? `${previousProfile[key as keyof ProfileInput]} → ${value}（请确认变更）` : value}</dd></div>)}</dl>
+        <dl>{Object.entries(proposal).map(([key, value]) => <div key={key}><dt>{PROFILE_LABELS[key as keyof ProfileInput]}</dt><dd>{previousProfile[key as keyof ProfileInput] !== undefined && previousProfile[key as keyof ProfileInput] !== value ? `${previousProfile[key as keyof ProfileInput]} → ${value === null ? "不知道／未提供" : value}（请确认变更）` : value === null ? (key === "maxHeartRateBpm" ? "不知道（如有年龄，保留明确标识的系统估算）" : "未提供，确认后清除已保存值") : value}</dd></div>)}</dl>
+        <p>最大心率可能由年龄估算，估算不等于实测，来源可在资料页查看。</p>
         <div className="ux-actions"><button className="primary-button" disabled={savingProfile} onClick={async () => {
           setSavingProfile(true); setProposalMessage("");
           try {
@@ -308,7 +321,7 @@ export function ChatHome({ snapshot }: { snapshot: ChatHomeSnapshot }) {
     </div>
 
     <div className="chat-composer">
-      <div className="chat-sync-action"><RideSyncLauncher onComplete={imported} /></div>
+      <div className="chat-sync-action"><RideSyncLauncher onComplete={imported} conversationId={activeConversation.id} /></div>
       <form className="chat-input-form" onSubmit={submit}>
         {disclosureOpen && <p className="chat-disclosure-popover" role="note">单次骑行与能力问题调用对话模型（扣子 Workflow，服务端校验并降级）；累计/本周类问题由服务端确定性计算；跨次比较与水平评估属后续能力；对话记录保存在本浏览器。</p>}
         <label className="sr-only" htmlFor="chat-input">输入问题</label>

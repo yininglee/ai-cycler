@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { GET, PUT } from "../app/api/profile/route.ts";
 import { PUT as ux } from "../app/api/ux/route.ts";
-import { proposeProfile } from "../src/chat/profile-proposal.ts";
+import { isProfileProposalInput } from "../src/chat/chat-user-capabilities.ts";
 
 test("clear and blank mode persist without reseeding; goal updates preserve profile", async () => {
   const initial = await GET(new Request("http://localhost/api/profile"));
@@ -23,12 +23,10 @@ test("clear and blank mode persist without reseeding; goal updates preserve prof
   assert.equal(invalid.status, 422);
 });
 
-test("chat profile proposals require explicit units and reject ambiguous or invalid values", () => {
-  assert.deepEqual(proposeProfile("我今年31岁，体重71 kg，FTP 220W")?.input, { age: 31, weightKg: 71, ftpWatts: 220 });
-  for (const text of ["体重140", "体重70kg，身高175", "FTP220W还是250W，FTP250W", "年龄999岁"]) assert.ok(proposeProfile(text)?.clarification, text);
-  assert.equal(proposeProfile("最近骑行怎么样"), null);
-  assert.equal(proposeProfile("FTP是什么意思？"), null);
-  assert.equal(proposeProfile("我的目标是提升FTP"), null);
+test("profile proposal parameters use domain ranges and exact fields without interpreting language", () => {
+  assert.equal(isProfileProposalInput({ age: 31, weightKg: 71, ftpWatts: 220 }), true);
+  assert.equal(isProfileProposalInput({ ftpWatts: null }), true);
+  for (const input of [{}, { age: 999 }, { weightKg: "71" }, { ownerId: "other", weightKg: 71 }, { ftpWatts: NaN }]) assert.equal(isProfileProposalInput(input), false);
 });
 
 test("blank prototype view hides earlier rides and keeps subsequent imports; demo restores them", async () => {

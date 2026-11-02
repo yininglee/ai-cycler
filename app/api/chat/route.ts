@@ -1,6 +1,6 @@
 import { hasExplicitChatRideReference, isStandaloneChatKnowledge, lastChatRideChoice } from "../../../src/chat/chat-context.ts";
 import { chatExecutionRoute } from "../../../src/chat/chat-execution.ts";
-import { buildChatRecordInteraction } from "../../../src/chat/chat-artifacts.ts";
+import { buildChatRecordInteraction, buildChatUserInteraction } from "../../../src/chat/chat-artifacts.ts";
 import { isChatChoiceRef, type ChatChoiceRef } from "../../../src/chat/chat-interaction.ts";
 import type { ChatToolResult } from "../../../src/chat/chat-tools.ts";
 import { extractExplicitRideDate } from "../../../src/chat/chat-ride-anchor.ts";
@@ -188,8 +188,15 @@ export async function POST(request: Request): Promise<Response> {
   const executionRoute = chatExecutionRoute(result.text, decision);
   const canInherit = executionRoute === "agent_loop";
   const inherited = canInherit && !overview && !explicitReference && !standaloneKnowledge ? lastChatRideChoice(summaries) : undefined;
-  const effectiveChoice = executionRoute === "agent_loop" ? selectedChoice ?? (inherited?.kind === "ride" ? inherited : undefined) : undefined;
-  if (effectiveChoice && !(await repository.listRides(session.userId)).some(e => e.record.activity.rideId === effectiveChoice.id)) return Response.json({ error: "NOT_FOUND", reply: "所选骑行已不可用，请重新选择记录。", rideScope: "cleared" }, { status: 404, headers });
+  let effectiveChoice = executionRoute === "agent_loop" ? selectedChoice ?? (inherited?.kind === "ride" ? inherited : undefined) : undefined;
+  let inheritedChoiceExpired = false;
+  if (effectiveChoice && !(await repository.listRides(session.userId)).some(e => e.record.activity.rideId === effectiveChoice!.id)) {
+    if (selectedChoice) return Response.json({ error: "NOT_FOUND", reply: "所选骑行已不可用，请重新选择记录。", rideScope: "cleared" }, { status: 404, headers });
+    // An expired inherited ride is not evidence that the current question needs
+    // a ride. Clear it and let the Agent understand the new request.
+    effectiveChoice = undefined;
+    inheritedChoiceExpired = true;
+  }
   if (selectedChoice && explicitReference && executionRoute === "agent_loop") {
     const resolution = resolveRideAnchor({ text: result.text, route: decision.route, summaries: [], entries: await repository.listRides(session.userId) });
     const matches = resolution.status === "resolved" ? resolution.record.activity.rideId === selectedChoice.id
@@ -244,7 +251,7 @@ export async function POST(request: Request): Promise<Response> {
     loopRunner: observedToolLoopRunner(createChatToolLoopRunner(repository, session.userId), loopMetrics, toolMetrics, interactionEvidence, candidateIds),
     requestId,
     // CHAT-14 P1/P2：摘要传递（表达层指代消解）与锚点覆写（确认轮）。
-    summaries: overview ? [] : standaloneKnowledge ? summaries.map(({ choice: _choice, rideAnchor: _anchor, ...summary }) => ({ ...summary, rideScope: "cleared" as const })) : summaries,
+    summaries: overview ? [] : standaloneKnowledge || inheritedChoiceExpired ? summaries.map(({ choice: _choice, rideAnchor: _anchor, ...summary }) => ({ ...summary, rideScope: "cleared" as const })) : summaries,
     ...(anchorOverride ? { anchorOverride } : {}),
     // CHAT-12 P1：聚合路由在服务端直接用仓储数据作答，与 /chat 页摘要同源。
     ...(decision.route === "aggregate"
@@ -252,8 +259,9 @@ export async function POST(request: Request): Promise<Response> {
       : {}),
   });
   const selectionNeeded = agentResult.fallbackCode === "TOOLS_ANCHOR_CLARIFY" || agentResult.fallbackCode === "TOOLS_REFERENCE_NEEDED";
-  const canPresent = selectionNeeded || agentResult.execution === "validated" || agentResult.execution === "repaired";
-  const interaction = canPresent ? buildChatRecordInteraction(interactionEvidence, (await repository.listRides(session.userId)).map(e => e.record), selectionNeeded, candidateIds.length ? candidateIds : undefined) : {};
+  const canPresent = selectionNeeded || (agentResult.responseKind !== "clarification" && (agentResult.execution === "validated" || agentResult.execution === "repaired"));
+  const userInteraction = canPresent && !selectionNeeded ? buildChatUserInteraction(interactionEvidence) : {};
+  const interaction = userInteraction.artifact ? userInteraction : canPresent ? buildChatRecordInteraction(interactionEvidence, (await repository.listRides(session.userId)).map(e => e.record), selectionNeeded, candidateIds.length ? candidateIds : undefined) : {};
   const activeChoice = overview || selectionNeeded ? undefined : agentResult.choice ?? (!interactionEvidence.some(r => r.tool === "get_ride_history") && interaction.artifact?.kind === "ride_list" && interaction.artifact.payload.items.length === 1 ? { kind: "ride" as const, id: interaction.artifact.payload.items[0].rideId } : effectiveChoice);
   const eventType = agentResult.fallbackCode || agentResult.execution === "validation_rejected" ? "chat_degraded" : "chat_completed";
   console.log(`${tag} agent done | execution=${agentResult.execution} modelInvoked=${agentResult.modelInvoked} modelCalls=${modelMetrics.calls} toolCalls=${toolMetrics.calls} repairAttempts=${agentResult.repairAttempts ?? 0}${agentResult.fallbackCode ? ` fallbackCode=${agentResult.fallbackCode}` : ""}${agentResult.outputValidation ? ` validation.status=${agentResult.outputValidation.status} validation.code=${agentResult.outputValidation.code ?? "ok"}` : ""} | reply.len=${agentResult.reply.length}`);
@@ -283,5 +291,5 @@ export async function POST(request: Request): Promise<Response> {
     ...(agentResult.outputValidation?.code ? { validationCode: agentResult.outputValidation.code } : {}),
     ...routingEventAttributes({ routedBy, route: agentResult.decision.route, outcome: routingOutcome, configStatus }),
   });
-  return Response.json({ ...publicChatAgentResult({ ...agentResult, ...(overview || selectionNeeded ? { rideAnchor: undefined, choice: undefined } : {}), ...interaction, ...(selectionNeeded ? { decision: { ...agentResult.decision, action: "select" } } : {}) }), ...(activeChoice ? { choice: activeChoice } : {}), ...(overview ? { rideScope: "overview" } : selectionNeeded ? { rideScope: "pending" } : {}), text: result.text }, { headers });
+  return Response.json({ ...publicChatAgentResult({ ...agentResult, ...(overview || selectionNeeded ? { rideAnchor: undefined, choice: undefined } : {}), ...interaction, ...(selectionNeeded ? { decision: { ...agentResult.decision, action: "select" } } : {}) }), ...(activeChoice ? { choice: activeChoice } : {}), ...(overview ? { rideScope: "overview" } : selectionNeeded ? { rideScope: "pending" } : inheritedChoiceExpired && !activeChoice ? { rideScope: "cleared" } : {}), text: result.text }, { headers });
 }

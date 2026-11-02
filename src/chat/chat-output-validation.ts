@@ -3,15 +3,16 @@ import type { ChatRoutingDecision } from "./chat-routing.ts";
 import { chatToolSpecs, toolClaimIds, type ChatToolResult } from "./chat-tools.ts";
 import { chatNumbersSupported, chatNumberTokens } from "./chat-numeric-evidence.ts";
 
-// AGT-B0：合同升 v0.2（新增 knowledgeIds）。v0.1 输出仍被接受（见 parseOutput 的双版本
-// 兼容），保证既有 4 工具链路与测试零改动；v0.2 是"新工具（KB）可用"的合同形态。
+// v0.3 adds a typed contextual clarification; answers still require evidence.
+// v0.1/v0.2 remain accepted as answers, including their original exact key sets.
 //
-// AGT-H0（2026-10-27）口径澄清——**本文件只校"模型输出协议"，版本仍是 v0.2**：
+// AGT-H0（2026-10-27）口径澄清——本文件只校模型输出协议：
 // 需求文档里的"输出合同 v0.3（choices / artifact / quickActions）"指的是**响应层**合同
 // （服务端 → 前端），这三个字段由编排层从工具结果同源生成、模型不经手，因此不进入
 // 模型输出 JSON，也不该在这里校验。响应层合同与 schema 见 `chat-interaction.ts`
 // （`ride-chat-interaction-v0.3`）。把两者混为一谈会让模型有机会伪造记录列表。
-export const CHAT_OUTPUT_SCHEMA_VERSION = "ride-chat-output-v0.2" as const;
+export const CHAT_OUTPUT_SCHEMA_VERSION = "ride-chat-output-v0.3" as const;
+export const CHAT_OUTPUT_PREVIOUS_SCHEMA_VERSION = "ride-chat-output-v0.2" as const;
 export const CHAT_OUTPUT_LEGACY_SCHEMA_VERSION = "ride-chat-output-v0.1" as const;
 export const CHAT_OUTPUT_MAX_REPLY_CHARS = 600;
 export const CHAT_OUTPUT_MAX_REPLY_BYTES = 2 * 1_024;
@@ -47,7 +48,8 @@ export type ChatOutputValidationCode =
   | "OUTPUT_TOO_LONG";
 
 export type ChatOutput = {
-  schemaVersion: typeof CHAT_OUTPUT_SCHEMA_VERSION | typeof CHAT_OUTPUT_LEGACY_SCHEMA_VERSION;
+  schemaVersion: typeof CHAT_OUTPUT_SCHEMA_VERSION | typeof CHAT_OUTPUT_PREVIOUS_SCHEMA_VERSION | typeof CHAT_OUTPUT_LEGACY_SCHEMA_VERSION;
+  responseKind: "answer" | "clarification";
   route: ChatOutputRoute;
   reply: string;
   claimIds: string[];
@@ -156,7 +158,7 @@ function reject(code: ChatOutputValidationCode, claimCount = 0, capabilityCount 
   return { ok: false, code, publicResult: { status: "rejected", code, referencedClaimCount: claimCount, referencedCapabilityCount: capabilityCount, referencedKnowledgeCount: knowledgeCount } };
 }
 
-// AGT-B0：双版本解析——v0.1（5 键，无 knowledgeIds）与 v0.2（6 键，含 knowledgeIds）。
+// Parse v0.1 (5 keys), v0.2 (6 keys), and v0.3 (7 keys including responseKind).
 // 保留 v0.1 是刻意的向后兼容：既有 4 工具链路与全部历史测试输出无需改动即可继续通过，
 // 版本升级只对"要用知识证据"的调用生效。
 function parseOutput(rawOutput: string): ChatOutput | ChatOutputValidationCode {
@@ -169,11 +171,13 @@ function parseOutput(rawOutput: string): ChatOutput | ChatOutputValidationCode {
   if (!isRecord(parsed)) return "OUTPUT_SCHEMA_INVALID";
   const isLegacy = parsed.schemaVersion === CHAT_OUTPUT_LEGACY_SCHEMA_VERSION;
   const isCurrent = parsed.schemaVersion === CHAT_OUTPUT_SCHEMA_VERSION;
-  if (!isLegacy && !isCurrent) return "OUTPUT_SCHEMA_INVALID";
+  const isPrevious = parsed.schemaVersion === CHAT_OUTPUT_PREVIOUS_SCHEMA_VERSION;
+  if (!isLegacy && !isCurrent && !isPrevious) return "OUTPUT_SCHEMA_INVALID";
   const expectedKeys = isLegacy
     ? ["schemaVersion", "route", "reply", "claimIds", "capabilityKeys"]
-    : ["schemaVersion", "route", "reply", "claimIds", "capabilityKeys", "knowledgeIds"];
+    : ["schemaVersion", "route", "reply", "claimIds", "capabilityKeys", "knowledgeIds", ...(isCurrent ? ["responseKind"] : [])];
   if (!hasExactKeys(parsed, expectedKeys)) return "OUTPUT_SCHEMA_INVALID";
+  if (isCurrent && parsed.responseKind !== "answer" && parsed.responseKind !== "clarification") return "OUTPUT_SCHEMA_INVALID";
   if (typeof parsed.route !== "string" || !CHAT_OUTPUT_ROUTE_SET.has(parsed.route)) return "OUTPUT_SCHEMA_INVALID";
   if (typeof parsed.reply !== "string" || !parsed.reply.trim() || CONTROL_CHARACTERS.test(parsed.reply)) return "OUTPUT_SCHEMA_INVALID";
   // CHAT-15（真实链路采样发现）：总结型问题（“数据怎么样”）的工具上下文含 9 个 claims，
@@ -181,12 +185,13 @@ function parseOutput(rawOutput: string): ChatOutput | ChatOutputValidationCode {
   // prompt 与扣子侧均未提及；capabilityKeys 上限 8 与 capabilityScope 全量一致，不变）。
   if (!uniqueStrings(parsed.claimIds, CHAT_OUTPUT_MAX_CLAIM_IDS, (item) => CLAIM_ID.test(item))) return "OUTPUT_SCHEMA_INVALID";
   if (!uniqueStrings(parsed.capabilityKeys, 8, (item) => /^[A-Za-z][A-Za-z0-9]*$/.test(item))) return "OUTPUT_SCHEMA_INVALID";
-  const knowledgeIds = isCurrent
+  const knowledgeIds = !isLegacy
     ? parsed.knowledgeIds
     : [];
   if (!uniqueStrings(knowledgeIds, CHAT_OUTPUT_MAX_KNOWLEDGE_IDS, (item) => KNOWLEDGE_ID.test(item))) return "OUTPUT_SCHEMA_INVALID";
   return {
-    schemaVersion: isCurrent ? CHAT_OUTPUT_SCHEMA_VERSION : CHAT_OUTPUT_LEGACY_SCHEMA_VERSION,
+    schemaVersion: isCurrent ? CHAT_OUTPUT_SCHEMA_VERSION : isPrevious ? CHAT_OUTPUT_PREVIOUS_SCHEMA_VERSION : CHAT_OUTPUT_LEGACY_SCHEMA_VERSION,
+    responseKind: isCurrent && parsed.responseKind === "clarification" ? "clarification" : "answer",
     route: parsed.route as ChatOutputRoute,
     reply: parsed.reply.trim(),
     claimIds: parsed.claimIds,
@@ -232,6 +237,13 @@ function validateLoopEvidence(
   context: ChatOutputValidationContext,
 ): ChatOutputValidationCode | undefined {
   const results = context.loopToolResults ?? [];
+  if (results.some(result => "saved" in result && result.clarificationNeeded) && output.responseKind !== "clarification") return "OUTPUT_SCHEMA_INVALID";
+  // A typed clarification is a question, not a data answer. It requires no
+  // fabricated Claim just to ask for intent/units; numeric and safety checks stay.
+  if (output.responseKind === "clarification") {
+    if (output.claimIds.length || output.knowledgeIds.length || output.capabilityKeys.length || !/[？?]$/.test(output.reply)) return "OUTPUT_SCHEMA_INVALID";
+    return supportedByFacts(output.reply, results, context.userText) ? undefined : "OUTPUT_NUMERIC_UNSUPPORTED";
+  }
   if (results.length === 0) {
     // AGT-B5（BND-S06 驱动）：autonomous_tools 下"**不需要数据的合法拒答**"没有出口。
     // 实测："把我刚才说的那句话删掉" → 模型答"我无法删除您之前说过的话……我的功能是
@@ -280,6 +292,7 @@ export function validateChatOutput(rawOutput: string, context: ChatOutputValidat
   if (typeof output === "string") return reject(output);
   const expectedRoute = outputRoute(context.decision);
   if (!expectedRoute || output.route !== expectedRoute) return reject("OUTPUT_ROUTE_MISMATCH", output.claimIds.length, output.capabilityKeys.length);
+  if (output.responseKind === "clarification" && output.route !== "autonomous_tools") return reject("OUTPUT_SCHEMA_INVALID");
   if (output.reply.length > CHAT_OUTPUT_MAX_REPLY_CHARS || Buffer.byteLength(output.reply, "utf8") > CHAT_OUTPUT_MAX_REPLY_BYTES) return reject("OUTPUT_TOO_LONG", output.claimIds.length, output.capabilityKeys.length);
   // AGT-B0（G6）：措辞检查由"词面命中即拒"改为"未否定命中即拒"——安全声明/拒绝声明
   // 豁免（"不能做诊断""不会访问其他用户的数据"），危险断言照拦（"你患有…"）。

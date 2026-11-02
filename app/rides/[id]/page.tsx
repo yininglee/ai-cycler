@@ -36,11 +36,8 @@ export default async function RideDetailPage({
   // 因此无会话访客也能直接打开详情页（不是内置样例，但同样只读）。
   const demoRide = isFixture ? undefined : await getDemoImportedRide(id);
   const userId = isFixture ? null : await getNextSessionUserId();
-  const record = isFixture
-    ? getRideRecord(id)
-    : demoRide
-      ? demoRide.record
-      : userId ? await (await getRideRepository()).getRide(userId, id) : null;
+  const visibleRides = isFixture ? [] : await (await getRideRepository()).listRides(userId ?? "");
+  const record = isFixture ? getRideRecord(id) : visibleRides.find(entry => entry.record.activity.rideId === id)?.record;
   if (!record) notFound();
   const view = buildRidePageViewModelFromRecord(record);
   const rejected = view.rejected;
@@ -50,8 +47,7 @@ export default async function RideDetailPage({
   // DEMO-IMPORTED-RIDES：演示记录之间互为历史，因此无会话访客也能看到同环比。
   let historyComparison: ReturnType<typeof buildRideHistoryComparisonForRecord>;
   if (!isFixture && !rejected) {
-    const peerRides = await (await getRideRepository()).listRides(userId ?? "");
-    historyComparison = buildRideHistoryComparisonForRecord(record, peerRides.map((item) => item.record));
+    historyComparison = buildRideHistoryComparisonForRecord(record, visibleRides.map((item) => item.record));
   }
 
   return (

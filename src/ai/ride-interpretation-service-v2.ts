@@ -140,7 +140,7 @@ const KNOWLEDGE_TITLES: Readonly<Record<string, string>> = Object.fromEntries(
   rideKnowledgeBaseV21.map((entry) => [entry.knowledgeId, entry.title]),
 );
 
-function baseVersions(): RideInterpretationV2Versions {
+export function getRideInterpretationV2Versions(): RideInterpretationV2Versions {
   return {
     service: RIDE_INTERPRETATION_SERVICE_V2_VERSION,
     evidenceRules: RIDE_EVIDENCE_RULES_VERSION,
@@ -179,7 +179,7 @@ function mapInputFailureCode(failureCode: string): string {
 
 export async function runRideInterpretationV2(options: RideInterpretationV2Options): Promise<RideInterpretationV2Result> {
   const { record, analysisRunId, userScope, requestId } = options;
-  const versions = baseVersions();
+  const versions = getRideInterpretationV2Versions();
   const callRecords: RideModelCallRecordV2[] = [];
 
   // S2-05: feed the climb events and terrain segments — the same deterministic

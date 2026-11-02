@@ -16,8 +16,11 @@ import { getApplicationRepository } from "../../../src/persistence/application-r
 import { getRideRepository } from "../../../src/persistence/demo-ride-repository.ts";
 import { isDemoRideId } from "../../../src/ui/ride-view-model.ts";
 import { buildRidePageViewModelFromRecord } from "../../../src/ui/ride-view-model.ts";
-import { runRideInterpretationV2 } from "../../../src/ai/ride-interpretation-service-v2.ts";
-import { readRideModelProviderConfigV2, readRideSemanticModelIdV2, RideModelClientV2 } from "../../../src/ai/ride-model-provider-v2.ts";
+import { runRideInterpretationV2, getRideInterpretationV2Versions } from "../../../src/ai/ride-interpretation-service-v2.ts";
+import { canCacheRideInterpretation, readCachedRideInterpretation, rideInterpretationFingerprint } from "../../../src/ai/ride-interpretation-cache.ts";
+import type { RideRecord } from "../../../src/domain/ride-schema.ts";
+import type { UserProfile } from "../../../src/domain/user-profile.ts";
+import { readRideModelProviderConfigV2, readRideSemanticModelIdV2, RideModelClientV2, DEFAULT_RIDE_MODEL_V2_MODEL_ID } from "../../../src/ai/ride-model-provider-v2.ts";
 import { bindRideV2DimensionChartsV2 } from "../../../src/ai/ride-output-chart-binding-v2.ts";
 
 export const runtime = "nodejs";
@@ -60,6 +63,30 @@ function noStoreJson(value: unknown, status = 200, headers: Record<string, strin
   });
 }
 
+function cacheFingerprint(record: RideRecord, profile: UserProfile | null, engine: "v1" | "v2") {
+  const model = engine === "v2" ? (process.env.RIDE_MODEL_V2_MODEL_ID?.trim() || DEFAULT_RIDE_MODEL_V2_MODEL_ID) : process.env.COZE_INTERPRETATION_WORKFLOW_ID?.trim();
+  return rideInterpretationFingerprint(record, profile, { engine, versions: engine === "v2" ? getRideInterpretationV2Versions() : RIDE_INTERPRETATION_ROUTE_VERSION_MATRIX,
+    model, workflowVersion: engine === "v1" ? process.env.COZE_INTERPRETATION_WORKFLOW_VERSION : undefined, semanticModel: engine === "v2" ? readRideSemanticModelIdV2(process.env) : undefined });
+}
+
+/** Read existing verified output only. Never invokes a provider or revives a deleted record. */
+export async function GET(request: Request): Promise<Response> {
+  try {
+    const query = new URL(request.url).searchParams;
+    const rideId = query.get("rideId");
+    if (!rideId || rideId.length > 128) return noStoreJson({ error: "UNKNOWN_RIDE" }, 400);
+    const session = getRequestSession(request);
+    const record = isDemoRideId(rideId) ? getRideRecord(rideId) : (await (await getRideRepository()).listRides(session?.userId ?? "")).find(entry => entry.record.activity.rideId === rideId)?.record;
+    if (!record) return noStoreJson({ error: "UNKNOWN_RIDE" }, 400);
+    if (!session || isDemoRideId(rideId)) return noStoreJson({ rideId, cached: false });
+    const engine = resolveInterpretationEngine(query.get("engine"), process.env);
+    const repository = getApplicationRepository();
+    const profile = engine === "v2" ? await repository.getProfile(session.userId) : null;
+    const cache = readCachedRideInterpretation((await repository.getAnalysisRun(session.userId, rideId))?.result, cacheFingerprint(record, profile, engine), rideId);
+    return noStoreJson(cache ? { rideId, cached: true, generatedAt: cache.generatedAt, response: cache.response } : { rideId, cached: false });
+  } catch { return noStoreJson({ error: "ANALYSIS_CACHE_UNAVAILABLE" }, 503); }
+}
+
 export async function POST(request: Request): Promise<Response> {
   const contentLength = Number(request.headers.get("content-length"));
   if (Number.isFinite(contentLength) && contentLength > MAX_REQUEST_BYTES) {
@@ -98,14 +125,21 @@ export async function POST(request: Request): Promise<Response> {
   // DEMO-IMPORTED-RIDES：演示记录对所有人可读，因此走带演示视图的仓储而不是原仓储。
   const record = isFixture
     ? getRideRecord(rideId)
-    : await (await getRideRepository()).getRide(session?.userId ?? "", rideId);
+    : (await (await getRideRepository()).listRides(session?.userId ?? "")).find(entry => entry.record.activity.rideId === rideId)?.record;
   if (!record) return noStoreJson({ error: "UNKNOWN_RIDE" }, 400, session ? sessionCookieHeader(session) : {});
   const cookieHeaders = session ? sessionCookieHeader(session) : {};
+  const profile = engine === "v2" && session ? await getApplicationRepository().getProfile(session.userId) : null;
+  const fingerprint = cacheFingerprint(record, profile, engine);
   if (session) await getApplicationRepository().saveDemoEvent(session.userId, createDemoEvent({ type: "ai_requested", rideId }));
 
   const finalize = async (payload: Record<string, unknown>, run: Record<string, unknown>): Promise<Response> => {
     if (session) {
-      if (!isFixture) await getApplicationRepository().saveAnalysisRun(session.userId, rideId, run);
+      if (!isFixture) {
+        const repository = getApplicationRepository();
+        const previousCache = readCachedRideInterpretation((await repository.getAnalysisRun(session.userId, rideId))?.result, fingerprint, rideId);
+        const successfulCache = canCacheRideInterpretation(payload) ? { fingerprint, generatedAt: new Date().toISOString(), response: payload } : previousCache;
+        await repository.saveAnalysisRun(session.userId, rideId, { ...run, ...(successfulCache ? { successfulCache } : {}) });
+      }
       if (payload.source === "b2" || payload.source === "v2" || payload.source === "safety_stop") {
         await getApplicationRepository().saveDemoEvent(session.userId, createDemoEvent({ type: "ai_completed", rideId, attributes: { source: String(payload.source) } }));
       } else {
@@ -142,7 +176,6 @@ export async function POST(request: Request): Promise<Response> {
         { source: "b0", engine: "v2", fallbackCode: "AI_DISABLED", versions },
       );
     }
-    const profile = session ? await getApplicationRepository().getProfile(session.userId) : null;
     const providerConfig = readRideModelProviderConfigV2(process.env);
     const modelClient = providerConfig ? new RideModelClientV2(providerConfig) : undefined;
     const semanticModelId = readRideSemanticModelIdV2(process.env);

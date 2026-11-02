@@ -25,6 +25,10 @@ import type { MetricKey, RideRecord } from "../domain/ride-schema.ts";
 import type { ApplicationRepository } from "../persistence/application-repository.ts";
 import { buildHistoricalRide, buildHistoricalRides } from "../persistence/persistent-history.ts";
 import type { ChatNumericFact } from "./chat-numeric-evidence.ts";
+import type { ChatAgentInteraction } from "./chat-interaction.ts";
+import { PLATFORMS } from "../ux/platform-catalog.ts";
+import { MAX_UPLOAD_BYTES } from "../parsers/parser-utils.ts";
+import { executeChatUserTool, parseChatUserToolInvocation, type ChatUserToolInvocation, type ChatUserToolResult } from "./chat-user-capabilities.ts";
 import {
   parseChatRideRef,
   resolveChatRideRef,
@@ -74,6 +78,8 @@ export const CHAT_FIND_RIDE_MAX_MATCHES = 5 as const;
 // 合同（输入校验 + 结果类型 + 证据声明），数据投影由 B1（全局三件）与 B2（记录两件）实现；
 // 未实装前 executeChatTool 抛 TEMPORARY_UNAVAILABLE，且 catalog 不下发（模型无法调用）。
 export type ChatToolName =
+  | "prepare_ride_import"
+  | ChatUserToolInvocation["tool"]
   | "get_ride_context"
   | "get_capabilities"
   | "compare_rides"
@@ -103,7 +109,7 @@ export type ChatToolErrorCode = "INVALID_INPUT" | "NOT_FOUND" | "TIMEOUT" | "TEM
 type RideContextInput = { rideRef?: ChatRideRef; dims: RideContextDimension[] };
 type CapabilitiesInput = { rideId: string; caps: AtomicCapabilityKey[] };
 type CompareRidesInput = { rideId: string; metrics: ChatComparisonMetricKey[]; windowDays: number };
-type FindRideInputBase = { rideId: string; metric: ChatComparisonMetricKey; metrics: ChatComparisonMetricKey[]; windowDays: number };
+type FindRideInputBase = { rideId: string | null; metric: ChatComparisonMetricKey; metrics: ChatComparisonMetricKey[]; windowDays: number };
 export type FindRideInput = FindRideInputBase & ({ mode: "max" | "min" } | { mode: "threshold"; threshold: number });
 // AGT-B0：5 个新工具的输入合同（细规划 §3.2）。一律"完整键集"——可选字段也必须在
 // 调用时出现，缺省值由 normalizeLoopCall 在进入 parse 前补齐（与 compare_rides 既有模式一致），
@@ -145,6 +151,8 @@ type RideHistoryInput = { rideId: string | null; windowDays: number; metrics: Ch
 type RouteOverviewInput = { rideRef?: ChatRideRef; segments: number };
 
 export type ChatToolInvocation =
+  | { tool: "prepare_ride_import"; input: Record<string, never> }
+  | ChatUserToolInvocation
   | { tool: "get_ride_context"; input: RideContextInput }
   | { tool: "get_capabilities"; input: CapabilitiesInput }
   | { tool: "compare_rides"; input: CompareRidesInput }
@@ -387,6 +395,8 @@ export type RouteOverviewToolResult = {
 };
 
 export type ChatToolResult =
+  | RideImportToolResult
+  | ChatUserToolResult
   | RideContextToolResult
   | CapabilitiesToolResult
   | CompareRidesToolResult
@@ -396,6 +406,17 @@ export type ChatToolResult =
   | KnowledgeSearchToolResult
   | RideHistoryToolResult
   | RouteOverviewToolResult;
+
+export type RideImportToolResult = {
+  schemaVersion: typeof CHAT_TOOL_SCHEMA_VERSION;
+  tool: "prepare_ride_import";
+  mode: "real_file_simulated_platform";
+  platforms: Array<{ id: string; name: string }>;
+  fileFormats: string[];
+  maxFileSizeMB: number;
+  claims: ChatToolClaim[];
+  interaction: ChatAgentInteraction;
+};
 
 // AGT-H1：「记录选择未定」不是一个错误，而是一个**确定的回答**——"我需要你先选一条"。
 // 它区别于三类既有结果：没有 Claims（无从校验数字）、不是降级降级码（不是服务失败）、
@@ -564,6 +585,9 @@ function validSegments(value: unknown): value is number {
 
 export function parseChatToolInvocation(value: unknown): ChatToolInvocation {
   if (!isPlainObject(value) || !hasExactKeys(value, ["tool", "input"]) || !isPlainObject(value.input)) throw new ChatToolError("INVALID_INPUT");
+  const userCall = parseChatUserToolInvocation(value.tool, value.input);
+  if (userCall) return userCall;
+  if (value.tool === "prepare_ride_import" && hasExactKeys(value.input, [])) return { tool: value.tool, input: {} };
   if (value.tool === "get_ride_context") {
     const input = value.input;
     const reference = parseToolRideReference(input);
@@ -600,7 +624,7 @@ export function parseChatToolInvocation(value: unknown): ChatToolInvocation {
       : ["rideId", "metric", "mode", "metrics", "windowDays"];
     if (
       !hasExactKeys(value.input, expectedKeys)
-      || !validRideId(value.input.rideId)
+      || !validNullableRideId(value.input.rideId)
       || !enumValue(value.input.metric, chatComparisonMetricKeys)
       || !enumValue(mode, chatFindRideModes)
       || !uniqueEnumValues(value.input.metrics, chatComparisonMetricKeys, chatComparisonMetricKeys.length)
@@ -894,7 +918,31 @@ export type ChatToolSpec = {
 const emptyFacts: ChatNumericFact[] = [];
 const emptyIds: string[] = [];
 
+const userToolSpec: ChatToolSpec = {
+  anchorMode: "none", evidenceKind: "claims",
+  claimIds: result => "saved" in result ? result.claims.map(claim => claim.claimId) : [],
+  knowledgeIds: () => [],
+  numericFacts: result => "saved" in result ? [
+    ...result.claims.map(claim => ({ value: claim.value, unit: claim.unit, key: claim.key })),
+    ...(result.goal ? [{ displayValue: `${result.goal.title} ${result.goal.detail}` }] : []),
+    ...(result.interaction?.artifact?.kind === "goal_editor" && result.interaction.artifact.payload.draft
+      ? [{ displayValue: `${result.interaction.artifact.payload.draft.title} ${result.interaction.artifact.payload.draft.detail}` }] : []),
+    ...(result.interaction?.artifact?.kind === "profile_proposal" ? Object.values(result.interaction.artifact.payload.input).flatMap(value => typeof value === "number" ? [{ value }] : []) : []),
+  ] : [],
+  hasUsableEvidence: result => "saved" in result && result.claims.length > 0,
+};
+
 export const chatToolSpecs: Record<ChatToolName, ChatToolSpec> = {
+  prepare_ride_import: {
+    anchorMode: "none", evidenceKind: "claims",
+    claimIds: result => result.tool === "prepare_ride_import" ? result.claims.map(claim => claim.claimId) : [],
+    knowledgeIds: () => [], numericFacts: result => result.tool === "prepare_ride_import" ? [{ value: result.maxFileSizeMB, unit: "MB" }] : [],
+    hasUsableEvidence: result => result.tool === "prepare_ride_import",
+  },
+  get_user_context: userToolSpec,
+  show_onboarding: userToolSpec,
+  prepare_goal_editor: userToolSpec,
+  prepare_profile_proposal: userToolSpec,
   get_ride_context: {
     anchorMode: "required",
     evidenceKind: "claims",
@@ -951,7 +999,7 @@ export const chatToolSpecs: Record<ChatToolName, ChatToolSpec> = {
       && result.claims.some((claim) => claim.status === "comparable" && Boolean(claim.claimId)),
   },
   find_ride: {
-    anchorMode: "required",
+    anchorMode: "optional",
     evidenceKind: "claims",
     claimIds: (result) => (result.tool === "find_ride"
       ? result.matches.flatMap((match) => match.claims.map((claim) => claim.claimId))
@@ -1514,8 +1562,15 @@ async function buildRideContextResult(
   };
 }
 
-async function executeChatToolWithinBoundary(repository: ApplicationRepository, ownerId: string, invocation: ChatToolInvocation): Promise<ChatToolExecutionResult> {
+async function executeChatToolWithinBoundary(repository: ApplicationRepository, ownerId: string, invocation: ChatToolInvocation, userSource = ""): Promise<ChatToolExecutionResult> {
   try {
+    if (invocation.tool === "prepare_ride_import") return { schemaVersion: CHAT_TOOL_SCHEMA_VERSION, tool: invocation.tool, mode: "real_file_simulated_platform",
+      platforms: PLATFORMS.map(({ id, name }) => ({ id, name })), fileFormats: ["FIT", "GPX"], maxFileSizeMB: MAX_UPLOAD_BYTES / (1024 * 1024),
+      claims: [{ claimId: "claim:import:available", key: "import_entry_available", kind: "metric", value: 1, unit: "count", confidence: "high" }],
+      interaction: { artifact: { kind: "ride_import", payload: {} } } };
+    if (invocation.tool === "get_user_context" || invocation.tool === "show_onboarding" || invocation.tool === "prepare_goal_editor" || invocation.tool === "prepare_profile_proposal") {
+      return enforceResultSize(await executeChatUserTool(repository, ownerId, invocation, userSource));
+    }
     // AGT-B1：三个全局工具（无锚点）先处理——它们不依赖某条骑行记录，若落进下面的
     // ownedRide 路径会因缺少 rideId 被误判 NOT_FOUND。
     if (invocation.tool === "get_health_profile") {
@@ -1531,6 +1586,15 @@ async function executeChatToolWithinBoundary(repository: ApplicationRepository, 
     // route_overview 必须锚定。
     if (invocation.tool === "get_ride_history") {
       return enforceResultSize(await buildRideHistoryResult(repository, ownerId, invocation.input));
+    }
+    if (invocation.tool === "find_ride") {
+      const records = (await repository.listRides(ownerId)).map(entry => entry.record);
+      // A cross-record search needs no user-selected ride. Its legacy window is
+      // anchored on the latest visible record; this does not select an analysis object.
+      const record = invocation.input.rideId ? await ownedRide(repository, ownerId, invocation.input.rideId)
+        : [...records].sort((a, b) => (Date.parse(b.activity.startTime ?? "") || 0) - (Date.parse(a.activity.startTime ?? "") || 0))[0];
+      if (!record) throw new ChatToolError("NOT_FOUND");
+      return enforceResultSize(buildFindRideResult(record, records, invocation.input));
     }
     // AGT-H1：两个记录类工具先把 rideRef 解成具体记录；解不出（同日多条/没这条/没给指涉）
     // 就返回候选，让上层去问用户——**绝不默认取最新**。
@@ -1594,10 +1658,6 @@ async function executeChatToolWithinBoundary(repository: ApplicationRepository, 
 
     // CHAT-17 P1：find_ride——锚点（ownedRide 已校验归属）确定检索窗口；
     // listRides 按 owner 隔离；no_match 由结果状态承载（编排层零模型降级），不在工具层拦截。
-    if (invocation.tool === "find_ride") {
-      const records = (await repository.listRides(ownerId)).map((entry) => entry.record);
-      return enforceResultSize(buildFindRideResult(record, records, invocation.input));
-    }
 
     // 走到这里说明两个记录类工具（get_ride_context / get_route_overview）的提前返回被改动过。
     throw new ChatToolError("INVALID_INPUT");
@@ -1607,6 +1667,6 @@ async function executeChatToolWithinBoundary(repository: ApplicationRepository, 
   }
 }
 
-export function executeChatTool(repository: ApplicationRepository, ownerId: string, invocation: ChatToolInvocation): Promise<ChatToolExecutionResult> {
-  return withinToolTimeout(executeChatToolWithinBoundary(repository, ownerId, invocation));
+export function executeChatTool(repository: ApplicationRepository, ownerId: string, invocation: ChatToolInvocation, userSource = ""): Promise<ChatToolExecutionResult> {
+  return withinToolTimeout(executeChatToolWithinBoundary(repository, ownerId, invocation, userSource));
 }

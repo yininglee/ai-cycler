@@ -95,6 +95,14 @@ export async function POST(request: Request): Promise<Response> {
   // 幂等去重：同一会话重复导入相同内容时返回既有记录，不再重复解析与存储。
   const existingRideId = await getApplicationRepository().findRideIdByContentHash(session.userId, contentHash);
   if (existingRideId) {
+    // Explicitly importing a previously hidden file makes that same normalized
+    // record visible again in blank mode, without allocating another ride ID.
+    const repository = getApplicationRepository();
+    const profile = await repository.getProfile(session.userId);
+    if (profile?.ux?.mode === "blank") {
+      const entry = (await repository.listRides(session.userId)).find(item => item.record.activity.rideId === existingRideId);
+      if (entry && entry.storedAt < (profile.ux.blankSince ?? "")) await repository.saveRide(session.userId, entry.record, contentHash);
+    }
     await getApplicationRepository().saveDemoEvent(session.userId, createDemoEvent({
       type: "import_completed",
       rideId: existingRideId,

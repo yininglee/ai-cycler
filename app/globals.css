@@ -1002,3 +1002,14 @@ fieldset.profile-fields { margin: 0; padding: 0; border: 0; min-width: 0; }
 .chat-ride-result-actions button, .chat-ride-expand { cursor: pointer; border: 1px solid #e1e4db; background: #f7f8f4; color: #404638; border-radius: 10px; padding: 9px 12px; font-size: 12px; }
 .chat-ride-result-actions button:first-child { background: #20251b; color: #fff; border-color: #20251b; }
 .chat-ride-result-actions a { color: #7a836f; font-size: 12px; }
+.ride-card-stack { min-width: 0; }
+.ride-card-stack-stage { display: grid; position: relative; isolation: isolate; margin-bottom: 24px; touch-action: pan-x pinch-zoom; border-radius: 16px; }
+.ride-card-stack-stage:focus-visible { outline: 2px solid #53614b; outline-offset: 5px; }
+.ride-card-stack-back { position: absolute; inset: 0; z-index: -1; border: 1px solid #dfe3da; border-radius: 16px; background: #f9faf7; transform: translateY(10px) scaleX(.96); box-shadow: 0 3px 8px #20251b05; pointer-events: none; }
+.ride-card-stack-back-far { z-index: -2; transform: translateY(20px) scaleX(.92); background: #f1f3ed; }
+.ride-card-stack-card { grid-area: 1 / 1; min-width: 0; visibility: hidden; pointer-events: none; }
+.ride-card-stack-card > article { height: 100%; box-sizing: border-box; margin: 0; }
+.ride-card-stack-card.is-active { visibility: visible; pointer-events: auto; animation: ride-card-enter 220ms ease-out; }
+.ride-card-stack-card.is-active > article { box-shadow: 0 7px 18px #20251b08; }
+@keyframes ride-card-enter { from { opacity: .45; transform: translateY(var(--ride-stack-entry-y)); } to { opacity: 1; transform: translateY(0); } }
+@media (prefers-reduced-motion: reduce) { .ride-card-stack-card.is-active { animation: none; } }

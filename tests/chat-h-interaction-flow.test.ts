@@ -1,3 +1,4 @@
+import { withRequestedChatTool } from "./helpers/scripted-chat.ts";
 import "./helpers/route-test-env.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
@@ -97,10 +98,13 @@ test("ambiguous same-day query offers actual candidates with unique IDs and sele
   const session = resolveOrCreateRequestSession(new Request("http://localhost")); const cookie = session.setCookie!.split(";")[0]; const repo = getApplicationRepository();
   const a = record("same-a", 1, 8), b = record("same-b", 1, 18); await repo.saveRide(session.userId, a); await repo.saveRide(session.userId, b); await repo.saveRide(session.userId, record("unrelated", 9));
   const date = calendarDate(a.activity.startTime!)!;
+  await withRequestedChatTool("get_ride_context", { rideRef: { date }, dims: ["heart_rate"] }, async () => {
   const body = await (await POST(request(cookie, { text: `${date}骑行平均心率多少？` }))).json();
   assert.equal(body.decision.action, "select", JSON.stringify(body));
   assert.deepEqual(new Set(body.artifact.payload.items.map((i: any) => i.rideId)), new Set(["same-a", "same-b"]));
   assert.equal(body.choices.length, 2);
+  assert.equal(body.modelInvoked, true);
+  });
 });
 
 test("recent defaults use today's global window, while explicitly supplied tool windows remain intact", async () => {
@@ -140,10 +144,15 @@ test("a deleted inherited record cannot silently switch to the remaining latest 
   const session = resolveOrCreateRequestSession(new Request("http://localhost"));
   const cookie = session.setCookie!.split(";")[0];
   await getApplicationRepository().saveRide(session.userId, record("remaining"));
-  const response = await POST(request(cookie, { text: "那心率呢？", summaries: [{ kind: "session_turn", question: "分析这次骑行", route: "current_ride", choice: { kind: "ride", id: "removed" } }] }));
-  assert.equal(response.status, 404);
-  const body = await response.json(); assert.equal(body.artifact, undefined);
-  assert.match(body.reply, /重新选择/);
+  await withRequestedChatTool("get_ride_context", { dims: ["heart_rate"] }, async () => {
+    const response = await POST(request(cookie, { text: "那心率呢？", summaries: [{ kind: "session_turn", question: "分析这次骑行", route: "current_ride", choice: { kind: "ride", id: "removed" } }] }));
+    assert.equal(response.status, 200);
+    const body = await response.json();
+    assert.equal(body.fallbackCode, "TOOLS_REFERENCE_NEEDED");
+    assert.equal(body.choice, undefined);
+    assert.equal(body.rideScope, "pending");
+    assert.ok(body.choices.some((choice: any) => choice.id === "remaining"));
+  });
 });
 
 test("storage persists validated interaction and choice, refresh preserves the chat and new chats inherit no chosen record", () => {

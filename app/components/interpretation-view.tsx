@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+import { hasInterpretationIdentity, interpretationFailureMessage } from "../../src/ui/ride-interpretation-response";
 import { recordDemoEvent } from "./demo-event-client";
 import { CheckIcon, SparkIcon } from "./icons";
 import { RideSeriesChart } from "./ride-visuals";
@@ -20,6 +21,8 @@ import { RideOutputV2View } from "./ride-output-v2-view";
 
 interface InterpretationResponse {
   rideId: string;
+  cached?: boolean;
+  generatedAt?: string;
   source: "b2" | "v2" | "b0" | "safety_stop";
   output: unknown;
   fallbackCode?: string;
@@ -73,19 +76,7 @@ type LoadState =
   | { kind: "ok"; data: InterpretationResponse }
   | { kind: "error"; message: string };
 
-/**
- * Session-level cache for successful b2 responses, keyed by rideId only.
- *
- * The API always runs L6 plan in expanded mode (all eligible dimensions
- * narrated in one Provider call), per 骑后解读规则重构设计 §3.7 — the
- * drawer just decides how many to *display*. This means each rideId maps to
- * exactly one b2 response and the cache is a flat ride → response map.
- *
- * Each b2 call is a real Provider request (~15s, real cost), and the drawer
- * can be opened/closed repeatedly — cache hits make reopening instant.
- * b0 / safety_stop / errors are never cached.
- */
-const responseCache = new Map<string, InterpretationResponse>();
+// Verified results live in the owner-scoped server cache; every opening rechecks identity and versions.
 
 /**
  * In-flight requests keyed by rideId. Dedupes concurrent `load()` calls —
@@ -140,8 +131,7 @@ export function InterpretationView({
   const [demoB0, setDemoB0] = useState(isDemoB0);
   const [state, setState] = useState<LoadState>(() => {
     if (isDemoB0) return { kind: "ok", data: demoB0Response(rideId) };
-    const cached = responseCache.get(requestKey);
-    return cached ? { kind: "ok", data: cached } : { kind: "loading" };
+    return { kind: "loading" };
   });
   const [feedback, setFeedback] = useState<"helpful" | "not_helpful" | null>(null);
 
@@ -165,38 +155,38 @@ export function InterpretationView({
       setState({ kind: "ok", data: demoB0Response(rideId) });
       return;
     }
-    if (!force && responseCache.has(requestKey)) {
-      setState({ kind: "ok", data: responseCache.get(requestKey)! });
-      return;
-    }
     setState({ kind: "loading" });
 
     // Reuse an in-flight request for the same rideId instead of firing a
     // second POST. Covers React Strict Mode's double-mount effect and any
     // other concurrent callers (e.g. the retry button during a pending load).
-    let pending = !force ? inFlight.get(requestKey) : undefined;
+    let pending = inFlight.get(requestKey);
     if (!pending) {
       pending = (async () => {
-        const response = await fetch("/api/ride-analysis", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ rideId, ...(engine ? { engine } : {}) }),
-          cache: "no-store",
-        });
-        if (!response.ok) {
-          const text = await response.text();
-          throw new Error(`REQUEST_FAILED:${response.status} ${text.slice(0, 120)}`);
+        const checked = (value: unknown): InterpretationResponse => {
+          if (!hasInterpretationIdentity(value, rideId)) throw new Error("ANALYSIS_RESPONSE_MISMATCH");
+          return value as InterpretationResponse;
+        };
+        if (!force) {
+          const query = new URLSearchParams({ rideId, ...(engine ? { engine } : {}) });
+          const cached = await fetch(`/api/ride-analysis?${query}`, { cache: "no-store" });
+          if (!cached.ok) throw new Error(cached.status === 400 ? "ANALYSIS_RECORD_UNAVAILABLE" : "ANALYSIS_CACHE_UNAVAILABLE");
+          const value = await cached.json();
+          if (value.rideId !== rideId || typeof value.cached !== "boolean") throw new Error("ANALYSIS_RESPONSE_MISMATCH");
+          if (value.cached) return { ...checked(value.response), cached: true, generatedAt: value.generatedAt };
         }
-        return (await response.json()) as InterpretationResponse;
+        const response = await fetch("/api/ride-analysis", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ rideId, ...(engine ? { engine } : {}) }), cache: "no-store",
+        });
+        if (!response.ok) throw new Error(response.status === 400 ? "ANALYSIS_RECORD_UNAVAILABLE" : "ANALYSIS_REQUEST_FAILED");
+        return checked(await response.json());
       })();
       inFlight.set(requestKey, pending);
     }
 
     try {
       const data = await pending;
-      if ((data.source === "b2" && data.v04Candidate) || (data.source === "v2" && data.v2Candidate)) {
-        responseCache.set(requestKey, data);
-      }
       setState({ kind: "ok", data });
     } catch (cause) {
       setState({
@@ -223,7 +213,6 @@ export function InterpretationView({
       setDemoB0(false);
       return;
     }
-    responseCache.delete(requestKey);
     void load(true);
   }, [demoB0, load, requestKey, previewOnly]);
 
@@ -246,6 +235,7 @@ export function InterpretationView({
           <p className="kicker">RIDE INSIGHT</p>
           <h1>{title || "AI 骑行解读"}</h1>
           <p>基于本次记录中的可靠证据生成的整体评价、重点维度解读、表现高光与下一步建议。{dateLabel ? `覆盖骑行日期 ${dateLabel}。` : ""}</p>
+          {state.kind === "ok" && state.data.cached && <p className="ux-meta">已有解读 · {state.data.generatedAt ? new Date(state.data.generatedAt).toLocaleString("zh-CN") : "已恢复"}</p>}
         </header>
 
         {state.kind === "loading" && <LoadingSteps />}
@@ -253,8 +243,7 @@ export function InterpretationView({
         {state.kind === "error" && (
           <section className="candidate-preview-rejected">
             <h2>解读暂时不可用</h2>
-            <p>请求生产链路时出错，可在下方重新解读。</p>
-            <code>{state.message}</code>
+            <p>{state.message === "ANALYSIS_RECORD_UNAVAILABLE" ? "这条记录已不可用，请关闭解读后重新选择。" : "读取解读时出错，骑行记录已保留，可以重试。"}</p>
           </section>
         )}
 
@@ -269,8 +258,7 @@ export function InterpretationView({
         {state.kind === "ok" && state.data.source === "b0" && (
           <section className="candidate-preview-rejected">
             <h2>本次骑行暂未生成 AI 解读</h2>
-            <p>当前证据不足以保证解读质量，先展示本次骑行的事实卡片与图表。</p>
-            <code>{state.data.fallbackCode ?? "DATA_NOT_ELIGIBLE"}</code>
+            <p>{interpretationFailureMessage(state.data.fallbackCode)}</p>
             {demoB0 && <p className="candidate-demo-hint">{previewOnly ? "状态演示：当前展示数据不足；未请求模型。" : "演示模式：本条为强制降级预览，点击「重新解读」可走真实链路。"}</p>}
             <FeedbackButtons feedback={feedback} onSubmit={submitFeedback} />
           </section>

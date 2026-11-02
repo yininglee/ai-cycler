@@ -34,10 +34,10 @@ test("ARCH-02: every legacy data hint uses the same model loop, catalog and evid
     const provider: ChatProvider = { async run(input) {
       calls++;
       assert.equal(input.route, "autonomous_tools");
-      assert.equal(input.toolCatalog?.tools.length, 9);
+      assert.equal(input.toolCatalog?.tools.length, 14);
       assert.ok(input.toolCatalog.tools.some(entry => entry.tool === "compare_rides"));
       assert.ok(input.toolCatalog.tools.some(entry => entry.tool === "search_knowledge_base"));
-      if (!input.toolResults) return toolRequest("get_ride_context", { dims: ["summary"] });
+      if (!input.toolResults) return toolRequest("get_ride_context", { rideRef: { ordinal: -1 }, dims: ["summary"] });
       const context = input.toolResults[0].context;
       assert.ok("claims" in context && context.claims.length);
       return { rawText: JSON.stringify({ schemaVersion: "ride-chat-output-v0.2", route: input.route,
@@ -106,7 +106,7 @@ test("ARCH-02: unimplemented writes stay outside both model catalog and executio
 });
 
 test("ARCH-02: L0 boundaries override benign hints and never execute a provider", async () => {
-  for (const [text, expected] of [["胸痛怎么办？", "stop"], ["你好", "deterministic"], ["帮我生成训练计划", "deterministic"]] as const) {
+  for (const [text, expected] of [["胸痛怎么办？", "stop"], ["你好", "deterministic"]] as const) {
     const decision = text.includes("计划") ? makeChatDecision("training_plan", "none", "TRAINING_PLAN", text.length)
       : makeChatDecision("autonomous_tools", "none", "AUTONOMOUS_TOOLS", text.length);
     const result = await runChatAgent({ text, decision,
@@ -197,4 +197,27 @@ test("ARCH-02: rule-era historical data gaps are admitted, unimplemented plans r
     const resolution = await resolveChatExecutionRouting({ text, ruleDecision: classifyChatInput(text), requestId: "arch-test" });
     assert.equal(resolution.decision?.route, expected);
   }
+});
+
+test("ARCH execution: the model can resolve a ride, then use its authorized ID for dependent tools", async () => {
+  let round = 0;
+  const provider: ChatProvider = { async run(input) {
+    round++;
+    if (round === 1) return toolRequest("get_ride_context", { rideRef: { ordinal: -1 }, dims: ["summary"] });
+    if (round === 2) {
+      const context = input.toolResults![0].context;
+      assert.equal(context.tool, "get_ride_context");
+      if (context.tool !== "get_ride_context") throw new Error("expected resolved ride");
+      assert.equal(context.rideId, "arch-ride");
+      return toolRequest("get_capabilities", { rideId: context.rideId, caps: ["power"] });
+    }
+    const context = input.toolResults![1].context;
+    assert.ok("claims" in context);
+    return { rawText: JSON.stringify({ schemaVersion: "ride-chat-output-v0.2", route: input.route,
+      reply: "已核实该记录的数据可用性。", claimIds: [context.claims[0].claimId], capabilityKeys: [], knowledgeIds: [] }) };
+  } };
+  const result = await runChatAgent({ text: "最近一次有哪些数据？", decision: makeChatDecision("capabilities", "none", "CAPABILITIES", 12),
+    provider, loopRunner: createChatToolLoopRunner(repository(), "owner") });
+  assert.equal(result.execution, "validated", JSON.stringify(result));
+  assert.equal(result.loopTrace?.toolCalls, 2);
 });

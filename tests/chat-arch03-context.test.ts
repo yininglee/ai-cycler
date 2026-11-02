@@ -1,3 +1,4 @@
+import { withRequestedChatTool } from "./helpers/scripted-chat.ts";
 import "./helpers/route-test-env.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
@@ -113,23 +114,25 @@ test("ARCH-03 API: pure knowledge does not read a stale personal object; persona
   assert.equal(body.choice, undefined);
   assert.equal(body.rideAnchor, undefined);
   const missing = await POST(request({ text: "那心率呢？", summaries: [stale] }));
-  assert.equal(missing.status, 404);
+  assert.equal(missing.status, 200);
   assert.equal((await missing.json()).rideScope, "cleared");
 });
 
-test("ARCH-03: an unspecified analysis asks for a record before model execution", async () => {
+test("ARCH-03: an unspecified analysis asks for a record after a model-selected ride tool", async () => {
   const { repo, owner } = await seeded();
   const result = await runChatAgent({ text: "分析一下我的骑行数据", decision: makeChatDecision("autonomous_tools", "none", "AUTONOMOUS_TOOLS", 12), loopRunner: createChatToolLoopRunner(repo, owner),
-    provider: { async run() { throw new Error("must select first"); } } });
-  assert.equal(result.fallbackCode, "TOOLS_ANCHOR_CLARIFY");
-  assert.equal(result.modelInvoked, false);
+    provider: { async run() { return { rawText: JSON.stringify({ schemaVersion: "ride-chat-tool-call-v0.1", calls: [{ tool: "get_ride_context", input: { dims: ["summary"] } }] }) }; } } });
+  assert.equal(result.fallbackCode, "TOOLS_REFERENCE_NEEDED");
+  assert.equal(result.modelInvoked, true);
 });
 
 test("ARCH-03 API: pending reset still permits confirmation of the original question", async () => {
   const { request } = await seeded();
+  await withRequestedChatTool("get_ride_context", { dims: ["summary"] }, async () => {
   const first = await (await POST(request({ text: "本次骑行的距离是多少？" }))).json();
   assert.equal(first.rideScope, "pending");
-  const second = await (await POST(request({ text: "是的", summaries: [{ kind: "session_turn", question: "本次骑行的距离是多少？", route: "current_ride", rideScope: first.rideScope }] }))).json();
+  });
+  const second = await (await POST(request({ text: "是的", summaries: [{ kind: "session_turn", question: "本次骑行的距离是多少？", route: "current_ride", rideScope: "pending" }] }))).json();
   assert.equal(second.choice.id, "newest");
   assert.equal(second.decision.route, "current_ride");
   assert.equal(second.rideScope, undefined);

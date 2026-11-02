@@ -3,13 +3,13 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { PLATFORMS, platformInfo, type PlatformId } from "../../src/ux/platform-catalog";
+import { CHAT_IMPORT_QUEUE_KEY, parseImportReceipts } from "../../src/chat/chat-import";
 import { readStoredChatSession } from "../../src/chat/chat-session";
 import type { PlatformAction, PlatformState, SyncResult } from "../../src/ux/platform";
 import { BottomSheet } from "./profile-sheet";
 import { RideFileUpload } from "./ride-file-upload";
-import { RideRecordCards } from "./ride-record-cards";
 
-export function PlatformConnection({ provider, fromChat = false }: { provider: PlatformId; fromChat?: boolean }) {
+export function PlatformConnection({ provider, fromChat = false, conversationId }: { provider: PlatformId; fromChat?: boolean; conversationId?: string }) {
   const info = platformInfo(provider);
   const router = useRouter();
   const [platform, setPlatform] = useState<PlatformState | null>(null);
@@ -37,11 +37,11 @@ export function PlatformConnection({ provider, fromChat = false }: { provider: P
         const v = data.result as SyncResult;
         if (fromChat) {
           try {
-            const stored: unknown = JSON.parse(sessionStorage.getItem("cycler-import-results") ?? "[]");
-            const pending = Array.isArray(stored) ? stored : [];
-            const conversationId = sessionStorage.getItem("cycler-import-conversation");
-            pending.push({ ids: v.rideIds, text: `${info.name}模拟同步完成：新增 ${v.added} 条、重复 ${v.duplicate} 条、失败 ${v.failed} 条。`, conversationId });
-            sessionStorage.setItem("cycler-import-results", JSON.stringify(pending));
+            const origin = conversationId ?? sessionStorage.getItem("cycler-import-conversation") ?? readStoredChatSession()?.activeConversationId;
+            if (!origin) throw new Error("missing origin conversation");
+            const pending = parseImportReceipts(JSON.parse(sessionStorage.getItem(CHAT_IMPORT_QUEUE_KEY) ?? "[]"), origin);
+            pending.push({ receiptId: crypto.randomUUID(), ids: v.rideIds, text: `${info.name}模拟同步完成：新增 ${v.added} 条、重复 ${v.duplicate} 条、失败 ${v.failed} 条。`, conversationId: origin });
+            sessionStorage.setItem(CHAT_IMPORT_QUEUE_KEY, JSON.stringify(pending));
           } catch { /* The page still displays the completed sync if browser storage is unavailable. */ }
         }
       }
@@ -63,7 +63,7 @@ export function PlatformConnection({ provider, fromChat = false }: { provider: P
       {busy && <p role="status">正在处理模拟平台请求，请稍候…</p>}
       {error && <p role="alert">{error}{!ready ? "" : " 输入和连接信息已保留，可重试当前操作。"}</p>}
       {result && <div role="status"><p>模拟同步完成：新增 {result.added} 条 · 重复 {result.duplicate} 条 · 失败 {result.failed} 条</p>{!result.added && !result.failed && <p>没有新增记录。</p>}</div>}
-      {result && result.rideIds.length > 0 && <RideRecordCards ids={result.rideIds} fromChat={fromChat} />}
+      {result && result.rideIds.length > 0 && <div className="ux-actions"><Link href="/import">查看骑行记录</Link></div>}
       <details className="sync-demo-settings"><summary>模拟状态演示</summary><label>下次同步结果<select value={scenario} onChange={e => setScenario(e.target.value)}><option value="normal">正常／失败重试恢复</option><option value="partial">部分记录失败</option><option value="network">连接中断</option></select></label><div className="ux-actions"><button disabled={busy || !platform} onClick={() => void act("expire")}>模拟授权失效</button><button disabled={busy || platform?.status !== "connected"} onClick={() => void act("add-sample")}>模拟平台新增一条记录</button></div><p>新增样例后再次同步可检查增量；重复同步不会增加记录。</p></details>
     </section>
 
@@ -74,20 +74,20 @@ function PlatformMark({ provider }: { provider: PlatformId }) {
   return <span className={`platform-mark platform-mark-${provider}`} aria-hidden="true">{info.mark}</span>;
 }
 
-export function RideSync({ onComplete }: { onComplete?: (ids: string[], text: string) => void }) {
+export function RideSync({ onComplete, conversationId }: { onComplete?: (ids: string[], text: string, conversationId?: string) => void; conversationId?: string }) {
   const pathname = usePathname();
   const [view, setView] = useState<"sources" | "file">("sources");
   const from = pathname === "/chat" ? "chat" : pathname === "/profile" ? "profile" : "import";
   if (view === "file") return <div className="ride-sync">
     <button className="import-back" onClick={() => setView("sources")}>‹ 返回导入方式</button>
-    <RideFileUpload onImported={onComplete ? (id, duplicate) => onComplete([id], duplicate ? "这个文件已导入，已找到原记录，没有重复创建。" : "文件已真实导入，可查看骑行或打开深度解读。") : undefined} />
+    <RideFileUpload onImported={onComplete ? (id, duplicate) => onComplete([id], duplicate ? "这个文件已导入，已找到原记录，没有重复创建。" : "文件上传成功，已真实导入 1 条骑行记录。", conversationId) : undefined} />
   </div>;
   return <div className="import-sources">
     <section className="import-source-group" aria-label="关联应用">
       <header><h3>关联应用</h3><p>同步运动数据</p></header>
-      <div className="platform-list">{PLATFORMS.map(info => <Link className="import-source-row" key={info.id} href={`/connections/${info.id}?from=${from}`} onClick={() => {
+      <div className="platform-list">{PLATFORMS.map(info => <Link className="import-source-row" key={info.id} href={`/connections/${info.id}?${new URLSearchParams({ from, ...(conversationId ? { conversation: conversationId } : {}) })}`} onClick={() => {
         if (from === "chat") {
-          const id = readStoredChatSession()?.activeConversationId;
+          const id = conversationId ?? readStoredChatSession()?.activeConversationId;
           try { if (id) sessionStorage.setItem("cycler-import-conversation", id); } catch {}
         }
       }}><PlatformMark provider={info.id} /><span className="import-source-copy"><strong>{info.name}</strong></span><span className="import-source-arrow" aria-hidden="true">›</span></Link>)}</div>
@@ -102,7 +102,8 @@ export function RideSync({ onComplete }: { onComplete?: (ids: string[], text: st
   </div>;
 }
 
-export function RideSyncLauncher({ label = "同步／导入骑行", onComplete }: { label?: string; onComplete?: (ids: string[], text: string) => void }) {
+export function RideSyncLauncher({ label = "同步／导入骑行", onComplete, conversationId }: { label?: string; onComplete?: (ids: string[], text: string, conversationId?: string) => void; conversationId?: string }) {
   const [open, setOpen] = useState(false);
-  return <><button type="button" onClick={() => setOpen(true)}>{label}</button><BottomSheet open={open} title="同步／导入骑行记录" onClose={() => setOpen(false)}><RideSync onComplete={onComplete ? (ids, text) => { onComplete(ids, text); setOpen(false); } : undefined} /></BottomSheet></>;
+  const [origin, setOrigin] = useState<string>();
+  return <><button type="button" onClick={() => { setOrigin(conversationId ?? readStoredChatSession()?.activeConversationId); setOpen(true); }}>{label}</button><BottomSheet open={open} title="同步／导入骑行记录" onClose={() => setOpen(false)}><RideSync conversationId={origin} onComplete={onComplete ? (ids, text, sourceId) => { onComplete(ids, text, sourceId); setOpen(false); } : undefined} /></BottomSheet></>;
 }

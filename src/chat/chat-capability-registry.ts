@@ -14,6 +14,8 @@ export type ChatCapabilityRegistration = {
 // Only implemented capabilities belong here. Plan/assessment workflow placeholders
 // are deliberately absent; missing sensor data is reported by the tool result.
 const categories: Record<ChatToolName, ChatCapabilityCategory> = {
+  prepare_ride_import: "workflow",
+  get_user_context: "tools", show_onboarding: "workflow", prepare_goal_editor: "workflow", prepare_profile_proposal: "workflow",
   get_ride_context: "tools", get_capabilities: "tools", compare_rides: "query",
   find_ride: "query", get_health_profile: "tools", get_training_load: "tools",
   search_knowledge_base: "knowledge", get_ride_history: "query", get_route_overview: "tools",

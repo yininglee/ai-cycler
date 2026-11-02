@@ -30,7 +30,7 @@ import {
   type RideContextDimension,
 } from "./chat-tools.ts";
 import type { ChatRoutingDecision, ChatSessionSummary } from "./chat-routing.ts";
-import { resolveRideAnchor, rideAnchorDateLabel, type RideAnchorOverride } from "./chat-ride-anchor.ts";
+import { resolveRideAnchor, rideAnchorDate, rideAnchorDateLabel, type RideAnchorOverride } from "./chat-ride-anchor.ts";
 import type { ChatRideCandidate, ChatRideRefReason } from "./chat-ride-ref.ts";
 import { chatRideCandidates, parseChatRideRef } from "./chat-ride-ref.ts";
 import { atomicCapabilityKeys, type AtomicCapabilityKey } from "../domain/atomic-capabilities.ts";
@@ -137,6 +137,11 @@ export const CHAT_TOOL_CATALOG_SCOPE: Record<ChatToolCatalogRoute, readonly Chat
 // 每个工具的模型侧输入说明（catalog 下发内容）。与 parseChatToolInvocation 的严格键集对应：
 // 说明里写了"可选"的字段，由 normalizeLoopCall 补缺省值。
 const CHAT_TOOL_CATALOG_INPUTS: Record<ChatToolName, Record<string, unknown>> = {
+  prepare_ride_import: {},
+  get_user_context: {},
+  show_onboarding: {},
+  prepare_goal_editor: { draft: '必填；用户尚未说明要改成什么时用 null，打开时重读当前内容。用户已明确新的目标方向时，必须传新草稿 {title,detail}，不得仍填 null 或沿用旧目标。title 为 保持规律骑行/提升耐力／完成长距离/提升 FTP/提升爬坡表现/备赛/自定义 之一，detail≤400字（自定义及备赛非空）。只准备界面，不保存。' },
+  prepare_profile_proposal: { input: '必填对象；仅用户明确给出的 age/heightCm/weightKg/maxHeartRateBpm/ftpWatts 数值或明确不知道的 null；单位、多值或意图不明先追问。只准备提案，不保存。' },
   get_ride_context: {
     rideRef: "可选；缺省用本轮锚点记录。显式指定某一次时传对象，**三选一**：{\"date\":\"2026-08-20\"}（绝对日期）｜{\"ordinal\":-1}（-1=最近一次，-2=倒数第二次）｜{\"rideId\":\"…\"}（必须是本轮工具结果返回过的 rideId）",
     dims: `字符串数组（可多选）：${rideContextDimensions.join("/")}`,
@@ -154,7 +159,7 @@ const CHAT_TOOL_CATALOG_INPUTS: Record<ChatToolName, Record<string, unknown>> = 
     windowDays: "可选；缺省 30（可比性口径，不放大）",
   },
   find_ride: {
-    rideId: "可选；缺省用锚点记录，指定时必须来自本轮工具结果返回的 rideId",
+    rideId: "可选；null 或未选记录时为全局检索（窗口以本人最新记录为界），显式指定时必须来自本轮工具结果返回的 rideId",
     // AGT-B5（第四个类型陷阱）：metric 是**单选字符串**——枚举候选不要再以 JSON 数组展示，
     // 模型会照抄格式传 ["distanceM"]（实测 ORCH-03/11/13/17 的 INVALID_TOOL_CALL 全来源）。
     metric: `单选字符串（只填一个，**不是数组**）：${chatComparisonMetricKeys.join("/")}`,
@@ -197,6 +202,11 @@ export function chatToolCatalogRouteOf(route: string): ChatToolCatalogRoute {
 // 每个工具的用途与边界（catalog 下发给模型）。写"用来做什么 + 不要用它做什么"，
 // 因为实测的选错工具都发生在边界上：单次指标 vs 单次路线 vs 跨记录检索 vs 跨记录统计。
 export const CHAT_TOOL_CATALOG_PURPOSE: Record<ChatToolName, string> = {
+  prepare_ride_import: "提供同步／导入骑行入口，用户自行选择真实 FIT/GPX 上传或明确模拟的平台。只准备入口，不代表已连接账户、已导入或已生成解读；不需要骑行锚点。",
+  get_user_context: "读取本人已保存资料、来源与当前主要目标。理解目标指代和资料变更前用它核实状态；不能将历史对话当成已保存事实。无骑行记录也可用。",
+  show_onboarding: "用户希望了解如何开始或补充信息时，提供资料、骑行导入和目标三个现有入口。只准备引导，不写入。",
+  prepare_goal_editor: "用户希望设置或修改目标时，准备现有目标编辑抽屉。仅查看可先用 get_user_context 回答；概念问题走知识检索，歧义先结合上下文追问。draft=null 保留现有目标，不把管理命令写作目标草稿。",
+  prepare_profile_proposal: "用户主动补充或更正个人资料时，生成待核对卡片；已有值由服务端读取。不能用它回答资料概念问题，不能猜单位或猜未知指标。",
   get_ride_context: "查**某一次**骑行的指标明细（功率/心率/踏频/速度/距离…）。问“这次/那次多少”用它；问“这一次**算不算**/是否符合某个特征”（算不算负分割、有没有心率漂移）也用它——对单次骑行做判断要先拿到它的指标。",
   get_capabilities: "查**数据可用性与质量**（有没有功率、心率、路线），不返回具体数值。问“能看哪些数据”用它。",
   compare_rides: "把某一次骑行与**之前窗口的基线**比较（方向 + 差值 + 样本数）。问“比平时怎么样”用它。",
@@ -297,7 +307,7 @@ export type ChatToolLoopCallReceipt =
   };
 
 export type ChatToolLoopRunner = {
-  startLoop(input: { text: string; decision: ChatRoutingDecision; summaries?: ChatSessionSummary[]; anchor?: RideAnchorOverride }): Promise<ChatToolLoopStartResult>;
+  startLoop(input: { text: string; decision: ChatRoutingDecision; summaries?: ChatSessionSummary[]; anchor?: RideAnchorOverride; deferReference?: boolean }): Promise<ChatToolLoopStartResult>;
   executeLoopCalls(input: { calls: readonly ChatToolLoopCallRequest[]; anchorRideId: string; allowedRideIds: readonly string[] }): Promise<readonly ChatToolLoopCallReceipt[]>;
 };
 
@@ -329,7 +339,7 @@ function normalizeLoopCall(call: ChatToolLoopCallRequest, anchorRideId: string, 
     if (anchorRefTools) {
       if (anchorRideId) raw.rideRef = { rideId: anchorRideId };
     } else {
-      raw.rideId = anchorRideId;
+      raw.rideId = anchorRideId || (spec.anchorMode === "optional" ? null : "");
     }
   } else if (raw.rideId !== undefined && raw.rideId !== null && (typeof raw.rideId !== "string" || !allowedRideIds.includes(raw.rideId))) {
     // 迁移期糖：模型回传的 rideId 必须是本轮工具结果返回过的记录（防越权/防编造）。
@@ -464,8 +474,10 @@ function mapToolError(error: unknown): ChatToolOrchestrationError {
 // 即终止（后续调用不再执行），被拒绝调用不消耗工具预算。
 export function createChatToolLoopRunner(repository: ApplicationRepository, ownerId: string): ChatToolLoopRunner {
   let recentOverview = false;
+  let userSource = "";
   return {
-    async startLoop({ text, decision, summaries = [], anchor }): Promise<ChatToolLoopStartResult> {
+    async startLoop({ text, decision, summaries = [], anchor, deferReference = false }): Promise<ChatToolLoopStartResult> {
+      userSource = [...summaries.map(summary => summary.question), text].join("\n");
       recentOverview = decision.route === "level_assessment" || isRecentOverviewQuestion(text);
       // Legacy labels only guide reference interpretation and window defaults.
       // They do not select an executor or restrict the active capability catalog.
@@ -475,6 +487,21 @@ export function createChatToolLoopRunner(repository: ApplicationRepository, owne
       try {
         return await withinOrchestrationTimeout((async () => {
           const entries = await repository.listRides(ownerId);
+          // The modern Agent decides whether a question is about a ride at all.
+          // Only an authorized explicit selection may become a default tool anchor.
+          // Textual date/ordinal interpretation and ambiguity belong to tool calls.
+          if (deferReference) {
+            const choice = (anchor && "rideId" in anchor ? anchor.rideId : undefined) ?? (!hasExplicitChatRideReference(text) ? lastChatRideChoice(summaries)?.id : undefined);
+            const explicit = entries.length && (anchor || hasExplicitChatRideReference(text))
+              ? resolveRideAnchor({ text, route: decision.route, summaries: [], entries, override: anchor }) : undefined;
+            const record = choice ? entries.find(entry => entry.record.activity.rideId === choice)?.record
+              : explicit && explicit.status === "resolved" && explicit.source !== "default_latest" ? explicit.record : undefined;
+            if (choice && !record && anchor) throw new ChatToolOrchestrationError("TOOLS_NO_CURRENT_RIDE");
+            return { ok: true as const, anchorRideId: record?.activity.rideId ?? "", resolvedAnchor: {
+              ...(record && rideAnchorDate(record.activity.startTime) ? { date: rideAnchorDate(record.activity.startTime) } : {}),
+              source: record ? "override" as const : "default_latest" as const,
+            } };
+          }
           if (entries.length === 0) {
             // AGT-B5（边界集 no_records 3/9 抓到的真缺陷）：无骑行记录时不能一律降级——
             // 问知识库原理 / 健康档案是**全局工具**（anchorMode: "none"），本就不依赖骑行记录。
@@ -532,7 +559,7 @@ export function createChatToolLoopRunner(repository: ApplicationRepository, owne
         const settled = await Promise.all(slice.map(async (invocation): Promise<ChatToolLoopCallReceipt> => {
           const callStartedAt = Date.now();
           try {
-            const result = await executeChatTool(repository, ownerId, invocation);
+            const result = await executeChatTool(repository, ownerId, invocation, userSource);
             // AGT-H1：记录选择未定 → 单独一种回执（不是失败、不是空结果），
             // 循环据此以候选话术收口，避免落进通用 no_match 话术。
             if (isRideReferencePending(result)) {

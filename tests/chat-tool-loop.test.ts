@@ -107,7 +107,7 @@ test("L2b loop answers a find_ride question via tool call then validated final a
   assert.deepEqual(result.loopTrace?.steps.map((step) => [step.tool, step.status]), [["find_ride", "completed"]]);
   // 首轮随行工具目录（白名单 + 锚点，无用户数据）；次轮回传脱敏工具结果（claim:loop:<call>:<n>）。
   assert.equal(provider.calls.length, 2);
-  assert.equal(provider.calls[0]!.toolCatalog?.anchorRideId, "anchor-ride");
+  assert.equal(provider.calls[0]!.toolCatalog?.anchorRideId, "");
   assert.ok(provider.calls[0]!.toolCatalog!.tools.some((tool) => tool.tool === "find_ride"));
   assert.equal(provider.calls[0]!.toolResults, undefined);
   const second = provider.calls[1]!.toolResults?.[0];
@@ -152,7 +152,7 @@ test("L2b loop degrades deterministically when the tool budget is exhausted (CHA
   const repository = loopRepository(records, ["history-short", "history-far", "anchor-ride"]);
   // AGT-B3 预期变更：累计工具预算 3 → 5（D-B5）。模型每轮只请求 1 次且从不给最终回答：
   // 第 5 次调用用尽累计预算，第 6 轮请求被拒。
-  const endlessRequest = toolCallRequest("get_ride_context", {});
+  const endlessRequest = toolCallRequest("get_ride_context", { rideRef: { ordinal: -1 } });
   const provider = new SequenceProvider(Array.from({ length: 7 }, () => endlessRequest));
   const text = "哪次骑行距离最远？";
 
@@ -256,18 +256,18 @@ test("L2b startLoop starts with empty anchor when no rides but catalog has ancho
   assert.equal(noneRoute.ok, false);
 });
 
-test("L2b loop clarifies the anchor deterministically when a find_ride question carries deixis without context (CHAT-17)", async () => {
+test("L2b loop asks for ride selection only after the model requests an unbound ride tool", async () => {
   const records = loopRecords();
   const repository = loopRepository(records, ["history-short", "history-far", "anchor-ride"]);
-  const provider = new SequenceProvider([]);
+  const provider = new SequenceProvider([toolCallRequest("get_ride_context", {})]);
   // 「这次」指涉 + 筛选问法：无继承锚点 → 确定性澄清（零模型调用）。
   const text = "这次骑得最快的那次是哪次？";
 
   const result = await runLoop(provider, repository, text);
 
   assert.equal(result.decision.route, "autonomous_tools");
-  assert.equal(result.modelInvoked, false);
-  assert.equal(result.fallbackCode, "TOOLS_ANCHOR_CLARIFY");
-  assert.ok(result.reply.includes("最近一次"));
-  assert.equal(provider.calls.length, 0);
+  assert.equal(result.modelInvoked, true);
+  assert.equal(result.fallbackCode, "TOOLS_REFERENCE_NEEDED");
+  assert.ok(result.reply.length);
+  assert.equal(provider.calls.length, 1);
 });

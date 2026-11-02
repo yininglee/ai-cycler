@@ -174,7 +174,7 @@ test("AGT-B3 越权锚点：并行路径同样拦截（allowedRideIds 之外）"
 
 test("ARCH-02 catalog: old data labels share the full implemented registry", () => {
   const tools = buildChatToolCatalog("ride-1").tools;
-  assert.equal(tools.length, 9);
+  assert.equal(tools.length, 14);
   for (const route of ["autonomous_tools", "kb_qa", "level_assessment"] as const) {
     assert.deepEqual(buildChatToolCatalog("ride-1", route).tools, tools);
   }
@@ -187,7 +187,7 @@ test("ARCH-02 catalog: compound queries can access data, comparison and knowledg
     for (const tool of ["get_ride_history", "get_route_overview", "find_ride", "compare_rides", "search_knowledge_base"]) {
       assert.ok(catalog.tools.some(entry => entry.tool === tool));
     }
-    assert.ok(catalog.tools.every(entry => Object.keys(entry.input).length && entry.purpose.length));
+    assert.ok(catalog.tools.every(entry => typeof entry.input === "object" && entry.purpose.length));
   }
 });
 

@@ -21,7 +21,7 @@ import {
 // input packet: repair may only fix expression or structure, never invent
 // facts, claims, knowledge, or dimensions.
 
-export const RIDE_OUTPUT_REPAIR_RULES_VERSION = "ride-output-repair-v2.0.0" as const;
+export const RIDE_OUTPUT_REPAIR_RULES_VERSION = "ride-output-repair-v2.0.1" as const;
 // S2-06: v2.1 — the repair contract no longer carries the top-level
 // historyComparison section (removed from the output schema).
 // V21-15 (2026-10-08): v2.2.5 — the number-gate guidance no longer says
@@ -345,6 +345,7 @@ export function buildRideRepairPromptV2(options: {
 - 知识只能用于解释口径与方法（conclusionType=knowledgeReference 且必须带 knowledgeIds），不得当作个人骑行事实。
 - interpretation 用于"骑得怎么样、意味着什么"的定性解读，必须引用至少一条该维度 Claim（claimIds 非空）；其数字仍须来自所引 Claim、仍禁止因果表述（导致/造成/引发），定性措辞（如"整体配速偏高""中段输出最充分"）可直接表达。label 与 overallAssessment 仍必须用 fact。
 - 没有波动或过程类 Claim 时，禁止在事实断言中使用"稳定、平稳、保持良好"等稳定性表述；单次骑行解读不含历史对比，禁止"进步、退步、相比之前、相比以往、比之前、长期负荷"等历史表述，也不得输出 historyComparison，且不得提及"无历史对比/无长期负荷数据"等未提供信息的缺失——删除这类说明，直接解读已有数据。
+- STABILITY_WITHOUT_VARIANCE 按每条断言自己的 claimIds 校验，不按输入中是否存在波动 Claim 校验。为该断言引用属于当前维度、key 含 coefficientOfVariation／lastMinusFirst／drift／variance／power.curve 或 supports 以 _stability 结尾的对应证据；均值、最大值、区间占比不能替代。没有合适证据就删除稳定性结论，改述有依据的数值或分布，不能只保留原话或把它换一种稳定性说法。
 - 禁止因果表述（导致、造成、引发）；禁止"完成了训练计划、按计划执行、达成目标"类断言；禁止"恢复良好、已恢复、恢复完成"等恢复结论。
 - 被解读维度的全部 limitations 必须逐条原文回填到 limitations 字段；限制只能使用输入中出现过的原文。
 - 引用 soft 质量 Claim 时，或某维度 question 标注 qualityStatus=soft / eligibility=partial 时，都必须降低表达强度并在该维度文本说明"部分数据缺失/有限"（即使该维度内引用的都是 valid Claim，只要 question 标 soft/partial 就要披露）；没有依据的可选字段直接省略，不硬凑。

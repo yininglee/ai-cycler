@@ -37,10 +37,12 @@ import {
   type FindRideReasonCode,
   type FindRideToolResult,
   type RideContextToolResult,
+  type RideImportToolResult,
 } from "./chat-tools.ts";
 import { readSiliconFlowChatProviderConfig, SiliconFlowChatProvider } from "./siliconflow-chat-provider.ts";
 import { aggregateOverviewReply, aggregateReply, classifyAggregateQuestion } from "./chat-home.ts";
 import type { RideRecord } from "../domain/ride-schema.ts";
+import type { ChatUserToolResult } from "./chat-user-capabilities.ts";
 
 export const CHAT_AGENT_SCHEMA_VERSION = "ride-chat-agent-v0.1" as const;
 export const CHAT_PROVIDER_ADAPTER_VERSION = "chat-http-provider-v0.1" as const;
@@ -95,7 +97,9 @@ export type ChatProviderLoopToolResult = {
 export type ChatProviderLoopClaims = RideContextToolResult["claims"];
 
 export type ChatProviderToolContext =
-  | { tool: "get_ride_context"; dimensions: string[]; claims: RideContextToolResult["claims"]; limitations: string[] }
+  | RideImportToolResult
+  | ChatUserToolResult
+  | { tool: "get_ride_context"; rideId?: string; dimensions: string[]; claims: RideContextToolResult["claims"]; limitations: string[] }
   | { tool: "get_capabilities"; capabilities: CapabilityToolItem[]; claims: Array<{ claimId: string; kind: "metric"; key: string; value: number; unit: string; confidence: "high"; displayValue: string }> }
   // CHAT-13：历史比较上下文——30 天窗口基线比较投影（claims 含可比/不可比与原因码）。
   | { tool: "compare_rides"; windowDays: number; anchorStartTime?: string; sampleCount: number; claims: CompareRidesClaim[] }
@@ -152,6 +156,7 @@ export type ChatAgentResult = {
   choice?: { kind: "ride"; id: string };
   modelInvoked: boolean;
   reply: string;
+  responseKind?: "answer" | "clarification";
   // CHAT-17 P3：L2b 循环新增降级码——TOOLS_LOOP_BUDGET_EXHAUSTED（预算耗尽）、
   // TOOLS_LOOP_INVALID_TOOL_CALL（白名单外/参数非法/越权锚点调用被拒）、
   // TOOLS_LOOP_NO_MATCH（检索无命中/无可用 Claims 的零模型降级）、
@@ -161,7 +166,7 @@ export type ChatAgentResult = {
   // 锚点澄清轮/无记录轮缺省。公开结果保留（无敏感信息）。
   rideAnchor?: string;
   // AGT-H0（交互平面，合同 `ride-chat-interaction-v0.3`）：三个结构化载荷字段，全部可选。
-  // **由编排层从工具结果同源生成，模型不经手**（模型输出协议仍是 v0.2）；旧前端忽略即兼容。
+  // **由编排层从工具结果同源生成，模型不经手**；模型 v0.3 的澄清不展示编辑产物。
   // 未产出时这些键不出现——旧响应形状逐字节不变。
   choices?: ChatChoice[];
   artifact?: ChatArtifact;
@@ -538,11 +543,20 @@ function projectToolResultForProvider(
   comparePrefix: string,
   findPrefix: string,
 ): ChatProviderToolProjection {
+  if (toolResult.tool === "prepare_ride_import") {
+    return { context: { ...toolResult, claims: toolResult.claims.map((claim, index) => ({ ...claim, claimId: `${contextPrefix}:${index + 1}` })) },
+      claimReferences: Object.fromEntries(toolResult.claims.map((claim, index) => [`${contextPrefix}:${index + 1}`, claim.claimId])) };
+  }
+  if ("saved" in toolResult) {
+    const claimReferences = Object.fromEntries(toolResult.claims.map((claim, index) => [`${contextPrefix}:${index + 1}`, claim.claimId]));
+    return { context: { ...toolResult, claims: toolResult.claims.map((claim, index) => ({ ...claim, claimId: `${contextPrefix}:${index + 1}` })) }, claimReferences };
+  }
   if (toolResult.tool === "get_ride_context") {
     const claimReferences = Object.fromEntries(toolResult.claims.map((claim, index) => [`${contextPrefix}:${index + 1}`, claim.claimId]));
     return {
       context: {
         tool: toolResult.tool,
+        ...(contextPrefix.startsWith("claim:loop:") ? { rideId: toolResult.rideId } : {}),
         ...(toolResult.rideDateLabel ? { rideDateLabel: toolResult.rideDateLabel } : {}),
         dimensions: [...toolResult.dimensions],
         claims: toolResult.claims.map((claim, index) => ({ ...claim, claimId: `${contextPrefix}:${index + 1}` })),
@@ -947,6 +961,7 @@ async function runAutonomousToolLoop(input: {
   sessionSummaries: Array<{ question: string; route: string; rideAnchor?: string }>;
   anchorOverride?: RideAnchorOverride;
   referenceDecision?: ChatRoutingDecision;
+  deferReference?: boolean;
 }): Promise<ChatAgentResult> {
   const { decision } = input;
   const tag = `[chat-trace] [${input.requestId ?? "agent"}]`;
@@ -955,6 +970,7 @@ async function runAutonomousToolLoop(input: {
     decision: input.referenceDecision ?? decision,
     summaries: [...input.summaries],
     ...(input.anchorOverride ? { anchor: input.anchorOverride } : {}),
+    ...(input.deferReference ? { deferReference: true } : {}),
   });
   if (!start.ok) {
     if (start.code === "TOOLS_ANCHOR_CLARIFY") {
@@ -1052,6 +1068,7 @@ async function runAutonomousToolLoop(input: {
             execution: "validated",
             modelInvoked: true,
             reply: firstValidation.output.reply,
+            responseKind: firstValidation.output.responseKind,
             outputValidation: firstValidation.publicResult,
             repairAttempts: 0,
           }, "completed");
@@ -1080,6 +1097,7 @@ async function runAutonomousToolLoop(input: {
             execution: "repaired",
             modelInvoked: true,
             reply: repairedValidation.output.reply,
+            responseKind: repairedValidation.output.responseKind,
             outputValidation: repairedValidation.publicResult,
             repairAttempts: 1,
           }, "completed");
@@ -1455,6 +1473,7 @@ export async function runChatAgent(input: ChatAgentInput): Promise<ChatAgentResu
     // Reference interpretation and default history window are contextual hints,
     // independent of the single execution route and model output protocol.
     referenceDecision: ["current_ride", "capabilities", "history_compare", "kb_qa", "level_assessment"].includes(decision.route) ? decision : loopDecision,
+    deferReference: true,
   });
   return { ...result, decision, executionRoute };
 }

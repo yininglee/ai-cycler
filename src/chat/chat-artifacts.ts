@@ -5,6 +5,13 @@ import { calendarDuration } from "../ui/ride-calendar.ts";
 import { formatRideTitle } from "../ui/ride-view-model.ts";
 import { sanitizeChatInteractionPayload, type ChatRideListItem, type ChatArtifact, type ChatChoice, type ChatQuickAction } from "./chat-interaction.ts";
 
+/** UI proposals are derived only from completed, authorized preparation tools. */
+export function buildChatUserInteraction(results: readonly ChatToolResult[]) {
+  const prepared = [...results].reverse().find(result => "interaction" in result && result.interaction?.artifact);
+  const { droppedFields: _, ...interaction } = sanitizeChatInteractionPayload(prepared && "interaction" in prepared ? prepared.interaction ?? {} : {});
+  return interaction;
+}
+
 /** Presentation is projected from authorized tool results, never from model-authored IDs. */
 export function buildChatRecordInteraction(results: readonly ChatToolResult[], records: readonly RideRecord[], selectionNeeded = false, candidateIds?: readonly string[]): { artifact?: ChatArtifact; choices?: ChatChoice[]; quickActions?: ChatQuickAction[] } {
   const history = [...results].reverse().find(r => r.tool === "get_ride_history");

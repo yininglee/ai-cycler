@@ -16,6 +16,7 @@ import type {
 } from "../../src/ai/ride-output-presentation-v2";
 import type { RideSeriesChartDisplay } from "../../src/ui/ride-series-view-model";
 import { RideSeriesChart } from "./ride-visuals";
+import { interpretationLimitations } from "../../src/ui/ride-interpretation-response";
 
 function AssertionText({
   assertion,
@@ -160,7 +161,7 @@ export function RideOutputV2View({
         </div>
         {presentation.limitations.length > 0 ? (
           <ul className="v2-limitation-list">
-            {presentation.limitations.map((limitation, index) => (
+            {interpretationLimitations(presentation.limitations).map((limitation, index) => (
               <li key={`limitation-${index}`}>{limitation}</li>
             ))}
           </ul>

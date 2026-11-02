@@ -1,3 +1,5 @@
+import { createUserProfile, type ProfileInput } from "../domain/user-profile.ts";
+import { isUserGoalDraft, type UserGoalDraft } from "../domain/user-goal.ts";
 // AGT-H0（批次 1 · 交互骨架）：交互平面合同 v0.3 —— **类型与校验层的唯一事实源**。
 //
 // 这里定稿三件事，其余层只引用、不重定义：
@@ -7,8 +9,8 @@
 //
 // ## 与模型输出协议的关系（重要，别搞混）
 //
-// 模型输出协议仍是 `ride-chat-output-v0.2`（模型只产出 reply / claimIds /
-// capabilityKeys / knowledgeIds）。`choices` / `artifact` / `quickActions` **全部由编排层
+// 模型输出使用 `ride-chat-output-v0.3`（兼容旧 v0.1/v0.2），新增 responseKind
+// 区分回答与澄清；`choices` / `artifact` / `quickActions` **全部由编排层
 // 从工具结果同源生成，模型不经手**——所以这里不升模型合同版本，也不会给模型伪造
 // 记录列表的机会（伪造的 rideId 不是本人记录，在 H3 的归属校验与这里的结构校验
 // 两处都会被挡）。
@@ -95,11 +97,15 @@ export type ChatPlanArtifact = {
   payload: Record<string, unknown>;
 };
 
-export type ChatArtifact = ChatRideListArtifact | ChatGoalOptionsArtifact | ChatPlanArtifact;
+export type ChatProfileProposalArtifact = { kind: "profile_proposal"; payload: { input: ProfileInput; previous: ProfileInput } };
+export type ChatOnboardingArtifact = { kind: "onboarding"; payload: { goalDraft: string } };
+export type ChatGoalEditorArtifact = { kind: "goal_editor"; payload: { draft: UserGoalDraft | null } };
+export type ChatRideImportArtifact = { kind: "ride_import"; payload: Record<string, never> };
+export type ChatArtifact = ChatRideListArtifact | ChatGoalOptionsArtifact | ChatPlanArtifact | ChatProfileProposalArtifact | ChatOnboardingArtifact | ChatGoalEditorArtifact | ChatRideImportArtifact;
 
 export type ChatArtifactKind = ChatArtifact["kind"];
 
-export const CHAT_ARTIFACT_KINDS: readonly ChatArtifactKind[] = ["ride_list", "plan", "goal_options"];
+export const CHAT_ARTIFACT_KINDS: readonly ChatArtifactKind[] = ["ride_list", "plan", "goal_options", "profile_proposal", "onboarding", "goal_editor", "ride_import"];
 
 // ---------------------------------------------------------------------------
 // quickActions：可执行动作（按钮）
@@ -257,6 +263,25 @@ export function sanitizeChatArtifact(input: unknown): ChatSanitized<ChatArtifact
   if (!isRecord(input.payload)) return { dropped: true };
   if (new TextEncoder().encode(JSON.stringify(input.payload)).byteLength > CHAT_ARTIFACT_PAYLOAD_MAX_BYTES) return { dropped: true };
   switch (input.kind) {
+    case "ride_import":
+      return hasExactKeys(input.payload, []) ? { value: { kind: "ride_import", payload: {} }, dropped: false } : { dropped: true };
+    case "goal_editor":
+      return hasExactKeys(input.payload, ["draft"]) && (input.payload.draft === null || isUserGoalDraft(input.payload.draft))
+        ? { value: { kind: "goal_editor", payload: { draft: input.payload.draft } }, dropped: false } : { dropped: true };
+    case "profile_proposal": {
+      const payload = input.payload;
+      const validProfileInput = (value: unknown): value is ProfileInput => {
+        if (!isRecord(value) || !Object.keys(value).length || !Object.keys(value).every(key => ["age", "heightCm", "weightKg", "maxHeartRateBpm", "ftpWatts"].includes(key))) return false;
+        if (!Object.values(value).every(v => v === null || (typeof v === "number" && Number.isFinite(v)))) return false;
+        try { createUserProfile(value); return true; } catch { return false; }
+      };
+      if (!hasExactKeys(payload, ["input", "previous"]) || !validProfileInput(payload.input) || !isRecord(payload.previous) || (Object.keys(payload.previous).length && !validProfileInput(payload.previous))) return { dropped: true };
+      return { value: { kind: "profile_proposal", payload: { input: payload.input, previous: payload.previous } }, dropped: false };
+    }
+    case "onboarding":
+      return hasExactKeys(input.payload, ["goalDraft"]) && typeof input.payload.goalDraft === "string" && input.payload.goalDraft.length <= 400 && !CONTROL_CHARACTERS.test(input.payload.goalDraft)
+        ? { value: { kind: "onboarding", payload: { goalDraft: input.payload.goalDraft } }, dropped: false } : { dropped: true };
+
     case "ride_list": {
       const artifact = sanitizeRideListPayload(input.payload);
       return artifact ? { value: artifact, dropped: false } : { dropped: true };

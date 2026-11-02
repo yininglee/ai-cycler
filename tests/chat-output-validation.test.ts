@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { validateChatOutput } from "../src/chat/chat-output-validation.ts";
-import { classifyChatInput } from "../src/chat/chat-routing.ts";
+import { classifyChatInput, makeChatDecision } from "../src/chat/chat-routing.ts";
 import type { ChatToolResult } from "../src/chat/chat-tools.ts";
 
 const rideContext: ChatToolResult = {
@@ -369,4 +369,12 @@ test("autonomous_tools accepts find_ride threshold, window and match-count numbe
     userText: "最近的骑行中，哪次平均心率超过了120？",
   });
   assert.equal(result.ok, true);
+});
+
+test("contextual clarification requires its typed question contract, empty evidence and supported numbers", () => {
+  const decision = makeChatDecision("autonomous_tools", "none", "AUTONOMOUS_TOOLS", 4);
+  const output = { schemaVersion: "ride-chat-output-v0.3", route: "autonomous_tools", responseKind: "clarification", reply: "你想调整哪个目标？", claimIds: [], capabilityKeys: [], knowledgeIds: [] };
+  assert.equal(validateChatOutput(JSON.stringify(output), { decision }).ok, true);
+  for (const override of [{ reply: "已经完成目标修改。" }, { reply: "要改成99999吗？" }, { responseKind: "answer" }, { claimIds: ["claim:loop:1:1"] }, { responseKind: "confirm_write" }])
+    assert.equal(validateChatOutput(JSON.stringify({ ...output, ...override }), { decision }).ok, false);
 });

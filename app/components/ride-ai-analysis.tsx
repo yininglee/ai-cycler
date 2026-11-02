@@ -11,8 +11,8 @@ import { InterpretationSheet } from "./interpretation-sheet";
  * `InterpretationSheet` (bottom-sheet on mobile / centered modal on desktop)
  * in place over the detail page — no route navigation, per the Keep-style
  * pull-up drawer interaction. The sheet unmounts on close; the underlying
- * `InterpretationView` caches successful b2 responses per ride for the
- * session so reopening is instant.
+ * `InterpretationView` reads verified existing results through the server
+ * cache so each opening rechecks the record and current interpretation inputs.
  */
 export function RideAiAnalysis({
   rideId,

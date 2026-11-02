@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { RideRecordCards } from "./ride-record-cards";
+import Link from "next/link";
 import { useRef, useState } from "react";
 
 const MAX_FILE_SIZE_BYTES = 50 * 1024 * 1024;
@@ -78,7 +78,7 @@ export function RideFileUpload({ onImported }: { onImported?: (id: string, dupli
         {error && <p className="upload-error" role="alert">{error}</p>}
         <button className="primary-button" type="submit" disabled={state === "uploading"}>{state === "uploading" ? "正在解析骑行数据…" : state === "error" ? "重试导入" : "导入文件"}</button>
       </form>
-      {result && <><p role="status">{result.duplicate ? "该文件已导入，已找到原记录，没有重复创建。" : "已真实导入 1 条骑行记录。"}</p>{!onImported && <RideRecordCards ids={[result.id]} />}</>}
+      {result && <><p role="status">{result.duplicate ? "该文件已导入，已找到原记录，没有重复创建。" : "已真实导入 1 条骑行记录。"}</p>{!onImported && <div className="ux-actions"><Link href="/import">查看骑行记录</Link></div>}</>}
       <p className="upload-privacy-note">原始文件不发送给 AI；仅保存脱敏后的标准化数据，重启服务后仍可恢复。</p>
     </section>
   );

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState, type KeyboardEvent, type ReactNode } from "react";
 
 import { BackIcon } from "./icons";
+import { chatReturnPath } from "../../src/chat/chat-import";
 import { recordDemoEvent } from "./demo-event-client";
 
 type RideDetailTab = "summary" | "analysis" | "data";
@@ -39,8 +40,9 @@ export function RideDetailTabs({
   analysisPanel: ReactNode;
   dataPanel: ReactNode;
 }) {
-  const [fromChat, setFromChat] = useState(false);
-  useEffect(() => { setFromChat(new URLSearchParams(window.location.search).get("from") === "chat"); }, []);
+  const [returnPath, setReturnPath] = useState("/import");
+  const fromChat = returnPath.startsWith("/chat");
+  useEffect(() => { const query = new URLSearchParams(window.location.search); setReturnPath(query.get("from") === "chat" ? chatReturnPath(query.get("conversation") ?? undefined) : "/import"); }, []);
   const [activeTab, setActiveTab] = useState<RideDetailTab>(initialTab);
   const pageClassName = activeTab === "summary" && !rejected ? "ride-detail-page ride-detail-summary-page" : "ride-detail-page";
 
@@ -91,7 +93,7 @@ export function RideDetailTabs({
   return (
     <div className={pageClassName}>
       <header className="detail-nav">
-        <Link className="icon-button" href={fromChat ? "/chat" : "/import"} aria-label={fromChat ? "返回原对话" : "返回选择记录"}><BackIcon /></Link>
+        <Link className="icon-button" href={returnPath} aria-label={fromChat ? "返回原对话" : "返回选择记录"}><BackIcon /></Link>
         <nav className="detail-tabs" aria-label="骑行记录详情" role="tablist">
           {TABS.map((tab, index) => <button
             aria-controls={`ride-detail-panel-${tab.key}`}

@@ -236,6 +236,9 @@ const WRITE_VERB = /(删掉|删除|删了|清空|清除|抹掉|改掉|改成|改
 const WRITE_OBJECT = /(骑行记录|骑行数据|这次骑行|那条骑行|记录|里程|距离数据|轨迹|导入的?文件|导入的|fit|gpx)/i;
 // 「怎么删 / 如何修改 / 在哪改」是问操作路径，不是让我执行——不拦。
 const ASK_HOW = /(怎么|如何|在哪|哪里|什么地方)[^。！？\n]{0,6}?(删|改|清空|覆盖|重置|操作)/i;
+// Only a direct mutation of a record qualifies for zero-model refusal. A past
+// record mentioned elsewhere must not block a separate profile or goal request.
+const DIRECT_RECORD_WRITE = new RegExp(`(?:${WRITE_VERB.source})(?:一下)?(?:最近一次的?|这条|那条|这些|全部|所有|我的|这次的?)?(?:${WRITE_OBJECT.source})|(?:${WRITE_OBJECT.source})(?:的(?:里程|距离|时间|功率|心率))?(?:给我|帮我|全部|都)?(?:${WRITE_VERB.source})`, "i");
 // CHAT-12 P1（用户冻结的共现安全定义，2026-09-08）：
 // - “骑行中/骑车中”仅第一人称/当前时间词紧邻才视为骑行中使用（G-SAFETY-FP：历史查询“最近的骑行中…”放行）；
 // - “看手机/分心”不再作为独立触发词——“正在骑车”+“看手机”共现才拦截，而骑行状态本身已独立拦截，
@@ -362,7 +365,7 @@ export function classifyChatInputL0(text: string): ChatRoutingDecision | undefin
   // 旧行为是掉进 autonomous_tools 去做锚点解析，先回「是指哪一次」——答非所问。
   // **动词必须绑定受写对象**（记录/骑行/数据/轨迹/导入文件），否则"改天再去骑"会被误伤；
   // 「怎么删/如何改」是问方法不是让我做，用 ASK_HOW 负向排除。
-  if (WRITE_VERB.test(normalized) && WRITE_OBJECT.test(normalized) && !ASK_HOW.test(normalized)) {
+  if (DIRECT_RECORD_WRITE.test(normalized) && !ASK_HOW.test(normalized)) {
     return makeChatDecision("out_of_scope", "none", "WRITE_NOT_SUPPORTED", normalizedLength);
   }
   if (DANGEROUS_RIDING.test(normalized)) return makeChatDecision("safety_stop", "dangerous_riding", "DANGEROUS_RIDING", normalizedLength);
@@ -379,10 +382,13 @@ export function classifyChatInputL0(text: string): ChatRoutingDecision | undefin
   // CHAT-17 P2：含筛选/极值/阈值标记的问法（“骑得最快的一次是哪次？”）不是身份回指，
   // 不被句尾“是哪次”锚定吞掉——交给业务意图链路（find_ride）承接。
   if (RIDE_IDENTITY.test(noSpace) && !isFindRideQuestion(noSpace)) return makeChatDecision("aggregate", "none", "AGGREGATE", normalizedLength);
-  if (!SINGLE_RIDE_REFERENCE.test(noSpace) && !/为什么|为何|原因|分析|建议|合理|怎么样|如何|是否|相比|对比|比较|进步|退步|表现|状态/.test(noSpace)) {
-    if (AGGREGATE_TOTAL.test(noSpace) || AGGREGATE_WEEK.test(noSpace)) return makeChatDecision("aggregate", "none", "AGGREGATE", normalizedLength);
-    if (AGGREGATE_LATEST.test(noSpace) && AGGREGATE_TIME.test(noSpace)) return makeChatDecision("aggregate", "none", "AGGREGATE", normalizedLength);
-  }
+  // Only complete, unambiguous scalar queries qualify for the fast path.
+  // A time word alone (e.g. a weekly goal request) cannot select an executor.
+  const exactTotal = /^(?:请问)?我?(?:累计|一共|总共|总计)(?:骑行|骑)?(?:了)?(?:多少|几次|多远)(?:次|公里|千米|km)?[？?。！!]*$/i.test(noSpace)
+    || /^(?:请问)?(?:我的?)?总里程(?:是)?多少(?:公里|千米|km)?[？?。！!]*$/i.test(noSpace);
+  const exactWeek = /^(?:请问)?我?(?:本周|这周|这一周)(?:骑行|骑)(?:了)?(?:多少|几次|多远)(?:次|公里|千米|km)?[？?。！!]*$/i.test(noSpace);
+  const exactLatest = /^(?:请问)?我?(?:最近一次|上次|上一次|最近一条)(?:骑行|骑行记录)?(?:是)?(?:什么时候|何时|哪天|几号|日期|时间)[？?。！!]*$/.test(noSpace);
+  if (exactTotal || exactWeek || exactLatest) return makeChatDecision("aggregate", "none", "AGGREGATE", normalizedLength);
   return undefined;
 }
 

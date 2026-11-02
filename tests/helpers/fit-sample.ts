@@ -3,6 +3,8 @@ import { FitBaseType, FitEncoder } from "fit-file-parser";
 const START = new Date("2026-08-17T06:00:00.000Z");
 
 export interface FitSampleOptions {
+  /** Dense synthetic ride for end-to-end interpretation, preserving default parser fixtures. */
+  recordCount?: number;
   sportValue?: number;
   sessionCount?: number;
   allZeroPower?: boolean;
@@ -32,10 +34,12 @@ export function buildCyclingFitSample(options: FitSampleOptions = {}): Uint8Arra
     { number: 4, size: 4, baseType: FitBaseType.Uint32, value: startTimestamp },
   ], 0);
 
-  const distances = [0, 875, 1_750, 2_625, 3_500];
+  const count = options.recordCount ?? 5;
+  const distances = Array.from({ length: count }, (_, index) => Math.round(index * 3500 / (count - 1)));
   for (let index = 0; index < distances.length; index += 1) {
+    const phase = index * 4 / (count - 1);
     encoder.writeMessage(20, [
-      { number: 253, size: 4, baseType: FitBaseType.Uint32, value: startTimestamp + index * 300 },
+      { number: 253, size: 4, baseType: FitBaseType.Uint32, value: startTimestamp + Math.round(index * 1200 / (count - 1)) },
       ...(options.realGps ? [
         { number: 0, size: 4, baseType: FitBaseType.Sint32, value: Math.round((23.16 + index * 0.001) * 2 ** 31 / 180) },
         { number: 1, size: 4, baseType: FitBaseType.Sint32, value: Math.round((113.33 + index * 0.002) * 2 ** 31 / 180) },
@@ -43,11 +47,11 @@ export function buildCyclingFitSample(options: FitSampleOptions = {}): Uint8Arra
         { number: 0, size: 4, baseType: FitBaseType.Sint32, value: index === 0 ? 0 : Math.round(23.16 * 2 ** 31 / 180) },
         { number: 1, size: 4, baseType: FitBaseType.Sint32, value: index === 0 ? 0 : Math.round(113.33 * 2 ** 31 / 180) },
       ] : []),
-      { number: 3, size: 1, baseType: FitBaseType.Uint8, value: allZeroHeartRate ? 0 : 140 + index * 2 },
-      { number: 4, size: 1, baseType: FitBaseType.Uint8, value: allZeroCadence || (includeCadenceZero && index === 0) ? 0 : 80 + index },
+      { number: 3, size: 1, baseType: FitBaseType.Uint8, value: allZeroHeartRate ? 0 : Math.round(140 + phase * 2) },
+      { number: 4, size: 1, baseType: FitBaseType.Uint8, value: allZeroCadence || (includeCadenceZero && index === 0) ? 0 : Math.round(80 + phase) },
       { number: 5, size: 4, baseType: FitBaseType.Uint32, value: distances[index]! * 100 },
       { number: 6, size: 2, baseType: FitBaseType.Uint16, value: index === 0 ? 0 : 2_917 },
-      { number: 7, size: 2, baseType: FitBaseType.Uint16, value: allZeroPower ? 0 : 200 + index * 5 },
+      { number: 7, size: 2, baseType: FitBaseType.Uint16, value: allZeroPower ? 0 : Math.round(200 + phase * 5) },
     ], 1);
   }
 

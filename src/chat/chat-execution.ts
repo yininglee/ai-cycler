@@ -8,8 +8,8 @@ export function chatExecutionRoute(text: string, decision: ChatRoutingDecision):
   if (decision.risk !== "none" || decision.action === "safety_stop") return "stop";
   const l0 = classifyChatInputL0(text);
   if (l0?.risk !== undefined && l0.risk !== "none") return "stop";
-  if (l0 || decision.action === "reject" || [
-    "out_of_scope", "capability_gap", "clarification", "training_plan", "training_supervision",
-  ].includes(decision.route)) return "deterministic";
+  // Business labels are context hints. In particular, "unclear" must reach the
+  // contextual Agent rather than becoming an unrelated fixed ride question.
+  if (l0 || decision.action === "reject" || decision.route === "out_of_scope") return "deterministic";
   return "agent_loop";
 }

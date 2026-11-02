@@ -6,7 +6,7 @@ import { chatInitialMessage, type ChatHomeSnapshot, type ChatMessage } from "./c
 export const CHAT_SESSION_SUMMARY_LIMIT = 6;
 export const CHAT_SESSION_QUESTION_MAX_CHARS = 120;
 
-export type ChatSessionSummarySource = "quick_question" | "typed_input";
+export type ChatSessionSummarySource = "quick_question" | "typed_input" | "ride_selection";
 
 // CHAT-14 P1：摘要槽位升级——session_turn 携带白名单上下文（question ≤120 字截断、该轮 route、
 // 该轮解析到的骑乘锚点日期）；deterministic_turn 为旧结构（本地历史对话兼容读取，不参与摘要传递）。
@@ -87,8 +87,17 @@ export function startChatConversation(state: ChatSessionState, snapshot: ChatHom
 export function refreshChatSnapshot(state: ChatSessionState, snapshot: ChatHomeSnapshot): ChatSessionState {
   return { ...state, snapshotFingerprint: chatHomeSnapshotFingerprint(snapshot) };
 }
-export function appendImportedRides(state: ChatSessionState, ids: string[], text: string, conversationId = state.activeConversationId): ChatSessionState {
-  return { ...state, conversations: state.conversations.map(c => c.id === conversationId ? { ...c, messages: [...c.messages, { role: "assistant", kind: "rides", rideIds: ids, text }] } : c) };
+export function appendImportedRides(state: ChatSessionState, ids: string[], text: string, conversationId = state.activeConversationId, receiptId?: string): ChatSessionState {
+  if (receiptId && state.conversations.some(c => c.messages.some(m => m.importReceiptId === receiptId))) return state;
+  return { ...state, conversations: state.conversations.map(c => c.id === conversationId ? { ...c, messages: [...c.messages, { role: "assistant", kind: "rides", rideIds: [...new Set(ids)], text, ...(receiptId ? { importReceiptId: receiptId } : {}) }] } : c) };
+}
+
+/** An explicit view action selects a record without inventing a conversational answer. */
+export function rememberChatRideSelection(state: ChatSessionState, rideId: string, conversationId = state.activeConversationId): ChatSessionState {
+  return { ...state, conversations: state.conversations.map(c => c.id === conversationId ? { ...c,
+    summarySlots: [...c.summarySlots, { kind: "session_turn" as const, source: "ride_selection" as const,
+      question: "查看我选择的这次骑行。", route: "current_ride" as const, choice: { kind: "ride" as const, id: rideId } }].slice(-CHAT_SESSION_SUMMARY_LIMIT),
+  } : c) };
 }
 
 export function selectChatConversation(state: ChatSessionState, id: string): ChatSessionState {
@@ -105,6 +114,7 @@ export function appendChatTurn(
   source: ChatSessionSummarySource,
   turn?: { route: ChatRoute; rideAnchor?: string; choice?: ChatChoiceRef; rideScope?: ChatRideScope },
   interaction?: ChatAgentInteraction,
+  conversationId = state.activeConversationId,
 ): ChatSessionState {
   const summarySlot: ChatSessionSummarySlot = turn
     ? {
@@ -119,7 +129,7 @@ export function appendChatTurn(
     : { kind: "deterministic_turn", source };
   return {
     ...state,
-    conversations: state.conversations.map((conversation) => conversation.id === state.activeConversationId
+    conversations: state.conversations.map((conversation) => conversation.id === conversationId
       ? {
         ...conversation,
         messages: [...conversation.messages, { role: "user", text: userText }, { role: "assistant", text: assistantText, ...(interaction ? { interaction } : {}) }],
@@ -198,10 +208,13 @@ export function readStoredChatSession(): ChatSessionState | null {
   }
 }
 
-export function storeChatSession(state: ChatSessionState): void {
+export function storeChatSession(state: ChatSessionState): boolean {
   try {
-    globalThis.localStorage?.setItem(CHAT_SESSION_STORAGE_KEY, JSON.stringify(state));
+    if (!globalThis.localStorage) return false;
+    globalThis.localStorage.setItem(CHAT_SESSION_STORAGE_KEY, JSON.stringify(state));
+    return true;
   } catch {
     // 本地存储不可用时静默降级为仅当前标签页保留
+    return false;
   }
 }

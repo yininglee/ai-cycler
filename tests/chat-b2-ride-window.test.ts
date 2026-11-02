@@ -323,7 +323,7 @@ test("AGT-B2 验收：模型不带 windowDays 时按 30 天执行，窗口外记
   const provider = new SequenceProvider([
     JSON.stringify({
       schemaVersion: "ride-chat-tool-call-v0.1",
-      calls: [{ tool: "find_ride", input: { rideId: "anchor-ride", metric: "distanceM", mode: "max", metrics: ["distanceM"] } }],
+      calls: [{ tool: "find_ride", input: { rideId: null, metric: "distanceM", mode: "max", metrics: ["distanceM"] } }],
     }),
     JSON.stringify({ schemaVersion: "ride-chat-output-v0.1", route: "autonomous_tools", reply: "最近一个月最远是 42 公里。", claimIds: ["claim:loop:1:1"], capabilityKeys: [] }),
   ]);

@@ -43,6 +43,11 @@ test("AGT-B4：kb_qa / level_assessment 的 decision 已是真链路（allowMode
 // capabilities 文案与 9 工具的一致性：每个工具对应一句"用户可感知的能力表述"，
 // Prompt 的固定清单里必须出现——防止"工具加了但'我能做什么'还是旧话术"。
 const TOOL_CAPABILITY_PHRASES: Record<ChatToolName, string> = {
+  prepare_ride_import: "骑行同步与文件导入入口",
+  get_user_context: "当前目标查看",
+  show_onboarding: "首次使用引导",
+  prepare_goal_editor: "目标编辑提案",
+  prepare_profile_proposal: "资料核对提案",
   get_ride_context: "单次骑行数据解读",
   get_capabilities: "支持分析哪些数据",
   compare_rides: "与最近 30 天历史的比较",
@@ -54,9 +59,9 @@ const TOOL_CAPABILITY_PHRASES: Record<ChatToolName, string> = {
   get_route_overview: "单次路线爬坡概要",
 };
 
-test("AGT-B4：capabilities 清单覆盖全部 9 个工具（机械比对）", () => {
+test("AGT-B4：capabilities 清单覆盖全部 14 个工具（机械比对）", () => {
   const tools = CHAT_TOOL_CATALOG_SCOPE.autonomous_tools;
-  assert.equal(tools.length, 9);
+  assert.equal(tools.length, 14);
   for (const tool of tools) {
     const phrase = TOOL_CAPABILITY_PHRASES[tool];
     assert.ok(phrase, `${tool} 缺能力表述映射`);

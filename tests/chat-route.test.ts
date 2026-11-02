@@ -166,7 +166,7 @@ test("chat route lets the enabled classifier route companion chit-chat and recor
 // CHAT-12 P3：CHAT_CLASSIFIER_MODE=active 时分类器接管主路由——
 // L0 未命中的输入由 L1 语义分类器决定路由（unclear → 澄清话术），事件记录 routedBy=classifier。
 
-test("active mode lets the classifier reroute an unclear question to the clarification path (CHAT-12 P3)", async () => {
+test("unclear classifier hints reach the Agent and report missing provider without fixed ride clarification", async () => {
   const environment = {
     CHAT_CLASSIFIER_MODE: "active",
     CHAT_CLASSIFIER_ENABLED: "true",
@@ -196,7 +196,7 @@ test("active mode lets the classifier reroute an unclear question to the clarifi
       modelInvoked: false,
       execution: "template",
     });
-    assert.match(body.reply, /说得更具体一些/);
+    assert.match(body.reply, /对话模型尚未配置/);
     assert.equal(classifierCalls.length, 1);
     const events = await getApplicationRepository().listDemoEvents(session.userId);
     const requested = events.find((event) => event.type === "chat_requested");
@@ -301,7 +301,7 @@ async function seededSession() {
   return { session, repository };
 }
 
-test("chat route clarifies bare deixis, then completes the pending question on confirmation (CHAT-14)", async () => {
+test("chat route does not invent a ride clarification without a provider; legacy pending confirmations stay readable", async () => {
   const { session } = await seededSession();
   // 距离指标：样例记录必含该维度，确认轮后可走“工具完成 + 等待输出校验”链路。
   const pendingSummary = { kind: "session_turn", question: "本次骑行的距离是多少？", route: "current_ride" };
@@ -314,9 +314,9 @@ test("chat route clarifies bare deixis, then completes the pending question on c
   }));
   assert.equal(first.status, 200);
   const firstBody = await first.json() as { reply: string; fallbackCode: string; rideAnchor?: string; modelInvoked: boolean };
-  assert.equal(firstBody.fallbackCode, "TOOLS_ANCHOR_CLARIFY");
+  assert.equal(firstBody.fallbackCode, "MODEL_NOT_CONFIGURED");
   assert.equal(firstBody.modelInvoked, false);
-  assert.match(firstBody.reply, /最近一次（8月18日）/);
+  assert.match(firstBody.reply, /对话模型尚未配置/);
   assert.equal(firstBody.rideAnchor, undefined);
 
   // 第二问：纯确认语 + 挂起摘要 → 建立锚点并重答原问题（Demo 态等待输出校验）。
@@ -368,8 +368,8 @@ test("chat route drops malformed summaries silently and keeps the request baseli
   assert.equal(response.status, 200);
   const body = await response.json() as { fallbackCode: string; reply: string };
   // 丢弃后回退无上下文基线：与不带摘要的裸指涉行为一致（锚点澄清）。
-  assert.equal(body.fallbackCode, "TOOLS_ANCHOR_CLARIFY");
-  assert.match(body.reply, /最近一次（8月18日）/);
+  assert.equal(body.fallbackCode, "MODEL_NOT_CONFIGURED");
+  assert.match(body.reply, /对话模型尚未配置/);
   const events = await getApplicationRepository().listDemoEvents(session.userId);
   const requested = events.find((event) => event.type === "chat_requested");
   assert.equal(requested?.attributes?.summariesDropped, "true");
@@ -507,7 +507,7 @@ test("chat route completes the autonomous tool loop end-to-end with a scripted p
     // 首轮请求携带工具目录（白名单 + 锚点，无用户数据）；次轮回传脱敏投影。
     assert.equal(providerCalls.length, 2);
     const first = JSON.parse(providerCalls[0]!) as { toolCatalog?: { anchorRideId?: string } };
-    assert.equal(first.toolCatalog?.anchorRideId, "anchor-e2e-ride");
+    assert.equal(first.toolCatalog?.anchorRideId, "");
     const second = JSON.parse(providerCalls[1]!) as { toolResults?: Array<{ context: { tool: string; matches?: Array<{ claims: Array<{ claimId: string }> }> } }> };
     assert.equal(second.toolResults?.[0]?.context.tool, "find_ride");
     assert.equal(second.toolResults?.[0]?.context.matches?.[0]?.claims[0]?.claimId, "claim:loop:1:1");

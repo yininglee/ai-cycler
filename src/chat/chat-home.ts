@@ -16,7 +16,7 @@ export type ChatHomeSnapshot = {
   capabilities: ChatCapability[];
 };
 
-export type ChatMessage = { role: "assistant" | "user"; text: string; kind?: "welcome" | "rides"; rideIds?: string[]; interaction?: Pick<import("./chat-interaction.ts").ChatAgentInteraction, "artifact" | "choices" | "quickActions"> };
+export type ChatMessage = { role: "assistant" | "user"; text: string; kind?: "welcome" | "rides"; rideIds?: string[]; importReceiptId?: string; interaction?: Pick<import("./chat-interaction.ts").ChatAgentInteraction, "artifact" | "choices" | "quickActions"> };
 
 export type ChatQuickQuestion = { id: ChatQuickQuestionId; label: string };
 

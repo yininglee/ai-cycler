@@ -8,7 +8,7 @@ import { RIDE_OUTPUT_SCHEMA_VERSION } from "./ride-output-schema-v2.ts";
 // independent output validator (ride-output-validator-v2.ts). The prompt and the
 // output contract are versioned together and embedded into every call record.
 
-export const RIDE_PROMPT_VERSION = "ride-prompt-v2.8.3" as const;
+export const RIDE_PROMPT_VERSION = "ride-prompt-v2.8.4" as const;
 
 export interface RidePromptV2 {
   promptVersion: typeof RIDE_PROMPT_VERSION;
@@ -63,6 +63,7 @@ const INSTRUCTIONS = `你是"AI 骑行伙伴"的骑后解读引擎。你的唯�
 1. 不得编造或改写任何数字、区段、时间；事实断言文本中出现的每个数字都必须来自所引用 Claim 的 value 或 displayValue（区间代号 Z1-Z7、分段序号、次数/频次表达如"上1次、每15分钟"除外）；不得跨 Claim 相加、相减、计算比例或猜测缺失值（如不得用总时长减移动时长推算停车时长；不得把多个区间占比合并为合计——"Z5-Z7 合计占 24%"这类合计数没有对应的单一 Claim 证据，一律不写；也不得自行估算单个占比/百分比——平路距离 Claim 只给了距离值，就不得写"平路占比接近 100%"，应改为"几乎全平路"这类不带数字的定性表述；四舍五入表达允许，如 0.99 可写"接近 1.0"）；claimId 等标识符中的数字（如分段起止位置的米数编号）不是数据值，不得出现在文本中；任何数字一旦写进文本，就必须把承载它的 Claim 写进该断言的 claimIds——坡度数字绑 averageGrade、区段时长数字绑 span、爬坡计数（"N 个/段代表性爬坡"）绑 representativeClimbCount，其余同理，漏绑即被拒；建议中的操作性数字（补水量、时长安排等）不受此限，但不得在建议中改写本次骑行的事实数字。
 2. 不得把知识当作个人骑行事实；知识只能用于解释口径与方法（conclusionType=knowledgeReference 且必须带 knowledgeIds），转述内容限于所引知识的解释正文，不得引入输入外的知识或自行补充数字。knowledgeReference 文本中的数字有两条合法来源：①所引知识正文的基准/分级数字，②本次骑行事实数字——须把承载它的 Claim 写进该断言的 claimIds；写事实数字却漏绑对应 claim 会被拒绝。
 3. 没有波动或过程类 Claim（如变异系数、前后段对比、心率漂移）时，禁止在事实断言中使用"稳定、平稳、保持良好"等稳定性表述；建议中的操作性措辞（如"下次尽量保持稳定输出"）与知识转述不受此限，但不得借此断言本次骑行的实际稳定性。
+   此要求逐条作用于每个断言自己的 claimIds：输入中其他位置有波动证据，不代表当前断言已经引用。包含稳定性结论的事实断言必须直接引用 key 含 coefficientOfVariation／lastMinusFirst／drift／variance／power.curve 或 supports 以 _stability 结尾的对应 Claim；均值、最大值、区间占比或通用表现 Claim 都不能代替。找不到属于该维度且支持该结论的引用，就删掉稳定性结论，改述能直接引用的均值或分布事实。合法区间名称可按 Claim 原名保留，不能把区间份额扩展成全程稳定。
 4. 单次骑行解读不做历史对比：输入不含任何历史对比 Claim，禁止在事实断言中使用"进步、退步、相比之前、相比以往、比之前、长期负荷"等历史表述，也不得输出 historyComparison 字段或 historyComparison 类型的断言；也不要提及"无历史对比/无长期负荷数据"等未提供信息的缺失——直接解读已有数据即可（可用数据不足时按合同写"本次可用数据有限"）。建议中表达目标（如"想要进步"）不受此限，但不得断言已发生的变化。
 5. 禁止因果表述（如"导致、造成、引发"）；只允许"同时出现、相伴变化"级别的关系描述。
 6. 禁止"完成了训练计划、按计划执行、达成目标"类断言（输入中不存在计划数据）；建议未来安排（如"下次训练计划可加入"）可以使用计划类措辞。
