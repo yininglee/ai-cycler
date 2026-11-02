@@ -1,3 +1,8 @@
+import { buildChatRecordInteraction } from "../../../src/chat/chat-artifacts.ts";
+import { isChatChoiceRef, type ChatChoiceRef } from "../../../src/chat/chat-interaction.ts";
+import type { ChatToolResult } from "../../../src/chat/chat-tools.ts";
+import { extractExplicitRideDate } from "../../../src/chat/chat-ride-anchor.ts";
+import { isRecentOverviewQuestion } from "../../../src/chat/chat-routing.ts";
 import { getRequestSession } from "../../../src/auth/session.ts";
 import { CHAT_AGENT_SCHEMA_VERSION, chatRoutingUnavailableResult, createChatProvider, publicChatAgentResult, runChatAgent, type ChatProvider, type ChatProviderErrorCode, type ChatProviderInvocation } from "../../../src/chat/chat-agent.ts";
 import {
@@ -6,7 +11,7 @@ import {
   routingEventAttributes,
   type ChatClassifierOutcome,
 } from "../../../src/chat/chat-classifier.ts";
-import { createChatToolLoopRunner, createChatToolRunner, type ChatToolLoopRunner } from "../../../src/chat/chat-tool-orchestration.ts";
+import { ChatToolOrchestrationError, createChatToolLoopRunner, createChatToolRunner, type ChatToolLoopRunner } from "../../../src/chat/chat-tool-orchestration.ts";
 import { CHAT_INPUT_MAX_BYTES, CHAT_SUMMARIES_MAX_BYTES, routeChatInput, sanitizeChatSummaries, type ChatInputGatewayResult } from "../../../src/chat/chat-routing.ts";
 import { detectAnchorConfirmation, resolveAnchorConfirmation, type RideAnchorOverride } from "../../../src/chat/chat-ride-anchor.ts";
 import { createDemoEvent } from "../../../src/observability/demo-events.ts";
@@ -35,13 +40,18 @@ function observedProvider(provider: ChatProvider | undefined, metrics: { calls: 
   };
 }
 
-function observedToolRunner(runner: ReturnType<typeof createChatToolRunner>, metrics: { calls: number; durationMs: number }) {
+function observedToolRunner(runner: ReturnType<typeof createChatToolRunner>, metrics: { calls: number; durationMs: number }, evidence: ChatToolResult[], candidates: string[]) {
   return {
     async run(input: Parameters<typeof runner.run>[0]) {
       metrics.calls += 1;
       const startedAt = Date.now();
       try {
-        return await runner.run(input);
+        const result = await runner.run(input);
+        evidence.push(result.context.toolResult);
+        return result;
+      } catch (error) {
+        if (error instanceof ChatToolOrchestrationError) candidates.push(...(error.candidates ?? []).map(c => c.rideId));
+        throw error;
       } finally {
         metrics.durationMs += elapsed(startedAt);
       }
@@ -51,18 +61,24 @@ function observedToolRunner(runner: ReturnType<typeof createChatToolRunner>, met
 
 // CHAT-17 P3：L2b 循环 runner 观测包装——仅计 startLoop 次数与耗时（工具调用数由
 // loopTrace.steps 承载，不与单工具 toolCalls 计数混同）。
-function observedToolLoopRunner(runner: ChatToolLoopRunner, metrics: { calls: number; durationMs: number }): ChatToolLoopRunner {
+function observedToolLoopRunner(runner: ChatToolLoopRunner, metrics: { calls: number; durationMs: number }, evidence: ChatToolResult[], candidates: string[]): ChatToolLoopRunner {
   return {
     async startLoop(input: Parameters<ChatToolLoopRunner["startLoop"]>[0]) {
       metrics.calls += 1;
       const startedAt = Date.now();
       try {
-        return await runner.startLoop(input);
+        const result = await runner.startLoop(input);
+        if (!result.ok) candidates.push(...(result.candidates ?? []).map(c => c.rideId));
+        return result;
       } finally {
         metrics.durationMs += elapsed(startedAt);
       }
     },
-    executeLoopCalls: (input) => runner.executeLoopCalls(input),
+    executeLoopCalls: async (input) => {
+      const receipts = await runner.executeLoopCalls(input);
+      for (const receipt of receipts) if (receipt.status === "completed") evidence.push(receipt.result); else if (receipt.status === "reference_pending") candidates.push(...receipt.candidates.map(c => c.rideId));
+      return receipts;
+    },
   };
 }
 
@@ -87,9 +103,13 @@ export async function POST(request: Request): Promise<Response> {
   } catch {
     return Response.json({ error: "INVALID_INPUT" }, { status: 400, headers });
   }
-  if (!body || typeof body !== "object" || Array.isArray(body) || !Object.keys(body).every((key) => key === "text" || key === "summaries") || !("text" in body)) {
+  if (!body || typeof body !== "object" || Array.isArray(body) || !Object.keys(body).every((key) => key === "text" || key === "summaries" || key === "choice") || !("text" in body)) {
     return Response.json({ error: "INVALID_INPUT" }, { status: 400, headers });
   }
+  const choice = (body as { choice?: unknown }).choice;
+  if (choice !== undefined && (!isChatChoiceRef(choice) || choice.kind !== "ride" || /^\d{4}-\d{2}-\d{2}$/.test(choice.id))) return Response.json({ error: "INVALID_INPUT" }, { status: 400, headers });
+  const selectedChoice = choice as ChatChoiceRef | undefined;
+  if (selectedChoice && !(await (await getRideRepository()).listRides(session.userId)).some(entry => entry.record.activity.rideId === selectedChoice.id)) return Response.json({ error: "NOT_FOUND", reply: "所选骑行已不可用，请重新选择记录。" }, { status: 404, headers });
   // CHAT-14 P1：摘要网关校验——非法整体静默丢弃（请求照常，退回无上下文基线），事件记 summariesDropped。
   const { summaries, dropped: summariesDropped } = sanitizeChatSummaries((body as { summaries?: unknown }).summaries);
   const result = routeChatInput(session.userId, (body as { text: unknown }).text);
@@ -99,6 +119,8 @@ export async function POST(request: Request): Promise<Response> {
   }
   const requestId = crypto.randomUUID();
   const tag = `[chat-trace] [${requestId}]`;
+  const candidateIds: string[] = [];
+  const interactionEvidence: ChatToolResult[] = [];
   const toolMetrics = { calls: 0, durationMs: 0 };
   const modelMetrics = { calls: 0, durationMs: 0 };
   const loopMetrics = { calls: 0, durationMs: 0 };
@@ -173,10 +195,15 @@ export async function POST(request: Request): Promise<Response> {
   // CHAT-14 P2（G-RIDE-DEIXIS）：锚点确认轮——纯确认语（“最近一次”/“是的”/日期）且摘要挂起
   // 轮（工具路由、无锚点 = 上一轮触发了锚点澄清）存在时，以确认结果建立锚点并重答挂起原问题；
   // 日期无匹配时确定性回复（零模型调用）。摘要不参与新问题路由，仅用于挂起识别。
+  const overview = decision.route === "level_assessment" || isRecentOverviewQuestion(result.text);
+  const canInherit = ["current_ride", "history_compare", "capabilities", "autonomous_tools", "kb_qa"].includes(decision.route);
+  const inherited = canInherit && !overview && !extractExplicitRideDate(result.text) && !/最近一次|最新|上次|倒数/.test(result.text) ? summaries.at(-1)?.choice : undefined;
+  const effectiveChoice = selectedChoice ?? (inherited?.kind === "ride" ? inherited : undefined);
+  if (effectiveChoice && !(await repository.listRides(session.userId)).some(e => e.record.activity.rideId === effectiveChoice.id)) return Response.json({ error: "NOT_FOUND", reply: "所选骑行已不可用，请重新选择记录。" }, { status: 404, headers });
   let effectiveText = result.text;
   let anchorConfirmation = false;
-  let anchorOverride: RideAnchorOverride | undefined;
-  const confirmation = detectAnchorConfirmation({ text: result.text, decision, summaries });
+  let anchorOverride: RideAnchorOverride | undefined = effectiveChoice ? { rideId: effectiveChoice.id } : undefined;
+  const confirmation = effectiveChoice === undefined ? detectAnchorConfirmation({ text: result.text, decision, summaries }) : null;
   if (confirmation) {
     const confirmationEntries = await repository.listRides(session.userId);
     const resolved = resolveAnchorConfirmation({ confirmation, entries: confirmationEntries });
@@ -215,9 +242,9 @@ export async function POST(request: Request): Promise<Response> {
     text: effectiveText,
     decision,
     provider: observedProvider(createChatProvider(), modelMetrics),
-    toolRunner: observedToolRunner(createChatToolRunner(repository, session.userId), toolMetrics),
+    toolRunner: observedToolRunner(createChatToolRunner(repository, session.userId), toolMetrics, interactionEvidence, candidateIds),
     // CHAT-17 P3：L2b 循环 runner（autonomous_tools 路由）。
-    loopRunner: observedToolLoopRunner(createChatToolLoopRunner(repository, session.userId), loopMetrics),
+    loopRunner: observedToolLoopRunner(createChatToolLoopRunner(repository, session.userId), loopMetrics, interactionEvidence, candidateIds),
     requestId,
     // CHAT-14 P1/P2：摘要传递（表达层指代消解）与锚点覆写（确认轮）。
     summaries,
@@ -227,6 +254,10 @@ export async function POST(request: Request): Promise<Response> {
       ? { aggregateRecords: (await repository.listRides(session.userId)).map((entry) => entry.record) }
       : {}),
   });
+  const selectionNeeded = agentResult.fallbackCode === "TOOLS_ANCHOR_CLARIFY" || agentResult.fallbackCode === "TOOLS_REFERENCE_NEEDED";
+  const canPresent = selectionNeeded || agentResult.execution === "validated" || agentResult.execution === "repaired";
+  const interaction = canPresent ? buildChatRecordInteraction(interactionEvidence, (await repository.listRides(session.userId)).map(e => e.record), selectionNeeded, candidateIds.length ? candidateIds : undefined) : {};
+  const activeChoice = !selectionNeeded && interaction.artifact?.kind === "ride_list" && interaction.artifact.payload.items.length === 1 && !interactionEvidence.some(r => r.tool === "get_ride_history") ? { kind: "ride" as const, id: interaction.artifact.payload.items[0].rideId } : effectiveChoice;
   const eventType = agentResult.fallbackCode || agentResult.execution === "validation_rejected" ? "chat_degraded" : "chat_completed";
   console.log(`${tag} agent done | execution=${agentResult.execution} modelInvoked=${agentResult.modelInvoked} modelCalls=${modelMetrics.calls} toolCalls=${toolMetrics.calls} repairAttempts=${agentResult.repairAttempts ?? 0}${agentResult.fallbackCode ? ` fallbackCode=${agentResult.fallbackCode}` : ""}${agentResult.outputValidation ? ` validation.status=${agentResult.outputValidation.status} validation.code=${agentResult.outputValidation.code ?? "ok"}` : ""} | reply.len=${agentResult.reply.length}`);
   await recordChatEvent(session.userId, eventType, requestId, {
@@ -254,5 +285,5 @@ export async function POST(request: Request): Promise<Response> {
     ...(agentResult.outputValidation?.code ? { validationCode: agentResult.outputValidation.code } : {}),
     ...routingEventAttributes({ routedBy, route: agentResult.decision.route, outcome: routingOutcome, configStatus }),
   });
-  return Response.json({ ...publicChatAgentResult(agentResult), text: result.text }, { headers });
+  return Response.json({ ...publicChatAgentResult({ ...agentResult, ...(overview ? { rideAnchor: undefined } : {}), ...interaction, ...(selectionNeeded ? { decision: { ...agentResult.decision, action: "select" } } : {}) }), ...(activeChoice ? { choice: activeChoice } : {}), text: result.text }, { headers });
 }

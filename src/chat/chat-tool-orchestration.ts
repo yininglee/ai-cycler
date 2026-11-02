@@ -1,3 +1,4 @@
+import { isRecentOverviewQuestion } from "./chat-routing.ts";
 import {
   CHAT_COMPARISON_WINDOW_DAYS,
   CHAT_FIND_RIDE_MAX_WINDOW_DAYS,
@@ -64,11 +65,13 @@ export type ChatToolOrchestrationErrorCode =
 
 export class ChatToolOrchestrationError extends Error {
   readonly code: ChatToolOrchestrationErrorCode;
+  readonly candidates?: ChatRideCandidate[];
 
-  constructor(code: ChatToolOrchestrationErrorCode, message?: string) {
+  constructor(code: ChatToolOrchestrationErrorCode, message?: string, candidates?: ChatRideCandidate[]) {
     super(message ?? code);
     this.name = "ChatToolOrchestrationError";
     this.code = code;
+    this.candidates = candidates;
   }
 }
 
@@ -291,7 +294,7 @@ export type ChatToolRunner = {
 // （白名单/参数/锚点归属 + 单工具 2 秒/32 KB 既有预算），返回逐调用回执。
 export type ChatToolLoopStartResult =
   | { ok: true; anchorRideId: string; resolvedAnchor: ResolvedRideAnchor }
-  | { ok: false; code: "TOOLS_NO_CURRENT_RIDE" | "TOOLS_ANCHOR_CLARIFY" | "TOOLS_TIMEOUT" | "TOOLS_UNAVAILABLE"; reply?: string };
+  | { ok: false; code: "TOOLS_NO_CURRENT_RIDE" | "TOOLS_ANCHOR_CLARIFY" | "TOOLS_TIMEOUT" | "TOOLS_UNAVAILABLE"; reply?: string; candidates?: ChatRideCandidate[] };
 
 export type ChatToolLoopCallReceipt =
   | { tool: ChatToolName; status: "completed"; durationMs: number; result: ChatToolResult }
@@ -323,7 +326,7 @@ export type ChatToolLoopRunner = {
 //   required —— 缺省注入本轮锚点；显式指定时必须在本轮允许集合内
 //   optional —— 同上，但允许 null（表示跨记录/不锚定某一次）
 //   none     —— 全局工具，**不得携带 rideId**（携带即视为非法调用，避免歧义）
-function normalizeLoopCall(call: ChatToolLoopCallRequest, anchorRideId: string, allowedRideIds: readonly string[]): ChatToolInvocation | "INVALID_TOOL_CALL" | "RIDE_NOT_ALLOWED" {
+function normalizeLoopCall(call: ChatToolLoopCallRequest, anchorRideId: string, allowedRideIds: readonly string[], recentOverview = false): ChatToolInvocation | "INVALID_TOOL_CALL" | "RIDE_NOT_ALLOWED" {
   if (typeof call.tool !== "string" || !isPlainRecord(call.input)) return "INVALID_TOOL_CALL";
   const toolName = call.tool as ChatToolName;
   const spec = chatToolSpecs[toolName];
@@ -378,7 +381,8 @@ function normalizeLoopCall(call: ChatToolLoopCallRequest, anchorRideId: string, 
   }
   if (call.tool === "get_ride_history") {
     if (raw.rideId === undefined) raw.rideId = anchorRideId;
-    if (raw.windowDays === undefined) raw.windowDays = CHAT_RIDE_HISTORY_DEFAULT_WINDOW_DAYS;
+    if (recentOverview && call.input.rideId === undefined) raw.rideId = null;
+    if (raw.windowDays === undefined) raw.windowDays = recentOverview ? 30 : CHAT_RIDE_HISTORY_DEFAULT_WINDOW_DAYS;
     if (raw.metrics === undefined) raw.metrics = [...chatComparisonMetricKeys];
   }
   if (call.tool === "get_route_overview" && raw.segments === undefined) {
@@ -474,8 +478,10 @@ function mapToolError(error: unknown): ChatToolOrchestrationError {
 // executeLoopCalls 串行执行模型请求的调用，白名单外/参数非法/越权锚点的首个被拒绝调用
 // 即终止（后续调用不再执行），被拒绝调用不消耗工具预算。
 export function createChatToolLoopRunner(repository: ApplicationRepository, ownerId: string): ChatToolLoopRunner {
+  let recentOverview = false;
   return {
     async startLoop({ text, decision, summaries = [], anchor }): Promise<ChatToolLoopStartResult> {
+      recentOverview = decision.route === "level_assessment" || isRecentOverviewQuestion(text);
       // AGT-B4：三条 L2b 路由都可进循环（各自的 catalog 由路由裁剪决定）；
       // training_plan / training_supervision 仍不进（F/G 承接）。
       if (decision.route !== "autonomous_tools" && decision.route !== "kb_qa" && decision.route !== "level_assessment") {
@@ -497,7 +503,7 @@ export function createChatToolLoopRunner(repository: ApplicationRepository, owne
             return { ok: true as const, anchorRideId: "", resolvedAnchor: { source: "default_latest" as const } };
           }
           const resolution = resolveRideAnchor({ text, route: decision.route, summaries, entries, override: anchor });
-          if (resolution.status === "clarify") throw new ChatToolOrchestrationError("TOOLS_ANCHOR_CLARIFY", resolution.reply);
+          if (resolution.status === "clarify") throw new ChatToolOrchestrationError("TOOLS_ANCHOR_CLARIFY", resolution.reply, resolution.candidates);
           return {
             ok: true as const,
             anchorRideId: resolution.record.activity.rideId,
@@ -510,7 +516,7 @@ export function createChatToolLoopRunner(repository: ApplicationRepository, owne
       } catch (error) {
         if (error instanceof ChatToolOrchestrationError) {
           return error.code === "TOOLS_ANCHOR_CLARIFY"
-            ? { ok: false, code: error.code, reply: error.message }
+            ? { ok: false, code: error.code, reply: error.message, candidates: error.candidates }
             : { ok: false, code: error.code };
         }
         return { ok: false, code: mapToolError(error).code };
@@ -523,7 +529,7 @@ export function createChatToolLoopRunner(repository: ApplicationRepository, owne
       const startedAt = Date.now();
       const invocations: ChatToolInvocation[] = [];
       for (const call of calls) {
-        const invocation = normalizeLoopCall(call, anchorRideId, allowedRideIds);
+        const invocation = normalizeLoopCall(call, anchorRideId, allowedRideIds, recentOverview);
         if (typeof invocation === "string") {
           return [{ tool: typeof call.tool === "string" ? call.tool : "unknown", status: "rejected", errorCode: invocation, durationMs: Date.now() - startedAt }];
         }
@@ -586,7 +592,7 @@ export function createChatToolRunner(repository: ApplicationRepository, ownerId:
           // 显式序数 → 上下文继承 → 默认最新），替代此前对全部工具调用硬编码最新一条记录；
           // 指涉无锚点时抛 TOOLS_ANCHOR_CLARIFY（确定性确认话术，零模型调用）。
           const resolution = resolveRideAnchor({ text, route: decision.route, summaries, entries, override: anchor });
-          if (resolution.status === "clarify") throw new ChatToolOrchestrationError("TOOLS_ANCHOR_CLARIFY", resolution.reply);
+          if (resolution.status === "clarify") throw new ChatToolOrchestrationError("TOOLS_ANCHOR_CLARIFY", resolution.reply, resolution.candidates);
           const currentRide = resolution.record;
           const resolvedAnchor: ResolvedRideAnchor = {
             ...(resolution.date ? { date: resolution.date, dateLabel: rideAnchorDateLabel(resolution.date) } : {}),

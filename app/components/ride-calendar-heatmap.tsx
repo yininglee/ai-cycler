@@ -1,9 +1,9 @@
 "use client";
 
-import { CloseButton } from "./close-button";
+import { BottomSheet } from "./profile-sheet";
 
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { calendarDate, calendarDuration, calendarMonthDates, calendarNumber, calendarWeekStart, distanceHeatLevel, ridesByDate, shiftCalendarMonth, summarizeCalendarRides, type CalendarRide } from "../../src/ui/ride-calendar.ts";
+import { calendarDate, calendarDuration, calendarHeatmapLayout, calendarNumber, calendarWeekStart, distanceHeatLevel, ridesByDate, shiftCalendarMonth, summarizeCalendarRides, type CalendarRide } from "../../src/ui/ride-calendar.ts";
 import { isDemoImportedRideId } from "../../src/fixtures/demo-imported-ride-manifest.ts";
 import { ArrowIcon, BikeIcon, UploadIcon } from "./icons";
 import { PendingLink } from "./pending-link";
@@ -55,11 +55,11 @@ function RideTimeline({ rides, onUpload }: { rides: CalendarRide[]; onUpload: ()
 
   if (!sorted.length) return <div className={styles.emptyRecords}>
     <p>暂无记录，请上传</p>
-    <button className={styles.uploadPill} onClick={onUpload}><UploadIcon />上传记录</button>
+    <button className={styles.uploadPill} onClick={onUpload}><UploadIcon />同步／导入</button>
   </div>;
 
   return <div className={styles.timeline}>
-    <button className={styles.uploadPill} onClick={onUpload}><UploadIcon />上传记录</button>
+    <button className={styles.uploadPill} onClick={onUpload}><UploadIcon />同步／导入</button>
     {[...groups.entries()].map(([date, items]) => <section key={date} className={styles.timelineDay}>
       <h3>{date === "undated" ? "日期未记录" : dateLabel(date)}</h3>
       <div className={styles.timelineItems}>{items.map((ride) => {
@@ -80,20 +80,18 @@ export function RideCalendar({ rides, initialToday, upload }: { rides: CalendarR
   const [today, setToday] = useState(initialToday);
   const scroller = useRef<HTMLDivElement>(null);
   const monthRefs = useRef(new Map<string, HTMLElement>());
-  const dialog = useRef<HTMLDialogElement>(null);
+  const [importOpen, setImportOpen] = useState(false);
   const groups = useMemo(() => ridesByDate(rides), [rides]);
   const total = summarizeCalendarRides(rides);
   const weekStart = calendarWeekStart(today);
   const weekRides = rides.filter((ride) => ride.date !== null && ride.date >= weekStart && ride.date <= today);
   const week = summarizeCalendarRides(weekRides);
-  const currentMonth = initialToday.slice(0, 7);
+  const currentMonth = today.slice(0, 7);
   // 起始月份：最早记录所在月再往前 12 个月，保留翻看更早记录的空间；
-  // 结束月份：当前月 + 2，默认视图正好是「本月 / 下月 / 下下月」。
+  // 日期截止当天，跨月保持连续；未来日期不生成格子。
   const earliestRideMonth = rides.map((ride) => (ride.date ? ride.date.slice(0, 7) : null)).filter((value): value is string => Boolean(value)).sort()[0];
-  const firstMonth = earliestRideMonth ? shiftCalendarMonth(earliestRideMonth, -12) : shiftCalendarMonth(currentMonth, -12);
-  const lastMonth = shiftCalendarMonth(currentMonth, 2);
-  const months: string[] = [];
-  for (let item = firstMonth; item <= lastMonth; item = shiftCalendarMonth(item, 1)) months.push(item);
+  const firstMonth = shiftCalendarMonth(earliestRideMonth && earliestRideMonth < currentMonth ? earliestRideMonth : currentMonth, -12);
+  const heatmap = useMemo(() => calendarHeatmapLayout(firstMonth, currentMonth, today), [firstMonth, currentMonth, today]);
 
   // 初始定位：把「本月」对齐到热力图条带最左侧。直接改 scrollLeft（不用 smooth），
   // 并在首帧、双 rAF、字体就绪后各对齐一次，避免首屏偏移。
@@ -127,24 +125,22 @@ export function RideCalendar({ rides, initialToday, upload }: { rides: CalendarR
     <section className={styles.overviewCard} aria-label="骑行汇总与月度热力图">
       <SummaryCard total={total} week={week} />
       <div className={styles.heatmapCard} aria-label="月度骑行热力图">
-        <div ref={scroller} className={styles.heatmapScroller} tabIndex={0} role="group" aria-label="按月左右滑动的骑行热力图">
-          <div className={styles.heatmapTrack}>{months.map((value) => <section key={value} ref={(node) => { if (node) monthRefs.current.set(value, node); else monthRefs.current.delete(value); }} className={styles.heatmapMonth} aria-label={monthLabel(value) + "热力图"}>
-            <h3>{monthLabel(value)}</h3>
-            <div className={styles.monthSquares}>{calendarMonthDates(value).map((date) => {
+        <div ref={scroller} className={styles.heatmapScroller} tabIndex={0} role="group" aria-label="按日连续排列、可左右滑动的骑行热力图">
+          <div className={styles.heatmapTrack}>
+            {heatmap.days.map((date, index) => {
               const entries = groups.get(date) ?? [];
               const daySummary = summarizeCalendarRides(entries);
-              const isToday = date === today;
-              return <span key={date} className={styles.dayCell} role="img" data-heat={distanceHeatLevel(entries)} aria-label={dateLabel(date) + (isToday ? "，今天" : "") + "，" + entries.length + " 次骑行" + (daySummary.distanceM === null ? "，距离未记录" : "，" + calendarNumber(daySummary.distanceM / 1000) + " 公里")}>
-                {isToday && <i className={styles.todayDot} aria-hidden="true" />}
-              </span>;
-            })}</div>
-          </section>)}</div>
+              const label = dateLabel(date) + "，" + entries.length + " 次骑行" + (daySummary.distanceM === null ? "，距离未记录" : "，" + calendarNumber(daySummary.distanceM / 1000) + " 公里");
+              return <span key={date} className={styles.dayCell} role="img" data-date={date} data-heat={distanceHeatLevel(entries)} style={{ gridColumn: Math.floor(index / 7) + 1, gridRow: index % 7 + 1 }} aria-label={label} title={label} />;
+            })}
+            {heatmap.months.map(({ month, column }) => <span key={month} ref={node => { if (node) monthRefs.current.set(month, node); else monthRefs.current.delete(month); }} className={styles.heatmapMonth} style={{ gridColumn: column, gridRow: 8 }}>{monthLabel(month)}</span>)}
+          </div>
         </div>
       </div>
     </section>
     <section className={styles.recordsSection} aria-label="全部骑行记录">
-      <RideTimeline rides={rides} onUpload={() => dialog.current?.showModal()} />
+      <RideTimeline rides={rides} onUpload={() => setImportOpen(true)} />
     </section>
-    <dialog ref={dialog} aria-labelledby="ride-import-title" className={styles.importDialog} onClick={(event) => { if (event.target === event.currentTarget) dialog.current?.close(); }}><div className={styles.dialogHeader}><h2 id="ride-import-title">记录一次出发</h2><CloseButton label="关闭导入" onClick={() => dialog.current?.close()} /></div>{upload}</dialog>
+    <BottomSheet open={importOpen} title="同步／导入骑行" onClose={() => setImportOpen(false)}>{upload}</BottomSheet>
   </div>;
 }

@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
+import { CloseButton } from "./close-button";
 import { InterpretationView } from "./interpretation-view";
 
 /**
@@ -29,8 +30,26 @@ export function InterpretationSheet({
   engine?: "v2";
   onClose: () => void;
 }) {
+  const panelRef = useRef<HTMLDivElement>(null);
+  const [preview, setPreview] = useState(() => {
+    if (demoFallback) return demoFallback;
+    if (typeof window === "undefined") return "real";
+    const saved = sessionStorage.getItem("cycler-insight-preview");
+    return saved && ["loading", "error", "b0"].includes(saved) ? saved : "real";
+  });
+  useEffect(() => {
+    const previous = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    panelRef.current?.focus({ preventScroll: true });
+    return () => { previous?.focus({ preventScroll: true }); };
+  }, []);
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Tab") {
+        const controls = Array.from(panelRef.current?.querySelectorAll<HTMLElement>('button:not(:disabled), a[href], select, [tabindex="0"]') ?? []);
+        const first = controls[0]; const last = controls.at(-1);
+        if (event.shiftKey && (document.activeElement === first || document.activeElement === panelRef.current)) { event.preventDefault(); last?.focus(); }
+        else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+      }
       if (event.key === "Escape") {
         event.preventDefault();
         onClose();
@@ -64,6 +83,8 @@ export function InterpretationSheet({
       role="presentation"
     >
       <div
+        ref={panelRef}
+        tabIndex={-1}
         className="interpretation-sheet"
         role="dialog"
         aria-modal="true"
@@ -73,17 +94,15 @@ export function InterpretationSheet({
         <header className="interpretation-sheet-header">
           <span className="interpretation-sheet-handle" aria-hidden="true" />
           <p className="kicker interpretation-sheet-kicker">RIDE INSIGHT</p>
-          <button
-            type="button"
-            className="interpretation-sheet-close"
-            onClick={onClose}
-            aria-label="关闭 AI 解读"
-          >
-            ×
-          </button>
+          <CloseButton label="关闭深度解读" onClick={onClose} />
         </header>
         <div className="interpretation-sheet-body">
-          <InterpretationView rideId={rideId} title={title} dateLabel={dateLabel} demoFallback={demoFallback} engine={engine} />
+          {preview !== "real" && <p className="ux-meta" role="note">解读状态演示 · 未请求模型</p>}
+          {preview === "loading" || preview === "error" ? <section className="ux-card">
+            <p className="kicker">{dateLabel}</p><h2>{title}</h2>
+            {preview === "loading" ? <p role="status"><span className="spinner" />正在生成解读…（状态演示）</p> : <div role="alert"><h3>解读生成失败</h3><p>模拟服务暂时不可用，当前记录已保留。</p><button className="primary-button" onClick={() => setPreview("b0")}>重试解读（演示）</button></div>}
+          </section> : <InterpretationView rideId={rideId} title={title} dateLabel={dateLabel} demoFallback={preview === "b0" ? "b0" : undefined} engine={engine} previewOnly={preview === "b0"} />}
+
         </div>
       </div>
     </div>,

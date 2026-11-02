@@ -6,6 +6,10 @@ import {
   type ChatHomeSnapshot,
   type ChatMessage,
 } from "../../src/chat/chat-home.ts";
+import { ChatRideList } from "./chat-ride-list";
+import { sanitizeChatInteractionPayload, isChatChoiceRef, type ChatChoiceRef, type ChatAgentInteraction } from "../../src/chat/chat-interaction";
+import { RideSyncLauncher } from "./ride-sync";
+import { RideRecordCards } from "./ride-record-cards";
 import { SideDrawer } from "./side-drawer";
 import { ChatReplyText } from "./chat-reply-text";
 import { readProfile } from "./profile-client";
@@ -16,6 +20,8 @@ import Link from "next/link";
 import { BikeIcon, InfoIcon } from "./icons";
 import {
   appendChatTurn,
+  appendImportedRides,
+  refreshChatSnapshot,
   buildChatSessionSummaries,
   chatHomeSnapshotFingerprint,
   createChatSession,
@@ -37,20 +43,23 @@ import { isChatRoute, type ChatSessionSummary } from "../../src/chat/chat-routin
 // 现在任何业务答案必须来自服务端；拿不到就如实说拿不到。
 const CHAT_UNAVAILABLE_REPLY = "对话服务暂时不可用；我不会使用未经验证的结果回答。";
 
-async function requestChatReply(text: string, summaries: ChatSessionSummary[]): Promise<{ reply: string | null; route?: string; rideAnchor?: string }> {
+async function requestChatReply(text: string, summaries: ChatSessionSummary[], choice?: ChatChoiceRef): Promise<{ reply: string | null; route?: string; rideAnchor?: string; choice?: ChatChoiceRef; interaction?: ChatAgentInteraction }> {
   try {
     const response = await fetch("/api/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(summaries.length ? { text, summaries } : { text }),
+      body: JSON.stringify({ text, ...(summaries.length ? { summaries } : {}), ...(choice ? { choice } : {}) }),
     });
-    if (!response.ok) return { reply: CHAT_UNAVAILABLE_REPLY };
+    if (!response.ok) { const body = await response.json().catch(() => null); return { reply: body?.error === "NOT_FOUND" ? "所选骑行已不可用，请重新选择记录。" : CHAT_UNAVAILABLE_REPLY }; }
     const payload: unknown = await response.json();
-    const record = payload as { reply?: unknown; rideAnchor?: unknown; decision?: { route?: unknown } } | null;
+    const record = payload as { reply?: unknown; rideAnchor?: unknown; decision?: { route?: unknown }; choice?: unknown; artifact?: unknown; choices?: unknown; quickActions?: unknown } | null;
     const reply = record?.reply;
     const rideAnchor = record?.rideAnchor;
     const route = record?.decision?.route;
+    const { droppedFields: _dropped, ...interaction } = sanitizeChatInteractionPayload(record ?? {});
     return {
+      interaction,
+      ...(isChatChoiceRef(record?.choice) ? { choice: record.choice } : {}),
       reply: typeof reply === "string" && reply.trim() ? reply : CHAT_UNAVAILABLE_REPLY,
       ...(isChatRoute(route) ? { route } : {}),
       ...(typeof rideAnchor === "string" && /^\d{4}-\d{2}-\d{2}$/.test(rideAnchor) ? { rideAnchor } : {}),
@@ -79,9 +88,11 @@ export function ChatHome({ snapshot }: { snapshot: ChatHomeSnapshot }) {
   const [historyOpen, setHistoryOpen] = useState(false);
   const [disclosureOpen, setDisclosureOpen] = useState(false);
   const [pendingTurn, setPendingTurn] = useState<{ userText: string } | null>(null);
+  const restoredSessionRef = useRef(false);
   const [hydrated, setHydrated] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesRef = useRef<HTMLDivElement>(null);
+  const pendingScrollRestore = useRef<number | null>(null);
   const followRepliesRef = useRef(true);
   const finishReveal = useCallback(() => setRevealingMessage(null), []);
   const followReply = useCallback(() => {
@@ -98,38 +109,81 @@ export function ChatHome({ snapshot }: { snapshot: ChatHomeSnapshot }) {
     if (messages.some(m => m.role === "user") && followRepliesRef.current) followReply();
   }, [messages, pendingTurn, proposal, followReply]);
 
-  // 刷新后从本地浏览器恢复对话；骑行数据已变化时保留历史、自动开启带最新摘要的新对话
+  // 刷新后从本地浏览器恢复对话；骑行数据变化时更新摘要，继续当前对话
   useEffect(() => {
+    if (restoredSessionRef.current) return;
+    restoredSessionRef.current = true;
     try { const draft = sessionStorage.getItem("cycler-profile-proposal"); if (draft) setProposal(JSON.parse(draft)); } catch {}
     const stored = readStoredChatSession();
     if (sessionStorage.getItem("cycler-reset-chat")) {
       sessionStorage.removeItem("cycler-reset-chat");
       setSession(stored ? startChatConversation(stored, snapshot) : createChatSession(snapshot));
-    } else if (stored) setSession(isChatSessionStale(stored, snapshot) ? startChatConversation(stored, snapshot) : stored);
+    } else if (stored) setSession(isChatSessionStale(stored, snapshot) ? refreshChatSnapshot(stored, snapshot) : stored);
+    try {
+      const pending: unknown = JSON.parse(sessionStorage.getItem("cycler-import-results") ?? "[]");
+      sessionStorage.removeItem("cycler-import-results");
+      if (Array.isArray(pending)) for (const item of pending) {
+        if (typeof item?.text === "string" && Array.isArray(item.ids) && item.ids.every((id: unknown) => typeof id === "string")) {
+          setSession(current => appendImportedRides(current, item.ids, item.text, typeof item.conversationId === "string" ? item.conversationId : current.activeConversationId));
+        }
+      }
+    } catch {}
     setHydrated(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
-    setSession((current) => isChatSessionStale(current, snapshot) ? startChatConversation(current, snapshot) : current);
+    setSession((current) => isChatSessionStale(current, snapshot) ? refreshChatSnapshot(current, snapshot) : current);
   }, [snapshot, snapshotFingerprint]);
 
   useEffect(() => {
     if (hydrated) storeChatSession(session);
   }, [session, hydrated]);
 
+  useEffect(() => {
+    if (!hydrated) return;
+    try {
+      setInput(sessionStorage.getItem(`cycler-input:${activeConversation.id}`) ?? "");
+      const position = sessionStorage.getItem(`cycler-scroll:${activeConversation.id}`);
+      if (position !== null && messagesRef.current) {
+        pendingScrollRestore.current = Number(position);
+        messagesRef.current.scrollTop = Number(position);
+        followRepliesRef.current = false;
+      }
+    } catch {}
+  }, [hydrated, activeConversation.id]);
+
+  useEffect(() => {
+    const restore = () => {
+      const position = pendingScrollRestore.current;
+      const container = messagesRef.current;
+      if (position === null || !container) return;
+      container.scrollTop = position;
+      if (Math.abs(container.scrollTop - position) < 2) pendingScrollRestore.current = null;
+    };
+    window.addEventListener("cycler-rides-ready", restore);
+    return () => window.removeEventListener("cycler-rides-ready", restore);
+  }, []);
+
   // CHAT-14 P1：turn 携带服务端返回的 route/rideAnchor 时记 session_turn 槽位（供后续继承与挂起确认识别）。
-  function addReply(userText: string, reply: string | null, source: ChatSessionSummarySource, turn?: { route?: string; rideAnchor?: string }) {
+  function addReply(userText: string, reply: string | null, source: ChatSessionSummarySource, turn?: { route?: string; rideAnchor?: string; choice?: ChatChoiceRef }, interaction?: ChatAgentInteraction) {
     if (!reply) return;
+    pendingScrollRestore.current = null;
     followRepliesRef.current = true;
     setRevealingMessage({ conversationId: activeConversation.id, index: messages.length + 1 });
     const slotTurn = turn && isChatRoute(turn.route)
-      ? { route: turn.route, ...(turn.rideAnchor ? { rideAnchor: turn.rideAnchor } : {}) }
+      ? { route: turn.route, ...(turn.rideAnchor ? { rideAnchor: turn.rideAnchor } : {}), ...(turn.choice ? { choice: turn.choice } : {}) }
       : undefined;
-    setSession((current) => appendChatTurn(current, userText, reply, source, slotTurn));
+    setSession((current) => appendChatTurn(current, userText, reply, source, slotTurn, interaction));
   }
 
-  async function ask(userText: string, source: ChatSessionSummarySource) {
+  function imported(ids: string[], text: string) {
+    pendingScrollRestore.current = null;
+    followRepliesRef.current = true;
+    setSession(current => appendImportedRides(current, ids, text));
+  }
+
+  async function ask(userText: string, source: ChatSessionSummarySource, choice?: ChatChoiceRef) {
     followRepliesRef.current = true;
     const resultProfile = proposeProfile(userText);
     if (resultProfile) {
@@ -153,10 +207,17 @@ export function ChatHome({ snapshot }: { snapshot: ChatHomeSnapshot }) {
     setPendingTurn({ userText });
     // CHAT-14 P1：携带当前对话白名单摘要请求服务端（指代消解/锚点继承依赖）。
     const summaries = buildChatSessionSummaries(activeConversation);
-    const result = await requestChatReply(userText, summaries);
+    const result = await requestChatReply(userText, summaries, choice);
     setPendingTurn(null);
-    addReply(userText, result.reply, source, { route: result.route, rideAnchor: result.rideAnchor });
+    addReply(userText, result.reply, source, { route: result.route, rideAnchor: result.rideAnchor, choice: result.choice }, result.interaction);
   }
+
+  useEffect(() => {
+    if (!hydrated || new URLSearchParams(window.location.search).get("recent") !== "1") return;
+    window.history.replaceState(window.history.state, "", "/chat");
+    void ask("最近骑行表现怎么样？", "typed_input");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hydrated]);
 
   function startConversation() {
     setSession((current) => startChatConversation(current, snapshot));
@@ -174,6 +235,7 @@ export function ChatHome({ snapshot }: { snapshot: ChatHomeSnapshot }) {
     const value = input.trim();
     if (!value || pending) return;
     setInput("");
+    try { sessionStorage.removeItem(`cycler-input:${activeConversation.id}`); } catch {}
     // CHAT-12 P1：聚合问题由服务端 "aggregate" 路由确定性作答，不再客户端拦截。
     // 2026-10-24 回归修复：不再传本地正则兜底，失败就如实降级（见 CHAT_UNAVAILABLE_REPLY）。
     void ask(value, "typed_input");
@@ -203,11 +265,12 @@ export function ChatHome({ snapshot }: { snapshot: ChatHomeSnapshot }) {
         </button>)}
       </div>
       <PrototypeSettings />
-      <p className="chat-history-note">对话记录保存在本浏览器本地；骑行数据变化后会自动开始新对话。</p>
+      <p className="chat-history-note">对话记录保存在本浏览器本地；同步或导入后继续当前对话。</p>
     </SideDrawer>
 
-    <div className="chat-messages" ref={messagesRef} role="log" aria-label="与 Cycler 的对话" aria-live="off" onScroll={event => {
+    <div className="chat-messages" ref={messagesRef} onWheel={() => { pendingScrollRestore.current = null; }} onTouchStart={() => { pendingScrollRestore.current = null; }} role="log" aria-label="与 Cycler 的对话" aria-live="off" onScroll={event => {
       const container = event.currentTarget;
+      if (pendingScrollRestore.current === null) try { sessionStorage.setItem(`cycler-scroll:${activeConversation.id}`, String(container.scrollTop)); } catch {}
       followRepliesRef.current = container.scrollHeight - container.clientHeight - container.scrollTop < 80;
     }}>
       {messages.map((message, index) => {
@@ -215,7 +278,9 @@ export function ChatHome({ snapshot }: { snapshot: ChatHomeSnapshot }) {
         const revealing = revealingMessage?.conversationId === activeConversation.id && revealingMessage.index === index;
         return <article key={`${activeConversation.id}-${index}`} className={`chat-message chat-message-${message.role}${welcome ? " chat-message-welcome" : ""}`} aria-label={message.role === "assistant" ? "Cycler 的消息" : "你的消息"} aria-busy={revealing || undefined}>
           {message.role === "assistant" && <span className="chat-message-label">Cycler</span>}
-          {welcome ? <Onboarding rideCount={snapshot.totalRideCount} /> : message.role === "assistant" ? <ChatReplyText text={message.text} reveal={revealing} onComplete={finishReveal} onProgress={followReply} /> : <p>{message.text}</p>}
+          {welcome ? <Onboarding rideCount={snapshot.totalRideCount} onImported={imported} /> : message.role === "assistant" ? <ChatReplyText text={message.text} reveal={revealing} onComplete={finishReveal} onProgress={followReply} /> : <p>{message.text}</p>}
+          {message.interaction && <ChatRideList {...message.interaction} pending={pending} onChoose={choice => { if (!pending) void ask("请分析我选择的这次骑行。", "typed_input", choice); }} />}
+          {message.kind === "rides" && message.rideIds?.length ? <RideRecordCards ids={message.rideIds} fromChat /> : null}
         </article>;
       })}
       {proposal && <section className="ux-card" aria-label="待确认个人资料">
@@ -241,10 +306,11 @@ export function ChatHome({ snapshot }: { snapshot: ChatHomeSnapshot }) {
     </div>
 
     <div className="chat-composer">
+      <div className="chat-sync-action"><RideSyncLauncher onComplete={imported} /></div>
       <form className="chat-input-form" onSubmit={submit}>
         {disclosureOpen && <p className="chat-disclosure-popover" role="note">单次骑行与能力问题调用对话模型（扣子 Workflow，服务端校验并降级）；累计/本周类问题由服务端确定性计算；跨次比较与水平评估属后续能力；对话记录保存在本浏览器。</p>}
         <label className="sr-only" htmlFor="chat-input">输入问题</label>
-        <input id="chat-input" value={input} onChange={(event) => setInput(event.target.value)} maxLength={120} placeholder="问问你的骑行伙伴" disabled={pending} />
+        <input id="chat-input" value={input} onChange={(event) => { setInput(event.target.value); try { sessionStorage.setItem(`cycler-input:${activeConversation.id}`, event.target.value); } catch {} }} maxLength={120} placeholder="问问你的骑行伙伴" disabled={pending} />
         <button type="button" className="chat-info-button" aria-label="能力说明" aria-expanded={disclosureOpen} onClick={() => setDisclosureOpen((open) => !open)}><InfoIcon /></button>
         <button type="submit" disabled={!input.trim() || pending}>发送</button>
       </form>

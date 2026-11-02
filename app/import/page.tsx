@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import { AppShell } from "../components/app-shell";
 import { BikeIcon } from "../components/icons";
-import { RideFileUpload } from "../components/ride-file-upload";
+import { RideSync } from "../components/ride-sync";
 import { getNextSessionUserId } from "../../src/auth/next-session.ts";
 import { getRideRepository } from "../../src/persistence/demo-ride-repository.ts";
 import { RideCalendar } from "../components/ride-calendar-heatmap";
@@ -24,6 +24,7 @@ export default async function ImportPage({ searchParams }: { searchParams: Promi
           <h1 className={styles.pageTitle}>骑行记录</h1>
         </Link>
         <nav className={styles.pageActions} aria-label="快捷入口">
+          <Link className="eyebrow" href="/chat?recent=1">近期表现</Link>
           <Link className="eyebrow" href="/pmc" aria-label="PMC 表现状态管理">PMC</Link>
         </nav>
       </header>
@@ -33,7 +34,7 @@ export default async function ImportPage({ searchParams }: { searchParams: Promi
         <RideCalendar
           rides={importedRides.map(({ record }) => toCalendarRide(record))}
           initialToday={calendarDate(new Date().toISOString())!}
-          upload={<RideFileUpload />}
+          upload={<RideSync />}
         />
       )}
     </AppShell>

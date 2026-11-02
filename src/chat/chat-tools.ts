@@ -355,6 +355,8 @@ export type RideHistoryToolResult = {
   schemaVersion: typeof CHAT_TOOL_SCHEMA_VERSION;
   tool: "get_ride_history";
   windowDays: number;
+  windowStartDate?: string;
+  windowEndDate?: string;
   anchorStartTime?: string;
   status: "matched" | "no_match";
   reasonCodes: ("NO_RIDES_IN_WINDOW" | "METRIC_MISSING")[];
@@ -1029,6 +1031,8 @@ export const chatToolSpecs: Record<ChatToolName, ChatToolSpec> = {
       ? [
         { value: result.windowDays },
         { value: result.rideCount },
+        ...(result.windowStartDate ? [{ displayValue: result.windowStartDate }] : []),
+        ...(result.windowEndDate ? [{ displayValue: result.windowEndDate }] : []),
         ...result.claims.map((claim) => ({ value: claim.value, unit: claim.unit, key: claim.key, displayValue: claim.displayValue })),
         // AGT-B5（第 14 个缺陷）：**逐条明细的数值也要可溯源**。原来只放了总计 claims，
         // 模型一罗列单次明细（"10月24日一次 50.0 公里"）就必然被判数字越权 →
@@ -1324,7 +1328,7 @@ async function buildRideHistoryResult(
       return day >= startDay && day <= anchorDay;
     })
     // 最近的在最前：模型叙述"最近 N 次"时按序取用，不必自己排序。
-    .sort((a, b) => b.date.localeCompare(a.date));
+    .sort((a, b) => Date.parse(b.record.activity.startTime!) - Date.parse(a.record.activity.startTime!));
 
   const reasonCodes: RideHistoryToolResult["reasonCodes"] = [];
   if (inWindow.length === 0) reasonCodes.push("NO_RIDES_IN_WINDOW");
@@ -1385,6 +1389,8 @@ async function buildRideHistoryResult(
     schemaVersion: CHAT_TOOL_SCHEMA_VERSION,
     tool: "get_ride_history",
     windowDays: input.windowDays,
+    windowStartDate: new Date(Date.parse(`${anchorDate}T00:00:00Z`) - (input.windowDays - 1) * DAY_MS).toISOString().slice(0, 10),
+    windowEndDate: anchorDate,
     ...(anchorRecord?.activity.startTime ? { anchorStartTime: anchorRecord.activity.startTime } : {}),
     status: inWindow.length > 0 ? "matched" : "no_match",
     reasonCodes,

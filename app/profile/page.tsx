@@ -1,5 +1,6 @@
 import { AppShell, Brand } from "../components/app-shell";
 import { GoalEditor } from "../components/ux-onboarding";
+import { RideSyncLauncher } from "../components/ride-sync";
 import ProfileEditor from "../components/profile-editor";
 
 export default function ProfilePage() {
@@ -15,6 +16,7 @@ export default function ProfilePage() {
       </section>
       <GoalEditor />
       <ProfileEditor />
+      <section className="ux-card"><h2>运动平台连接</h2><p>关联佳明、行者、顽鹿或 IGPSPORT，也可导入本地文件。</p><RideSyncLauncher label="管理运动平台与导入" /></section>
     </AppShell>
   );
 }

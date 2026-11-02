@@ -379,7 +379,7 @@ function formatRideDate(startTime: string | undefined): string | undefined {
   }).format(new Date(startTime));
 }
 
-function formatRideTitle(startTime: string | undefined): string {
+export function formatRideTitle(startTime: string | undefined): string {
   if (!startTime || Number.isNaN(Date.parse(startTime))) return "骑行记录";
   const parts = new Intl.DateTimeFormat("zh-CN", {
     timeZone: "Asia/Shanghai",

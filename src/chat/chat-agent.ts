@@ -104,7 +104,7 @@ export type ChatProviderToolContext =
   | { tool: "get_health_profile"; facts: Array<{ claimId: string; key: string; value: number; unit: string; provenance: string }>; limitations: string[] }
   | { tool: "get_training_load"; status: string; windowDays: number; loadDays: number; ctl?: number; atl?: number; tsb?: number; claims: ChatProviderLoopClaims; limitations: string[] }
   | { tool: "search_knowledge_base"; status: string; items: Array<{ knowledgeId: string; dimensionId: string; topic: string; title: string; excerpt: string; limitations: string[] }> }
-  | { tool: "get_ride_history"; windowDays: number; rideCount: number; claims: ChatProviderLoopClaims; rows: Array<{ rideDateLabel?: string; claims: FindRideClaim[] }> }
+  | { tool: "get_ride_history"; windowDays: number; windowStartDate?: string; windowEndDate?: string; rideCount: number; limitations: string[]; reasonCodes: string[]; claims: ChatProviderLoopClaims; rows: Array<{ rideId?: string; rideDateLabel?: string; claims: FindRideClaim[] }> }
   | { tool: "get_route_overview"; isAvailable: boolean; climbDistanceM?: number; flatDistanceM?: number; descentDistanceM?: number; climbs: Array<{ startDistanceM: number; endDistanceM: number; distanceM: number }>; claims: ChatProviderLoopClaims; limitations: string[] };
 
 type ChatProviderToolProjection = {
@@ -662,6 +662,7 @@ function projectToolResultForProvider(
       return claim.claimId ? { ...claim, claimId: reference } : claim;
     });
     const rows = toolResult.rows.map((row) => ({
+      rideId: row.rideId,
       ...(row.rideDateLabel ? { rideDateLabel: row.rideDateLabel } : {}),
       claims: row.claims.map((claim) => {
         claimIndex += 1;
@@ -670,7 +671,7 @@ function projectToolResultForProvider(
         return { ...claim, claimId: reference };
       }),
     }));
-    return { context: { tool: toolResult.tool, windowDays: toolResult.windowDays, rideCount: toolResult.rideCount, claims, rows }, claimReferences };
+    return { context: { tool: toolResult.tool, windowDays: toolResult.windowDays, ...(toolResult.windowStartDate ? { windowStartDate: toolResult.windowStartDate } : {}), ...(toolResult.windowEndDate ? { windowEndDate: toolResult.windowEndDate } : {}), rideCount: toolResult.rideCount, limitations: [...toolResult.limitations], reasonCodes: [...toolResult.reasonCodes], claims, rows }, claimReferences };
   }
   if (toolResult.tool === "get_route_overview") {
     const claimReferences: Record<string, string> = {};
@@ -1175,6 +1176,7 @@ async function runAutonomousToolLoop(input: {
           && comparisonResult.claims.every((claim) => claim.status === "not_comparable")
           ? comparisonNotComparableReply(comparisonResult)
           : undefined;
+        const emptyHistory = completed.some(({ result }) => result.tool === "get_ride_history" && result.rideCount === 0);
         console.log(`${tag} → L2b no_match deterministic | reason=${notComparableReply ? "not_comparable" : noMatchResult?.reasonCodes.join(",") ?? "empty_claims"}`);
         return withLoop({
           schemaVersion: CHAT_AGENT_SCHEMA_VERSION,
@@ -1182,7 +1184,7 @@ async function runAutonomousToolLoop(input: {
           execution: "template",
           modelInvoked: true,
           reply: notComparableReply
-            ?? (noMatchResult
+            ?? (emptyHistory ? "查询范围内还没有骑行记录，暂时无法判断近期表现。可以先同步或导入骑行数据，再来看看。" : noMatchResult
               ? findRideNoMatchReply(noMatchResult)
               : "本轮查询没有返回可引用的数据结果，暂时无法回答这个问题。可以问得更具体一些，例如「距离最远的那次骑行是哪次」。"),
           fallbackCode: "TOOLS_LOOP_NO_MATCH",

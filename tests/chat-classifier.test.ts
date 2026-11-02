@@ -92,7 +92,7 @@ test("classifier client sends the code-hosted prompt with a de-identified classi
   assert.equal(body.messages.length, 2);
   assert.equal(body.messages[0]?.role, "system");
   assert.equal(body.messages[0]?.content, CHAT_CLASSIFIER_SYSTEM_PROMPT);
-  assert.equal(CHAT_CLASSIFIER_PROMPT_VERSION, "ride-chat-classifier-prompt-v0.4.1");
+  assert.equal(CHAT_CLASSIFIER_PROMPT_VERSION, "ride-chat-classifier-prompt-v0.4.2");
 
   const userContent = body.messages[1]?.content ?? "";
   const requestTag = /<classify_request>\n([\s\S]*?)\n<\/classify_request>/.exec(userContent)?.[1] ?? "";

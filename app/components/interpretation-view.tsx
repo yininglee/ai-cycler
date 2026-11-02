@@ -122,11 +122,13 @@ export function InterpretationView({
   dateLabel,
   demoFallback,
   engine,
+  previewOnly,
 }: {
   rideId: string;
   title: string;
   dateLabel?: string;
   demoFallback?: string;
+  previewOnly?: boolean;
   /** S6-03: "v2" forces this request through the V2 chain (?ai=v2 page param). */
   engine?: "v2";
 }) {
@@ -216,13 +218,14 @@ export function InterpretationView({
 
   // 「重新解读」：跳过会话缓存重新请求；若处在降级演示中，则先退出演示再走真实链路。
   const reanalyze = useCallback(() => {
+    if (previewOnly) return;
     if (demoB0) {
       setDemoB0(false);
       return;
     }
     responseCache.delete(requestKey);
     void load(true);
-  }, [demoB0, load, requestKey]);
+  }, [demoB0, load, requestKey, previewOnly]);
 
   const blockVisuals = useMemo(() => {
     if (state.kind !== "ok") return new Map<string, Array<{ visualId: string; chart?: unknown }>>();
@@ -268,7 +271,7 @@ export function InterpretationView({
             <h2>本次骑行暂未生成 AI 解读</h2>
             <p>当前证据不足以保证解读质量，先展示本次骑行的事实卡片与图表。</p>
             <code>{state.data.fallbackCode ?? "DATA_NOT_ELIGIBLE"}</code>
-            {demoB0 && <p className="candidate-demo-hint">演示模式：本条为强制降级预览，点击「重新解读」可走真实链路。</p>}
+            {demoB0 && <p className="candidate-demo-hint">{previewOnly ? "状态演示：当前展示数据不足；未请求模型。" : "演示模式：本条为强制降级预览，点击「重新解读」可走真实链路。"}</p>}
             <FeedbackButtons feedback={feedback} onSubmit={submitFeedback} />
           </section>
         )}
@@ -289,7 +292,7 @@ export function InterpretationView({
           </section>
         )}
 
-        {state.kind !== "loading" && (
+        {state.kind !== "loading" && !previewOnly && (
           <div className="candidate-reanalyze">
             <button type="button" className="candidate-reanalyze-button" onClick={reanalyze}>
               <SparkIcon />

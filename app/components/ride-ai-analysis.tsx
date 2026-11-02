@@ -44,7 +44,7 @@ export function RideAiAnalysis({
           onClick={() => setOpen(true)}
           aria-haspopup="dialog"
         >
-          查看 AI 解读
+          查看深度解读
         </button>
       </section>
       {open && (

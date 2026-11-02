@@ -42,6 +42,7 @@ export function BottomSheet({ open, title, onClose, children }: {
     // animating button. The portal also keeps it outside the chat scroll area.
     panelRef.current?.focus({ preventScroll: true });
     function onKey(event: KeyboardEvent) {
+      if (document.querySelector(".interpretation-sheet")) return;
       if (event.key === "Escape" && !event.defaultPrevented) {
         event.preventDefault();
         closeRef.current();

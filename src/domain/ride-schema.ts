@@ -49,6 +49,7 @@ export interface Metric {
 export type RideMetrics = Partial<Record<MetricKey, Metric>>;
 
 export interface RideSource {
+  platformId?: import("../ux/platform-catalog.ts").PlatformId;
   kind: DataSourceKind;
   fileName?: string;
   parserVersion: string;

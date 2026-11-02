@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { hasAnyProfileFact, type UserProfile } from "../../src/domain/user-profile";
 import { readProfile } from "./profile-client";
+import { RideSyncLauncher } from "./ride-sync";
 import { BottomSheet, ProfileSheet } from "./profile-sheet";
 
 export async function saveUx(body: unknown): Promise<UserProfile> {
@@ -39,6 +40,8 @@ export function GoalEditor({ onSaved, draft }: { onSaved?: () => void; draft?: s
 }
 
 export function PrototypeSettings() {
+  const [insightPreview, setInsightPreview] = useState("real");
+  useEffect(() => { setInsightPreview(sessionStorage.getItem("cycler-insight-preview") ?? "real"); }, []);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -53,12 +56,12 @@ export function PrototypeSettings() {
     } catch (e) { setError((e as Error).message); setBusy(false); }
   }
   return <section className="chat-prototype-settings" aria-label="原型演示设置">
-    <details className="ux-demo-controls"><summary>原型演示设置 · {profile?.ux?.mode === "blank" ? "空白起点" : "合用演示数据"}</summary><p>空白起点会清空资料与目标，并隐藏此前记录；原文件仍保留，切回演示可查看。此后导入的记录正常参与分析。</p><div className="ux-actions"><button disabled={busy} onClick={() => void action({ action: "blank" })}>切换空白首次进入</button><button disabled={busy} onClick={() => void action({ action: "demo" })}>使用预置资料与记录</button></div></details>
+    <details className="ux-demo-controls"><summary>原型演示设置 · {profile?.ux?.mode === "blank" ? "空白起点" : "合用演示数据"}</summary><p>空白起点会清空资料与目标，并隐藏此前记录；原文件仍保留，切回演示可查看。此后导入的记录正常参与分析。</p><div className="ux-actions"><button disabled={busy} onClick={() => void action({ action: "blank" })}>切换空白首次进入</button><button disabled={busy} onClick={() => void action({ action: "demo" })}>使用预置资料与记录</button></div><label>解读状态预览<select value={insightPreview} onChange={e => { setInsightPreview(e.target.value); sessionStorage.setItem("cycler-insight-preview", e.target.value); }}><option value="real">已有真实解读链路</option><option value="loading">演示：生成中</option><option value="error">演示：生成失败与重试</option><option value="b0">演示：数据不足</option></select></label><p>演示状态不请求模型；真实链路保留现有生成、缓存与重新解读能力。</p></details>
     {error && <p role="alert">{error}</p>}
   </section>;
 }
 
-export function Onboarding({ rideCount }: { rideCount: number }) {
+export function Onboarding({ rideCount, onImported }: { rideCount: number; onImported?: (ids: string[], text: string) => void }) {
   const router = useRouter();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [goalDraft, setGoalDraft] = useState("");
@@ -82,7 +85,7 @@ export function Onboarding({ rideCount }: { rideCount: number }) {
     {error && <p role="alert">{error}<button onClick={() => void refresh().catch(e => setError(e.message))}>重试读取</button></p>}
     {profile && !profile.ux?.skipped && <section className="ux-card ux-welcome">
       <p className="kicker">CYCLER · 你的教练型伙伴</p><h1>{hasAnyProfileFact(profile) ? "从你的下一次骑行开始" : "你好，很高兴一起骑行"}</h1><p>我可以帮你看懂骑行、解释知识，一起明确训练方向。先认识你一点，也可以直接提问。</p>
-      <div className="ux-steps"><button onClick={() => setPanel("profile")}>{hasAnyProfileFact(profile) ? "✓ 查看／补充资料" : "01 完善个人资料"}</button><Link href="/import">{rideCount ? `✓ 查看 ${rideCount} 条骑行` : "02 导入骑行记录"}</Link><button onClick={() => setPanel("goal")}>{profile.ux?.goal ? "✓ 查看／修改目标" : "03 设置骑行目标"}</button></div>
+      <div className="ux-steps"><button onClick={() => setPanel("profile")}>{hasAnyProfileFact(profile) ? "✓ 查看／补充资料" : "01 完善个人资料"}</button><RideSyncLauncher label={rideCount ? `✓ 同步／查看骑行（${rideCount}）` : "02 同步／导入骑行"} onComplete={onImported} /><button onClick={() => setPanel("goal")}>{profile.ux?.goal ? "✓ 查看／修改目标" : "03 设置骑行目标"}</button></div>
     </section>}
     {profile?.ux?.skipped && <><p className="chat-welcome-skipped">没关系，我们可以先聊聊。你可以随时补充资料、导入骑行或设置目标。</p><button className="clear-profile" disabled={busy} onClick={() => void action({ action: "skip", skipped: false })}>继续完善资料与目标</button></>}
     <ProfileSheet open={panel === "profile"} onClose={() => setPanel(current => current === "profile" ? null : current)} onSaved={() => { void refresh(); window.dispatchEvent(new Event("cycler-profile-saved")); }} />

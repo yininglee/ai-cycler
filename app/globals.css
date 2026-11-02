@@ -938,3 +938,67 @@ fieldset.profile-fields { margin: 0; padding: 0; border: 0; min-width: 0; }
 .profile-sheet-content .profile-card > .primary-button { margin-top: 16px; }
 .profile-sheet-content .ux-card form > .clear-profile { margin-top: 0; }
 .profile-sheet-content .ux-card > [role="status"]:empty { display: none; }
+
+/* UX-P2: shared import/sync surfaces and explicit record identity. */
+.ride-sync { display: grid; gap: 16px; min-width: 0; }
+.ride-sync .ux-card { margin: 0; }
+.ride-sync h2 { font-size: 21px; }
+.ride-sync label { display: grid; gap: 8px; margin: 12px 0; }
+.ride-sync select { padding: 12px; border: 1px solid #ddd; border-radius: 12px; background: #fff; max-width: 100%; }
+.ride-sync p { line-height: 1.65; }
+.sync-demo-settings { margin-top: 18px; padding-top: 14px; border-top: 1px solid #eee; font-size: 13px; }
+.sync-records { display: grid; gap: 12px; margin-top: 14px; min-width: 0; }
+.sync-record { border: 1px solid #e4e5e7; background: #fff; border-radius: 18px; padding: 18px; min-width: 0; }
+.sync-record h3 { margin: 8px 0; font-size: 17px; }
+.sync-record small { color: #737780; }
+.sync-record p { margin: 8px 0; }
+.sync-record .primary-button { font-size: 14px; padding: 12px 16px; }
+.chat-sync-action { margin-bottom: 6px; }
+.chat-sync-action > button { background: transparent; border: 0; color: #646970; font-size: 12px; padding: 3px 8px; }
+.ride-sync .ux-actions { flex-wrap: wrap; }
+.interpretation-sheet-header .dialog-close-button { position: absolute; top: 16px; right: 20px; }
+.interpretation-sheet-backdrop { z-index: 120; }
+.chat-messages { overflow-anchor: none; }
+
+/* Source picker: flat application rows followed by a separate local-file group. */
+.import-sources { display: grid; gap: 18px; }
+.import-source-group { overflow: hidden; border: 1px solid #e5e7e2; border-radius: 20px; background: #fff; }
+.import-source-group > header { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: baseline; padding: 20px 20px 8px; }
+.import-source-group h3 { margin: 0; font-size: 15px; font-weight: 650; }
+.import-source-group header p { margin: 0; color: #858980; font-size: 13px; }
+.import-source-row { display: flex; align-items: center; gap: 14px; width: 100%; min-height: 80px; padding: 16px 20px; border: 0; background: transparent; text-decoration: none; color: inherit; text-align: left; cursor: pointer; }
+.platform-list .import-source-row + .import-source-row { position: relative; }
+.platform-list .import-source-row + .import-source-row::before { position: absolute; top: 0; left: 78px; right: 20px; height: 1px; background: #eff0ec; content: ""; }
+.import-source-row:hover { background: #f7f8f5; }
+.import-source-row:focus-visible { outline: 2px solid #588463; outline-offset: -3px; }
+.platform-mark { flex: 0 0 44px; height: 44px; display: grid; place-items: center; border-radius: 12px; font-size: 22px; font-weight: 750; line-height: 1; letter-spacing: -.04em; }
+.platform-mark-garmin { background: #ecf4fa; color: #287caa; }
+.platform-mark-xingzhe { background: #eff6e9; color: #609338; }
+.platform-mark-onelap { background: #fff0e5; color: #d8792b; }
+.platform-mark-igpsport { background: #eaf3fe; color: #3977c5; font-size: 19px; }
+.platform-mark-file { background: #ecf1f7; color: #5c7fa6; }
+.platform-mark-file svg { width: 26px; height: 26px; }
+.import-source-copy { display: grid; gap: 5px; min-width: 0; }
+.import-source-copy strong { font-size: 16px; font-weight: 550; }
+.import-source-copy small { color: #8a8e86; font-size: 12px; line-height: 1.5; }
+.import-source-arrow { margin-left: auto; color: #aeb2a9; font-size: 25px; font-weight: 300; }
+.import-source-note { margin: 0; padding: 6px 20px 16px; color: #91958c; font-size: 11px; }
+.import-file-row { min-height: 96px; }
+.import-back { width: fit-content; padding: 8px 0; border: 0; background: transparent; color: #62685d; text-decoration: none; font-size: 14px; cursor: pointer; }
+.connection-header { margin: 8px 0 24px; }
+.connection-header h1 { font-size: 24px; margin: 16px 0 0; }
+.connection-identity { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+.connection-identity h2 { margin: 0; }
+.connection-identity p { margin: 4px 0 0; }
+
+
+.chat-ride-results { display: grid; gap: 10px; margin-top: 16px; min-width: 0; }
+.chat-ride-result { padding: 15px 16px; border: 1px solid #e3e5df; border-radius: 16px; background: #fff; }
+.chat-ride-result small { color: #81877b; font-size: 11px; }
+.chat-ride-result h3 { font-size: 15px; margin: 7px 0; }
+.chat-ride-result p { font-size: 13px; line-height: 1.5; margin: 6px 0; }
+.chat-ride-results .chat-ride-sensors { color: #8a9083; font-size: 11px; }
+.chat-ride-result-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+.chat-ride-result-actions button, .chat-ride-expand { cursor: pointer; border: 1px solid #e1e4db; background: #f7f8f4; color: #404638; border-radius: 10px; padding: 9px 12px; font-size: 12px; }
+.chat-ride-result-actions button:first-child { background: #20251b; color: #fff; border-color: #20251b; }
+.chat-ride-result-actions a { color: #7a836f; font-size: 12px; }

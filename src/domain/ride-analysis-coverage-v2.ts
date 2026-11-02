@@ -85,7 +85,8 @@ export const fieldCoverage = {
     metrics: "metricMeta", sensorQuality: "quality", sourceIssues: "quality",
   } satisfies Record<keyof RideActivity, CoverageRouteKey>,
   source: {
-    kind: "source", fileName: "private", parserVersion: "source", formatVersion: "source",
+    kind: "source",
+    platformId: "source", fileName: "private", parserVersion: "source", formatVersion: "source",
     deviceManufacturer: "source", deviceProduct: "source",
   } satisfies Record<keyof RideSource, CoverageRouteKey>,
   metrics: {

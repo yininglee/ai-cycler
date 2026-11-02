@@ -38,7 +38,7 @@ export {
 // CHAT-17 P3：autonomous_tools（L2b 循环）同样走锚点解析——挂起轮确认与摘要锚点继承同规则。
 export const RIDE_ANCHOR_TOOL_ROUTES: readonly ChatRoute[] = ["current_ride", "capabilities", "history_compare", "autonomous_tools"];
 
-export type RideAnchorOverride = { latest: true } | { date: string };
+export type RideAnchorOverride = { latest: true } | { date: string } | { rideId: string };
 
 export type RideAnchorResolution =
   | {
@@ -119,6 +119,7 @@ function resolveByDate(
 
 // 上下文继承：从最近一轮摘要向前找已建立的锚点日期（锚点跨轮持续，直到被新锚点替换）。
 export function lastSummarizedAnchor(summaries: readonly ChatSessionSummary[]): string | undefined {
+  if (summaries.at(-1)?.route === "level_assessment") return undefined;
   for (let index = summaries.length - 1; index >= 0; index -= 1) {
     const anchor = summaries[index]?.rideAnchor;
     if (anchor) return anchor;
@@ -156,6 +157,11 @@ export function resolveRideAnchor(input: {
 
   // 确认轮覆写（route.ts 解析挂起问题后传入）：不再走文本解析。
   if (input.override) {
+    if ("rideId" in input.override) {
+      const id = input.override.rideId;
+      const record = entries.find(entry => entry.record.activity.rideId === id)?.record;
+      return record ? { status: "resolved", record, date: rideAnchorDate(record.activity.startTime), source: "override" } : { status: "clarify", reply: "所选骑行已不可用，请重新选择记录。" };
+    }
     if ("latest" in input.override) {
       return { status: "resolved", record: latest, ...(rideAnchorDate(latest.activity.startTime) ? { date: rideAnchorDate(latest.activity.startTime) } : {}), source: "override" };
     }
@@ -177,6 +183,11 @@ export function resolveRideAnchor(input: {
   }
 
   const inheritAnchor = (): RideAnchorResolution => {
+    const selected = summaries.at(-1)?.choice;
+    if (selected?.kind === "ride") {
+      const record = entries.find(entry => entry.record.activity.rideId === selected.id)?.record;
+      return record ? { status: "resolved", record, date: rideAnchorDate(record.activity.startTime), source: "inherited" } : { status: "clarify", reply: "所选骑行已不可用，请重新选择记录。" };
+    }
     const anchorDate = lastSummarizedAnchor(summaries);
     if (!anchorDate) {
       return { status: "clarify", reason: "reference_missing", candidates: chatRideCandidates(entries), reply: latestClarifyReply(DEIXIS_PATTERN.exec(text)?.[0], latest) };

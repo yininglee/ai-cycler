@@ -1,3 +1,4 @@
+import { platformInfo } from "../ux/platform-catalog.ts";
 import type { RideRecord } from "../domain/ride-schema.ts";
 
 // 列表展示投影：客户端日历不接收轨迹或仓储元数据。
@@ -33,7 +34,7 @@ export function toCalendarRide(record: RideRecord): CalendarRide {
     id: record.activity.rideId,
     startTime: record.activity.startTime ?? null,
     date: record.activity.startTime ? calendarDate(record.activity.startTime) : null,
-    source: record.activity.source.kind.toUpperCase(),
+    source: record.activity.source.parserVersion === "platform-demo-v1" ? `${platformInfo(record.activity.source.platformId ?? "garmin").name} · 模拟` : record.activity.source.kind.toUpperCase(),
     distanceM: metric("distanceM"),
     durationS: metric("movingTimeS") ?? metric("elapsedTimeS"),
     avgSpeedMps: metric("avgSpeedMps"),
@@ -82,6 +83,18 @@ export function calendarMonthDates(month: string): string[] {
   const [year, monthNumber] = month.split("-").map(Number);
   const days = new Date(Date.UTC(year, monthNumber, 0)).getUTCDate();
   return Array.from({ length: days }, (_, index) => `${month}-${String(index + 1).padStart(2, "0")}`);
+}
+
+/** One uninterrupted sequence of days, arranged top-to-bottom in seven-day columns. */
+export function calendarHeatmapLayout(firstMonth: string, lastMonth: string, throughDate?: string) {
+  const start = calendarWeekStart(`${firstMonth}-01`);
+  const monthEnd = calendarMonthDates(lastMonth).at(-1)!;
+  const end = throughDate && throughDate < monthEnd ? throughDate : monthEnd;
+  const startTime = Date.parse(`${start}T00:00:00Z`);
+  const count = Math.round((Date.parse(`${end}T00:00:00Z`) - startTime) / 86400000) + 1;
+  const days = Array.from({ length: Math.max(0, count) }, (_, index) => new Date(startTime + index * 86400000).toISOString().slice(0, 10));
+  const months = days.flatMap((date, index) => date.endsWith("-01") ? [{ month: date.slice(0, 7), column: Math.floor(index / 7) + 1 }] : []);
+  return { days, months };
 }
 
 export function calendarWeekStart(date: string): string {

@@ -1,5 +1,7 @@
 # AI-Spec · 对话 Agent 能力规约 v2（集中合同文档）
 
+> **2026-11-02 执行流程修订**：以[当前开发规划](开发规划/VIBE_CODING_Agent_开发规划_v2.md)为准，先完成共用架构，再按 UX 五场景执行“场景 → 输入输出合同 → Agent 能力与界面 → 端到端验收”。单节点、任务级测评及专项建集／冻结／Run 前置暂缓；必要时再决策建集。本文已有技术合同和历史证据保留，旧排期、样本数、专项测评门槛不自动成为当前阻塞。类型／构建等工程检查、规则硬门和用户验收继续。目标合同不等于全部已实装；本次未更改代码 schema 版本。
+
 - 建立日期：2026-10-27｜取代：[AI-Spec v1（已归档）](archive/AI-Spec_对话Agent能力规约.md)
 - 结构依据：[Agent 结构设计与改造定案 v1.0](开发规划/2026-10-27_Agent结构设计与改造定案.md)｜[需求分析 v2](2026-10-27_骑行伙伴Agent改造_需求分析_v2.md)
 - 命名修订（2026-10-27）：响应中的可点按钮由 `actions` 更名 **`quickActions`**，避免与系统能力枚举 `action` 撞名
@@ -97,7 +99,7 @@ session_turn 槽位 = { question ≤120 字, route, rideAnchor(展示用), choic
 | `choice.id` 形态 | `/^[A-Za-z0-9:_-]{1,128}$/` | 刻意不设前缀白名单（`upload-<uuid>` / `private-ride-0` / `r-0820` 都是实现偶然） |
 | `label` / `sublabel` | ≤40 / ≤60 字符、非空、无控制字符 | |
 | `artifact.kind` | `ride_list` \| `plan` \| `goal_options` | `plan` 的 payload 形状**留白归 AGT-F**，H0 只卡"对象 + ≤8KB" |
-| `ride_list.items` | 1~20 条，含 `rideId/dateLabel`，可选 `distanceKm/durationLabel/hasPower/hasHeartRate` | `totalCount/truncated` 可省略（缺省归一为"无截断"），显式给出时必须自洽 |
+| `ride_list.items` | 1~20 条，含 `rideId/dateLabel`，可选 `title/distanceKm/durationLabel/hasPower/hasHeartRate` | `totalCount/truncated` 可省略（缺省归一为"无截断"），显式给出时必须自洽 |
 | `goal_options.options` | 1~8 条 `{id,label}`，同 id 去重 | 枚举值定稿归 D-H2（H4 前拍） |
 | `quickActions` 上限 / 取值 | 4 条 / 仅 `deepAnalysis` | 同 `rideId` 去重；F 会新增计划类取值 |
 | payload 体积 | `artifact.payload` ≤8KB | 与工具结果 32KB 预算分开计 |
@@ -200,3 +202,15 @@ session_turn 槽位 = { question ≤120 字, route, rideAnchor(展示用), choic
 | 待补 | AGT-H | 交互合同实测修订（列表密度 D-H1、candidate 字段定稿）、`reanalyze_ride` 工作流合同 | 占位 |
 | 待补 | AGT-R | 三路由落地后的路由/动作分派表、catalog 全量分工表 | 占位 |
 | 待补 | AGT-F | 计划 schema、写路径合同、硬门规则、确认令牌 | 占位（v1 §3.3 占位继承） |
+
+
+## 2026-11-02 · UX-P3 / AGT-H 联调实装补记
+
+- /api/chat 的 choice 请求通道现已启用 ride kind；goal / plan_slot 仍为合同预留、请求暂拒。id 还需排除纯日期并校验当前会话可见性。显式点选与摘要 choice 都映射唯一 rideId，失效不替换。
+- 结构化卡片由完成工具结果中的 ID 与授权仓储记录同源投影；pending 只显示实际 candidates。新增可选 title（≤40字符）。正常有效回答可带 artifact/quickActions，澄清轮带 select/choices；纯知识查询未查记录时不凭快照附记录。
+- 最近整体使用现有 level_assessment 自主工具循环，默认今天为止近30天；get_ride_history 默认省略参数在此场景归一为 rideId=null/windowDays=30，显式范围参数保持。回答范围来自工具，不从前端表单另建规则分析；单次选择不污染下一轮近期整体。
+- 前端默认5条，可展开本轮至20条；更多记录用 totalCount/truncated 说明并导向骑行页。每项可用其已校验 artifact rideId 打开现有 v2 抽屉，不受 quickActions最多4条限制。
+- 主 Prompt 当前候选 ride-chat-prompt-v0.2.9，分类器候选 ride-chat-classifier-prompt-v0.4.2；归档同步。v0.2.8 为历史撤回版本不复用。真实模型效果尚未重新评测，模型输出合同仍 ride-chat-output-v0.2。
+- 上文“由 H2 后续实现”等为2026-10-27阶段记录，本补记及开发进度中的当前状态优先；H4目标选项与H6真实主回归仍未收口。
+
+- 历史工具对模型投影包含实际 windowStartDate/windowEndDate、limitations/reasonCodes，以及每行真实 rideId；窗口日期进入数字事实白名单。整体评估优先按语义分类结果清除单次选择，不依赖用户恰好输入“最近表现”字样。

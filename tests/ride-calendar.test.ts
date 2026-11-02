@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
-  calendarDate, calendarMonthDates, calendarWeekStart, distanceHeatLevel, ridesByDate,
+  calendarDate, calendarHeatmapLayout, calendarMonthDates, calendarWeekStart, distanceHeatLevel, ridesByDate,
   shiftCalendarMonth, summarizeCalendarRides, type CalendarRide,
 } from "../src/ui/ride-calendar.ts";
 
@@ -73,4 +73,36 @@ test("week summary starts on Monday across month and year boundaries", () => {
   assert.equal(calendarWeekStart("2026-10-26"), "2026-10-26");
   assert.equal(calendarWeekStart("2026-11-01"), "2026-10-26");
   assert.equal(calendarWeekStart("2027-01-01"), "2026-12-28");
+});
+
+
+test("daily heatmap stays continuous through month and year boundaries", () => {
+  const { days, months } = calendarHeatmapLayout("2026-12", "2027-01");
+  assert.equal(days[0], "2026-11-30"); // Monday, with December starting on Tuesday.
+  assert.equal(days.at(-1), "2027-01-31");
+  assert.equal(days.length, 63);
+  assert.equal(new Set(days).size, days.length);
+  for (let i = 1; i < days.length; i++) assert.equal(Date.parse(days[i]) - Date.parse(days[i - 1]), 86400000);
+  assert.deepEqual(months, [{ month: "2026-12", column: 1 }, { month: "2027-01", column: 5 }]);
+});
+
+test("daily heatmap includes leap day once and does not reset at March", () => {
+  const { days, months } = calendarHeatmapLayout("2024-02", "2024-03");
+  const leapDay = days.indexOf("2024-02-29");
+  assert.ok(leapDay > 0);
+  assert.deepEqual(days.slice(leapDay - 1, leapDay + 2), ["2024-02-28", "2024-02-29", "2024-03-01"]);
+  assert.equal(months[1].column, Math.floor((leapDay + 1) / 7) + 1);
+});
+
+
+test("daily heatmap stops at the requested day with no future cells or month labels", () => {
+  for (const today of ["2026-11-02", "2027-01-01", "2024-02-29"]) {
+    const { days, months } = calendarHeatmapLayout(today.slice(0, 4) + "-01", today.slice(0, 7), today);
+    assert.equal(days.at(-1), today);
+    assert.ok(days.every(date => date <= today));
+    assert.ok(months.every(({ month }) => month <= today.slice(0, 7)));
+  }
+  const { days } = calendarHeatmapLayout("2026-10", "2026-12", "2026-11-02");
+  assert.equal(days.at(-1), "2026-11-02");
+  assert.ok(!days.includes("2026-11-03"));
 });

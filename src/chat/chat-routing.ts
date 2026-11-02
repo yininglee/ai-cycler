@@ -382,6 +382,10 @@ export function classifyChatInputL0(text: string): ChatRoutingDecision | undefin
   return undefined;
 }
 
+export function isRecentOverviewQuestion(text: string): boolean {
+  return !/最近一次|最近一条|上次|这次|本次/.test(text) && /最近|近期|近\s*\d+\s*天|近一周/.test(text) && /表现|状态|情况|练得|整体/.test(text);
+}
+
 export function classifyChatInput(text: string): ChatRoutingDecision {
   const normalized = compact(text);
   const normalizedLength = normalized.length;
@@ -392,6 +396,7 @@ export function classifyChatInput(text: string): ChatRoutingDecision {
   // CHAT-17 顺序合同：水平评估（能力水平/体能变化）＞ 跨记录筛选/排名（find_ride）＞ 回指/历史清单
   // （capability_gap）＞ 历史比较（比上次/进步/趋势）。“我的能力水平…有进步吗？”属 M4 水平评估；
   // “哪次骑行最远”属 find_ride 检索；“最近 30 天比上次快了吗”属历史比较。
+  if (isRecentOverviewQuestion(normalized)) return makeChatDecision("level_assessment", "none", "LEVEL_ASSESSMENT", normalizedLength);
   if (CAPABILITY_LEVEL_GAP.test(normalized)) return makeChatDecision("capability_gap", "none", "CAPABILITY_GAP", normalizedLength);
   if (isFindRideQuestion(normalized)) return makeChatDecision("autonomous_tools", "none", "AUTONOMOUS_TOOLS", normalizedLength);
   if (CAPABILITY_GAP.test(normalized)) return makeChatDecision("capability_gap", "none", "CAPABILITY_GAP", normalizedLength);

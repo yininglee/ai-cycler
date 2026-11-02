@@ -1,0 +1,80 @@
+{
+  "version": "ride-chat-interaction-v0.1",
+  "date": "2026-11-02",
+  "scope": "UX-P3 ride journey; local contract and browser checks only",
+  "realModelRun": false,
+  "cases": [
+    {
+      "id": "H-01",
+      "scenario": "近期整体→自主历史+知识→直接回答与同源卡片",
+      "verification": "automated",
+      "evidence": "tests/chat-h-interaction-flow.test.ts"
+    },
+    {
+      "id": "H-02",
+      "scenario": "截止今天近30天默认窗口，旧记录不混入",
+      "verification": "automated",
+      "evidence": "tests/chat-h-interaction-flow.test.ts"
+    },
+    {
+      "id": "H-03",
+      "scenario": "显式90天参数保留，不被默认30天覆盖",
+      "verification": "automated",
+      "evidence": "tests/chat-h-interaction-flow.test.ts"
+    },
+    {
+      "id": "H-04",
+      "scenario": "同日多条候选仅展示该日，使用唯一rideId",
+      "verification": "automated",
+      "evidence": "tests/chat-h-interaction-flow.test.ts"
+    },
+    {
+      "id": "H-05",
+      "scenario": "点选08:00记录，不取同日18:00最新记录",
+      "verification": "automated+browser",
+      "evidence": "tests/chat-h-interaction-flow.test.ts"
+    },
+    {
+      "id": "H-06",
+      "scenario": "后续“那心率呢”沿用同条记录",
+      "verification": "automated+browser",
+      "evidence": "tests/chat-h-interaction-flow.test.ts"
+    },
+    {
+      "id": "H-07",
+      "scenario": "非法、日期、跨会话与空白视图隐藏choice被拒",
+      "verification": "automated",
+      "evidence": "tests/chat-h-interaction-flow.test.ts"
+    },
+    {
+      "id": "H-08",
+      "scenario": "所选记录失效，不暗换剩余最新记录",
+      "verification": "automated",
+      "evidence": "tests/chat-h-interaction-flow.test.ts"
+    },
+    {
+      "id": "H-09",
+      "scenario": "空历史无虚构卡片，提示同步导入",
+      "verification": "automated",
+      "evidence": "tests/chat-h-interaction-flow.test.ts"
+    },
+    {
+      "id": "H-10",
+      "scenario": "刷新保留对话与选择，新会话不继承",
+      "verification": "automated+browser",
+      "evidence": "tests/chat-h-interaction-flow.test.ts"
+    },
+    {
+      "id": "H-11",
+      "scenario": "默认5条、展开7条，同日时间可区分",
+      "verification": "browser",
+      "evidence": "UX-P3 isolated 3001 transport"
+    },
+    {
+      "id": "H-12",
+      "scenario": "卡片→既有v2抽屉→关闭保留对话和输入草稿",
+      "verification": "browser",
+      "evidence": "AI_ANALYSIS_ENABLED=false; drawer only, not generation"
+    }
+  ]
+}

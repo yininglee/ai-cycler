@@ -35,7 +35,7 @@ export interface FtpFact {
 }
 
 export interface UserProfile {
-  ux?: { mode?: "demo" | "blank"; blankSince?: string; skipped?: boolean; goal?: { title: string; detail: string; updatedAt: string } | null };
+  ux?: { platforms?: Partial<Record<import("../ux/platform-catalog.ts").PlatformId, import("../ux/platform.ts").PlatformState>>; platform?: import("../ux/platform.ts").PlatformState; mode?: "demo" | "blank"; blankSince?: string; skipped?: boolean; goal?: { title: string; detail: string; updatedAt: string } | null };
   schemaVersion: typeof USER_PROFILE_SCHEMA_VERSION;
   age?: ProfileFact<number>;
   heightCm?: ProfileFact<number>;

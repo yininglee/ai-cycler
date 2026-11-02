@@ -1,5 +1,5 @@
 import type { ChatRoute, ChatSessionSummary } from "./chat-routing.ts";
-import { isChatChoiceRef, type ChatChoiceRef } from "./chat-interaction.ts";
+import { isChatChoiceRef, sanitizeChatInteractionPayload, type ChatAgentInteraction, type ChatChoiceRef } from "./chat-interaction.ts";
 import { chatInitialMessage, type ChatHomeSnapshot, type ChatMessage } from "./chat-home.ts";
 
 export const CHAT_SESSION_SUMMARY_LIMIT = 6;
@@ -81,6 +81,14 @@ export function startChatConversation(state: ChatSessionState, snapshot: ChatHom
   };
 }
 
+/** Refresh data without discarding the current conversation or its explicit ride choice. */
+export function refreshChatSnapshot(state: ChatSessionState, snapshot: ChatHomeSnapshot): ChatSessionState {
+  return { ...state, snapshotFingerprint: chatHomeSnapshotFingerprint(snapshot) };
+}
+export function appendImportedRides(state: ChatSessionState, ids: string[], text: string, conversationId = state.activeConversationId): ChatSessionState {
+  return { ...state, conversations: state.conversations.map(c => c.id === conversationId ? { ...c, messages: [...c.messages, { role: "assistant", kind: "rides", rideIds: ids, text }] } : c) };
+}
+
 export function selectChatConversation(state: ChatSessionState, id: string): ChatSessionState {
   if (!state.conversations.some((conversation) => conversation.id === id)) return state;
   return { ...state, activeConversationId: id };
@@ -94,6 +102,7 @@ export function appendChatTurn(
   assistantText: string,
   source: ChatSessionSummarySource,
   turn?: { route: ChatRoute; rideAnchor?: string; choice?: ChatChoiceRef },
+  interaction?: ChatAgentInteraction,
 ): ChatSessionState {
   const summarySlot: ChatSessionSummarySlot = turn
     ? {
@@ -110,7 +119,7 @@ export function appendChatTurn(
     conversations: state.conversations.map((conversation) => conversation.id === state.activeConversationId
       ? {
         ...conversation,
-        messages: [...conversation.messages, { role: "user", text: userText }, { role: "assistant", text: assistantText }],
+        messages: [...conversation.messages, { role: "user", text: userText }, { role: "assistant", text: assistantText, ...(interaction ? { interaction } : {}) }],
         summarySlots: [...conversation.summarySlots, summarySlot].slice(-CHAT_SESSION_SUMMARY_LIMIT),
       }
       : conversation),
@@ -160,7 +169,8 @@ function isChatSessionState(value: unknown): value is ChatSessionState {
     typeof conversation?.id === "string"
     && Array.isArray(conversation.messages)
     && conversation.messages.every((message) =>
-      (message?.role === "user" || message?.role === "assistant") && typeof message?.text === "string")
+      (message?.role === "user" || message?.role === "assistant") && typeof message?.text === "string"
+      && (message.rideIds === undefined || (Array.isArray(message.rideIds) && message.rideIds.every((id: unknown) => typeof id === "string"))))
     && Array.isArray(conversation.summarySlots)
     && conversation.summarySlots.every(isChatSessionSummarySlot));
 }
@@ -171,7 +181,13 @@ export function readStoredChatSession(): ChatSessionState | null {
     const raw = globalThis.localStorage?.getItem(CHAT_SESSION_STORAGE_KEY);
     if (!raw) return null;
     const parsed: unknown = JSON.parse(raw);
-    return isChatSessionState(parsed) ? parsed : null;
+    if (!isChatSessionState(parsed)) return null;
+    return { ...parsed, conversations: parsed.conversations.map(c => ({ ...c, messages: c.messages.map(m => {
+      if ((m as { kind?: string }).kind === "ux") return { role: m.role, text: "此前的界面草稿已撤下，可以重新提问。" };
+      if (!m.interaction) return m;
+      const { droppedFields: _dropped, ...interaction } = sanitizeChatInteractionPayload(m.interaction);
+      return { ...m, interaction };
+    }) })) };
   } catch {
     return null;
   }

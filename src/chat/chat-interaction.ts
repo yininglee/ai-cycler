@@ -63,6 +63,7 @@ export type ChatChoiceRef = {
 // ---------------------------------------------------------------------------
 
 export type ChatRideListItem = {
+  title?: string;
   rideId: string;
   dateLabel: string;
   distanceKm?: number;
@@ -201,7 +202,8 @@ export function sanitizeChatChoices(input: unknown): ChatSanitized<ChatChoice[]>
 
 function isRideListItem(value: unknown): value is ChatRideListItem {
   if (!isRecord(value)) return false;
-  if (!hasExactKeys(value, ["rideId", "dateLabel"], ["distanceKm", "durationLabel", "hasPower", "hasHeartRate"])) return false;
+  if (!hasExactKeys(value, ["rideId", "dateLabel"], ["title", "distanceKm", "durationLabel", "hasPower", "hasHeartRate"])) return false;
+  if (!isOptional(value.title, item => isText(item, CHAT_CHOICE_LABEL_MAX_CHARS))) return false;
   if (!isIdentifier(value.rideId) || !isText(value.dateLabel, CHAT_CHOICE_LABEL_MAX_CHARS)) return false;
   if (!isOptional(value.distanceKm, (item) => typeof item === "number" && Number.isFinite(item) && item >= 0)) return false;
   if (!isOptional(value.durationLabel, (item) => isText(item, CHAT_CHOICE_LABEL_MAX_CHARS))) return false;
@@ -253,7 +255,7 @@ export function sanitizeChatArtifact(input: unknown): ChatSanitized<ChatArtifact
   if (!isRecord(input)) return { dropped: true };
   if (!hasExactKeys(input, ["kind", "payload"])) return { dropped: true };
   if (!isRecord(input.payload)) return { dropped: true };
-  if (Buffer.byteLength(JSON.stringify(input.payload), "utf8") > CHAT_ARTIFACT_PAYLOAD_MAX_BYTES) return { dropped: true };
+  if (new TextEncoder().encode(JSON.stringify(input.payload)).byteLength > CHAT_ARTIFACT_PAYLOAD_MAX_BYTES) return { dropped: true };
   switch (input.kind) {
     case "ride_list": {
       const artifact = sanitizeRideListPayload(input.payload);
@@ -318,3 +320,5 @@ export function sanitizeChatInteractionPayload(input: {
     droppedFields,
   };
 }
+
+export type ChatAgentInteraction = { choices?: ChatChoice[]; artifact?: ChatArtifact; quickActions?: ChatQuickAction[] };
