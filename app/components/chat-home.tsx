@@ -6,7 +6,7 @@ import {
   type ChatHomeSnapshot,
   type ChatMessage,
 } from "../../src/chat/chat-home.ts";
-import { CloseButton } from "./close-button";
+import { SideDrawer } from "./side-drawer";
 import { ChatReplyText } from "./chat-reply-text";
 import { readProfile } from "./profile-client";
 import { Onboarding, PrototypeSettings } from "./ux-onboarding";
@@ -80,9 +80,6 @@ export function ChatHome({ snapshot }: { snapshot: ChatHomeSnapshot }) {
   const [disclosureOpen, setDisclosureOpen] = useState(false);
   const [pendingTurn, setPendingTurn] = useState<{ userText: string } | null>(null);
   const [hydrated, setHydrated] = useState(false);
-  const drawerRef = useRef<HTMLDialogElement>(null);
-  const drawerPanelRef = useRef<HTMLElement>(null);
-  const drawerScrimRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesRef = useRef<HTMLDivElement>(null);
   const followRepliesRef = useRef(true);
@@ -96,67 +93,6 @@ export function ChatHome({ snapshot }: { snapshot: ChatHomeSnapshot }) {
   const activeConversation = getActiveChatConversation(session);
   const messages = activeConversation.messages;
   const pending = pendingTurn !== null || revealingMessage !== null;
-
-  useEffect(() => {
-    const drawer = drawerRef.current;
-    const panel = drawerPanelRef.current;
-    const scrim = drawerScrimRef.current;
-    if (!drawer || !panel || !scrim || (!historyOpen && !drawer.open)) return;
-    if (historyOpen && !drawer.open) {
-      // A closed dialog has no layout. Restore the CSS off-screen position
-      // before showing it instead of reading a finished animation while hidden.
-      panel.style.removeProperty("transform");
-      scrim.style.opacity = "0";
-      drawer.showModal();
-    }
-
-    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const openingDurationMs = 720;
-    const startX = new DOMMatrixReadOnly(getComputedStyle(panel).transform).m41;
-    const targetX = historyOpen ? 0 : -panel.getBoundingClientRect().width - 24;
-    // A damped spring starts at rest, carries a little momentum, then settles.
-    // Begin at the current position so reversing an unfinished motion cannot jump.
-    const frames: Keyframe[] = historyOpen
-      ? Array.from({ length: 61 }, (_, index) => {
-        const t = index / 60 * openingDurationMs / 1000;
-        const damping = 0.82;
-        const omega = 14;
-        const dampedOmega = omega * Math.sqrt(1 - damping * damping);
-        const remaining = Math.exp(-damping * omega * t)
-          * (Math.cos(dampedOmega * t) + damping * omega / dampedOmega * Math.sin(dampedOmega * t));
-        return { offset: index / 60, transform: `translate3d(${index === 60 ? targetX : targetX + (startX - targetX) * remaining}px, 0, 0)` };
-      })
-      : [{ transform: `translate3d(${startX}px, 0, 0)` }, { transform: `translate3d(${targetX}px, 0, 0)` }];
-    const slide = panel.animate(frames, {
-      duration: reducedMotion ? 0 : historyOpen ? openingDurationMs : 220,
-      easing: historyOpen ? "linear" : "cubic-bezier(0.4, 0, 0.8, 0.4)",
-      fill: "both",
-    });
-    const fade = scrim.animate([
-      { opacity: getComputedStyle(scrim).opacity },
-      { opacity: historyOpen ? 1 : 0 },
-    ], { duration: reducedMotion ? 0 : historyOpen ? 420 : 220, easing: "ease-out", fill: "both" });
-    let cancelled = false;
-    void Promise.all([slide.finished, fade.finished]).then(() => {
-      if (cancelled) return;
-      // Persist the endpoint before removing the dialog from layout. Otherwise
-      // its finished fill animation can disappear and expose the old open pose.
-      panel.style.transform = `translate3d(${targetX}px, 0, 0)`;
-      scrim.style.opacity = historyOpen ? "1" : "0";
-      slide.cancel();
-      fade.cancel();
-      if (!historyOpen) drawer.close();
-    }).catch(() => { /* Interrupted motions are replaced by the next transition. */ });
-    return () => {
-      cancelled = true;
-      if (drawer.open) {
-        panel.style.transform = getComputedStyle(panel).transform;
-        scrim.style.opacity = getComputedStyle(scrim).opacity;
-      }
-      slide.cancel();
-      fade.cancel();
-    };
-  }, [historyOpen]);
 
   useEffect(() => {
     if (messages.some(m => m.role === "user") && followRepliesRef.current) followReply();
@@ -250,10 +186,7 @@ export function ChatHome({ snapshot }: { snapshot: ChatHomeSnapshot }) {
       </button>
     </header>
 
-    <dialog ref={drawerRef} id="chat-sidebar" className="chat-drawer-layer" aria-labelledby="chat-sidebar-title" onCancel={event => { event.preventDefault(); setHistoryOpen(false); }} onClose={() => setHistoryOpen(false)} onClick={event => { if (event.target === event.currentTarget || event.target === drawerScrimRef.current) setHistoryOpen(false); }}>
-      <div ref={drawerScrimRef} className="chat-drawer-scrim" aria-hidden="true" />
-      <aside ref={drawerPanelRef} className="chat-drawer">
-        <div className="chat-drawer-heading"><strong id="chat-sidebar-title">Cycler</strong><CloseButton label="关闭侧边抽屉" onClick={() => setHistoryOpen(false)} /></div>
+    <SideDrawer open={historyOpen} onClose={() => setHistoryOpen(false)}>
         <button type="button" className="primary-button chat-new-conversation" disabled={pending} onClick={startConversation}>＋ 新对话</button>
         <h2 className="chat-drawer-section-title">对话记录</h2>
       <div className="chat-history-list">
@@ -271,8 +204,7 @@ export function ChatHome({ snapshot }: { snapshot: ChatHomeSnapshot }) {
       </div>
       <PrototypeSettings />
       <p className="chat-history-note">对话记录保存在本浏览器本地；骑行数据变化后会自动开始新对话。</p>
-      </aside>
-    </dialog>
+    </SideDrawer>
 
     <div className="chat-messages" ref={messagesRef} role="log" aria-label="与 Cycler 的对话" aria-live="off" onScroll={event => {
       const container = event.currentTarget;

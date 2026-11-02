@@ -876,11 +876,13 @@ fieldset.profile-fields { margin: 0; padding: 0; border: 0; min-width: 0; }
 .chat-brand .brand-mark { width: 28px; height: 28px; }
 .chat-brand .brand-mark svg { width: 18px; height: 18px; }
 .chat-brand:focus-visible, .chat-drawer button:focus-visible { outline: 2px solid #588463; outline-offset: 3px; }
-.chat-drawer-layer { position: fixed; inset: 0; width: 100%; max-width: none; height: 100dvh; max-height: none; margin: 0; padding: 0; border: 0; overflow: hidden; background: transparent; color: var(--ink); }
-.chat-drawer-layer[open] { display: flex; }
-.chat-drawer-layer::backdrop { background: transparent; }
-.chat-drawer-scrim { position: absolute; inset: 0; background: rgba(20, 25, 22, .35); opacity: 0; }
-.chat-drawer { position: relative; transform: translate3d(calc(-100% - 24px), 0, 0); width: min(320px, calc(100% - 48px)); height: 100%; padding: max(24px, env(safe-area-inset-top)) 20px max(24px, env(safe-area-inset-bottom)); background: #fafbf9; box-shadow: 12px 0 40px rgba(0,0,0,.12); display: flex; flex-direction: column; }
+.chat-drawer-layer { position: fixed; inset: 0; z-index: 80; display: flex; overflow: hidden; color: var(--ink); }
+.chat-drawer-layer[hidden] { display: none; }
+.chat-drawer-scrim { position: absolute; inset: 0; background: rgba(20, 25, 22, .35); opacity: 0; transition: opacity 220ms ease-out; }
+.chat-drawer { position: relative; transform: translate3d(calc(-100% - 24px), 0, 0); width: min(320px, calc(100% - 48px)); height: 100%; padding: max(24px, env(safe-area-inset-top)) 20px max(24px, env(safe-area-inset-bottom)); background: #fafbf9; box-shadow: 12px 0 40px rgba(0,0,0,.12); display: flex; flex-direction: column; outline: none; transition: transform 220ms cubic-bezier(.4,0,.8,.4); }
+.chat-drawer-layer[data-state="open"] .chat-drawer { transform: translate3d(0,0,0); transition-duration: 720ms; transition-timing-function: cubic-bezier(.22,.8,.25,1); }
+.chat-drawer-layer[data-state="open"] .chat-drawer-scrim { opacity: 1; transition-duration: 420ms; }
+@media (prefers-reduced-motion: reduce) { .chat-drawer-layer .chat-drawer, .chat-drawer-layer .chat-drawer-scrim { transition-duration: .01ms; } }
 .chat-drawer-heading { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; font-size: 21px; }
 .chat-new-conversation { flex-shrink: 0; }
 .chat-drawer-section-title { margin: 26px 0 6px; font-size: 13px; color: var(--muted); }
