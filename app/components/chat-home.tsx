@@ -1,4 +1,5 @@
 "use client";
+import { isChatRideScope, type ChatRideScope } from "../../src/chat/chat-context.ts";
 
 import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 
@@ -43,22 +44,23 @@ import { isChatRoute, type ChatSessionSummary } from "../../src/chat/chat-routin
 // 现在任何业务答案必须来自服务端；拿不到就如实说拿不到。
 const CHAT_UNAVAILABLE_REPLY = "对话服务暂时不可用；我不会使用未经验证的结果回答。";
 
-async function requestChatReply(text: string, summaries: ChatSessionSummary[], choice?: ChatChoiceRef): Promise<{ reply: string | null; route?: string; rideAnchor?: string; choice?: ChatChoiceRef; interaction?: ChatAgentInteraction }> {
+async function requestChatReply(text: string, summaries: ChatSessionSummary[], choice?: ChatChoiceRef): Promise<{ reply: string | null; route?: string; rideAnchor?: string; choice?: ChatChoiceRef; rideScope?: ChatRideScope; interaction?: ChatAgentInteraction }> {
   try {
     const response = await fetch("/api/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ text, ...(summaries.length ? { summaries } : {}), ...(choice ? { choice } : {}) }),
     });
-    if (!response.ok) { const body = await response.json().catch(() => null); return { reply: body?.error === "NOT_FOUND" ? "所选骑行已不可用，请重新选择记录。" : CHAT_UNAVAILABLE_REPLY }; }
+    if (!response.ok) { const body = await response.json().catch(() => null); return body?.error === "NOT_FOUND" ? { reply: "所选骑行已不可用，请重新选择记录。", route: "clarification", rideScope: "cleared" } : { reply: CHAT_UNAVAILABLE_REPLY }; }
     const payload: unknown = await response.json();
-    const record = payload as { reply?: unknown; rideAnchor?: unknown; decision?: { route?: unknown }; choice?: unknown; artifact?: unknown; choices?: unknown; quickActions?: unknown } | null;
+    const record = payload as { reply?: unknown; rideAnchor?: unknown; decision?: { route?: unknown }; choice?: unknown; rideScope?: unknown; artifact?: unknown; choices?: unknown; quickActions?: unknown } | null;
     const reply = record?.reply;
     const rideAnchor = record?.rideAnchor;
     const route = record?.decision?.route;
     const { droppedFields: _dropped, ...interaction } = sanitizeChatInteractionPayload(record ?? {});
     return {
       interaction,
+      ...(isChatRideScope(record?.rideScope) ? { rideScope: record.rideScope } : {}),
       ...(isChatChoiceRef(record?.choice) ? { choice: record.choice } : {}),
       reply: typeof reply === "string" && reply.trim() ? reply : CHAT_UNAVAILABLE_REPLY,
       ...(isChatRoute(route) ? { route } : {}),
@@ -166,13 +168,13 @@ export function ChatHome({ snapshot }: { snapshot: ChatHomeSnapshot }) {
   }, []);
 
   // CHAT-14 P1：turn 携带服务端返回的 route/rideAnchor 时记 session_turn 槽位（供后续继承与挂起确认识别）。
-  function addReply(userText: string, reply: string | null, source: ChatSessionSummarySource, turn?: { route?: string; rideAnchor?: string; choice?: ChatChoiceRef }, interaction?: ChatAgentInteraction) {
+  function addReply(userText: string, reply: string | null, source: ChatSessionSummarySource, turn?: { route?: string; rideAnchor?: string; choice?: ChatChoiceRef; rideScope?: ChatRideScope }, interaction?: ChatAgentInteraction) {
     if (!reply) return;
     pendingScrollRestore.current = null;
     followRepliesRef.current = true;
     setRevealingMessage({ conversationId: activeConversation.id, index: messages.length + 1 });
     const slotTurn = turn && isChatRoute(turn.route)
-      ? { route: turn.route, ...(turn.rideAnchor ? { rideAnchor: turn.rideAnchor } : {}), ...(turn.choice ? { choice: turn.choice } : {}) }
+      ? { route: turn.route, ...(turn.rideAnchor ? { rideAnchor: turn.rideAnchor } : {}), ...(turn.choice ? { choice: turn.choice } : {}), ...(turn.rideScope ? { rideScope: turn.rideScope } : {}) }
       : undefined;
     setSession((current) => appendChatTurn(current, userText, reply, source, slotTurn, interaction));
   }
@@ -209,7 +211,7 @@ export function ChatHome({ snapshot }: { snapshot: ChatHomeSnapshot }) {
     const summaries = buildChatSessionSummaries(activeConversation);
     const result = await requestChatReply(userText, summaries, choice);
     setPendingTurn(null);
-    addReply(userText, result.reply, source, { route: result.route, rideAnchor: result.rideAnchor, choice: result.choice }, result.interaction);
+    addReply(userText, result.reply, source, { route: result.route, rideAnchor: result.rideAnchor, choice: result.choice, rideScope: result.rideScope }, result.interaction);
   }
 
   useEffect(() => {

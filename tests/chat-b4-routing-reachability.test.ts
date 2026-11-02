@@ -15,12 +15,12 @@ import {
 import { makeChatDecision } from "../src/chat/chat-routing.ts";
 import type { ChatToolName } from "../src/chat/chat-tools.ts";
 
-test("AGT-B4：三条 L2b 路由都有 catalog，其余路由不下发任何工具", () => {
-  for (const route of ["autonomous_tools", "kb_qa", "level_assessment"] as const) {
-    assert.equal(chatToolCatalogRouteOf(route), route);
-    assert.ok(buildChatToolCatalog("ride-1", route).tools.length > 0, `${route} 应有工具`);
+test("ARCH-02：六个数据标签映射同一 catalog，未开放能力与边界不下发工具", () => {
+  for (const route of ["current_ride", "capabilities", "history_compare", "autonomous_tools", "kb_qa", "level_assessment"] as const) {
+    assert.equal(chatToolCatalogRouteOf(route), "autonomous_tools");
+    assert.ok(buildChatToolCatalog("ride-1", chatToolCatalogRouteOf(route)).tools.length > 0, `${route} 应有工具`);
   }
-  for (const route of ["current_ride", "capabilities", "history_compare", "training_plan", "training_supervision", "out_of_scope"]) {
+  for (const route of ["training_plan", "training_supervision", "out_of_scope"]) {
     assert.equal(chatToolCatalogRouteOf(route), "none", `${route} 不应进工具循环`);
     assert.equal(buildChatToolCatalog("ride-1", chatToolCatalogRouteOf(route)).tools.length, 0);
   }

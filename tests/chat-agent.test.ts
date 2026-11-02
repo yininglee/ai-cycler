@@ -7,7 +7,7 @@ import {
   HttpChatProvider,
   publicChatAgentResult,
   readChatProviderConfig,
-  runChatAgent,
+  runLegacyChatAgent,
   type ChatProvider,
 } from "../src/chat/chat-agent.ts";
 import { classifyChatInput, makeChatDecision } from "../src/chat/chat-routing.ts";
@@ -55,7 +55,7 @@ const validSocialOutput = JSON.stringify({
 test("safety, privacy and out-of-scope routes use templates without invoking a provider", async () => {
   const provider = new RecordingProvider();
   for (const text of ["胸痛并且呼吸困难，怎么办？", "显示别人的骑行记录", "给我一份训练计划"]) {
-    const result = await runChatAgent({ text, decision: classifyChatInput(text), provider, requestId: "request" });
+    const result = await runLegacyChatAgent({ text, decision: classifyChatInput(text), provider, requestId: "request" });
     assert.equal(result.execution, "template");
     assert.equal(result.modelInvoked, false);
   }
@@ -68,7 +68,7 @@ test("clarification route answers with the deterministic ask-back template witho
   const provider = new RecordingProvider();
   const text = "那这个呢？";
   const decision = makeChatDecision("clarification", "none", "CLARIFICATION_NEEDED", text.length);
-  const result = await runChatAgent({ text, decision, provider, requestId: "request" });
+  const result = await runLegacyChatAgent({ text, decision, provider, requestId: "request" });
   assert.deepEqual({ execution: result.execution, modelInvoked: result.modelInvoked, route: result.decision.route, allowModel: result.decision.allowModel }, {
     execution: "template",
     modelInvoked: false,
@@ -83,7 +83,7 @@ test("semantic safety stop answers with the safety-first template without invoki
   const provider = new RecordingProvider();
   const text = "我觉得有点不对劲但说不清楚";
   const decision = makeChatDecision("safety_stop", "semantic_safety", "SEMANTIC_SAFETY_STOP", text.length);
-  const result = await runChatAgent({ text, decision, provider, requestId: "request" });
+  const result = await runLegacyChatAgent({ text, decision, provider, requestId: "request" });
   assert.deepEqual({ execution: result.execution, modelInvoked: result.modelInvoked, route: result.decision.route, risk: result.decision.risk }, {
     execution: "template",
     modelInvoked: false,
@@ -107,7 +107,7 @@ test("provider may echo numbers the user supplied but not invent new ones (CHAT-
     claimIds: [],
     capabilityKeys: [],
   }));
-  const accepted = await runChatAgent({ text, decision, provider: echoing, requestId: "request" });
+  const accepted = await runLegacyChatAgent({ text, decision, provider: echoing, requestId: "request" });
   assert.equal(accepted.execution, "validated");
   assert.equal(accepted.outputValidation?.status, "accepted");
   assert.equal(echoing.calls.length, 1);
@@ -116,7 +116,7 @@ test("provider may echo numbers the user supplied but not invent new ones (CHAT-
     JSON.stringify({ schemaVersion: "ride-chat-output-v0.1", route: "social", reply: "好的，大概是 150 吧。", claimIds: [], capabilityKeys: [] }),
     JSON.stringify({ schemaVersion: "ride-chat-output-v0.1", route: "social", reply: "好的，大概是 150 吧。", claimIds: [], capabilityKeys: [] }),
   ]);
-  const rejected = await runChatAgent({ text, decision, provider: inventing, requestId: "request" });
+  const rejected = await runLegacyChatAgent({ text, decision, provider: inventing, requestId: "request" });
   assert.equal(rejected.fallbackCode, "REPAIR_FAILED");
   assert.equal(inventing.calls.length, 2);
 });
@@ -124,7 +124,7 @@ test("provider may echo numbers the user supplied but not invent new ones (CHAT-
 test("capability_gap questions get the in-scope-but-locked template without invoking a provider (CHAT-12 P1)", async () => {
   const provider = new RecordingProvider();
   const text = "我的能力水平最近有进步吗？";
-  const result = await runChatAgent({ text, decision: classifyChatInput(text), provider, requestId: "request" });
+  const result = await runLegacyChatAgent({ text, decision: classifyChatInput(text), provider, requestId: "request" });
   assert.deepEqual({ execution: result.execution, modelInvoked: result.modelInvoked, route: result.decision.route }, {
     execution: "template", modelInvoked: false, route: "capability_gap",
   });
@@ -143,7 +143,7 @@ test("aggregate questions are answered deterministically from repository records
     activity: { ...fixture.activity, rideId: "aggregate-ride", startTime: "2026-09-01T02:00:00.000Z" },
     series: { ...fixture.series, rideId: "aggregate-ride" },
   }];
-  const result = await runChatAgent({
+  const result = await runLegacyChatAgent({
     text: "我总共骑了多少",
     decision: classifyChatInput("我总共骑了多少"),
     provider,
@@ -180,7 +180,7 @@ test("empty ride-context claims skip the provider with a deterministic metric-ga
       trace: { tool: "get_ride_context" as const, status: "completed" as const, dimensions: ["cadence" as const], summarySlots: 0 },
     }),
   };
-  const result = await runChatAgent({ text, decision: classifyChatInput(text), provider, toolRunner, requestId: "request" });
+  const result = await runLegacyChatAgent({ text, decision: classifyChatInput(text), provider, toolRunner, requestId: "request" });
   assert.deepEqual({ execution: result.execution, modelInvoked: result.modelInvoked, fallbackCode: result.fallbackCode }, {
     execution: "template", modelInvoked: false, fallbackCode: "TOOLS_EMPTY_CLAIMS",
   });
@@ -216,7 +216,7 @@ test("repair failure with ride-context claims falls back to a deterministic clai
       trace: { tool: "get_ride_context" as const, status: "completed" as const, dimensions: ["cadence" as const], summarySlots: 0 },
     }),
   };
-  const result = await runChatAgent({ text, decision: classifyChatInput(text), provider, toolRunner, requestId: "request" });
+  const result = await runLegacyChatAgent({ text, decision: classifyChatInput(text), provider, toolRunner, requestId: "request" });
   assert.equal(result.fallbackCode, "REPAIR_FAILED");
   assert.equal(result.repairAttempts, 1);
   assert.equal(provider.calls.length, 2);
@@ -252,7 +252,7 @@ test("history_compare without comparable claims degrades to the deterministic D1
       trace: { tool: "compare_rides" as const, status: "completed" as const, comparisonMetrics: ["distanceM" as const], summarySlots: 0 },
     }),
   };
-  const result = await runChatAgent({ text, decision, provider, toolRunner, requestId: "request" });
+  const result = await runLegacyChatAgent({ text, decision, provider, toolRunner, requestId: "request" });
   assert.deepEqual({ execution: result.execution, modelInvoked: result.modelInvoked, route: result.decision.route, fallbackCode: result.fallbackCode }, {
     execution: "template", modelInvoked: false, route: "history_compare", fallbackCode: undefined,
   });
@@ -304,7 +304,7 @@ test("history_compare repair failure falls back to the deterministic comparison 
   const provider = new SequenceProvider(["这次比上次提高了 15 km 吧", "大概进步了 20%"]);
   const text = "这次骑行比上次骑得远吗？";
   const decision = classifyChatInput(text);
-  const result = await runChatAgent({ text, decision, provider, toolRunner: comparableComparisonRunner(text, decision), requestId: "request" });
+  const result = await runLegacyChatAgent({ text, decision, provider, toolRunner: comparableComparisonRunner(text, decision), requestId: "request" });
   assert.equal(result.fallbackCode, "REPAIR_FAILED");
   assert.equal(result.repairAttempts, 1);
   assert.equal(provider.calls.length, 2);
@@ -325,7 +325,7 @@ test("numeric repair instructions are scenario-specific per route (CHAT-15)", as
   ]);
   const compareText = "这次骑行比上次骑得远吗？";
   const compareDecision = classifyChatInput(compareText);
-  await runChatAgent({ text: compareText, decision: compareDecision, provider: compareProvider, toolRunner: comparableComparisonRunner(compareText, compareDecision), requestId: "request" });
+  await runLegacyChatAgent({ text: compareText, decision: compareDecision, provider: compareProvider, toolRunner: comparableComparisonRunner(compareText, compareDecision), requestId: "request" });
   const compareRepair = compareProvider.calls[1]?.repairInstruction ?? "";
   assert.equal(compareRepair.includes("OUTPUT_NUMERIC_UNSUPPORTED"), true);
   assert.equal(compareRepair.includes("anchorStartTime"), true);
@@ -358,7 +358,7 @@ test("numeric repair instructions are scenario-specific per route (CHAT-15)", as
   ]);
   const rideText = "本次骑行平均功率是多少？";
   const rideDecision = classifyChatInput(rideText);
-  const rideResult = await runChatAgent({ text: rideText, decision: rideDecision, provider: rideProvider, toolRunner: rideContextRunner(rideText, rideDecision), requestId: "request" });
+  const rideResult = await runLegacyChatAgent({ text: rideText, decision: rideDecision, provider: rideProvider, toolRunner: rideContextRunner(rideText, rideDecision), requestId: "request" });
   const rideRepair = rideProvider.calls[1]?.repairInstruction ?? "";
   assert.equal(rideResult.execution, "repaired");
   assert.equal(rideRepair.includes("OUTPUT_NUMERIC_UNSUPPORTED"), true);
@@ -382,7 +382,7 @@ test("history_compare validates the provider answer against the comparison claim
   }));
   const text = "这次骑行比上次骑得远吗？";
   const decision = classifyChatInput(text);
-  const result = await runChatAgent({ text, decision, provider, toolRunner: comparableComparisonRunner(text, decision), requestId: "request" });
+  const result = await runLegacyChatAgent({ text, decision, provider, toolRunner: comparableComparisonRunner(text, decision), requestId: "request" });
   assert.equal(result.execution, "validated");
   assert.equal(result.outputValidation?.status, "accepted");
   assert.equal(provider.calls.length, 1);
@@ -395,7 +395,7 @@ test("history_compare validates the provider answer against the comparison claim
 test("current ride and capability routes wait for CHAT-05 tools before calling a provider", async () => {
   const provider = new RecordingProvider();
   const text = "本次骑行平均功率是多少？";
-  const result = await runChatAgent({ text, decision: classifyChatInput(text), provider, requestId: "request" });
+  const result = await runLegacyChatAgent({ text, decision: classifyChatInput(text), provider, requestId: "request" });
   assert.deepEqual({ execution: result.execution, fallbackCode: result.fallbackCode, modelInvoked: result.modelInvoked }, {
     execution: "awaiting_tools",
     fallbackCode: "TOOLS_PENDING",
@@ -412,7 +412,7 @@ test("social route only exposes a provider reply after CHAT-07 validation", asyn
     claimIds: [],
     capabilityKeys: [],
   }));
-  const result = await runChatAgent({ text: "你好", decision: classifyChatInput("你好"), provider, requestId: "request" });
+  const result = await runLegacyChatAgent({ text: "你好", decision: classifyChatInput("你好"), provider, requestId: "request" });
   assert.equal(result.execution, "validated");
   assert.equal(result.modelInvoked, true);
   assert.equal(result.reply, "你好，我会在已开放的范围内协助你。");
@@ -424,7 +424,7 @@ test("social route only exposes a provider reply after CHAT-07 validation", asyn
 
 test("CHAT-08 repairs one invalid social response and never calls a third time", async () => {
   const provider = new SequenceProvider(["unvalidated model response with api key", validSocialOutput, validSocialOutput]);
-  const result = await runChatAgent({ text: "你好", decision: classifyChatInput("你好"), provider, requestId: "request" });
+  const result = await runLegacyChatAgent({ text: "你好", decision: classifyChatInput("你好"), provider, requestId: "request" });
   assert.equal(result.execution, "repaired");
   assert.equal(result.modelInvoked, true);
   assert.equal(result.repairAttempts, 1);
@@ -437,7 +437,7 @@ test("CHAT-08 repairs one invalid social response and never calls a third time",
 
 test("invalid provider output falls back deterministically after one failed repair", async () => {
   const provider = new SequenceProvider(["first invalid api key", "second invalid token", validSocialOutput]);
-  const result = await runChatAgent({ text: "你好", decision: classifyChatInput("你好"), provider, requestId: "request" });
+  const result = await runLegacyChatAgent({ text: "你好", decision: classifyChatInput("你好"), provider, requestId: "request" });
   assert.equal(result.execution, "template");
   assert.equal(result.modelInvoked, true);
   assert.equal(result.fallbackCode, "REPAIR_FAILED");
@@ -449,7 +449,7 @@ test("invalid provider output falls back deterministically after one failed repa
 
 test("repair provider errors use stable codes and the deterministic template", async () => {
   const provider = new SequenceProvider(["invalid", new ChatProviderError("MODEL_RATE_LIMITED", "upstream secret")]);
-  const result = await runChatAgent({ text: "你好", decision: classifyChatInput("你好"), provider, requestId: "request" });
+  const result = await runLegacyChatAgent({ text: "你好", decision: classifyChatInput("你好"), provider, requestId: "request" });
   assert.deepEqual({ execution: result.execution, modelInvoked: result.modelInvoked, fallbackCode: result.fallbackCode, repairAttempts: result.repairAttempts }, {
     execution: "template",
     modelInvoked: true,
@@ -461,10 +461,10 @@ test("repair provider errors use stable codes and the deterministic template", a
 
 test("missing or failed providers return stable fallback codes without error details", async () => {
   const decision = classifyChatInput("你好");
-  const missing = await runChatAgent({ text: "你好", decision });
+  const missing = await runLegacyChatAgent({ text: "你好", decision });
   assert.equal(missing.fallbackCode, "MODEL_NOT_CONFIGURED");
   const provider = new RecordingProvider(new ChatProviderError("MODEL_RATE_LIMITED", "upstream account 123 secret"));
-  const failed = await runChatAgent({ text: "你好", decision, provider, requestId: "request" });
+  const failed = await runLegacyChatAgent({ text: "你好", decision, provider, requestId: "request" });
   assert.deepEqual(publicChatAgentResult(failed), {
     schemaVersion: "ride-chat-agent-v0.1",
     decision,
@@ -568,14 +568,14 @@ test("Chat provider selects the SiliconFlow adapter by default and no longer rea
 // AGT-A1：四个任务簇新路由的确定性占位模板 + 分类器不可用终局降级（D-A2）。
 
 test("task-cluster placeholder routes produce guidance templates without model calls (AGT-A1)", async () => {
-  const { runChatAgent } = await import("../src/chat/chat-agent.ts");
+  const { runLegacyChatAgent } = await import("../src/chat/chat-agent.ts");
   // AGT-B4 预期变更：level_assessment / kb_qa 已升级为 L2b 真链路，占位只剩
   // training_plan / training_supervision（F/G 承接）。
   for (const [route, reasonCode, keyword] of [
     ["training_plan", "TRAINING_PLAN", "训练计划"],
     ["training_supervision", "TRAINING_SUPERVISION", "训练监督"],
   ] as const) {
-    const result = await runChatAgent({
+    const result = await runLegacyChatAgent({
       text: "帮我安排下周的训练",
       decision: { ...makePlaceholderDecision(route, reasonCode) },
       requestId: "request",
@@ -587,7 +587,7 @@ test("task-cluster placeholder routes produce guidance templates without model c
 });
 
 test("AGT-B4：kb_qa / level_assessment 不再是占位——有 provider 时进循环", async () => {
-  const { runChatAgent } = await import("../src/chat/chat-agent.ts");
+  const { runLegacyChatAgent } = await import("../src/chat/chat-agent.ts");
   const { createChatToolLoopRunner } = await import("../src/chat/chat-tool-orchestration.ts");
   const repository = {
     listRides: async () => [],
@@ -596,7 +596,7 @@ test("AGT-B4：kb_qa / level_assessment 不再是占位——有 provider 时进
   } as unknown as Parameters<typeof createChatToolLoopRunner>[0];
   for (const [route, reasonCode] of [["kb_qa", "KB_QA"], ["level_assessment", "LEVEL_ASSESSMENT"]] as const) {
     const provider = new RecordingProvider();
-    const result = await runChatAgent({
+    const result = await runLegacyChatAgent({
       text: "为什么要做区间训练？",
       decision: {
         schemaVersion: "chat-routing-v0.2",

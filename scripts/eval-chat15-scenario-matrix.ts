@@ -1,7 +1,7 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
-import { createChatProvider, runChatAgent, type ChatProvider } from "../src/chat/chat-agent.ts";
+import { createChatProvider, runLegacyChatAgent, type ChatProvider } from "../src/chat/chat-agent.ts";
 import { createChatClassifier, resolveChatRouting } from "../src/chat/chat-classifier.ts";
 import { routeChatInput } from "../src/chat/chat-routing.ts";
 import { createChatToolRunner } from "../src/chat/chat-tool-orchestration.ts";
@@ -137,7 +137,7 @@ for (const entry of MATRIX) {
       continue;
     }
     decision = resolution.decision ?? gateway.decision;
-    const result = await runChatAgent({ text: gateway.text, decision, provider, toolRunner, requestId });
+    const result = await runLegacyChatAgent({ text: gateway.text, decision, provider, toolRunner, requestId });
     samples.push({
       question: entry.question,
       expectedRoute: entry.expectedRoute,

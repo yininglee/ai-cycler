@@ -5,7 +5,7 @@ import { join } from "node:path";
 import {
   CHAT_AGENT_SCHEMA_VERSION,
   createChatProvider,
-  runChatAgent,
+  runLegacyChatAgent,
   type ChatAgentResult,
   type ChatProvider,
   type ChatProviderInvocation,
@@ -376,7 +376,7 @@ for (const item of fixedSet.cases) {
     observedProvider(realProvider, modelMetrics);
   const aggregateRecords = decision.route === "aggregate" ? STANDARD_RECORDS.map((record) => structuredClone(record)) : undefined;
 
-  const result: ChatAgentResult = await runChatAgent({
+  const result: ChatAgentResult = await runLegacyChatAgent({
     text: gateway.text,
     decision,
     provider: providerForCase,

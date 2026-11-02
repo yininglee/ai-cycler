@@ -1,3 +1,6 @@
+import { hasExplicitChatRideReference, lastChatRideChoice } from "./chat-context.ts";
+import { lastSummarizedAnchor } from "./chat-ride-anchor.ts";
+import { activeChatCapabilities, isActiveChatTool } from "./chat-capability-registry.ts";
 import { isRecentOverviewQuestion } from "./chat-routing.ts";
 import {
   CHAT_COMPARISON_WINDOW_DAYS,
@@ -29,7 +32,7 @@ import {
 import type { ChatRoutingDecision, ChatSessionSummary } from "./chat-routing.ts";
 import { resolveRideAnchor, rideAnchorDateLabel, type RideAnchorOverride } from "./chat-ride-anchor.ts";
 import type { ChatRideCandidate, ChatRideRefReason } from "./chat-ride-ref.ts";
-import { parseChatRideRef } from "./chat-ride-ref.ts";
+import { chatRideCandidates, parseChatRideRef } from "./chat-ride-ref.ts";
 import { atomicCapabilityKeys, type AtomicCapabilityKey } from "../domain/atomic-capabilities.ts";
 import type { ApplicationRepository } from "../persistence/application-repository.ts";
 
@@ -124,29 +127,11 @@ export type ChatProviderToolCatalog = {
   }>;
 };
 
-// AGT-B3（§5.3）：catalog 按路由裁剪——9 工具全量上 catalog 会显著推高首轮 token，
-  // 并让模型在无关工具间犹豫。裁剪后每个路由只有 2~9 项，可选空间变窄 → 非法调用率下降。
-// 路由 → 工具集是**固定快照**（有单测锁），不随问法变化。
+// Compatibility names only: all active data intents see the same registry.
 export type ChatToolCatalogRoute = "autonomous_tools" | "kb_qa" | "level_assessment" | "none";
-
+const activeTools = activeChatCapabilities().map(capability => capability.tool);
 export const CHAT_TOOL_CATALOG_SCOPE: Record<ChatToolCatalogRoute, readonly ChatToolName[]> = {
-  // 跨记录检索/复合问法的通用入口：全量 9 个
-  autonomous_tools: [
-    "get_ride_context", "get_capabilities", "compare_rides", "find_ride",
-    "get_health_profile", "get_training_load", "search_knowledge_base",
-    "get_ride_history", "get_route_overview",
-  ],
-  // 问知识为主，允许"结合我这次骑行"的补充。
-  // AGT-B4（§5.5 判定的 L1 处置）：**加 get_health_profile**——实测 C1「我的 FTP 多少，
-  // 另外为什么要练区间」在旧裁剪表下模型一次工具都不调、直接硬答导致整体 REPAIR_FAILED
-  // （不是少答一部分，而是整轮失败）。知识类问题天然夹"我的基线是多少"，故补齐。
-  kb_qa: ["search_knowledge_base", "get_ride_context", "get_health_profile"],
-  // 评估 = 档案 + 负荷 + 历史 + 路线四件事。
-  // AGT-B4（L1）：**加 search_knowledge_base**——实测 C2「练得多不多，这样安排合理吗」
-  // 的次诉求是"合理性"，需要知识解释；缺 KB 工具时模型只能在数据里绕。
-  level_assessment: ["get_health_profile", "get_training_load", "get_ride_history", "get_route_overview", "search_knowledge_base"],
-  // 其他路由不进循环
-  none: [],
+  autonomous_tools: activeTools, kb_qa: activeTools, level_assessment: activeTools, none: [],
 };
 
 // 每个工具的模型侧输入说明（catalog 下发内容）。与 parseChatToolInvocation 的严格键集对应：
@@ -204,9 +189,9 @@ const CHAT_TOOL_CATALOG_INPUTS: Record<ChatToolName, Record<string, unknown>> = 
   },
 };
 
-/** 路由 → catalog 裁剪档（AGT-B4）：只有三条 L2b 路由有工具面，其余不下发。 */
+/** Compatibility adapter: every data label maps to the same active catalog. */
 export function chatToolCatalogRouteOf(route: string): ChatToolCatalogRoute {
-  return route === "autonomous_tools" || route === "kb_qa" || route === "level_assessment" ? route : "none";
+  return ["current_ride", "capabilities", "history_compare", "autonomous_tools", "kb_qa", "level_assessment"].includes(route) ? "autonomous_tools" : "none";
 }
 
 // 每个工具的用途与边界（catalog 下发给模型）。写"用来做什么 + 不要用它做什么"，
@@ -231,7 +216,7 @@ export function buildChatToolCatalog(anchorRideId: string, route: ChatToolCatalo
   return {
     schemaVersion: CHAT_TOOL_CATALOG_SCHEMA_VERSION,
     anchorRideId,
-    tools: CHAT_TOOL_CATALOG_SCOPE[route].map((tool) => ({ tool, purpose: CHAT_TOOL_CATALOG_PURPOSE[tool], input: CHAT_TOOL_CATALOG_INPUTS[tool] })),
+    tools: (route === "none" ? [] : activeChatCapabilities()).map(({ tool }) => ({ tool, purpose: CHAT_TOOL_CATALOG_PURPOSE[tool], input: CHAT_TOOL_CATALOG_INPUTS[tool] })),
   };
 }
 
@@ -331,7 +316,7 @@ function normalizeLoopCall(call: ChatToolLoopCallRequest, anchorRideId: string, 
   const toolName = call.tool as ChatToolName;
   const spec = chatToolSpecs[toolName];
   // 未注册工具（含 B0 只落合同、catalog 未下发的 5 个新工具）直接判非法。
-  if (!spec) return "INVALID_TOOL_CALL";
+  if (!isActiveChatTool(call.tool) || !spec) return "INVALID_TOOL_CALL";
   const raw: Record<string, unknown> = { ...call.input };
   // AGT-H1：两个记录类工具的锚点注入改为 `rideRef`——**显式表达**"用这一条"，
   // 而不是让工具内部默默当"最新一次"处理。锚点为空（无记录）时**不注入**，
@@ -482,9 +467,9 @@ export function createChatToolLoopRunner(repository: ApplicationRepository, owne
   return {
     async startLoop({ text, decision, summaries = [], anchor }): Promise<ChatToolLoopStartResult> {
       recentOverview = decision.route === "level_assessment" || isRecentOverviewQuestion(text);
-      // AGT-B4：三条 L2b 路由都可进循环（各自的 catalog 由路由裁剪决定）；
-      // training_plan / training_supervision 仍不进（F/G 承接）。
-      if (decision.route !== "autonomous_tools" && decision.route !== "kb_qa" && decision.route !== "level_assessment") {
+      // Legacy labels only guide reference interpretation and window defaults.
+      // They do not select an executor or restrict the active capability catalog.
+      if (!["autonomous_tools", "kb_qa", "level_assessment", "current_ride", "capabilities", "history_compare"].includes(decision.route)) {
         return { ok: false, code: "TOOLS_UNAVAILABLE" };
       }
       try {
@@ -496,14 +481,16 @@ export function createChatToolLoopRunner(repository: ApplicationRepository, owne
             // 只要该 route 的 catalog 里存在不依赖锚点的工具，就用**空锚点**启动循环；
             // 模型若要查"某次骑行"，注入空 rideId 后会被 parseChatToolInvocation 判非法
             // （INVALID_TOOL_CALL）——那是合理拒绝，比整轮零模型降级好得多。
-            const catalogTools = CHAT_TOOL_CATALOG_SCOPE[chatToolCatalogRouteOf(decision.route)];
-            const hasAnchorFreeTool = catalogTools.some((tool) => chatToolSpecs[tool].anchorMode === "none");
+            const hasAnchorFreeTool = activeChatCapabilities().some(capability => capability.spec.anchorMode === "none");
             if (!hasAnchorFreeTool) throw new ChatToolOrchestrationError("TOOLS_NO_CURRENT_RIDE");
             console.log("[chat-trace] [loop] start without anchor | no rides but catalog has anchor-free tools");
             return { ok: true as const, anchorRideId: "", resolvedAnchor: { source: "default_latest" as const } };
           }
           const resolution = resolveRideAnchor({ text, route: decision.route, summaries, entries, override: anchor });
           if (resolution.status === "clarify") throw new ChatToolOrchestrationError("TOOLS_ANCHOR_CLARIFY", resolution.reply, resolution.candidates);
+          if (resolution.source === "default_latest" && !anchor && !hasExplicitChatRideReference(text) && !lastChatRideChoice(summaries) && !lastSummarizedAnchor(summaries) && /分析.*骑行|解读.*骑行|骑行.*解读/.test(text) && !recentOverview) {
+            throw new ChatToolOrchestrationError("TOOLS_ANCHOR_CLARIFY", "你想分析哪一次骑行？请从记录中选择。", chatRideCandidates(entries));
+          }
           return {
             ok: true as const,
             anchorRideId: resolution.record.activity.rideId,

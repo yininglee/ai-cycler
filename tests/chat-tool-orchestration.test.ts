@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { publicChatAgentResult, runChatAgent, type ChatProvider } from "../src/chat/chat-agent.ts";
+import { publicChatAgentResult, runLegacyChatAgent, type ChatProvider } from "../src/chat/chat-agent.ts";
 import {
   CHAT_TOOL_ORCHESTRATION_MAX_SUMMARIES,
   ChatToolOrchestrationError,
@@ -196,7 +196,7 @@ test("invalid tool-route output is rejected without exposing the private tool co
   const { repository } = repositoryFor(records, "latest-ride");
   const provider = new RecordingProvider();
   const text = "最近一次骑行平均功率是多少？";
-  const result = await runChatAgent({
+  const result = await runLegacyChatAgent({
     text,
     decision: classifyChatInput(text),
     provider,
@@ -220,7 +220,7 @@ test("CHAT-07 passes only a de-identified tool projection to the provider and va
   const { repository } = repositoryFor(records, "latest-ride");
   const provider = new ToolAnswerProvider();
   const text = "最近一次骑行平均功率是多少？";
-  const result = await runChatAgent({
+  const result = await runLegacyChatAgent({
     text,
     decision: classifyChatInput(text),
     provider,
@@ -252,7 +252,7 @@ test("CHAT-08 repairs a tool answer once while preserving private context bounda
     JSON.stringify({ schemaVersion: "ride-chat-output-v0.1", route: "current_ride", reply: "third call", claimIds: ["claim:context:1"], capabilityKeys: [] }),
   ]);
   const text = "最近一次骑行平均功率是多少？";
-  const result = await runChatAgent({
+  const result = await runLegacyChatAgent({
     text,
     decision: classifyChatInput(text),
     provider,

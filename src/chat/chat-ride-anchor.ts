@@ -1,3 +1,5 @@
+import { lastChatRideChoice } from "./chat-context.ts";
+import { rideRecordByOrdinal } from "./chat-ride-ref.ts";
 import type { RideRecord } from "../domain/ride-schema.ts";
 import { classifyChatInput, type ChatRoute, type ChatRoutingDecision, type ChatSessionSummary } from "./chat-routing.ts";
 import {
@@ -121,6 +123,7 @@ function resolveByDate(
 export function lastSummarizedAnchor(summaries: readonly ChatSessionSummary[]): string | undefined {
   if (summaries.at(-1)?.route === "level_assessment") return undefined;
   for (let index = summaries.length - 1; index >= 0; index -= 1) {
+    if (summaries[index]?.rideScope || summaries[index]?.route === "level_assessment") return undefined;
     const anchor = summaries[index]?.rideAnchor;
     if (anchor) return anchor;
   }
@@ -175,6 +178,15 @@ export function resolveRideAnchor(input: {
     return { ...byDate, date: input.override.date, source: "override" };
   }
 
+  const ordinalMatch = /倒数第?([0-9]+|[一二两三四五六七八九十]+)次/.exec(text);
+  if (ordinalMatch) {
+    const digits: Record<string, number> = { 一: 1, 二: 2, 两: 2, 三: 3, 四: 4, 五: 5, 六: 6, 七: 7, 八: 8, 九: 9, 十: 10 };
+    const n = /^\d+$/.test(ordinalMatch[1]) ? Number(ordinalMatch[1]) : digits[ordinalMatch[1]];
+    const record = n ? rideRecordByOrdinal(entries, -n) : undefined;
+    return record ? { status: "resolved", record, date: rideAnchorDate(record.activity.startTime), source: "explicit_ordinal" }
+      : { status: "clarify", reason: "ordinal_out_of_range", candidates: chatRideCandidates(entries), reply: "没有找到你指定序号的骑行，请从记录中选择。" };
+  }
+
   // ① 显式日期：本人记录查找；**同日多条 → 列候选**（AGT-H1 修掉的静默猜测）。
   const explicit = extractExplicitRideDate(text);
   if (explicit) {
@@ -183,7 +195,7 @@ export function resolveRideAnchor(input: {
   }
 
   const inheritAnchor = (): RideAnchorResolution => {
-    const selected = summaries.at(-1)?.choice;
+    const selected = lastChatRideChoice(summaries);
     if (selected?.kind === "ride") {
       const record = entries.find(entry => entry.record.activity.rideId === selected.id)?.record;
       return record ? { status: "resolved", record, date: rideAnchorDate(record.activity.startTime), source: "inherited" } : { status: "clarify", reply: "所选骑行已不可用，请重新选择记录。" };
@@ -252,7 +264,7 @@ export function detectAnchorConfirmation(input: {
   summaries: readonly ChatSessionSummary[];
 }): AnchorConfirmationPending | null {
   const pending = input.summaries[input.summaries.length - 1];
-  if (!pending || pending.rideAnchor !== undefined) return null;
+  if (!pending || pending.rideAnchor !== undefined || pending.choice !== undefined || (pending.rideScope !== undefined && pending.rideScope !== "pending")) return null;
   if (!RIDE_ANCHOR_TOOL_ROUTES.includes(pending.route)) return null;
   if (!CONFIRMATION_ROUTES.has(input.decision.route)) return null;
   const compact = input.text.trim().replaceAll(/\s/g, "");
@@ -296,6 +308,15 @@ export function resolveAnchorConfirmation(input: {
 
 // RIDE_IDENTITY（“当次是哪一次”）按锚点应答；无锚点时披露“按最近一次处理”。
 export function rideIdentityReply(summaries: readonly ChatSessionSummary[], entries: ReadonlyArray<{ record: RideRecord }>): string {
+  const selected = lastChatRideChoice(summaries);
+  if (selected) {
+    const record = entries.find(entry => entry.record.activity.rideId === selected.id)?.record;
+    if (!record) return "所选骑行已不可用，请重新选择记录。";
+    const date = rideAnchorDate(record.activity.startTime);
+    const time = date ? new Date(record.activity.startTime!).toLocaleTimeString("zh-CN", { timeZone: "Asia/Shanghai", hour: "2-digit", minute: "2-digit", hour12: false }) : undefined;
+    return date ? `当前对话选择的是 ${rideAnchorDateLabel(date)} ${time} 出发的骑行。` : "当前对话使用你已选择的记录；该记录没有有效出发日期。";
+  }
+  if (!lastSummarizedAnchor(summaries) && summaries.some(summary => summary.rideScope || summary.route === "level_assessment")) return "当前没有选定单次骑行；可以从记录中选择要分析的那一次。";
   const anchorDate = lastSummarizedAnchor(summaries);
   if (anchorDate) {
     const target = parseRideAnchorDate(anchorDate);

@@ -389,3 +389,28 @@ export function routingEventAttributes(input: {
   if (input.routedBy === "rules_l0") return { ...base, classifierStatus: "skipped_l0" };
   return input.outcome ? { ...base, ...classifierOutcomeAttributes(input.outcome, input.route) } : base;
 }
+
+/** ARCH-02: reuse semantic boundary checks and legacy context hints, never choose
+ * a data executor. Without a classifier, unknown wording enters the one loop;
+ * it cannot bypass evidence validation to invent a factual answer.
+ */
+export async function resolveChatExecutionRouting(input: Parameters<typeof resolveChatRouting>[0]): Promise<ChatRoutingResolution> {
+  const resolution = await resolveChatRouting(input);
+  if (resolution.routedBy === "rules" && !classifyChatInputL0(input.text)) {
+    const length = input.ruleDecision.normalizedLength;
+    if (/(执行评估|训练监督|计划完成情况)/.test(input.text)) {
+      return { ...resolution, decision: makeChatDecision("training_supervision", "none", "TRAINING_SUPERVISION", length) };
+    }
+    if (/(制定|生成|安排|创建|修改|调整|给我|帮我).{0,12}(训练计划|骑行计划|课表)|(训练计划|训练课表).{0,12}(制定|生成|调整)/.test(input.text)) {
+      return { ...resolution, decision: makeChatDecision("training_plan", "none", "TRAINING_PLAN", length) };
+    }
+    if (resolution.decision?.route === "capability_gap") {
+      const level = /能力水平|体能水平|水平怎么样|水平如何|体能变化/.test(input.text);
+      return { ...resolution, decision: makeChatDecision(level ? "level_assessment" : "autonomous_tools", "none", level ? "LEVEL_ASSESSMENT" : "AUTONOMOUS_TOOLS", length) };
+    }
+    if (resolution.decision?.route === "out_of_scope") {
+      return { ...resolution, decision: makeChatDecision("autonomous_tools", "none", "AUTONOMOUS_TOOLS", length) };
+    }
+  }
+  return resolution;
+}

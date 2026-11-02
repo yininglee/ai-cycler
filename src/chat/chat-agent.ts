@@ -1,3 +1,5 @@
+import { chatExecutionRoute, type ChatExecutionRoute } from "./chat-execution.ts";
+import { classifyChatInputL0, makeChatDecision } from "./chat-routing.ts";
 import { CHAT_ROUTING_SCHEMA_VERSION, RIDE_IDENTITY, type ChatRoutingDecision, type ChatSessionSummary } from "./chat-routing.ts";
 import { rideIdentityReply, type RideAnchorOverride } from "./chat-ride-anchor.ts";
 import { chatRideRefReply } from "./chat-ride-ref.ts";
@@ -7,7 +9,6 @@ import {
   CHAT_TOOL_LOOP_TIMEOUT_MS,
   ChatToolOrchestrationError,
   buildChatToolCatalog,
-  chatToolCatalogRouteOf,
   parseChatToolCallRequest,
   type ChatProviderToolCatalog,
   type ChatToolContext,
@@ -147,6 +148,8 @@ export type ChatAgentResult = {
   schemaVersion: typeof CHAT_AGENT_SCHEMA_VERSION;
   decision: ChatRoutingDecision;
   execution: ChatAgentExecution;
+  executionRoute?: ChatExecutionRoute;
+  choice?: { kind: "ride"; id: string };
   modelInvoked: boolean;
   reply: string;
   // CHAT-17 P3：L2b 循环新增降级码——TOOLS_LOOP_BUDGET_EXHAUSTED（预算耗尽）、
@@ -937,18 +940,19 @@ function hasUsableLoopClaims(toolResult: ChatToolResult): boolean {
 async function runAutonomousToolLoop(input: {
   text: string;
   decision: ChatRoutingDecision;
-  provider: ChatProvider;
+  provider?: ChatProvider;
   loopRunner: ChatToolLoopRunner;
   requestId?: string;
   summaries: readonly ChatSessionSummary[];
   sessionSummaries: Array<{ question: string; route: string; rideAnchor?: string }>;
   anchorOverride?: RideAnchorOverride;
+  referenceDecision?: ChatRoutingDecision;
 }): Promise<ChatAgentResult> {
   const { decision } = input;
   const tag = `[chat-trace] [${input.requestId ?? "agent"}]`;
   const start: ChatToolLoopStartResult = await input.loopRunner.startLoop({
     text: input.text,
-    decision,
+    decision: input.referenceDecision ?? decision,
     summaries: [...input.summaries],
     ...(input.anchorOverride ? { anchor: input.anchorOverride } : {}),
   });
@@ -968,8 +972,10 @@ async function runAutonomousToolLoop(input: {
     return toolFallback(decision, start.code);
   }
 
+  if (!input.provider) return { ...fallback(decision, "MODEL_NOT_CONFIGURED"), ...(start.resolvedAnchor.date && start.resolvedAnchor.source !== "default_latest" ? { rideAnchor: start.resolvedAnchor.date } : {}), ...(start.anchorRideId && start.resolvedAnchor.source !== "default_latest" ? { choice: { kind: "ride", id: start.anchorRideId } } : {}) };
+
   const anchorRideId = start.anchorRideId;
-  const rideAnchor = start.resolvedAnchor.date;
+  const rideAnchor = start.resolvedAnchor.source === "default_latest" ? undefined : start.resolvedAnchor.date;
   const steps: ChatToolLoopTrace["steps"] = [];
   const completed: Array<{ tool: ChatToolResult["tool"]; result: ChatToolResult }> = [];
   // AGT-B5：无记录时 anchorRideId 为空串——白名单不该含空串（否则模型传空 rideId 会被当成合法 id）
@@ -986,9 +992,8 @@ async function runAutonomousToolLoop(input: {
     route: decision.route as ChatOutputRoute,
     text: input.text,
     ...(input.sessionSummaries.length ? { sessionSummaries: input.sessionSummaries } : {}),
-    // AGT-B3/B4：catalog 按路由裁剪（autonomous_tools = 9 全量 / kb_qa = KB+context /
-    // level_assessment = 档案·负荷·历史·路线）。
-    toolCatalog: buildChatToolCatalog(anchorRideId, chatToolCatalogRouteOf(decision.route)),
+    // ARCH-02: active registry, independent of legacy intent labels.
+    toolCatalog: buildChatToolCatalog(anchorRideId),
   };
   const withLoop = (result: ChatAgentResult, status: ChatToolLoopTrace["status"]): ChatAgentResult => ({
     ...result,
@@ -1002,6 +1007,7 @@ async function runAutonomousToolLoop(input: {
       ...(validationRejections.length ? { validationRejections: [...validationRejections] } : {}),
     },
     ...(rideAnchor ? { rideAnchor } : {}),
+    ...(anchorRideId && start.resolvedAnchor.source !== "default_latest" ? { choice: { kind: "ride", id: anchorRideId } } : {}),
   });
   const budgetExhausted = (): ChatAgentResult => withLoop({
     schemaVersion: CHAT_AGENT_SCHEMA_VERSION,
@@ -1024,11 +1030,11 @@ async function runAutonomousToolLoop(input: {
         ...(completed.length > 0 ? { toolResults: projection.toolResults } : {}),
       };
       console.log(`${tag} L2b provider.run #${providerCalls + 1} | toolCalls=${toolCalls}/${CHAT_TOOL_LOOP_MAX_TOOL_CALLS} results=${completed.length}`);
-      const response = await input.provider.run(invocation);
       providerCalls += 1;
+      const response = await input.provider.run(invocation);
       const request = parseChatToolCallRequest(response.rawText);
       if (!request) {
-        // 最终回答：动态溯源白名单校验 + 一次受限修复（不计入循环模型调用预算）。
+        // 最终回答：动态溯源白名单校验 + 一次受限修复（计入总 provider 预算）。
         const validationContext = {
           decision,
           loopToolResults: completed.map((entry) => entry.result),
@@ -1055,10 +1061,11 @@ async function runAutonomousToolLoop(input: {
         // AGT-B5（第六轮 ORCH-19 r1 = 156.6s 暴露的预算洞）：修复轮在循环迭代**内部**执行，
         // 不经过 while 开头的整轮检查——多个 25s 调用可以叠加越过 60s 上限（实测 6 次
         // provider 全耗尽 = 156s）。修复不计入 provider 预算（既有合同），但必须受**时间**预算。
-        if (Date.now() - startedAt >= CHAT_TOOL_LOOP_TIMEOUT_MS) {
+        if (providerCalls >= CHAT_TOOL_LOOP_MAX_PROVIDER_CALLS || Date.now() - startedAt >= CHAT_TOOL_LOOP_TIMEOUT_MS) {
           console.log(`${tag} L2b repair SKIPPED | elapsed=${Date.now() - startedAt}ms ≥ ${CHAT_TOOL_LOOP_TIMEOUT_MS}ms`);
           return budgetExhausted();
         }
+        providerCalls += 1;
         const repaired = await input.provider.run({
           ...invocation,
           repairInstruction: repairInstruction(firstValidation.publicResult.code, "autonomous_tools"),
@@ -1207,7 +1214,10 @@ async function runAutonomousToolLoop(input: {
   }
 }
 
-export async function runChatAgent(input: {
+/** @deprecated Historical fixed-tool executor for rollback/old measurement assets only.
+ * Production chat uses runChatAgent below; no request flag selects this executor.
+ */
+export async function runLegacyChatAgent(input: {
   text: string;
   decision: ChatRoutingDecision;
   provider?: ChatProvider;
@@ -1409,6 +1419,44 @@ export async function runChatAgent(input: {
     console.log(`${tag} model-only → fallback code=${code}`);
     return fallback(decision, code);
   }
+}
+
+export type ChatAgentInput = Parameters<typeof runLegacyChatAgent>[0];
+
+/** Three execution modes, one data/knowledge loop. Legacy route stays on the
+ * public result so existing local history and pending-reference turns still read.
+ */
+export async function runChatAgent(input: ChatAgentInput): Promise<ChatAgentResult> {
+  // Re-check L0 before reading stale context or calling any model/tool.
+  const l0 = classifyChatInputL0(input.text);
+  const hint = l0 ?? input.decision;
+  const executionRoute = chatExecutionRoute(input.text, hint);
+  const decision = { ...hint, allowModel: executionRoute === "agent_loop", ...(executionRoute === "agent_loop" ? { action: "tool_then_model" as const } : {}) };
+  if (executionRoute === "deterministic" && decision.route === "social") {
+    return { schemaVersion: CHAT_AGENT_SCHEMA_VERSION, decision, executionRoute,
+      execution: "template", modelInvoked: false, reply: "你好，我是 Cycler。可以聊聊你的骑行、训练表现，或想了解的骑行知识。" };
+  }
+  if (executionRoute !== "agent_loop") {
+    const result = await runLegacyChatAgent({ ...input, decision, provider: undefined, toolRunner: undefined, loopRunner: undefined });
+    return { ...result, executionRoute };
+  }
+  if (!input.loopRunner) return { ...toolFallback(decision, "TOOLS_UNAVAILABLE"), executionRoute };
+  // The model protocol has one task label; old intent never selects evidence rules.
+  const loopDecision = makeChatDecision("autonomous_tools", "none", "AUTONOMOUS_TOOLS", decision.normalizedLength);
+  const result = await runAutonomousToolLoop({
+    text: input.text, decision: loopDecision, provider: input.provider,
+    loopRunner: input.loopRunner, requestId: input.requestId,
+    summaries: input.summaries ?? [],
+    sessionSummaries: (input.summaries ?? []).map(summary => ({
+      question: summary.question, route: summary.route,
+      ...(summary.rideAnchor ? { rideAnchor: summary.rideAnchor } : {}),
+    })),
+    ...(input.anchorOverride ? { anchorOverride: input.anchorOverride } : {}),
+    // Reference interpretation and default history window are contextual hints,
+    // independent of the single execution route and model output protocol.
+    referenceDecision: ["current_ride", "capabilities", "history_compare", "kb_qa", "level_assessment"].includes(decision.route) ? decision : loopDecision,
+  });
+  return { ...result, decision, executionRoute };
 }
 
 export function publicChatAgentResult(result: ChatAgentResult): ChatAgentPublicResult {

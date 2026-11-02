@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { runChatAgent } from "../src/chat/chat-agent.ts";
+import { runLegacyChatAgent } from "../src/chat/chat-agent.ts";
 import {
   ChatToolOrchestrationError,
   createChatToolRunner,
@@ -272,7 +272,7 @@ test("tool orchestration surfaces TOOLS_ANCHOR_CLARIFY for bare deixis and the a
   );
 
   // 编排错误进入 agent 后成为一等确定性路径：template、零模型调用、澄清话术直达用户。
-  const result = await runChatAgent({ text, decision: classifyChatInput(text), toolRunner: runner });
+  const result = await runLegacyChatAgent({ text, decision: classifyChatInput(text), toolRunner: runner });
   assert.equal(result.execution, "template");
   assert.equal(result.modelInvoked, false);
   assert.equal(result.fallbackCode, "TOOLS_ANCHOR_CLARIFY");

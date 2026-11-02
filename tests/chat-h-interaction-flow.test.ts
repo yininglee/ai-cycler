@@ -36,10 +36,11 @@ test("real chat API: semantic intent -> autonomous data/KB tools -> validated an
     if (body.model === "test-classifier") return reply({ schemaVersion: "chat-classifier-v0.2", intent: mode === "overview" ? "level_assessment" : "ride_summary", needsClarification: false });
     const raw = body.messages[1].content.match(/<chat_request>\s*([\s\S]*?)\s*<\/chat_request>/)![1];
     const input = JSON.parse(raw); invocations.push(input);
+    if (mode === "single" && !input.toolResults) return reply({ schemaVersion: "ride-chat-tool-call-v0.1", calls: [{ tool: "get_ride_context", input: { dims: ["summary", "heart_rate"] } }] });
     if (mode === "overview" && !input.toolResults) return reply({ schemaVersion: "ride-chat-tool-call-v0.1", calls: [{ tool: "get_ride_history", input: { rideId: null, windowDays: 30, metrics: ["distanceM", "avgPowerW"] } }, { tool: "search_knowledge_base", input: { keywords: ["心率"], maxEntries: 1 } }] });
     const history = input.toolResults?.find((r: any) => r.context?.tool === "get_ride_history")?.context;
     const knowledge = input.toolResults?.find((r: any) => r.context?.tool === "search_knowledge_base")?.context;
-    const context = history ?? input.toolContext;
+    const context = history ?? input.toolResults?.find((r: any) => r.context?.tool === "get_ride_context")?.context;
     assert.ok(context?.claims?.length);
     return reply({ schemaVersion: "ride-chat-output-v0.2", route: input.route, reply: mode === "overview" ? `近期有 ${history.rideCount} 次骑行。应结合骑行目的理解负荷，不能只凭均速判断进步。` : "已查看你选择的这次骑行，可以结合时长和强度理解这些数据。", claimIds: [context.claims[0].claimId], knowledgeIds: knowledge ? [knowledge.items[0].knowledgeId] : [], capabilityKeys: [] });
   }) as typeof fetch;

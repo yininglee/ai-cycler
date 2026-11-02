@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
-import { runChatAgent } from "../src/chat/chat-agent.ts";
+import { runLegacyChatAgent } from "../src/chat/chat-agent.ts";
 import { createChatToolLoopRunner, createChatToolRunner } from "../src/chat/chat-tool-orchestration.ts";
 import { classifyChatInput } from "../src/chat/chat-routing.ts";
 import { getRideFixture } from "../src/fixtures/rides.ts";
@@ -50,7 +50,7 @@ test("AEVAL-M3-CHAT fixed set drives the frozen routing contract", async () => {
     if (item.expected.action) assert.equal(decision.action, item.expected.action, item.caseId);
 
     if (item.expected.provider === "never") {
-      const result = await runChatAgent({ text: item.input, decision, toolRunner: runner });
+      const result = await runLegacyChatAgent({ text: item.input, decision, toolRunner: runner });
       assert.equal(result.modelInvoked, false, item.caseId);
       assert.equal(result.execution, "template", item.caseId);
       if (item.expected.fallbackCode) assert.equal(result.fallbackCode, item.expected.fallbackCode, item.caseId);
@@ -63,7 +63,7 @@ test("AEVAL-M3-CHAT fixed set drives the frozen routing contract", async () => {
 test("AEVAL-M3-CHAT anchor cases drive the CHAT-14 ride-anchor contract", async () => {
   const clarifyCase = fixedSet.cases.find((item) => item.caseId === "CHAT-REG-17");
   assert.ok(clarifyCase, "CHAT-REG-17 present");
-  const clarifyResult = await runChatAgent({
+  const clarifyResult = await runLegacyChatAgent({
     text: clarifyCase.input,
     decision: classifyChatInput(clarifyCase.input),
     toolRunner: runner,
@@ -116,7 +116,7 @@ test("AEVAL-M3-CHAT L2b cases drive the CHAT-17 autonomous tool loop contract", 
   const loopRunner = createChatToolLoopRunner(l2bRepository, "owner-a");
   const successCase = fixedSet.cases.find((item) => item.caseId === "CHAT-REG-19");
   assert.ok(successCase, "CHAT-REG-19 present");
-  const successResult = await runChatAgent({
+  const successResult = await runLegacyChatAgent({
     text: successCase.input,
     decision: classifyChatInput(successCase.input),
     provider: {
@@ -150,7 +150,7 @@ test("AEVAL-M3-CHAT L2b cases drive the CHAT-17 autonomous tool loop contract", 
   const noMatchCase = fixedSet.cases.find((item) => item.caseId === "CHAT-REG-21");
   assert.ok(noMatchCase, "CHAT-REG-21 present");
   let noMatchProviderCalls = 0;
-  const noMatchResult = await runChatAgent({
+  const noMatchResult = await runLegacyChatAgent({
     text: noMatchCase.input,
     decision: classifyChatInput(noMatchCase.input),
     provider: {
@@ -169,7 +169,7 @@ test("AEVAL-M3-CHAT L2b cases drive the CHAT-17 autonomous tool loop contract", 
   // CHAT-REG-25（无 Provider）：autonomous_tools 无模型配置 → 确定性降级，零模型调用。
   const noProviderCase = fixedSet.cases.find((item) => item.caseId === "CHAT-REG-25");
   assert.ok(noProviderCase, "CHAT-REG-25 present");
-  const noProviderResult = await runChatAgent({
+  const noProviderResult = await runLegacyChatAgent({
     text: noProviderCase.input,
     decision: classifyChatInput(noProviderCase.input),
     loopRunner,

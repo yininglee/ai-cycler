@@ -172,40 +172,22 @@ test("AGT-B3 越权锚点：并行路径同样拦截（allowedRideIds 之外）"
 
 // ---- catalog 按路由裁剪（§5.3 快照）----
 
-test("AGT-B3 catalog：四类路由的工具集是固定快照", () => {
-  const toolsOf = (route: ChatToolCatalogRoute): ChatToolName[] =>
-    buildChatToolCatalog("ride-1", route).tools.map((entry) => entry.tool);
-
-  assert.deepEqual(toolsOf("autonomous_tools"), [
-    "get_ride_context", "get_capabilities", "compare_rides", "find_ride",
-    "get_health_profile", "get_training_load", "search_knowledge_base",
-    "get_ride_history", "get_route_overview",
-  ]);
-  // AGT-B4 预期变更（§5.5 的 L1 处置）：kb_qa 补 get_health_profile、level_assessment 补
-  // search_knowledge_base——真实探针证明"知识问题夹个人基线""评估问题夹合理性解释"都会答漏。
-  assert.deepEqual(toolsOf("kb_qa"), ["search_knowledge_base", "get_ride_context", "get_health_profile"]);
-  assert.deepEqual(toolsOf("level_assessment"), [
-    "get_health_profile", "get_training_load", "get_ride_history", "get_route_overview", "search_knowledge_base",
-  ]);
-  assert.deepEqual(toolsOf("none"), []);
+test("ARCH-02 catalog: old data labels share the full implemented registry", () => {
+  const tools = buildChatToolCatalog("ride-1").tools;
+  assert.equal(tools.length, 9);
+  for (const route of ["autonomous_tools", "kb_qa", "level_assessment"] as const) {
+    assert.deepEqual(buildChatToolCatalog("ride-1", route).tools, tools);
+  }
+  assert.deepEqual(buildChatToolCatalog("ride-1", "none").tools, []);
 });
 
-test("AGT-B3 catalog：裁剪真实生效（kb_qa 看不到历史/路线，评估看不到检索类）", () => {
-  const kbTools = buildChatToolCatalog("ride-1", "kb_qa").tools.map((entry) => entry.tool);
-  assert.equal(kbTools.includes("get_ride_history"), false);
-  assert.equal(kbTools.includes("get_route_overview"), false);
-
-  const assessTools = buildChatToolCatalog("ride-1", "level_assessment").tools.map((entry) => entry.tool);
-  // AGT-B4：评估现在也要 KB（次诉求是"合理性解释"），但仍不给检索/比较类工具
-  assert.equal(assessTools.includes("search_knowledge_base"), true);
-  assert.equal(assessTools.includes("find_ride"), false);
-  assert.equal(assessTools.includes("compare_rides"), false);
-
-  // 每个下发的工具都必须有输入说明（否则模型无法构造调用）
-  for (const route of ["autonomous_tools", "kb_qa", "level_assessment"] as const) {
-    for (const entry of buildChatToolCatalog("ride-1", route).tools) {
-      assert.ok(Object.keys(entry.input).length > 0, `${entry.tool} 缺输入说明`);
+test("ARCH-02 catalog: compound queries can access data, comparison and knowledge together", () => {
+  for (const route of ["kb_qa", "level_assessment"] as const) {
+    const catalog = buildChatToolCatalog("ride-1", route);
+    for (const tool of ["get_ride_history", "get_route_overview", "find_ride", "compare_rides", "search_knowledge_base"]) {
+      assert.ok(catalog.tools.some(entry => entry.tool === tool));
     }
+    assert.ok(catalog.tools.every(entry => Object.keys(entry.input).length && entry.purpose.length));
   }
 });
 

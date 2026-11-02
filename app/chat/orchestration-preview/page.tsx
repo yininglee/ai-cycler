@@ -5,7 +5,7 @@ import { Brand } from "../../components/app-shell";
 import { ChatOrchestrationPreview } from "../../components/chat-orchestration-preview";
 import { getRequestSession } from "../../../src/auth/session.ts";
 import { ChatProviderError, runChatAgent, type ChatProvider, type ChatProviderInvocation } from "../../../src/chat/chat-agent.ts";
-import { createChatToolRunner } from "../../../src/chat/chat-tool-orchestration.ts";
+import { createChatToolLoopRunner } from "../../../src/chat/chat-tool-orchestration.ts";
 import { inspectChatInput } from "../../../src/chat/chat-routing.ts";
 import { getApplicationRepository } from "../../../src/persistence/application-repository.ts";
 
@@ -21,7 +21,10 @@ class PreviewChatProvider implements ChatProvider {
     if (this.mode === "rate-limited") throw new ChatProviderError("MODEL_RATE_LIMITED", "preview");
     if (this.mode === "repair" && this.calls === 1) return { rawText: "这不是符合合同的模型输出" };
     if (this.mode === "repair-fail") return { rawText: "这不是符合合同的模型输出" };
-    return { rawText: JSON.stringify({ schemaVersion: "ride-chat-output-v0.1", route: input.route, reply: "你好，我可以陪你查看当前已开放的骑行数据范围。", claimIds: [], capabilityKeys: [] }) };
+    if (!input.toolResults) return { rawText: JSON.stringify({ schemaVersion: "ride-chat-tool-call-v0.1", calls: [{ tool: "search_knowledge_base", input: { keywords: ["心率"], maxEntries: 1 } }] }) };
+    const knowledge = input.toolResults.find(entry => entry.context.tool === "search_knowledge_base")?.context;
+    const knowledgeIds = knowledge?.tool === "search_knowledge_base" ? knowledge.items.map(item => item.knowledgeId) : [];
+    return { rawText: JSON.stringify({ schemaVersion: "ride-chat-output-v0.2", route: input.route, reply: "已检索到骑行知识；分析个人训练时还需结合实际数据。", claimIds: [], capabilityKeys: [], knowledgeIds }) };
   }
 }
 
@@ -44,7 +47,7 @@ export default async function ChatOrchestrationPreviewPage({
       text: gatewayResult.text,
       decision: gatewayResult.decision,
       provider: providerPreview ? new PreviewChatProvider(providerMode as "preview" | "repair" | "repair-fail" | "rate-limited") : undefined,
-      toolRunner: session ? createChatToolRunner(getApplicationRepository(), session.userId) : undefined,
+      loopRunner: session ? createChatToolLoopRunner(getApplicationRepository(), session.userId) : undefined,
       requestId: "preview-request",
     })
     : null;
@@ -54,7 +57,7 @@ export default async function ChatOrchestrationPreviewPage({
     <section className="page-intro compact">
       <p className="kicker">LOCAL DEMO · CHAT-08</p>
       <h1>编排检查</h1>
-      <p className="lead">检查路由到模板、受限工具上下文或 Provider 的固定顺序。首轮输出不合规时最多只修复一次；修复失败、超时或限流统一切换为确定性模板。当前骑行问题只会查询当前本地会话的最新私有记录。</p>
+      <p className="lead">检查确定性回复与统一 Agent 工具循环。预览 Provider 使用固定的知识检索分支演示协议，不验证真实模型的理解或回答质量；正常对话请返回伙伴页面。</p>
     </section>
     <ChatOrchestrationPreview text={text} providerMode={providerMode} gatewayResult={gatewayResult} result={result} />
   </main>;

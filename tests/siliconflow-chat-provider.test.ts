@@ -79,7 +79,7 @@ test("SiliconFlow chat provider sends the code-hosted prompt with a de-identifie
   assert.equal(body.messages[0]?.role, "system");
   assert.equal(body.messages[0]?.content, CHAT_WORKFLOW_SYSTEM_PROMPT);
   // AGT-B0/B3/B4 预期变更：Prompt 升 v0.2.0（输出合同 v0.2 + 数字等价类 + 三路由 + 预算 4/5 + 能力清单）。
-  assert.equal(CHAT_WORKFLOW_PROMPT_VERSION, "ride-chat-prompt-v0.2.9");
+  assert.equal(CHAT_WORKFLOW_PROMPT_VERSION, "ride-chat-prompt-v0.3.0");
   const userContent = body.messages[1]?.content ?? "";
   assert.match(userContent, /<chat_request>/);
   assert.match(userContent, /<repair_instruction>\n\n<\/repair_instruction>/);

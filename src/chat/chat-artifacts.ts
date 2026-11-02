@@ -7,9 +7,9 @@ import { sanitizeChatInteractionPayload, type ChatRideListItem, type ChatArtifac
 
 /** Presentation is projected from authorized tool results, never from model-authored IDs. */
 export function buildChatRecordInteraction(results: readonly ChatToolResult[], records: readonly RideRecord[], selectionNeeded = false, candidateIds?: readonly string[]): { artifact?: ChatArtifact; choices?: ChatChoice[]; quickActions?: ChatQuickAction[] } {
-  const history = results.find(r => r.tool === "get_ride_history");
+  const history = [...results].reverse().find(r => r.tool === "get_ride_history");
   const ids = history?.tool === "get_ride_history" ? history.rows.map(r => r.rideId) : results.flatMap(r => r.tool === "find_ride" ? r.matches.map(m => m.rideId) : "rideId" in r && typeof r.rideId === "string" ? [r.rideId] : []);
-  const authorized = selectionNeeded ? candidateIds ?? chatRideCandidates(records.map(record => ({ record })), 20).map(c => c.rideId) : [...new Set(ids)];
+  const authorized = [...new Set(selectionNeeded ? candidateIds ?? chatRideCandidates(records.map(record => ({ record })), 20).map(c => c.rideId) : ids)].filter(id => records.some(record => record.activity.rideId === id));
   const items: ChatRideListItem[] = authorized.slice(0, 20).flatMap(id => {
     const record = records.find(r => r.activity.rideId === id);
     if (!record) return [];

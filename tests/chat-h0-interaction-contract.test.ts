@@ -153,16 +153,17 @@ test("quickActions 反例：未知 kind / rideId 含空白 / 缺 dateLabel → �
 // 三件套出口净化 + 响应形状兼容
 // ---------------------------------------------------------------------------
 
-test("出口净化：非法字段被剔除、合法字段保留、未提供的键不出现在响应里", () => {
+test("出口净化：非法列表一并剔除依赖选项，独立选项仍兼容", () => {
   const sanitized = sanitizeChatInteractionPayload({
     choices: [rideChoice],
     artifact: { kind: "route_map", payload: {} },
     quickActions: undefined,
   });
-  assert.deepEqual(sanitized.choices, [rideChoice]);
+  assert.equal(sanitized.choices, undefined);
+  assert.deepEqual(sanitizeChatInteractionPayload({ choices: [rideChoice] }).choices, [rideChoice]);
   assert.equal(sanitized.artifact, undefined);
   assert.equal(sanitized.quickActions, undefined);
-  assert.deepEqual(sanitized.droppedFields, ["artifact"]);
+  assert.deepEqual(sanitized.droppedFields, ["choices", "artifact"]);
 });
 
 test("publicChatAgentResult：旧结果（无新字段）响应形状零变化", () => {

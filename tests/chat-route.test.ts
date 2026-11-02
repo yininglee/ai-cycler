@@ -21,7 +21,7 @@ test("chat route derives a missing current ride server-side without accepting or
   assert.equal(body.decision.allowModel, true);
   assert.equal(body.modelInvoked, false);
   assert.equal(body.execution, "template");
-  assert.equal(body.fallbackCode, "TOOLS_NO_CURRENT_RIDE");
+  assert.equal(body.fallbackCode, "MODEL_NOT_CONFIGURED");
   assert.equal(body.providerRawOutput, undefined);
   assert.equal(body.toolContext, undefined);
   assert.equal(body.toolTrace, undefined);
@@ -45,10 +45,10 @@ test("chat route blocks safety input before any model path", async () => {
   });
 });
 
-// CHAT-13：历史比较路由——首骑（窗口内无历史）走 D1 确定性降级，
-// 零模型调用、不生成进步/退步结论，事件只记录脱敏观测属性。
+// ARCH-02: comparison is chosen inside the unified loop. Without a provider,
+// no fixed compare tool runs and no pending unvalidated context is exposed.
 
-test("chat route answers history_compare with the deterministic D1 degradation for a first ride (CHAT-13)", async () => {
+test("chat route uses the unified loop and reports missing provider instead of silently selecting compare_rides", async () => {
   const session = resolveOrCreateRequestSession(new Request("http://localhost"));
   const repository = getApplicationRepository();
   const fixture = (await import("../src/fixtures/rides.ts")).getRideFixture("l1-built-in-sample");
@@ -75,21 +75,20 @@ test("chat route answers history_compare with the deterministic D1 degradation f
   assert.deepEqual({ route: body.decision.route, action: body.decision.action, modelInvoked: body.modelInvoked, execution: body.execution }, {
     route: "history_compare", action: "tool_then_model", modelInvoked: false, execution: "template",
   });
-  assert.equal(body.fallbackCode, undefined);
-  assert.match(body.reply, /暂时无法把这次骑行和最近 30 天的历史作比较/);
-  assert.match(body.reply, /不会给出进步或退步的结论/);
-  assert.equal(body.toolTrace?.tool, "compare_rides");
-  assert.equal(body.toolTrace?.status, "completed");
+  assert.equal(body.fallbackCode, "MODEL_NOT_CONFIGURED");
+  assert.match(body.reply, /对话模型尚未配置/);
+  assert.equal(body.toolTrace, undefined);
   assert.equal(body.toolContext, undefined);
   assert.equal(body.providerRawOutput, undefined);
-  assert.equal(JSON.stringify(body).includes("history-compare-ride"), false);
+  assert.equal((body as unknown as { choice: { id: string } }).choice.id, "history-compare-ride");
   const events = await repository.listDemoEvents(session.userId);
   const completed = events.filter((event) => event.type !== "chat_requested").at(-1);
   assert.ok(completed);
-  assert.equal(completed.type, "chat_completed");
+  assert.equal(completed.type, "chat_degraded");
   assert.equal(completed.attributes?.route, "history_compare");
-  assert.equal(completed.attributes?.toolStatus, "completed");
-  assert.equal(completed.attributes?.toolCalls, "1");
+  assert.equal(completed.attributes?.executionRoute, "agent_loop");
+  assert.equal(completed.attributes?.toolStatus, "not_called");
+  assert.equal(completed.attributes?.toolCalls, "0");
 });
 
 test("chat route records only redacted observability metadata", async () => {
@@ -102,10 +101,11 @@ test("chat route records only redacted observability metadata", async () => {
   assert.equal(response.status, 200);
   const events = await getApplicationRepository().listDemoEvents(session.userId);
   const chatEvents = events.filter((event) => event.type.startsWith("chat_"));
-  assert.deepEqual(chatEvents.map((event) => event.type), ["chat_requested", "chat_degraded"]);
+  assert.deepEqual(chatEvents.map((event) => event.type), ["chat_requested", "chat_completed"]);
   assert.equal(chatEvents[0]?.requestRef?.length, 20);
   assert.equal(chatEvents[0]?.attributes?.route, "social");
-  assert.equal(chatEvents[1]?.attributes?.fallbackCode, "MODEL_NOT_CONFIGURED");
+  assert.equal(chatEvents[1]?.attributes?.fallbackCode, undefined);
+  assert.equal(chatEvents[1]?.attributes?.executionRoute, "deterministic");
   assert.equal(chatEvents[1]?.attributes?.tokenStatus, "not_observed");
   assert.equal(chatEvents[1]?.attributes?.costStatus, "not_observed");
   const serialized = JSON.stringify(chatEvents);
@@ -274,7 +274,7 @@ test("active mode without classifier configuration degrades to the rule layer (C
       route: "current_ride",
       modelInvoked: false,
       execution: "template",
-      fallbackCode: "TOOLS_NO_CURRENT_RIDE",
+      fallbackCode: "MODEL_NOT_CONFIGURED",
     });
     const events = await getApplicationRepository().listDemoEvents(session.userId);
     const requested = events.find((event) => event.type === "chat_requested");
@@ -328,9 +328,10 @@ test("chat route clarifies bare deixis, then completes the pending question on c
   assert.equal(second.status, 200);
   const secondBody = await second.json() as { decision: { route: string }; execution: string; rideAnchor?: string; reply: string };
   assert.equal(secondBody.decision.route, "current_ride");
-  assert.equal(secondBody.execution, "tool_context_pending_validation");
+  assert.equal(secondBody.execution, "template");
+  assert.match(secondBody.reply, /对话模型尚未配置/);
   assert.equal(secondBody.rideAnchor, "2026-08-18");
-  assert.equal(JSON.stringify(secondBody).includes("anchor-e2e-ride"), false);
+  assert.equal((secondBody as unknown as { choice: { id: string } }).choice.id, "anchor-e2e-ride");
 
   const events = await getApplicationRepository().listDemoEvents(session.userId);
   // 最后一轮（确认轮）的 chat_requested 事件携带 anchorConfirmation 属性。

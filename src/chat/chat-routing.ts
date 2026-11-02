@@ -1,3 +1,4 @@
+import { isChatRideScope, type ChatRideScope } from "./chat-context.ts";
 import { isChatChoiceRef, type ChatChoiceRef } from "./chat-interaction.ts";
 
 export const CHAT_ROUTING_SCHEMA_VERSION = "chat-routing-v0.2" as const;
@@ -51,6 +52,7 @@ export type ChatSessionSummary = {
   // `rideAnchor`（日期）自此降级为纯展示与日志；**"用户选的是哪条记录"以 choice.id 为准**
   // （日期在"同一天骑两次"时无法唯一定位，这是 H3 要修的根本问题）。
   choice?: ChatChoiceRef;
+  rideScope?: ChatRideScope;
 };
 
 const CHAT_ROUTE_VALUES: readonly ChatRoute[] = [
@@ -101,7 +103,7 @@ export function sanitizeChatSummaries(value: unknown): { summaries: ChatSessionS
     if (typeof item !== "object" || item === null || Array.isArray(item)) return { summaries: [], dropped: true };
     const record = item as Record<string, unknown>;
     const keys = Object.keys(record);
-    if (keys.some((key) => key !== "kind" && key !== "question" && key !== "route" && key !== "rideAnchor" && key !== "choice")) {
+    if (keys.some((key) => key !== "kind" && key !== "question" && key !== "route" && key !== "rideAnchor" && key !== "choice" && key !== "rideScope")) {
       return { summaries: [], dropped: true };
     }
     if (record.kind !== "session_turn") return { summaries: [], dropped: true };
@@ -120,12 +122,14 @@ export function sanitizeChatSummaries(value: unknown): { summaries: ChatSessionS
     if (record.choice !== undefined && !isChatChoiceRef(record.choice)) {
       return { summaries: [], dropped: true };
     }
+    if (record.rideScope !== undefined && (!isChatRideScope(record.rideScope) || record.choice !== undefined || record.rideAnchor !== undefined)) return { summaries: [], dropped: true };
     summaries.push({
       kind: "session_turn",
       question: record.question,
       route: record.route as ChatRoute,
       ...(record.rideAnchor !== undefined ? { rideAnchor: record.rideAnchor } : {}),
       ...(record.choice !== undefined ? { choice: record.choice as ChatChoiceRef } : {}),
+      ...(isChatRideScope(record.rideScope) ? { rideScope: record.rideScope } : {}),
     });
   }
   return { summaries, dropped: false };
@@ -375,7 +379,7 @@ export function classifyChatInputL0(text: string): ChatRoutingDecision | undefin
   // CHAT-17 P2：含筛选/极值/阈值标记的问法（“骑得最快的一次是哪次？”）不是身份回指，
   // 不被句尾“是哪次”锚定吞掉——交给业务意图链路（find_ride）承接。
   if (RIDE_IDENTITY.test(noSpace) && !isFindRideQuestion(noSpace)) return makeChatDecision("aggregate", "none", "AGGREGATE", normalizedLength);
-  if (!SINGLE_RIDE_REFERENCE.test(noSpace)) {
+  if (!SINGLE_RIDE_REFERENCE.test(noSpace) && !/为什么|为何|原因|分析|建议|合理|怎么样|如何|是否|相比|对比|比较|进步|退步|表现|状态/.test(noSpace)) {
     if (AGGREGATE_TOTAL.test(noSpace) || AGGREGATE_WEEK.test(noSpace)) return makeChatDecision("aggregate", "none", "AGGREGATE", normalizedLength);
     if (AGGREGATE_LATEST.test(noSpace) && AGGREGATE_TIME.test(noSpace)) return makeChatDecision("aggregate", "none", "AGGREGATE", normalizedLength);
   }

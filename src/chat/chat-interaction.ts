@@ -309,6 +309,13 @@ export function sanitizeChatInteractionPayload(input: {
   const choices = sanitizeChatChoices(input.choices);
   const artifact = sanitizeChatArtifact(input.artifact);
   const quickActions = sanitizeChatQuickActions(input.quickActions);
+  // A supplied ride-list is the reference set for buttons/choices in this envelope.
+  // Do not render an independently well-shaped action for a different record.
+  if (input.artifact !== undefined && (artifact.dropped || artifact.value?.kind === "ride_list")) {
+    const ids = new Set(artifact.value?.kind === "ride_list" ? artifact.value.payload.items.map(item => item.rideId) : []);
+    if (choices.value?.some(choice => choice.kind === "ride" && !ids.has(choice.id))) { choices.value = undefined; choices.dropped = true; }
+    if (quickActions.value?.some(action => !ids.has(action.rideId))) { quickActions.value = undefined; quickActions.dropped = true; }
+  }
   const droppedFields: Array<"choices" | "artifact" | "quickActions"> = [];
   if (choices.dropped) droppedFields.push("choices");
   if (artifact.dropped) droppedFields.push("artifact");

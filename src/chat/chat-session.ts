@@ -1,3 +1,4 @@
+import { isChatRideScope, type ChatRideScope } from "./chat-context.ts";
 import type { ChatRoute, ChatSessionSummary } from "./chat-routing.ts";
 import { isChatChoiceRef, sanitizeChatInteractionPayload, type ChatAgentInteraction, type ChatChoiceRef } from "./chat-interaction.ts";
 import { chatInitialMessage, type ChatHomeSnapshot, type ChatMessage } from "./chat-home.ts";
@@ -18,6 +19,7 @@ export type ChatSessionSummarySlot = {
   route?: ChatRoute;
   rideAnchor?: string;
   choice?: ChatChoiceRef;
+  rideScope?: ChatRideScope;
 };
 
 export type ChatConversation = {
@@ -101,7 +103,7 @@ export function appendChatTurn(
   userText: string,
   assistantText: string,
   source: ChatSessionSummarySource,
-  turn?: { route: ChatRoute; rideAnchor?: string; choice?: ChatChoiceRef },
+  turn?: { route: ChatRoute; rideAnchor?: string; choice?: ChatChoiceRef; rideScope?: ChatRideScope },
   interaction?: ChatAgentInteraction,
 ): ChatSessionState {
   const summarySlot: ChatSessionSummarySlot = turn
@@ -110,8 +112,9 @@ export function appendChatTurn(
       source,
       question: userText.slice(0, CHAT_SESSION_QUESTION_MAX_CHARS),
       route: turn.route,
-      ...(turn.rideAnchor ? { rideAnchor: turn.rideAnchor } : {}),
-      ...(turn.choice ? { choice: turn.choice } : {}),
+      ...(turn.rideAnchor && !turn.rideScope ? { rideAnchor: turn.rideAnchor } : {}),
+      ...(turn.choice && !turn.rideScope ? { choice: turn.choice } : {}),
+      ...(turn.rideScope ? { rideScope: turn.rideScope } : {}),
     }
     : { kind: "deterministic_turn", source };
   return {
@@ -136,6 +139,7 @@ export function buildChatSessionSummaries(conversation: ChatConversation): ChatS
       route: slot.route,
       ...(slot.rideAnchor ? { rideAnchor: slot.rideAnchor } : {}),
       ...(slot.choice ? { choice: slot.choice } : {}),
+      ...(slot.rideScope ? { rideScope: slot.rideScope } : {}),
     }];
   });
 }
@@ -154,6 +158,7 @@ function isChatSessionSummarySlot(value: unknown): boolean {
   if (slot.rideAnchor !== undefined && typeof slot.rideAnchor !== "string") return false;
   // AGT-H0：v0.3 choice 槽位——缺省合法（旧会话），提供则必须结构正确。
   if (slot.choice !== undefined && !isChatChoiceRef(slot.choice)) return false;
+  if (slot.rideScope !== undefined && (!isChatRideScope(slot.rideScope) || slot.choice !== undefined || slot.rideAnchor !== undefined)) return false;
   return slot.route === undefined || typeof slot.route === "string";
 }
 
