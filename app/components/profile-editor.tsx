@@ -1,5 +1,6 @@
 "use client";
 
+import { StatusBadge } from "./status-badge";
 import { useEffect, useMemo, useState } from "react";
 import type { FormEvent } from "react";
 
@@ -113,10 +114,10 @@ export default function ProfileEditor({ onSaved, formOnly = false }: { onSaved?:
     <div className="profile-layout">
       <form className="profile-card" onSubmit={save}>
         {!formOnly && <div className="profile-card-heading">
-          <div><p className="kicker">基本资料</p><h2>先建立你的个人基线</h2></div>
+          <div><h2>基本资料</h2></div>
           <span className="local-badge">开发会话</span>
         </div>}
-        <p className="profile-card-copy">年龄用于估算默认最大心率；身高和体重会为后续运动消耗等确定性计算提供输入。也可以在聊天中提供明确数值，经你确认后保存。所有字段均可跳过。</p>
+        <p className="profile-card-copy">用于理解你的骑行数据。所有项目均可留空，也可以在对话中补充，确认后保存。</p>
         <fieldset className="profile-fields" disabled={!hydrated || busy}>
           <label><span>年龄</span><div className="input-with-unit"><input inputMode="numeric" type="number" min="10" max="120" value={values.age} onChange={(event) => updateField("age", event.target.value)} placeholder="例如 32" /><em>岁</em></div></label>
           <label><span>身高</span><div className="input-with-unit"><input inputMode="decimal" type="number" min="100" max="250" step="0.1" value={values.heightCm} onChange={(event) => updateField("heightCm", event.target.value)} placeholder="例如 175" /><em>cm</em></div></label>
@@ -133,7 +134,7 @@ export default function ProfileEditor({ onSaved, formOnly = false }: { onSaved?:
 
       {!formOnly && <section className="profile-facts" aria-label="隐私与账户">
         <div className="consent-status">
-          <div><span>隐私说明确认</span><p>{consent ? `已确认 · ${formatTime(consent.acceptedAt)}` : "尚未确认"}</p></div>
+          <div><span>隐私说明确认</span><p><StatusBadge tone={consent ? "active" : "pending"}>{consent ? "已确认" : "尚未确认"}</StatusBadge>{consent && <span className="ui-version"> {formatTime(consent.acceptedAt)}</span>}</p></div>
           {!consent && <button className="clear-profile" type="button" onClick={acceptConsent}>确认隐私说明</button>}
         </div>
         <button className="clear-profile" type="button" onClick={deleteAccount}>删除账户数据</button>

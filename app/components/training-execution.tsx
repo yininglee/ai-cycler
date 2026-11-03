@@ -1,4 +1,5 @@
 "use client";
+import { StatusBadge } from "./status-badge";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import type { ChatTrainingExecutionArtifact } from "../../src/chat/chat-interaction";
@@ -76,22 +77,26 @@ export function TrainingExecutionCard({ reference, conversationId, pending, onAs
   if (!reference && ["no_plan", "draft_only"].includes(view.status)) return null;
   const execution = view.execution, facts = execution?.facts;
   const state = { no_plan: "还没有已启用的计划", draft_only: "草案尚未启用", not_started: "计划尚未开始", ended: "计划已结束", rest: "今天是休息日", training: "今日训练", replaced: "已替换的训练安排", deleted: "计划已删除 · 执行历史保留" }[view.status];
-  return <section className={styles.card} aria-label={reference ? "训练执行记录" : "今日计划"}>
-    <small>{view.date} · {state}</small><h3>{view.day?.title ?? view.goal ?? "训练安排"}</h3>
+  return <section className={`${styles.card} ${styles.executionCard}`} aria-label={reference ? "训练执行记录" : "今日计划"}>
+    <div className="ui-state-row"><StatusBadge tone={view.status === "training" ? "pending" : "neutral"}>{state}</StatusBadge><span className="ui-version">{view.date}</span>{view.staleReason ? <StatusBadge tone="error">评估需更新</StatusBadge> : execution?.narrative ? <StatusBadge tone="active">已有执行评估</StatusBadge> : null}</div><h3>{view.day?.title ?? view.goal ?? "训练安排"}</h3>
     {view.day && <p>{view.day.minutes ? `${view.day.minutes} 分钟 · ${view.day.purpose}` : "按计划休息，不需要补做或自动增加训练。"}</p>}
     {view.status === "not_started" && <p>{view.startDate} 开始；今天没有待完成任务。</p>}
     {view.status === "ended" && <p>可查看历史，新的安排需重新制定并确认。</p>}
     {view.profileChanged && <p className={styles.note}>资料或目标已变化，当前安排需复核。</p>}
     {view.staleReason && <p role="status">{view.staleReason}</p>}
     {execution && <><p>已由本人确认关联一条骑行记录</p><Link onClick={() => rememberStoredRideInspection(execution.rideId, conversationId)} href={`/rides/${encodeURIComponent(execution.rideId)}?${new URLSearchParams({ from: "chat", ...(conversationId ? { conversation: conversationId } : {}) })}`}>查看关联骑行</Link></>}
-    {facts && <><p><strong>时长达成</strong>：{facts.movingMinutes === null ? "移动时长缺失，无法核实" : `计划 ${facts.plannedMinutes} 分钟，实际移动 ${facts.movingMinutes} 分钟${facts.durationPercent === null ? "" : `，时长比例 ${facts.durationPercent}%`}`}。</p><p><strong>执行质量</strong>：{facts.intensityStatus === "reference_only" ? `平均功率 ${facts.averagePowerW} W，仅作全程参照。` : "强度目标与记录不具备直接比较条件。"}训练步骤完成情况无法核实。</p><ul className={styles.note}>{facts.limitations.map(note => <li key={note}>{note}</li>)}</ul></>}
-    {execution?.narrative && <p>{execution.narrative.reply}</p>}
+    {facts && <dl className={styles.executionMetrics}>
+      <div><dt>计划时长</dt><dd>{facts.plannedMinutes}<small> 分钟</small></dd></div>
+      <div><dt>实际移动</dt><dd>{facts.movingMinutes === null ? "未记录" : facts.movingMinutes}<small>{facts.movingMinutes === null ? "" : " 分钟"}</small></dd></div>
+    </dl>}
+    {(facts || execution?.narrative) && <details className={styles.assessment}>
+      <summary>查看评估与建议</summary>
+      {facts && <><p><strong>时长达成</strong>：{facts.movingMinutes === null ? "移动时长缺失，无法核实" : `计划 ${facts.plannedMinutes} 分钟，实际移动 ${facts.movingMinutes} 分钟${facts.durationPercent === null ? "" : `，时长比例 ${facts.durationPercent}%`}`}。</p><p><strong>执行质量</strong>：{facts.intensityStatus === "reference_only" ? `平均功率 ${facts.averagePowerW} W，仅作全程参照。` : "强度目标与记录不具备直接比较条件。"}训练步骤完成情况无法核实。</p><ul className={styles.note}>{facts.limitations.map(note => <li key={note}>{note}</li>)}</ul></>}
+      {execution?.narrative && <p>{execution.narrative.reply}</p>}
+    </details>}
     {execution && !execution.narrative && <p role="status">{execution.feedbackError ?? (facts ? "事实对比已就绪，AI反馈尚未生成。" : "已关联，尚未完成评估。")}</p>}
-    <div className={styles.actions}>
-      {view.ref && view.status !== "deleted" && <Link href={planDetailHref(view.ref.planId, view.ref.version, conversationId, view.date)}>查看计划</Link>}
-      {view.canLink && <button disabled={busy || pending} onClick={() => { setSelected(undefined); receipt.current = null; setOpen(true); void load(); }}>{execution ? "更换关联记录" : "选择并关联骑行"}</button>}
-      {execution && !["deleted", "replaced"].includes(view.status) && <button disabled={busy || pending} onClick={() => void feedback(view, !!execution.narrative || !!view.staleReason)}>{busy ? "正在评估…" : execution.narrative ? "重新评估" : "生成／重试评估"}</button>}
-      {view.canLink && <RideSyncLauncher label="上传／同步本次训练" conversationId={conversationId} onComplete={(ids, text, origin) => {
+    <div className={styles.executionActions}>
+      {view.canLink && <RideSyncLauncher className={!execution ? "primary-button" : undefined} label="上传／同步本次训练" conversationId={conversationId} onComplete={(ids, text, origin) => {
         if (onImported) { onImported(ids, text, origin); void load(); }
         else if (origin) {
           try {
@@ -101,6 +106,9 @@ export function TrainingExecutionCard({ reference, conversationId, pending, onAs
           } catch { setError("记录已导入；回执暂未保存，请返回原对话查看候选。"); void load(); }
         } else void load();
       }} />}
+      {view.ref && view.status !== "deleted" && <Link href={planDetailHref(view.ref.planId, view.ref.version, conversationId, view.date)}>查看计划</Link>}
+      {view.canLink && <button disabled={busy || pending} onClick={() => { setSelected(undefined); receipt.current = null; setOpen(true); void load(); }}>{execution ? "更换关联记录" : "关联已有骑行"}</button>}
+      {execution && !["deleted", "replaced"].includes(view.status) && <button disabled={busy || pending} onClick={() => void feedback(view, !!execution.narrative || !!view.staleReason)}>{busy ? "正在评估…" : execution.narrative ? "重新评估" : "生成／重试评估"}</button>}
     </div>
     {error && <p role="alert">{error}</p>}
     <BottomSheet open={open} size="large" title="关联一条骑行记录" onClose={() => { if (!busy) setOpen(false); }}><div className={styles.form}>

@@ -149,13 +149,13 @@ function CruiseContent({ chart, cruiseSegments }: { chart: RideSeriesChartDispla
         <span><i />巡航</span>
         {chart.cruiseHighlights.some((highlight) => highlight.isLong) && <span><i className="long" />长巡航</span>}
       </footer>}
-    {chart.key === "speed" && cruiseSegments.length > 0 && <section className="chart-cruise-segments" aria-label="速度曲线对应的巡航区段">
-        <header><strong>巡航区段</strong><span>{cruiseSegments.length} 段</span></header>
+    {chart.key === "speed" && cruiseSegments.length > 0 && <details className="chart-cruise-segments" aria-label="速度曲线对应的巡航区段">
+        <summary><strong>巡航区段</strong><span>{cruiseSegments.length} 段</span></summary>
         {cruiseSegments.map((segment) => <article className="chart-cruise-segment" key={segment.id}>
           <div><strong>{segment.label}</strong><span>{segment.timeRangeLabel} · {segment.durationLabel}</span></div>
           <div><strong>{segment.averageSpeedLabel}</strong><span>{[segment.distanceLabel, segment.variabilityLabel].filter(Boolean).join(" · ")}</span></div>
         </article>)}
-      </section>}
+      </details>}
   </>;
 }
 

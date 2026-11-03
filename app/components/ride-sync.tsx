@@ -1,4 +1,5 @@
 "use client";
+import { StatusBadge } from "./status-badge";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -54,16 +55,16 @@ export function PlatformConnection({ provider, fromChat = false, conversationId 
       <div className="connection-identity"><PlatformMark provider={provider} /><div><h2>{info.name}</h2><p className="ux-meta">平台关联 · 模拟接入</p></div></div>
       <p>仅演示授权与同步，不会连接真实账户。同步样例会参与当前原型的统计和分析。</p>
       {!ready ? error ? <button onClick={() => void load()}>重试读取平台状态</button> : <p role="status">正在读取平台状态…</p> : <>
-        {step === "idle" && (!platform || platform.status === "expired") && <><p>{platform ? "授权已失效，请重新授权；已有骑行保留。" : "尚未连接运动平台"}</p><button className="primary-button" disabled={busy} onClick={() => setStep("authorize")}>关联{info.name}（模拟）</button></>}
+        {step === "idle" && (!platform || platform.status === "expired") && <><p><StatusBadge tone={platform ? "error" : "neutral"}>{platform ? "授权已失效" : "尚未连接运动平台"}</StatusBadge></p>{platform && <p>请重新授权；已有骑行保留。</p>}<button className="primary-button" disabled={busy} onClick={() => setStep("authorize")}>关联{info.name}（模拟）</button></>}
         {step === "authorize" && <div className="sync-step"><h3>模拟授权说明</h3><p>{info.name}将提供骑行时间、距离与可用传感器数据。本步骤不收集平台密码。</p><div className="ux-actions"><button className="primary-button" onClick={() => setStep("range")}>同意并模拟授权</button><button onClick={() => setStep("idle")}>取消授权</button></div></div>}
         {step === "range" && <div className="sync-step"><label>首次同步历史范围<select value={range} onChange={e => setRange(Number(e.target.value) as 7 | 30 | 90)}><option value={7}>近 7 天</option><option value={30}>近 30 天</option><option value={90}>近 90 天</option></select></label><p>连接后点击同步读取此范围；之后只新增尚未同步的记录。</p><div className="ux-actions"><button className="primary-button" disabled={busy} onClick={() => void act("connect")}>完成模拟连接</button><button disabled={busy} onClick={() => setStep("idle")}>取消</button></div></div>}
-        {step === "idle" && platform?.status === "connected" && <><p>已模拟连接 · 历史范围 {platform.range} 天</p><p className="ux-meta">{platform.lastSyncAt ? `上次模拟同步：${new Date(platform.lastSyncAt).toLocaleString("zh-CN")}` : "尚未同步记录"}</p><div className="ux-actions"><button className="primary-button" disabled={busy} onClick={() => void act("sync")}>{busy ? "正在模拟同步…" : "模拟同步新增记录"}</button>{platform.failedIds.length > 0 && <button disabled={busy} onClick={() => void act("retry")}>重试失败记录（{platform.failedIds.length}）</button>}</div></>}
+        {step === "idle" && platform?.status === "connected" && <><p><StatusBadge tone="active">已模拟连接</StatusBadge></p><p>历史范围 {platform.range} 天</p><p className="ux-meta">{platform.lastSyncAt ? `上次模拟同步：${new Date(platform.lastSyncAt).toLocaleString("zh-CN")}` : "尚未同步记录"}</p><div className="ux-actions"><button className="primary-button" disabled={busy} onClick={() => void act("sync")}>{busy ? "正在模拟同步…" : "模拟同步新增记录"}</button>{platform.failedIds.length > 0 && <button disabled={busy} onClick={() => void act("retry")}>重试失败记录（{platform.failedIds.length}）</button>}</div></>}
         {platform && <button className="clear-profile" disabled={busy} onClick={() => void act("disconnect")}>断开模拟连接（保留记录）</button>}
       </>}
       {busy && <p role="status">正在处理模拟平台请求，请稍候…</p>}
       {error && <p role="alert">{error}{!ready ? "" : " 输入和连接信息已保留，可重试当前操作。"}</p>}
-      {result && <div role="status"><p>模拟同步完成：新增 {result.added} 条 · 重复 {result.duplicate} 条 · 失败 {result.failed} 条</p>{!result.added && !result.failed && <p>没有新增记录。</p>}</div>}
-      {result && result.rideIds.length > 0 && <div className="ux-actions"><Link href="/import">查看骑行记录</Link></div>}
+      {result && <div className="ui-notice" role="status"><StatusBadge tone={result.failed ? "error" : "active"}>{result.failed ? "部分同步失败" : "同步完成"}</StatusBadge><p>模拟同步完成：新增 {result.added} 条 · 重复 {result.duplicate} 条 · 失败 {result.failed} 条</p>{!result.added && !result.failed && <p>没有新增记录。</p>}</div>}
+      {result && result.rideIds.length > 0 && <div className="ux-actions"><Link className="secondary-button" href="/import">查看骑行记录<span aria-hidden="true">→</span></Link></div>}
       <details className="sync-demo-settings"><summary>模拟状态演示</summary><label>下次同步结果<select value={scenario} onChange={e => setScenario(e.target.value)}><option value="normal">正常／失败重试恢复</option><option value="partial">部分记录失败</option><option value="network">连接中断</option></select></label><div className="ux-actions"><button disabled={busy || !platform} onClick={() => void act("expire")}>模拟授权失效</button><button disabled={busy || platform?.status !== "connected"} onClick={() => void act("add-sample")}>模拟平台新增一条记录</button></div><p>新增样例后再次同步可检查增量；重复同步不会增加记录。</p></details>
     </section>
 
@@ -102,8 +103,8 @@ export function RideSync({ onComplete, conversationId }: { onComplete?: (ids: st
   </div>;
 }
 
-export function RideSyncLauncher({ label = "同步／导入骑行", onComplete, conversationId }: { label?: string; onComplete?: (ids: string[], text: string, conversationId?: string) => void; conversationId?: string }) {
+export function RideSyncLauncher({ label = "同步／导入骑行", className, onComplete, conversationId }: { label?: string; className?: string; onComplete?: (ids: string[], text: string, conversationId?: string) => void; conversationId?: string }) {
   const [open, setOpen] = useState(false);
   const [origin, setOrigin] = useState<string>();
-  return <><button type="button" onClick={() => { setOrigin(conversationId ?? readStoredChatSession()?.activeConversationId); setOpen(true); }}>{label}</button><BottomSheet open={open} title="同步／导入骑行记录" onClose={() => setOpen(false)}><RideSync conversationId={origin} onComplete={onComplete ? (ids, text, sourceId) => { onComplete(ids, text, sourceId); setOpen(false); } : undefined} /></BottomSheet></>;
+  return <><button className={className} type="button" onClick={() => { setOrigin(conversationId ?? readStoredChatSession()?.activeConversationId); setOpen(true); }}>{label}</button><BottomSheet open={open} title="同步／导入骑行记录" onClose={() => setOpen(false)}><RideSync conversationId={origin} onComplete={onComplete ? (ids, text, sourceId) => { onComplete(ids, text, sourceId); setOpen(false); } : undefined} /></BottomSheet></>;
 }

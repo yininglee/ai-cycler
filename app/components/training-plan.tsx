@@ -1,7 +1,9 @@
 "use client";
+import { StatusBadge } from "./status-badge";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { BottomSheet } from "./profile-sheet";
+import { ArrowIcon } from "./icons";
 import { addPlanDays, emptyPlanIntake, planMonday, planToday, planWeekCount, type PlanIntake } from "../../src/domain/training-plan";
 import type { TrainingPlanView } from "../../src/training/plan-view";
 import type { ChatTrainingPlanArtifact } from "../../src/chat/chat-interaction";
@@ -57,7 +59,8 @@ export function PlanIntakePanel({ onGenerate, onClose }: { onGenerate: () => Pro
   if (!loaded) return <div className={styles.form}>{error ? <p role="alert">{error}<button onClick={() => void load()}>重试读取</button></p> : <p role="status">正在读取已有目标、资料和骑行基础…</p>}</div>;
   const preservedGoal = data?.intake?.goal;
   return <form className={styles.form} onSubmit={event => { event.preventDefault(); if (!busy) void save(true); }}>
-    <p>先选择目标并核对其他信息，再生成待确认草案。也可返回对话补充；不会在这里启用计划。</p>
+    <p className={styles.note}>核对以下信息后生成草案，查看并确认后才会启用。也可以返回对话补充。</p>
+    <fieldset className={styles.formSection}><legend>目标与安排</legend>
     <label>本次计划目标<select value={intake.goal} onChange={e => change("goal", e.target.value)} required>
       <option value="">请选择本次计划目标</option>
       {preservedGoal && !planGoalOptions.includes(preservedGoal) && <option value={preservedGoal}>{preservedGoal}</option>}
@@ -66,20 +69,30 @@ export function PlanIntakePanel({ onGenerate, onClose }: { onGenerate: () => Pro
     <p className={styles.note}>可在对话中补充期望距离、赛事等具体诉求；已有目标会完整保留。</p>
     <div className={styles.twoColumns}><label>开始日期<input type="date" value={intake.startDate ?? ""} onChange={e => change("startDate", e.target.value || null)} required /></label><label>结束日期<input type="date" value={intake.endDate ?? ""} onChange={e => change("endDate", e.target.value || null)} required /></label></div>
     {intake.periodReason && <p className={styles.note}>周期依据：{intake.periodReason}</p>}
-    <fieldset><legend>每周可训练时间</legend>{["周一", "周二", "周三", "周四", "周五", "周六", "周日"].map((label, index) => {
-      const entry = intake.availability.find(day => day.weekday === index + 1);
-      return <div className={styles.availability} key={label}><label><input type="checkbox" checked={!!entry} onChange={event => change("availability", event.target.checked ? [...intake.availability, { weekday: index + 1, minutes: 30 }].sort((a, b) => a.weekday - b.weekday) : intake.availability.filter(day => day.weekday !== index + 1))} />{label}</label>{entry && <label><input aria-label={`${label}可训练分钟`} type="number" min={15} max={240} value={entry.minutes} onChange={e => change("availability", intake.availability.map(day => day.weekday === index + 1 ? { ...day, minutes: Number(e.target.value) } : day))} />分钟</label>}</div>;
-    })}</fieldset>
+    <fieldset className={styles.schedule}><legend>每周可训练时间</legend>
+      <div className={styles.weekdays}>{["一", "二", "三", "四", "五", "六", "日"].map((label, index) => <label key={label}>
+        <input type="checkbox" aria-label={`周${label}`} checked={intake.availability.some(day => day.weekday === index + 1)} onChange={event => change("availability", event.target.checked ? [...intake.availability, { weekday: index + 1, minutes: 30 }].sort((a, b) => a.weekday - b.weekday) : intake.availability.filter(day => day.weekday !== index + 1))} />
+        <span>{label}</span>
+      </label>)}</div>
+      {!intake.availability.length && <p className={styles.note}>选择可训练的日期，再填写各天时长。</p>}
+      {intake.availability.map(entry => <div className={styles.availability} key={entry.weekday}>
+        <label>周{["一", "二", "三", "四", "五", "六", "日"][entry.weekday - 1]}<span className={styles.minutesInput}><input aria-label={`周${["一", "二", "三", "四", "五", "六", "日"][entry.weekday - 1]}可训练分钟`} type="number" min={15} max={240} value={entry.minutes} onChange={e => change("availability", intake.availability.map(day => day.weekday === entry.weekday ? { ...day, minutes: Number(e.target.value) } : day))} />分钟</span></label>
+      </div>)}
+    </fieldset></fieldset>
+    <fieldset className={styles.formSection}><legend>骑行基础</legend>
     <p className={styles.note}>{data?.basis?.rideCount ? `近期有 ${data.basis.rideCount} 条记录，记录可用基础约 ${data.basis.weeklyMinutes ?? "未知"} 分钟／周、单次最长 ${data.basis.longestRideMinutes ?? "未知"} 分钟。记录不完整时可补充自述。` : "没有近期记录也可以填写自述基础；不知道 FTP 不影响生成入门草案。"}</p>
     <div className={styles.twoColumns}><label>近期平均每周骑行（分钟）<input type="number" min={0} max={2400} placeholder={data?.basis?.weeklyMinutes === null ? "请补充" : String(data?.basis?.weeklyMinutes ?? "")} value={intake.weeklyMinutes ?? ""} onChange={e => change("weeklyMinutes", e.target.value === "" ? null : Number(e.target.value))} /></label><label>近期单次最长骑行（分钟）<input type="number" min={0} max={600} placeholder={data?.basis?.longestRideMinutes === null ? "请补充" : String(data?.basis?.longestRideMinutes ?? "")} value={intake.longestRideMinutes ?? ""} onChange={e => change("longestRideMinutes", e.target.value === "" ? null : Number(e.target.value))} /></label></div>
     <label>自述基础（可选）<textarea value={intake.selfReportedBasis} maxLength={400} onChange={e => change("selfReportedBasis", e.target.value)} /></label>
     <label>是否使用功率计<select value={intake.powerMeter === null ? "unknown" : String(intake.powerMeter)} onChange={e => change("powerMeter", e.target.value === "unknown" ? null : e.target.value === "true")}><option value="unknown">不知道／暂不使用功率目标</option><option value="false">没有</option><option value="true">有</option></select></label>
+    </fieldset>
+    <fieldset className={styles.formSection}><legend>训练条件</legend>
     <label>需要避开的日期（YYYY-MM-DD，以逗号分隔）<input value={avoid} onChange={e => setAvoid(e.target.value)} maxLength={1200} /></label>
     <label>当前是否有影响骑行训练的不适<select value={intake.healthConcern === null ? "unknown" : String(intake.healthConcern)} onChange={e => change("healthConcern", e.target.value === "unknown" ? null : e.target.value === "true")} required><option value="unknown">请由本人核对</option><option value="false">目前没有影响训练的不适</option><option value="true">有，需要先取得专业建议</option></select></label>
     <label>其他条件／需避开事项<textarea value={intake.notes} maxLength={400} onChange={e => change("notes", e.target.value)} /></label>
     <p className={styles.note}>无已确认 FTP 或没有功率计时使用主观用力与交谈提示，不推测 FTP 或最大心率。</p>
+    </fieldset>
     {error && <p role="status">{error}</p>}
-    <div className={styles.actions}><button className="primary-button" disabled={busy} type="submit">{busy ? "正在处理…" : "核对信息并生成草案"}</button><button disabled={busy} type="button" onClick={() => void save(false)}>保存信息，稍后继续</button></div>
+    <div className={styles.formFooter}><button className="primary-button" disabled={busy} type="submit">{busy ? "正在处理…" : "核对信息并生成草案"}</button><button disabled={busy} type="button" onClick={() => void save(false)}>保存信息，稍后继续</button></div>
   </form>;
 }
 
@@ -92,7 +105,7 @@ export function TrainingPlanCard({ reference, conversationId, onGenerate }: { re
   const stale = plan && currentVersion !== plan.version;
   if (error && !data) return <section className={styles.card}><p role="status">{error}</p><button onClick={load}>重新读取计划</button></section>;
   return <section className={styles.card} aria-label={reference.view === "intake" ? "计划信息补充" : "训练计划草案"}>
-    <small>{!data ? "正在读取计划…" : reference.view === "intake" ? "计划信息 · 待核对" : stale ? "此版本已更新" : plan && data?.activeVersion === plan.version ? "训练计划 · 已生效" : "训练计划 · 待确认"}</small>
+    <StatusBadge tone={!data || reference.view === "intake" ? "pending" : stale ? "neutral" : plan && data?.activeVersion === plan.version ? "active" : "pending"}>{!data ? "正在读取计划…" : reference.view === "intake" ? "计划信息 · 待核对" : stale ? "此版本已更新" : plan && data?.activeVersion === plan.version ? "训练计划 · 已生效" : "训练计划 · 待确认"}</StatusBadge>
     <h3>{plan?.intake.goal || data?.intake?.goal || "补充训练计划信息"}</h3>
     {plan ? <><p>{plan.intake.startDate} — {plan.intake.endDate} · 版本 {plan.version}</p><p>{plan.days.filter(day => day.week === 1 && day.minutes).length} 次／首周 · 首周 {plan.days.filter(day => day.week === 1).reduce((sum, day) => sum + day.minutes, 0)} 分钟</p><p className={styles.note}>{plan.proposal.rationale}</p><Link className="primary-button" href={planDetailHref(reference.planId, stale ? currentVersion : plan.version, conversationId)}>{stale ? "查看最新计划" : "查看计划"}</Link></>
       : <><p className={styles.note}>补充本次计划的目标、日期与训练条件。核对后生成草案，启用另行确认。</p><button className="primary-button" onClick={() => setOpen(true)}>补充／核对计划信息</button></>}
@@ -106,10 +119,10 @@ export function TrainingPlanBar({ conversationId }: { conversationId: string }) 
   const load = useCallback(() => { void planRequest().then(setData).catch(() => {}); }, []);
   useEffect(() => { load(); window.addEventListener("cycler-plan-updated", load); window.addEventListener("cycler-profile-saved", load); return () => { window.removeEventListener("cycler-plan-updated", load); window.removeEventListener("cycler-profile-saved", load); }; }, [load]);
   const active = data?.active, today = planToday(), monday = planMonday(today);
-  if (!active) return data?.draft ? <div className={styles.emptyBar}><Link href={planDetailHref(data.draft.id, data.draft.version, conversationId)}>查看待确认计划</Link></div> : null;
+  if (!active) return data?.draft ? <div className={styles.emptyBar}><Link href={planDetailHref(data.draft.id, data.draft.version, conversationId)}>查看待确认计划<ArrowIcon /></Link></div> : null;
   return <section className={styles.weekBar} aria-label="本周训练计划">
     <div><Link href={planDetailHref(active.id, active.version, conversationId)}>{active.intake.startDate! > today ? "计划尚未开始" : active.intake.endDate! < today ? "计划已结束" : "本周计划"} · {monday.slice(5)} — {addPlanDays(monday, 6).slice(5)}</Link>{data?.draft && <Link href={planDetailHref(data.draft.id, data.draft.version, conversationId)}>待确认草案</Link>}</div>
     {data?.activeProfileChanged && <p className={styles.note}>基础资料或目标已变化，计划需复核；请先核对后调整。</p>}
-    <nav>{["一", "二", "三", "四", "五", "六", "日"].map((label, i) => { const date = addPlanDays(monday, i), day = active.days.find(item => item.date === date); return <Link key={date} className={date === today ? styles.today : ""} href={planDetailHref(active.id, active.version, conversationId, date)} aria-label={`${date} ${day?.title ?? "无安排"}`}><span>{label}</span><b>{day ? day.minutes ? "骑" : "休" : "—"}</b></Link>; })}</nav>
+    <nav>{["一", "二", "三", "四", "五", "六", "日"].map((label, i) => { const date = addPlanDays(monday, i), day = active.days.find(item => item.date === date); return <Link key={date} className={date === today ? styles.today : ""} href={planDetailHref(active.id, active.version, conversationId, date)} aria-current={date === today ? "date" : undefined} aria-label={`${date} ${day?.title ?? "无安排"}`}><span>{label}</span><b>{Number(date.slice(-2))}</b><small>{day ? day.minutes ? "训练" : "休息" : "—"}</small></Link>; })}</nav>
   </section>;
 }

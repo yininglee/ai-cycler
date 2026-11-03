@@ -1,5 +1,6 @@
 "use client";
 
+import { StatusBadge } from "./status-badge";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { hasInterpretationIdentity, interpretationFailureMessage } from "../../src/ui/ride-interpretation-response";
@@ -235,7 +236,7 @@ export function InterpretationView({
           <p className="kicker">RIDE INSIGHT</p>
           <h1>{title || "AI 骑行解读"}</h1>
           <p>基于本次记录中的可靠证据生成的整体评价、重点维度解读、表现高光与下一步建议。{dateLabel ? `覆盖骑行日期 ${dateLabel}。` : ""}</p>
-          {state.kind === "ok" && state.data.cached && <p className="ux-meta">已有解读 · {state.data.generatedAt ? new Date(state.data.generatedAt).toLocaleString("zh-CN") : "已恢复"}</p>}
+          {state.kind === "ok" && state.data.cached && <div className="ui-state-row"><StatusBadge tone="active">已有解读</StatusBadge><span className="ui-version">{state.data.generatedAt ? new Date(state.data.generatedAt).toLocaleString("zh-CN") : "已恢复"}</span></div>}
         </header>
 
         {state.kind === "loading" && <LoadingSteps />}

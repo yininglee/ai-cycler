@@ -93,7 +93,7 @@ export function InterpretationSheet({
       >
         <header className="interpretation-sheet-header">
           <span className="interpretation-sheet-handle" aria-hidden="true" />
-          <p className="kicker interpretation-sheet-kicker">RIDE INSIGHT</p>
+          <p className="interpretation-sheet-kicker">骑行解读</p>
           <CloseButton label="关闭深度解读" onClick={onClose} />
         </header>
         <div className="interpretation-sheet-body">

@@ -1,4 +1,5 @@
 "use client";
+import { StatusBadge } from "./status-badge";
 import { isChatRideScope, type ChatRideScope } from "../../src/chat/chat-context.ts";
 
 import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
@@ -21,7 +22,7 @@ import { Onboarding, PrototypeSettings } from "./ux-onboarding";
 import { PROFILE_LABELS } from "../../src/chat/profile-proposal";
 import type { ProfileInput } from "../../src/domain/user-profile";
 import Link from "next/link";
-import { BikeIcon, InfoIcon } from "./icons";
+import { ArrowIcon, BikeIcon, InfoIcon } from "./icons";
 import {
   appendChatTurn,
   appendImportedRides,
@@ -308,8 +309,9 @@ export function ChatHome({ snapshot }: { snapshot: ChatHomeSnapshot }) {
       {messages.map((message, index) => {
         const welcome = message.role === "assistant" && (message.kind === "welcome" || index === 0);
         const revealing = revealingMessage?.conversationId === activeConversation.id && revealingMessage.index === index;
-        return <article key={`${activeConversation.id}-${index}`} className={`chat-message chat-message-${message.role}${welcome ? " chat-message-welcome" : ""}`} aria-label={message.role === "assistant" ? "Cycler 的消息" : "你的消息"} aria-busy={revealing || undefined}>
+        return <article key={`${activeConversation.id}-${index}`} className={`chat-message chat-message-${message.role}${welcome ? " chat-message-welcome" : ""}${message.kind === "rides" ? " chat-message-receipt" : ""}`} aria-label={message.role === "assistant" ? "Cycler 的消息" : "你的消息"} aria-busy={revealing || undefined}>
           {message.role === "assistant" && <span className="chat-message-label">Cycler</span>}
+          {message.role === "assistant" && message.kind === "rides" && <StatusBadge>骑行同步／导入结果</StatusBadge>}
           {welcome ? <Onboarding rideCount={snapshot.totalRideCount} onImported={imported} conversationId={activeConversation.id} pending={pending} onStartPlan={() => { if (!pending) void ask("我想制定训练计划。", "typed_input"); }} /> : message.role === "assistant" ? message.interaction?.artifact?.kind === "training_execution" ? <TrainingExecutionReply reference={message.interaction.artifact.payload} onStale={() => { if (revealing) finishReveal(); }}><ChatReplyText text={message.text} reveal={revealing} onComplete={finishReveal} onProgress={followReply} /></TrainingExecutionReply> : <ChatReplyText text={message.text} reveal={revealing} onComplete={finishReveal} onProgress={followReply} /> : <p>{message.text}</p>}
           {message.interaction && <ChatRideList {...message.interaction} pending={pending} conversationId={activeConversation.id} onInspect={inspectRide} onChoose={choice => { if (!pending) void ask("请分析我选择的这次骑行。", "typed_input", choice); }} />}
           {message.interaction?.artifact?.kind === "onboarding" && <div className="ux-actions" aria-label="首次使用引导入口">
@@ -326,11 +328,11 @@ export function ChatHome({ snapshot }: { snapshot: ChatHomeSnapshot }) {
             <button disabled={pending} onClick={() => { if (!pending) void ask("我想制定训练计划。", "typed_input"); }}>制定训练计划</button>
             <span>目标在制定本次计划时补充</span>
           </div>}
-          {message.kind === "rides" && message.rideIds?.length ? <div className="ux-actions"><Link href="/import">查看骑行记录</Link></div> : null}
+          {message.kind === "rides" && message.rideIds?.length ? <div className="ux-actions"><Link className="secondary-button" href="/import">查看骑行记录<ArrowIcon /></Link></div> : null}
         </article>;
       })}
       {proposal && <section className="ux-card" aria-label="待确认个人资料">
-        <p className="kicker">聊天资料补充 · 待确认</p><h2>核对后再保存</h2>
+        <StatusBadge tone="pending">聊天资料补充 · 待确认</StatusBadge><h2>核对后再保存</h2>
         <p>以下内容将替换对应的已保存值。若有冲突，请先修改或取消；未列出的字段保留。</p>
         <dl>{Object.entries(proposal).map(([key, value]) => <div key={key}><dt>{PROFILE_LABELS[key as keyof ProfileInput]}</dt><dd>{previousProfile[key as keyof ProfileInput] !== undefined && previousProfile[key as keyof ProfileInput] !== value ? `${previousProfile[key as keyof ProfileInput]} → ${value === null ? "不知道／未提供" : value}（请确认变更）` : value === null ? (key === "maxHeartRateBpm" ? "不知道（如有年龄，保留明确标识的系统估算）" : "未提供，确认后清除已保存值") : value}</dd></div>)}</dl>
         <p>最大心率可能由年龄估算，估算不等于实测，来源可在资料页查看。</p>
