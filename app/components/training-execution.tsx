@@ -1,4 +1,5 @@
 "use client";
+import { createClientRequestId } from "../../src/ui/client-request-id";
 import { StatusBadge } from "./status-badge";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
@@ -62,7 +63,7 @@ export function TrainingExecutionCard({ reference, conversationId, pending, onAs
     setBusy(true); setError("");
     try {
       if (!receipt.current) {
-        const { grant } = await executionRequest({ action: "issue_link", ...view.ref, rideId: selected, expectedRevision: view.revision, idempotencyKey: crypto.randomUUID() });
+        const { grant } = await executionRequest({ action: "issue_link", ...view.ref, rideId: selected, expectedRevision: view.revision, idempotencyKey: createClientRequestId() });
         const { token, action, targetId, version, idempotencyKey } = grant;
         receipt.current = { confirmed: true, token, action, targetId, version, idempotencyKey };
       }
@@ -116,7 +117,7 @@ export function TrainingExecutionCard({ reference, conversationId, pending, onAs
         else if (origin) {
           try {
             const receipts = parseImportReceipts(JSON.parse(sessionStorage.getItem(CHAT_IMPORT_QUEUE_KEY) ?? "[]"), origin);
-            sessionStorage.setItem(CHAT_IMPORT_QUEUE_KEY, JSON.stringify([...receipts, { receiptId: crypto.randomUUID(), conversationId: origin, ids, text }]));
+            sessionStorage.setItem(CHAT_IMPORT_QUEUE_KEY, JSON.stringify([...receipts, { receiptId: createClientRequestId(), conversationId: origin, ids, text }]));
             window.location.assign(chatReturnPath(origin));
           } catch { setError("记录已导入；回执暂未保存，请返回原对话查看候选。"); void load(); }
         } else void load();

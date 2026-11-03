@@ -1,4 +1,5 @@
 "use client";
+import { createClientRequestId } from "../../src/ui/client-request-id";
 import { StatusBadge } from "./status-badge";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
@@ -50,7 +51,7 @@ export function TrainingPlanDetail({ planId, requestedVersion, conversationId, d
     setBusy(true); setError(""); setMessage("");
     try {
       if (!receipt.current) {
-        const response = await fetch("/api/training-plans", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "issue", planId, version: plan.version, activeVersion: data!.activeVersion, idempotencyKey: crypto.randomUUID() }) });
+        const response = await fetch("/api/training-plans", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "issue", planId, version: plan.version, activeVersion: data!.activeVersion, idempotencyKey: createClientRequestId() }) });
         const result = await response.json(); if (!response.ok) throw new Error(planErrorText(result.error));
         const { token, action, targetId, version, idempotencyKey } = result.grant;
         receipt.current = { confirmed: true, token, action, targetId, version, idempotencyKey };
@@ -76,7 +77,7 @@ export function TrainingPlanDetail({ planId, requestedVersion, conversationId, d
     setBusy(true); setError("");
     try {
       if (!deletionReceipt.current) {
-        const response = await fetch("/api/training-plans", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "issue_delete", planId, version: plan.version, idempotencyKey: crypto.randomUUID() }) });
+        const response = await fetch("/api/training-plans", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "issue_delete", planId, version: plan.version, idempotencyKey: createClientRequestId() }) });
         const result = await response.json(); if (!response.ok) throw new Error(planErrorText(result.error));
         const { token, action, targetId, version, idempotencyKey } = result.grant;
         deletionReceipt.current = { confirmed: true, token, action, targetId, version, idempotencyKey };

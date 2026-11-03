@@ -1,4 +1,5 @@
 "use client";
+import { createClientRequestId } from "../../src/ui/client-request-id";
 import { StatusBadge } from "./status-badge";
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -41,7 +42,7 @@ export function PlatformConnection({ provider, fromChat = false, conversationId 
             const origin = conversationId ?? sessionStorage.getItem("cycler-import-conversation") ?? readStoredChatSession()?.activeConversationId;
             if (!origin) throw new Error("missing origin conversation");
             const pending = parseImportReceipts(JSON.parse(sessionStorage.getItem(CHAT_IMPORT_QUEUE_KEY) ?? "[]"), origin);
-            pending.push({ receiptId: crypto.randomUUID(), ids: v.rideIds, text: `${info.name}模拟同步完成：新增 ${v.added} 条、重复 ${v.duplicate} 条、失败 ${v.failed} 条。`, conversationId: origin });
+            pending.push({ receiptId: createClientRequestId(), ids: v.rideIds, text: `${info.name}模拟同步完成：新增 ${v.added} 条、重复 ${v.duplicate} 条、失败 ${v.failed} 条。`, conversationId: origin });
             sessionStorage.setItem(CHAT_IMPORT_QUEUE_KEY, JSON.stringify(pending));
           } catch { /* The page still displays the completed sync if browser storage is unavailable. */ }
         }
