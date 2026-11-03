@@ -147,6 +147,7 @@ const CHAT_TOOL_CATALOG_INPUTS: Record<ChatToolName, Record<string, unknown>> = 
   assess_training_execution: { planId: "必填，取自 get_training_execution.view.ref.planId。", version: "必填，ref.version。", date: "必填，ref.date。", expectedRevision: "必填，view.revision；须本人已确认关联，不能猜记录ID或替用户关联。只计算并保存事实，最终回答通过校验后保存AI反馈。" },
   get_training_plan_context: { version: "可选，指定本人计划历史／当前版本整数；省略读取当前草案／生效摘要。", date: "可选YYYY-MM-DD，读取所选版本该天的真实训练步骤；不存在的日期day=null，不推测日程。" },
   prepare_training_plan: {
+    startNew: "可选boolean；用户明确要制定新的计划时传true。开始新计划信息核对，清除旧核对状态，保留原生效计划，返回制定计划卡片；普通补充或修改信息时省略。",
     expectedVersion: "必填整数，取自 get_training_plan_context.state.intakeVersion；修改前先读取，不能猜版本。",
     patch: '待核对信息的部分对象。允许 goal(目标文本)、startDate/endDate(YYYY-MM-DD或null)、periodReason(周期依据)、availability:[{weekday:1至7周一至周日,minutes:15至240}]、weeklyMinutes/longestRideMinutes(分钟或null)、selfReportedBasis(用户原话基础)、powerMeter(boolean或null)、avoidDates:[YYYY-MM-DD]、healthConcern(true或null)、notes。只补用户表达和已有资料，不猜时间与基础。healthConcern=false仅用户在信息卡确认，AI不能声明无不适。没有确定周期就留null并追问；也可提出有依据、待用户核对的周期。',
   },
@@ -224,7 +225,7 @@ export const CHAT_TOOL_CATALOG_PURPOSE: Record<ChatToolName, string> = {
   prepare_training_record_link: "提供当日骑行候选的堆叠选择入口，必须本人选择单条并点击确认；同步导入不自动关联。可更换关联，不能拿其他用户或其他日期记录评估。",
   assess_training_execution: "对已确认关联计算真实计划与实际对比，提供时长、可比功率和限制，再由你基于事实及按需知识给亮点、差异、建议。无分段对应不能证明间歇步骤完成，不强给评分、不自动调整计划。",
   get_training_plan_context: "读取本人计划信息、已保存目标和资料、近期记录／自述基础、规则限制、当前草案与生效计划。制定或修改计划前先用它，不需要骑行锚点，不启用计划。",
-  prepare_training_plan: "准备／补充同一份待确认计划信息及原信息卡。与聊天补缺共同维护，保存可恢复的草稿信息；不生成正式日程、不启用。信息要由用户在卡片明确核对后才能生成草案。",
+  prepare_training_plan: "准备／补充待确认计划信息。明确制定新计划时先读取现有计划，再传startNew:true，返回制定计划入口和覆盖提示；不返回现有计划卡片。与聊天补缺共同维护，保存可恢复的草稿信息；不生成正式日程、不启用。信息要由用户在卡片明确核对后才能生成草案。",
   propose_training_plan: "对已由用户确认的信息生成或修改真实日程草案；AI只选择周阶段、合法类型与时长，服务端扩展步骤并经过领域规则硬门。规则失败保留原信息与原草案，可修正。草案生成不等于生效，启用只能由详情页明确按钮完成。",
   prepare_ride_import: "提供同步／导入骑行入口，用户自行选择真实 FIT/GPX 上传或明确模拟的平台。只准备入口，不代表已连接账户、已导入或已生成解读；不需要骑行锚点。",
   get_user_context: "读取本人已保存身体资料和来源，不读取旧独立目标；当前训练目标由 get_training_plan_context 核实。不能将历史对话当成已保存事实。无骑行记录也可用。",

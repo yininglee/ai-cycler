@@ -96,7 +96,7 @@ export type ChatPlanArtifact = {
   kind: "plan";
   payload: Record<string, unknown>;
 };
-export type ChatTrainingPlanArtifact = { kind: "training_plan"; payload: { planId: string; intakeVersion: number; version: number | null; view: "intake" | "draft" | "active" } };
+export type ChatTrainingPlanArtifact = { kind: "training_plan"; payload: { planId: string; intakeVersion: number; version: number | null; view: "intake" | "create" | "draft" | "active" } };
 export type ChatTrainingExecutionArtifact = { kind: "training_execution"; payload: { planId: string; version: number; date: string; view: "link" | "assessment"; revision?: number; assessmentRevision?: number } };
 
 export type ChatProfileProposalArtifact = { kind: "profile_proposal"; payload: { input: ProfileInput; previous: ProfileInput } };
@@ -275,7 +275,7 @@ export function sanitizeChatArtifact(input: unknown): ChatSanitized<ChatArtifact
     case "training_plan": {
       const p = input.payload;
       if (!hasExactKeys(p, ["planId", "intakeVersion", "version", "view"]) || !isIdentifier(p.planId) || typeof p.intakeVersion !== "number" || !Number.isSafeInteger(p.intakeVersion) || p.intakeVersion < 0
-        || !(p.version === null || typeof p.version === "number" && Number.isSafeInteger(p.version) && p.version >= 1) || !["intake", "draft", "active"].includes(String(p.view)) || (p.view !== "intake" && p.version === null)) return { dropped: true };
+        || !(p.version === null || typeof p.version === "number" && Number.isSafeInteger(p.version) && p.version >= 1) || !["intake", "create", "draft", "active"].includes(String(p.view)) || (!["intake", "create"].includes(String(p.view)) && p.version === null)) return { dropped: true };
       return { value: { kind: "training_plan", payload: p as ChatTrainingPlanArtifact["payload"] }, dropped: false };
     }
     case "ride_import":

@@ -1,23 +1,24 @@
 import type { ApplicationRepository } from "../persistence/application-repository.ts";
 import { planRuntime } from "../training/plan-service.ts";
 import { parsePlanIntakePatch, parsePlanProposal, PlanError, planDate, planWeekCount, type PlanIntake, type PlanProposal, type TrainingPlan, type PlanDay } from "../domain/training-plan.ts";
+import { trainingPlanStatus, type TrainingPlanStatus } from "../training/plan-view.ts";
 import type { ChatAgentInteraction } from "./chat-interaction.ts";
 
 export const PLAN_TOOL_NAMES = ["get_training_plan_context", "prepare_training_plan", "propose_training_plan"] as const;
 export type PlanToolName = typeof PLAN_TOOL_NAMES[number];
 export type PlanToolInvocation = { tool: "get_training_plan_context"; input: { version?: number; date?: string } }
-  | { tool: "prepare_training_plan"; input: { patch: Partial<PlanIntake>; expectedVersion: number } }
+  | { tool: "prepare_training_plan"; input: { patch: Partial<PlanIntake>; expectedVersion: number; startNew?: boolean } }
   | { tool: "propose_training_plan"; input: { intakeVersion: number; baseVersion: number; proposal: PlanProposal } };
 const record = (v: unknown): v is Record<string, unknown> => !!v && typeof v === "object" && !Array.isArray(v);
 const version = (v: unknown): v is number => typeof v === "number" && Number.isSafeInteger(v) && v >= 0;
 export function parsePlanTool(tool: unknown, input: Record<string, unknown>): PlanToolInvocation | undefined {
   if (tool === "get_training_plan_context" && Object.keys(input).every(key => ["version", "date"].includes(key)) && (input.version === undefined || version(input.version) && input.version >= 1) && (input.date === undefined || planDate(input.date))) return { tool, input: input as { version?: number; date?: string } };
-  if (tool === "prepare_training_plan" && Object.keys(input).sort().join() === "expectedVersion,patch" && version(input.expectedVersion)) return { tool, input: { patch: parsePlanIntakePatch(input.patch), expectedVersion: input.expectedVersion } };
+  if (tool === "prepare_training_plan" && Object.keys(input).every(key => ["expectedVersion", "patch", "startNew"].includes(key)) && record(input.patch) && version(input.expectedVersion) && (input.startNew === undefined || typeof input.startNew === "boolean")) return { tool, input: { patch: parsePlanIntakePatch(input.patch), expectedVersion: input.expectedVersion, ...(input.startNew !== undefined ? { startNew: input.startNew } : {}) } };
   if (tool === "propose_training_plan" && Object.keys(input).sort().join() === "baseVersion,intakeVersion,proposal" && version(input.intakeVersion) && version(input.baseVersion)) return { tool, input: { intakeVersion: input.intakeVersion, baseVersion: input.baseVersion, proposal: parsePlanProposal(input.proposal) } };
   return undefined;
 }
-function summary(plan: TrainingPlan | null) {
-  return plan ? { id: plan.id, version: plan.version, intakeVersion: plan.intakeVersion, startDate: plan.intake.startDate, endDate: plan.intake.endDate,
+function summary(plan: TrainingPlan | null, status: TrainingPlanStatus = "draft") {
+  return plan ? { status, scheduleOverview: `目标为${plan.intake.goal}，周期${plan.intake.startDate}至${plan.intake.endDate}，首周${plan.days.filter(day => day.week === 1 && day.minutes > 0).length}次训练、共${plan.days.filter(day => day.week === 1).reduce((sum, day) => sum + day.minutes, 0)}分钟。`, id: plan.id, version: plan.version, intakeVersion: plan.intakeVersion, startDate: plan.intake.startDate, endDate: plan.intake.endDate,
     totalMinutes: plan.days.reduce((sum, day) => sum + day.minutes, 0), weeks: planWeekCount(plan.intake),
     weekly: Array.from({ length: planWeekCount(plan.intake) }, (_, i) => { const days = plan.days.filter(day => day.week === i + 1); return { week: i + 1, sessions: days.filter(day => day.minutes > 0).length, minutes: days.reduce((sum, day) => sum + day.minutes, 0) }; }),
     goal: plan.intake.goal, proposal: plan.proposal, basisSource: plan.basis.source } : null;
@@ -38,7 +39,7 @@ export async function executePlanTool(repository: ApplicationRepository, ownerId
   let unchanged = false;
   let issues: PlanToolResult["issues"] = [];
   try {
-    if (call.tool === "prepare_training_plan") { await service.prepare(call.input.patch, call.input.expectedVersion, true); status = "intake_ready"; }
+    if (call.tool === "prepare_training_plan") { await service.prepare(call.input.patch, call.input.expectedVersion, true, call.input.startNew); status = "intake_ready"; }
     if (call.tool === "propose_training_plan") { const plan = await service.propose(call.input); unchanged = plan.version === call.input.baseVersion; status = "draft_ready"; }
   } catch (error) {
     if (!(error instanceof PlanError)) throw error;
@@ -47,17 +48,18 @@ export async function executePlanTool(repository: ApplicationRepository, ownerId
   const context = await service.context(), workspace = context.workspace;
   let selected: PlanToolResult["state"]["selected"] = null;
   if (call.tool === "get_training_plan_context" && (call.input.version !== undefined || call.input.date)) {
-    const plan = call.input.version !== undefined ? workspace.plans.find(plan => plan.version === call.input.version && !workspace.deletedVersions[String(plan.version)]) : context.draft ?? context.active;
+    const plan = call.input.version !== undefined ? workspace.plans.find(plan => plan.version === call.input.version) : context.draft ?? context.active;
     if (!plan) { status = "blocked"; issues.push({ code: "NOT_FOUND", message: "所选计划版本不可用，请核对当前版本。" }); }
-    else selected = { plan: summary(plan), ...(call.input.date ? { date: call.input.date } : {}), day: call.input.date ? plan.days.find(day => day.date === call.input.date) ?? null : null };
+    else selected = { plan: summary(plan, trainingPlanStatus(workspace, plan.version)), ...(call.input.date ? { date: call.input.date } : {}), day: call.input.date ? plan.days.find(day => day.date === call.input.date) ?? null : null };
   }
-  const state = { id: workspace.id, intakeVersion: workspace.intakeVersion, confirmedIntakeVersion: workspace.confirmedIntakeVersion, version: workspace.version, intake: workspace.intake, basis: context.basis, constraints: context.constraints, missing: context.missing, draft: summary(context.draft), active: summary(context.active), selected };
+  const state = { id: workspace.id, intakeVersion: workspace.intakeVersion, confirmedIntakeVersion: workspace.confirmedIntakeVersion, version: workspace.version, intake: workspace.intake, basis: context.basis, constraints: context.constraints, missing: context.missing, draft: summary(context.draft), active: summary(context.active, "active"), selected };
   const claims: PlanToolResult["claims"] = [{ claimId: "claim:plan:workflow", kind: "metric", key: "plan_workflow_available", value: 1, unit: "count", confidence: "high" },
     { claimId: "claim:plan:version", kind: "metric", key: "plan_version", value: state.version, unit: "count", confidence: "high" },
     ...(state.draft ? [{ claimId: "claim:plan:minutes", kind: "metric" as const, key: "plan_total_minutes", value: state.draft.totalMinutes, unit: "min", confidence: "high" as const }] : [])];
   // Only references leave the server. No confirmation token is ever an Agent result.
   const referencedPlan = call.tool === "get_training_plan_context" ? selected?.plan ?? state.draft ?? state.active : status === "draft_ready" ? state.draft : null;
-  const artifact = call.tool === "get_training_plan_context" && status === "blocked" ? undefined : { kind: "training_plan" as const, payload: { planId: workspace.id, intakeVersion: workspace.intakeVersion, version: referencedPlan?.version ?? null, view: referencedPlan ? referencedPlan.version === workspace.activeVersion ? "active" as const : "draft" as const : "intake" as const } };
+  const creating = call.tool === "prepare_training_plan" && call.input.startNew === true && status === "intake_ready";
+  const artifact = call.tool === "get_training_plan_context" && status === "blocked" ? undefined : { kind: "training_plan" as const, payload: { planId: workspace.id, intakeVersion: workspace.intakeVersion, version: referencedPlan?.version ?? null, view: creating ? "create" as const : referencedPlan ? referencedPlan.version === workspace.activeVersion ? "active" as const : "draft" as const : "intake" as const } };
   return { schemaVersion: "chat-tools-v0.2", tool: call.tool, status, state, issues, claims, ...(unchanged ? { unchanged: true } : {}), ...(artifact ? { interaction: { artifact } } : {}) };
 }
 export function planNumericFacts(result: PlanToolResult) {

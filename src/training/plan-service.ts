@@ -91,7 +91,7 @@ export async function planRuntime(ownerId: string, repository: ApplicationReposi
       const draft = current(workspace, workspace.draftVersion), active = current(workspace, workspace.activeVersion);
       return { workspace, basis: actualBasis, constraints: planConstraints(actualBasis), missing: missingPlanIntake(workspace.intake, actualBasis), draft, active, profileChanged: !!(draft ?? active) && (draft ?? active)!.basis.profileHash !== profileHash, activeProfileChanged: !!active && active.basis.profileHash !== profileHash };
     },
-    async prepare(patch: Partial<PlanIntake>, expectedVersion?: number, fromAgent = false) {
+    async prepare(patch: Partial<PlanIntake>, expectedVersion?: number, fromAgent = false, startNew = false) {
       const parsed = parsePlanIntakePatch(patch);
       // Only a direct user form confirmation may declare no training concern.
       if (fromAgent && parsed.healthConcern === false) delete parsed.healthConcern;
@@ -99,8 +99,8 @@ export async function planRuntime(ownerId: string, repository: ApplicationReposi
         const workspace = tx.domain;
         if (expectedVersion !== undefined && workspace.intakeVersion !== expectedVersion) throw new PlanError("VERSION_CONFLICT");
         const next = { ...workspace.intake, ...parsed };
-        if (JSON.stringify(next) !== JSON.stringify(workspace.intake)) {
-          workspace.intake = next; workspace.intakeVersion++; workspace.confirmedIntakeVersion = null; workspace.draftVersion = null;
+        if (startNew || JSON.stringify(next) !== JSON.stringify(workspace.intake)) {
+          workspace.intake = startNew ? { ...next, healthConcern: parsed.healthConcern ?? null } : next; workspace.intakeVersion++; workspace.confirmedIntakeVersion = null; workspace.draftVersion = null;
         }
         return structuredClone(workspace);
       });

@@ -12,9 +12,11 @@ import { TrainingPlanStore } from "../src/persistence/training-plan-store.ts";
 import { createUserProfile } from "../src/domain/user-profile.ts";
 import { addPlanDays, planMonday, planToday, emptyPlanIntake, parsePlanProposal, parsePlanIntakePatch, createTrainingPlan, PlanError, type PlanIntake, type PlanBasis, type PlanProposal } from "../src/domain/training-plan.ts";
 import { planRuntime } from "../src/training/plan-service.ts";
-import { executePlanTool } from "../src/chat/chat-plan-tools.ts";
+import { executePlanTool, parsePlanTool } from "../src/chat/chat-plan-tools.ts";
 import { parsePlanDiscussion, planDiscussionText } from "../src/training/plan-discussion.ts";
 import { validateChatOutput } from "../src/chat/chat-output-validation.ts";
+import { trainingPlanStatus } from "../src/training/plan-view.ts";
+import { sanitizeChatArtifact } from "../src/chat/chat-interaction.ts";
 import { makeChatDecision } from "../src/chat/chat-routing.ts";
 
 const start = addPlanDays(planMonday(planToday()), 7), end = addPlanDays(start, 13);
@@ -259,5 +261,96 @@ test("SCN-04: real chat orchestration prepares and proposes through model-select
     assert.equal(proposedInvalid && repaired && fabricated, true); assert.equal(second.loopTrace.evidenceRecoveryAttempts, 1); assert.equal(second.loopTrace.planProposalRepairAttempts, 1); assert.ok(second.loopTrace.providerCalls <= 6);
     const consent = await ask("不错，可以看看。"); assert.equal(consent.execution, "validated");
     const current = await service.context(); assert.equal(current.workspace.activeVersion, null); assert.equal(current.workspace.draftVersion, 1);
+  } finally { globalThis.fetch = original; for (const [key, value] of Object.entries(previous)) { if (value === undefined) delete process.env[key]; else process.env[key] = value; } }
+});
+
+
+test("SCN-04: discarded drafts are unadopted, replacements and deletions terminated, historical reads stay on their version", async () => {
+  const { f, service, plan } = await draft();
+  const grant = await service.issue({ planId: plan.id, version: 1, activeVersion: null, idempotencyKey: "discarded-grant" });
+  assert.equal((await POST(f.request({ action: "discard", version: 1 }))).status, 200);
+  assert.notEqual((await POST(f.request({ action: "discard", version: 1 }))).status, 200);
+  await assert.rejects(service.confirmation.confirm({ ownerId: f.id, request: confirmRequest(grant) }));
+  let result = await (await GET(f.request(undefined, `?planId=${plan.id}&version=1`))).json();
+  assert.equal(result.planStatuses["1"], "unadopted"); assert.equal(result.viewPlan.version, 1);
+  const second = await service.propose({ intakeVersion: plan.intakeVersion, baseVersion: 1, proposal: proposal() });
+  const activate = await service.issue({ planId: plan.id, version: second.version, activeVersion: null, idempotencyKey: "active-second" });
+  await service.confirmation.confirm({ ownerId: f.id, request: confirmRequest(activate) });
+  const third = await service.propose({ intakeVersion: plan.intakeVersion, baseVersion: 2, proposal: proposal(25) });
+  result = await (await GET(f.request())).json();
+  assert.equal(result.planStatuses["2"], "active"); assert.equal(result.planStatuses["3"], "draft");
+  // A newer draft alone must never terminate the active plan.
+  const fourth = await service.propose({ intakeVersion: plan.intakeVersion, baseVersion: 3, proposal: proposal(20) });
+  result = await (await GET(f.request())).json();
+  assert.equal(result.planStatuses["3"], "unadopted"); assert.equal(result.planStatuses["2"], "active");
+  const replacement = await service.issue({ planId: plan.id, version: fourth.version, activeVersion: 2, idempotencyKey: "replace-second" });
+  await service.confirmation.confirm({ ownerId: f.id, request: confirmRequest(replacement) });
+  result = await (await GET(f.request(undefined, `?planId=${plan.id}&version=2`))).json();
+  assert.equal(result.planStatuses["2"], "terminated"); assert.equal(result.viewPlan.version, 2);
+  const deletion = await service.issueDelete({ planId: plan.id, version: third.version, idempotencyKey: "delete-third" });
+  await service.confirmation.confirm({ ownerId: f.id, request: confirmRequest(deletion) });
+  result = await (await GET(f.request(undefined, `?planId=${plan.id}&version=3`))).json();
+  assert.equal(result.planStatuses["3"], "terminated"); assert.equal(result.viewPlan.version, 3);
+  assert.equal(result.active.version, 4);
+  const selected = await executePlanTool(getApplicationRepository(), f.id, { tool: "get_training_plan_context", input: { version: 3 } });
+  assert.equal(selected.state.selected?.plan?.status, "terminated");
+  const legacy = { activeVersion: null, draftVersion: null, activatedAt: {}, replacedAt: {}, deletedVersions: {} };
+  assert.equal(trainingPlanStatus(legacy, 1), "unadopted");
+});
+
+test("SCN-04: model-selected new-plan preparation shows a create card and requires fresh review without replacing active plan", async () => {
+  const { f, service, plan } = await draft();
+  const grant = await service.issue({ planId: plan.id, version: 1, activeVersion: null, idempotencyKey: "new-plan-current" });
+  await service.confirmation.confirm({ ownerId: f.id, request: confirmRequest(grant) });
+  const pending = await service.propose({ intakeVersion: plan.intakeVersion, baseVersion: 1, proposal: proposal(25) });
+  const lateGrant = await service.issue({ planId: plan.id, version: pending.version, activeVersion: 1, idempotencyKey: "stale-pending" });
+  assert.equal(parsePlanTool("prepare_training_plan", { patch: {}, expectedVersion: plan.intakeVersion, startNew: "yes" }), undefined);
+  assert.equal(parsePlanTool("prepare_training_plan", { expectedVersion: 0 }), undefined);
+  const call = parsePlanTool("prepare_training_plan", { patch: {}, expectedVersion: plan.intakeVersion, startNew: true });
+  assert.ok(call);
+  const prepared = await executePlanTool(getApplicationRepository(), f.id, call);
+  assert.equal(prepared.status, "intake_ready"); assert.equal(prepared.state.active?.version, 1);
+  assert.match(prepared.state.active!.scheduleOverview, /首周3次训练、共90分钟/);
+  assert.equal(prepared.interaction?.artifact?.kind, "training_plan");
+  assert.deepEqual(prepared.interaction?.artifact?.payload, { planId: plan.id, intakeVersion: plan.intakeVersion + 1, version: null, view: "create" });
+  assert.equal(sanitizeChatArtifact(prepared.interaction!.artifact).dropped, false);
+  assert.equal(prepared.state.confirmedIntakeVersion, null); assert.equal(prepared.state.intake.healthConcern, null);
+  assert.equal(prepared.state.intake.goal, intake().goal);
+  assert.equal(trainingPlanStatus((await service.context()).workspace, pending.version), "unadopted");
+  await assert.rejects(service.propose({ intakeVersion: prepared.state.intakeVersion, baseVersion: 2, proposal: proposal() }), code("INTAKE_NOT_CONFIRMED"));
+  await assert.rejects(service.confirmation.confirm({ ownerId: f.id, request: confirmRequest(lateGrant) }));
+  await assert.rejects(service.prepare({ goal: "备赛" }, plan.intakeVersion), code("VERSION_CONFLICT"));
+  assert.equal((await service.context()).active?.version, 1);
+});
+
+test("SCN-04: chat creation request follows AI tool selection to a create card, viewing current remains a plan card", async () => {
+  const { f, service, plan } = await draft();
+  const grant = await service.issue({ planId: plan.id, version: 1, activeVersion: null, idempotencyKey: "chat-current" });
+  await service.confirmation.confirm({ ownerId: f.id, request: confirmRequest(grant) });
+  const original = globalThis.fetch;
+  const env = { CHAT_MODEL_ENABLED: "true", CHAT_CLASSIFIER_ENABLED: "false", CHAT_PROVIDER_KIND: "siliconflow", SILICONFLOW_API_TOKEN: "test-only" };
+  const previous = Object.fromEntries(Object.keys(env).map(k => [k, process.env[k]])); Object.assign(process.env, env);
+  let askClarification = false, fabricatedIntake = false;
+  globalThis.fetch = (async (_url, options) => {
+    const body = JSON.parse(String(options?.body)), request = JSON.parse(body.messages[1].content.split("<chat_request>\n")[1].split("\n</chat_request>")[0]);
+    const last = request.toolResults?.at(-1)?.context;
+    const tool = (name: string, input: unknown) => Response.json({ choices: [{ message: { content: JSON.stringify({ schemaVersion: "ride-chat-tool-call-v0.1", calls: [{ tool: name, input }] }) } }] });
+    if (!last) return tool("get_training_plan_context", {});
+    if (request.text === "制定新的计划" && last.tool === "get_training_plan_context" && !fabricatedIntake) {
+      fabricatedIntake = true;
+      return Response.json({ choices: [{ message: { content: JSON.stringify({ schemaVersion: "ride-chat-output-v0.3", route: request.route, responseKind: "answer", reply: "我已为你准备好制定计划的信息卡，请核对后继续。", claimIds: [last.claims[0].claimId], capabilityKeys: [], knowledgeIds: [] }) } }] });
+    }
+    if (request.text === "制定新的计划" && last.tool === "get_training_plan_context") return tool("prepare_training_plan", { expectedVersion: last.state.intakeVersion, patch: {}, startNew: true });
+    return Response.json({ choices: [{ message: { content: JSON.stringify({ schemaVersion: "ride-chat-output-v0.3", route: request.route, responseKind: askClarification ? "clarification" : "answer", reply: askClarification ? "你想调整目标或时间吗？也可以在制定计划卡片核对。" : request.text === "制定新的计划" ? "你已有生效计划。新计划确认并启用后会覆盖原计划；在此之前原计划继续生效。请点击制定计划核对信息。" : "这是当前生效的计划，可以查看详情。", claimIds: askClarification ? [] : [last.claims[0].claimId], capabilityKeys: [], knowledgeIds: [] }) } }] });
+  }) as typeof fetch;
+  const ask = async (text: string) => (await chat(new Request("http://localhost/api/chat", { method: "POST", headers: { Cookie: f.cookie, "Content-Type": "application/json" }, body: JSON.stringify({ text }) }))).json();
+  try {
+    const result = await ask("制定新的计划");
+    assert.equal(result.execution, "validated"); assert.equal(result.artifact.payload.view, "create"); assert.equal(result.artifact.payload.version, null);
+    assert.match(result.reply, /覆盖原计划/); assert.equal(result.loopTrace.evidenceRecoveryAttempts, 1);
+    const viewing = await ask("看看当前计划"); assert.equal(viewing.execution, "validated"); assert.equal(viewing.artifact.payload.view, "active");
+    askClarification = true;
+    const question = await ask("制定新的计划"); assert.equal(question.execution, "validated"); assert.equal(question.responseKind, "clarification"); assert.equal(question.artifact.payload.view, "create");
+    assert.equal((await service.context()).active?.version, 1); assert.equal((await service.context()).workspace.version, 1);
   } finally { globalThis.fetch = original; for (const [key, value] of Object.entries(previous)) { if (value === undefined) delete process.env[key]; else process.env[key] = value; } }
 });

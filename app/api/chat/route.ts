@@ -272,7 +272,7 @@ export async function POST(request: Request): Promise<Response> {
   const selectionNeeded = agentResult.fallbackCode === "TOOLS_ANCHOR_CLARIFY" || agentResult.fallbackCode === "TOOLS_REFERENCE_NEEDED";
   const canPresent = selectionNeeded || (agentResult.responseKind !== "clarification" && (agentResult.execution === "validated" || agentResult.execution === "repaired"));
   const candidateInteraction = buildChatUserInteraction(interactionEvidence);
-  const intakeQuestion = agentResult.responseKind === "clarification" && (agentResult.execution === "validated" || agentResult.execution === "repaired") && candidateInteraction.artifact?.kind === "training_plan" && candidateInteraction.artifact.payload.view === "intake";
+  const intakeQuestion = agentResult.responseKind === "clarification" && (agentResult.execution === "validated" || agentResult.execution === "repaired") && candidateInteraction.artifact?.kind === "training_plan" && ["intake", "create"].includes(candidateInteraction.artifact.payload.view);
   const userInteraction = (canPresent || intakeQuestion) && !selectionNeeded ? candidateInteraction : {};
   const interaction = userInteraction.artifact ? userInteraction : canPresent ? buildChatRecordInteraction(interactionEvidence, (await repository.listRides(session.userId)).map(e => e.record), selectionNeeded, candidateIds.length ? candidateIds : undefined) : {};
   const overallResponse = overview || (!selectedChoice

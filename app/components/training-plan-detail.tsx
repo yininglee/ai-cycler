@@ -3,7 +3,7 @@ import { StatusBadge } from "./status-badge";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { planToday, planWeekCount } from "../../src/domain/training-plan";
-import type { TrainingPlanView } from "../../src/training/plan-view";
+import { trainingPlanStatusLabel, type TrainingPlanView } from "../../src/training/plan-view";
 import type { WriteConfirmationRequest } from "../../src/chat/chat-write-confirmation";
 import { chatReturnPath } from "../../src/chat/chat-import";
 import { planDiscussionKey } from "../../src/training/plan-discussion";
@@ -18,7 +18,7 @@ export function TrainingPlanDetail({ planId, requestedVersion, conversationId, d
   const [week, setWeek] = useState(1), [loaded, setLoaded] = useState(false), [message, setMessage] = useState("");
   const receipt = useRef<WriteConfirmationRequest | null>(null);
   const deletionReceipt = useRef<WriteConfirmationRequest | null>(null);
-  const [deleteOpen, setDeleteOpen] = useState(false), [deleted, setDeleted] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
   async function load() {
     setError("");
     try {
@@ -33,8 +33,10 @@ export function TrainingPlanDetail({ planId, requestedVersion, conversationId, d
   useEffect(() => { void load(); }, [planId, requestedVersion]);
   useEffect(() => { const refresh = () => { void load(); }; window.addEventListener("cycler-plan-updated", refresh); return () => window.removeEventListener("cycler-plan-updated", refresh); }, [planId, requestedVersion]);
   const plan = data?.viewPlan, today = planToday();
-  const current = plan?.version === data?.draftVersion;
-  const active = plan?.version === data?.activeVersion;
+  const lifecycle = plan ? data?.planStatuses?.[String(plan.version)] : undefined;
+  const current = lifecycle === "draft";
+  const active = lifecycle === "active";
+  const terminated = lifecycle === "terminated";
   const latest = data?.draft?.version ?? data?.active?.version;
   const replaced = plan ? data?.replacedAt?.[String(plan.version)] : undefined;
   function discuss(targetDate?: string) {
@@ -82,19 +84,19 @@ export function TrainingPlanDetail({ planId, requestedVersion, conversationId, d
       const response = await fetch("/api/training-plans", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "confirm", request: deletionReceipt.current }) });
       const result = await response.json();
       if (!response.ok) { if (response.status < 500) deletionReceipt.current = null; throw new Error(planErrorText(result.error)); }
-      setDeleted(true); setDeleteOpen(false); notifyPlanUpdated();
+      setMessage("计划已终止，原始骑行与历史执行记录已保留。"); setDeleteOpen(false); notifyPlanUpdated(); await load();
     } catch (e) { setError((e as Error).message); } finally { setBusy(false); }
   }
-  if (deleted) return <div className={styles.detail}><section className={styles.card}><h1>计划已删除</h1><p>原始骑行与历史执行记录已保留。</p><Link href={chatReturnPath(conversationId)}>返回原对话</Link></section></div>;
+
   return <div className={styles.detail}>
     <header><Link className="icon-button" href={chatReturnPath(conversationId)} aria-label="返回原对话"><BackIcon /></Link><span>训练计划</span></header>
     {!loaded && error && date && requestedVersion && <TrainingExecutionCard reference={{ planId, version: requestedVersion, date }} conversationId={conversationId} />}
     {!loaded ? <section className={styles.card}>{error ? <p role="alert">{error}<button onClick={() => void load()}>重试读取</button></p> : <p role="status">正在读取计划…</p>}</section> : plan && <>
       <section className={styles.card}>
-        <div className="ui-state-row"><StatusBadge tone={active ? "active" : current ? "pending" : "neutral"}>{active ? "已生效" : current ? "待确认草案" : replaced ? "已被替换 · 保留历史" : "历史草案"}</StatusBadge><span className="ui-version">版本 {plan.version}</span></div>
+        <div className="ui-state-row"><StatusBadge tone={active ? "active" : current ? "pending" : "neutral"}>{lifecycle ? trainingPlanStatusLabel[lifecycle] : "正在读取计划…"}</StatusBadge><span className="ui-version">版本 {plan.version}</span></div>
         <h1>{plan.intake.goal}</h1><p>{plan.intake.startDate} — {plan.intake.endDate} · 共 {planWeekCount(plan.intake)} 周</p>
         {date && !plan.days.some(day => day.date === date) && <p role="status">{date} 不在本计划日期范围内；下方展示计划首周，可切换查看。</p>}
-        {!current && !active && latest && latest !== plan.version && <Link href={planDetailHref(planId, latest, conversationId)}>此版本已更新，查看当前版本</Link>}
+        {!current && !active && latest && latest !== plan.version && <Link href={planDetailHref(planId, latest, conversationId)}>查看当前计划</Link>}
         <p>{plan.proposal.rationale}</p>
         <p className={styles.note}>依据：{plan.basis.source === "self_report" ? "含本人核对的自述基础" : "已导入的近期记录"}。{plan.intake.powerMeter && plan.basis.ftpWatts ? "功率目标使用已确认的 FTP。" : "未使用功率目标，按主观用力与交谈提示完成。"}安排采用当前保守规则，不作能力保证；不适时停止训练。</p>
         {data?.profileChanged && <p role="status">资料或目标已变化，请先重新核对计划信息，当前草案不能直接启用。</p>}
@@ -105,12 +107,12 @@ export function TrainingPlanDetail({ planId, requestedVersion, conversationId, d
         const completed = data?.workoutRecords?.[`${plan.version}:${day.date}`];
         const linked = data?.executionRecords?.[`${plan.version}:${day.date}`];
         const replacedFuture = !!replaced && day.date >= replaced.slice(0, 10);
-        const status = linked ? "已关联骑行 · 查看评估" : !active && !replaced ? "待确认" : completed ? "已完成" : replacedFuture ? "已替换" : !day.minutes ? "休息日" : day.date < today ? "尚未记录完成情况" : day.date === today ? "待完成" : "未开始";
+        const status = linked ? "已关联骑行 · 查看评估" : completed ? "已完成" : terminated && (!replaced || replacedFuture) ? "已终止" : lifecycle === "unadopted" ? "未采纳" : current ? "待确认" : replacedFuture ? "已终止" : !day.minutes ? "休息日" : day.date < today ? "尚未记录完成情况" : day.date === today ? "待完成" : "未开始";
         return <article className={`${styles.day} ${day.date === (date ?? today) ? styles.highlight : ""}`} id={`day-${day.date}`} key={day.date}>
           <div><h2>{day.date} {day.title}</h2><StatusBadge tone={linked || completed ? "active" : status === "待确认" || status === "待完成" ? "pending" : "neutral"}>{status}</StatusBadge></div>
           {day.minutes > 0 && <><p>{day.minutes} 分钟 · {day.purpose}</p><ol>{day.steps.map((step, index) => <li key={index}><strong>{step.label} · {step.minutes} 分钟</strong><p>{step.effort}{step.powerWatts && !data?.profileChanged ? ` · ${step.powerWatts[0]}–${step.powerWatts[1]} W` : ""}</p></li>)}</ol></>}
           <Link href={chatReturnPath(conversationId)} onClick={() => discuss(day.date)}>解释／调整这天</Link>
-          {(active || replaced) && day.date <= today && <TrainingExecutionButton reference={{ planId, version: plan.version, date: day.date }} conversationId={conversationId} />}
+          {(active || data?.activatedAt?.[String(plan.version)]) && day.date <= today && <TrainingExecutionButton reference={{ planId, version: plan.version, date: day.date }} conversationId={conversationId} />}
         </article>;
       })}</div>
       <section className={`${styles.card} ${styles.planFooter}`} aria-label="计划操作">
@@ -122,16 +124,16 @@ export function TrainingPlanDetail({ planId, requestedVersion, conversationId, d
             <button disabled={busy} onClick={() => void discard()}>放弃草案</button>
           </div>
         </> : <>
-          <p className={styles.note}>{active ? "调整将生成新草案，确认后才会替换当前计划。" : "这是历史版本，不能直接启用。"}</p>
+          <p className={styles.note}>{active ? "调整将生成新草案，确认后才会替换当前计划。" : terminated ? "此计划已终止，原始骑行与历史执行记录保留，不能再次启用。" : "此草案未采纳，不能直接启用。可返回对话重新制定计划。"}</p>
           <div className={styles.decisionActions}>
             {active ? <Link className="primary-button" href={chatReturnPath(conversationId)} onClick={() => discuss(date)}>调整计划</Link> : latest && latest !== plan.version ? <Link className="primary-button" href={planDetailHref(planId, latest, conversationId)}>查看当前计划</Link> : <Link className="primary-button" href={chatReturnPath(conversationId)}>返回原对话</Link>}
           </div>
         </>}
-        <details className={styles.moreActions}>
+        {!data?.deletedVersions?.[String(plan.version)] && <details className={styles.moreActions}>
           <summary>更多操作</summary>
           <p className={styles.note}>删除指定版本，原始骑行和历史执行记录保留。</p>
           <button disabled={busy} onClick={() => { deletionReceipt.current = null; setDeleteOpen(true); }}>删除第 {plan.version} 版计划</button>
-        </details>
+        </details>}
         {message && <p role="status">{message}</p>}{error && <p role="alert">{error}<button onClick={() => void load()}>重新读取当前版本</button></p>}
       </section>
     </>}

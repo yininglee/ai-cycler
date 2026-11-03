@@ -132,7 +132,7 @@ test("SCN-05: explicit delete is replayable, clears active state and preserves r
   assert.equal((await s.plans.context()).active, null); assert.equal((await s.service.context()).status, "no_plan");
   assert.equal((await s.service.context(s.ref)).execution!.facts!.movingMinutes, 35);
   assert.ok(await getApplicationRepository().getRide(s.f.id, "a"));
-  assert.equal((await (await getPlan(s.f.request(undefined, `?planId=${s.plan.id}&version=1`))).json()).error, "PLAN_DELETED");
+  assert.equal((await (await getPlan(s.f.request(undefined, `?planId=${s.plan.id}&version=1`))).json()).planStatuses["1"], "terminated");
   await assert.rejects(s.service.assess({ ...s.ref, expectedRevision: 1 }), code("PLAN_DELETED"));
   await assert.rejects(s.service.saveFeedback({ ...s.ref, revision: 1, assessmentRevision: evaluated.assessmentRevision, recordHash: evaluated.recordHash, reply: "删除后迟到的反馈" }), code("PLAN_DELETED"));
 });

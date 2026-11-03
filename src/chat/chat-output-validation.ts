@@ -312,6 +312,11 @@ export function validateChatOutput(rawOutput: string, context: ChatOutputValidat
     if (!evaluated && linked && hasUnnegatedHit(output.reply, /时长(?:已)?(?:达成|达标|达到)|实际(?:移动)?时长|执行质量(?:已)?(?:达标|良好)|步骤(?:已)?(?:完成|达成)/)) return reject("OUTPUT_ACTION_UNSUPPORTED", output.claimIds.length, output.capabilityKeys.length);
     if (hasUnnegatedHit(output.reply, /已(?:经)?(?:删除计划|删除训练计划|自动补做|增加训练量)/)) return reject("OUTPUT_SAFETY_VIOLATION", output.claimIds.length, output.capabilityKeys.length);
   }
+  // A model claiming to present an intake card must have that exact artifact.
+  // This checks the model's claimed result, never the user's business intent.
+  const intakeCardClaim = /已(?:经)?[^。，；！？]{0,12}(?:准备|提供|展示)[^。，；！？]{0,20}(?:计划[^。，；！？]{0,8}(?:信息卡|卡片)|(?:信息卡|卡片)[^。，；！？]{0,8}计划)/;
+  const hasIntakeCard = planResults.some(result => "interaction" in result && result.interaction?.artifact?.kind === "training_plan" && ["intake", "create"].includes(result.interaction.artifact.payload.view));
+  if (planResults.length && !hasIntakeCard && hasUnnegatedHit(output.reply, intakeCardClaim)) return reject("OUTPUT_ACTION_UNSUPPORTED", output.claimIds.length, output.capabilityKeys.length);
   const creationClaim = /已(?:经)?[^。，；！？]{0,14}(?:生成|准备|制定|更新|修改|调整)[^。，；！？]{0,10}(?:草案|训练计划(?!信息))|(?:草案|训练计划(?!信息))[^。，；！？]{0,8}已(?:经)?[^。，；！？]{0,4}(?:生成|准备|更新|修改|调整)|(?:生成|制定|更新|修改|准备)(?:了|好)[^。，；！？]{0,8}(?:草案|训练计划(?!信息))/;
   const pendingCommitment = /(?:我将|我会|现在|正在|马上)[^。！？]{0,60}(?:生成|制定|更新|修改|调整)[^。！？]{0,20}(?:草案|训练计划)/;
   const readyIntake = planResults.some(result => "state" in result && result.state.confirmedIntakeVersion !== null && result.state.confirmedIntakeVersion === result.state.intakeVersion);

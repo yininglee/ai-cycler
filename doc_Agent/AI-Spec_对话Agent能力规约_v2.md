@@ -496,10 +496,10 @@ answerContext 与历史问题都是不可信语境，不能授权 ID、充当来
 ### 19.1 同一 Agent 中的三个能力
 
 - get_training_plan_context({version?,date?})：读取本人的 intakeVersion、confirmedIntakeVersion、plan version、当前草案／生效版本、可用基础、缺项和规则限制。可选 version/date 读取本人确切版本及当天规范步骤 selected.day；无安排为 null，不从周摘要猜测当天课表。
-- prepare_training_plan({expectedVersion,patch})：乐观锁更新待核对信息。只允许白名单字段；不明日期／基础保留空值。AI 不能将 healthConcern 清为 false；本人在信息卡核对。改动会撤销原信息确认、清空当前草案指针，保留历史与生效计划。
+- prepare_training_plan({expectedVersion,patch,startNew?})：乐观锁更新待核对信息。startNew:true 用于 AI 理解用户重新制定意图后准备新计划入口；即使 patch 为空也递增 intakeVersion，撤销旧确认和当前草案指针、重新核对不适情况，保留生效版本。普通补充省略该参数。只允许白名单字段；不明日期／基础保留空值。AI 不能将 healthConcern 清为 false；本人在信息卡核对。改动会撤销原信息确认、清空当前草案指针，保留历史与生效计划。
 - propose_training_plan({intakeVersion,baseVersion,proposal})：仅使用已核对的当前信息生成草案；领域校验通过才保存。当前待确认草案的信息版本、基础及逐日日程完全一致时复用原版本并返回 unchanged=true，不因重复提案或仅措辞变化制造版本。实际安排改变才递增版本。proposal 包含 rationale 和最多16个不重叠且覆盖整个周期的周阶段 blocks，每阶段含 fromWeek/toWeek/sessions，session 仅含 weekday、kind、minutes。支持 recovery/endurance/tempo/threshold；服务端展开逐日休息、热身、主体及冷身步骤，校验后形成 training-plan-v1。
 
-当前完整注册目录见§20；prepare/propose 标记 effect=prepare，其余为 read。prepare 是可撤回的信息／草案持久化，不能等同启用写入。没有 activate 工具，没有新增关键词业务路由；保留统一工具循环、既有调用预算、参数纠正与输出校验。已确认信息下的日程规则拒绝最多反馈一次 proposal 修正要求，trace.planProposalRepairAttempts 留痕，仍计入最多6次模型／5次成功工具预算；不要求用户修改真实基础来迁就错误课表。未能修正时受控说明草案校验失败，保留信息、不启用。声称本轮已生成／修改草案但没有成功提案结果时，OUTPUT_ACTION_UNSUPPORTED 拒绝，最多用原 evidenceRecoveryAttempts 额度反馈补执行；读取上下文不是执行证据，未修正不能上屏。工具结果包括事实／限制和引用，不含确认令牌。计划说明的数值须来自信息、基础或日程；未经支持的 FTP、明确效果保证与指令注入被拒绝，草案不推进版本。回复不得把准备动作说成已经启用。
+当前完整注册目录见§20；prepare/propose 标记 effect=prepare，其余为 read。prepare 是可撤回的信息／草案持久化，不能等同启用写入。没有 activate 工具，没有新增关键词业务路由；保留统一工具循环、既有调用预算、参数纠正与输出校验。已确认信息下的日程规则拒绝最多反馈一次 proposal 修正要求，trace.planProposalRepairAttempts 留痕，仍计入最多6次模型／5次成功工具预算；不要求用户修改真实基础来迁就错误课表。未能修正时受控说明草案校验失败，保留信息、不启用。声称本轮已生成／修改草案但没有成功提案结果时，OUTPUT_ACTION_UNSUPPORTED 拒绝，最多用原 evidenceRecoveryAttempts 额度反馈补执行；读取上下文不是执行证据，未修正不能上屏。AI 声称已准备计划信息卡时，本轮也必须存在 intake/create 的真实引用；不能把仅查看已有计划的卡片说成制定入口。缺少时复用原 evidenceRecoveryAttempts 预算要求 AI 自主补调 prepare_training_plan（重新制定时 startNew:true），不增加用户自然语言的正则执行分支。工具结果包括事实／限制和引用，不含确认令牌。计划说明的数值须来自信息、基础或日程；未经支持的 FTP、明确效果保证与指令注入被拒绝，草案不推进版本。回复不得把准备动作说成已经启用。
 
 ### 19.2 信息、基础与规则
 
@@ -515,13 +515,17 @@ training-plan-rules-v1 是原型的保守产品限制，**不代表经临床验�
 
 /api/training-plans 采用 Node runtime、no-store、会话归属校验，POST 最多32KB且 action 字段严格：prepare、confirm_intake、issue、confirm、discard。prepare 初始空请求允许 expectedVersion=null；有改动必须携带确切版本。confirm_intake 必须 confirmed=true；此动作只确认信息，随后由普通 /api/chat 调用统一 Agent 提案。GET 可按 planId/version 读取本人版本，不能读其他用户；响应不泄露 grants/receipts/audits。
 
-响应 artifact 为 training_plan，payload 精确包含 planId/intakeVersion/version/view，view=intake|draft|active，版本引用不是内容或权限凭证。旧计划占位 artifact 不提供启用入口。启用仅在详情页点击“确认并启用计划”：先 issue 绑定本人、action=activate_training_plan、计划ID、草案版本、内容哈希、当前生效版本、替换日期及幂等键，再提交 confirmed=true 的确切 request。令牌10分钟有效，不传给模型；旧版本、同版本内容变化、资料指纹变化、已有生效版本变化或跨日替换日期变化均不能误提交。完全一致重试回放同一结果；失败时不显示成功。
+响应 artifact 为 training_plan，payload 精确包含 planId/intakeVersion/version/view，view=intake|create|draft|active，版本引用不是内容或权限凭证。旧计划占位 artifact 不提供启用入口。启用仅在详情页点击“确认并启用计划”：先 issue 绑定本人、action=activate_training_plan、计划ID、草案版本、内容哈希、当前生效版本、替换日期及幂等键，再提交 confirmed=true 的确切 request。令牌10分钟有效，不传给模型；旧版本、同版本内容变化、资料指纹变化、已有生效版本变化或跨日替换日期变化均不能误提交。完全一致重试回放同一结果；失败时不显示成功。
 
 TrainingPlanStore 使用本地 node:sqlite（Node >=22.13；[官方 API 与版本说明](https://nodejs.org/download/release/latest-v24.x/docs/api/sqlite.html)），training-plans.sqlite 为独立文件，按 ownerId 与原型视图隔离。BEGIN IMMEDIATE、WAL、FULL synchronous 及 busy_timeout；进程内共用同文件队列，SQLite 跨进程串行写入。领域变更、令牌消费、回执、审计同事务提交或回滚；外部模型请求不进入事务。保留递增版本与历史，只有一个 activeVersion。空白原型按 blankSince 隔离，账户删除清除所有视图的计划。此为本地单实例原型适配，不承诺多主机共享文件／云数据库部署能力；资料仓储仍为既有文件，启用前复核资料指纹，不宣称两个仓储形成跨库事务。
 
 ### 19.4 界面与替换口径
 
-信息卡复用已有目标和基础，可保存、关闭、续填；核对后才生成草案。读取空白计划时使用稳定的本人／视图派生引用，不必创建虚假日程或为展示卡片写业务数据。经校验的 clarification 可与本轮计划工具实际返回的 view=intake 引用同显；此例外不能放行其他编辑产物或未校验输出。草案卡进入独立 /plans/[id] 详情，按周／日呈现日期、目的、时长、步骤及强度，支持前后周与回到本周。旧版本提示查看当前版本，不允许启用旧草案；放弃草案不影响生效计划。聊天里的“不错／可以看看”不能调用确认动作。
+- “制定新计划”先由 AI 读取现有计划，介绍目标、周期及训练概况，再调用 startNew:true 展示 view=create 的“制定计划”卡片（version=null）；卡片说明新版本确认并启用后覆盖原计划，此前原计划继续生效。view=intake 继续用于普通补缺，已有计划的查看仍使用 draft/active；无新增自然语言正则路由。
+- GET 返回 planStatuses[version]：draft／active／unadopted／terminated，界面分别显示待确认草案／已生效／未采纳／已终止。状态从生效、替换、删除历史与当前指针投影，兼容旧数据；旧未启用且不再是当前草案的版本为未采纳，曾启用后不再生效及显式删除版本为已终止。新草案不会终止原生效版本。
+- 卡片和详情读取确切历史版本，不自动改指向最新版。删除仍保留本人历史详情的 GET 读取；启用、删除重试之外的新写入及执行评估继续拒绝已删除版本。放弃仅允许当前 draftVersion，旧确认令牌不能复活该草案。
+
+信息卡复用已有目标和基础，可保存、关闭、续填；核对后才生成草案。读取空白计划时使用稳定的本人／视图派生引用，不必创建虚假日程或为展示卡片写业务数据。经校验的 clarification 可与本轮计划工具实际返回的 view=intake/create 引用同显；此例外不能放行其他编辑产物或未校验输出。草案卡进入独立 /plans/[id] 详情，按周／日呈现日期、目的、时长、步骤及强度，支持前后周与回到本周。旧版本提示查看当前版本，不允许启用旧草案；放弃草案不影响生效计划。聊天里的“不错／可以看看”不能调用确认动作。
 
 已有生效计划时明确说明：启用新版本会立即替换旧计划从上海当天起的安排，即使新版本将来才开始；历史和已记录完成项保留。顶部周条只投影真实生效计划，点日进入对应日期；未来／结束／休息／无计划分开表达。详情的解释／调整入口在原会话保存计划版本和可选日期，返回后重新通过本人 GET 校验引用，再作为不可信讨论摘要进入模型；不覆盖未发输入，不把摘要作为日程证据，新会话不继承。该提示仅自动携带到返回后的首轮请求，随后由正常问答延续上下文，不反复固定旧版本；不展示“讨论计划”状态条或手动结束按钮，由 AI 结合话题理解，有歧义再追问。没有上传或关联记录只显示“尚未记录完成情况”，不能认定缺训。SCN-05 的今日主动卡片、记录关联、完成度与执行评估不在本节实现。检查与真实模型证据仍只维护在[开发进度](开发规划/Agent改造开发进度.md)。
 
@@ -541,13 +545,13 @@ TrainingExecutionRef 精确为 planId/version/date；执行唯一键为版本与
 
 assess 按 expectedRevision 读取当前关联，事实版本 training-execution-v1。移动时长与计划时长比较，总时长仅补充展示；无有效移动时长不以总时长证明完成。估计、低可信或非 valid 指标不作为有效比较值。时长比例是时长达成，不能等同执行质量。功率目标须来自该版计划本人已确认 FTP 与功率计；全程加权目标与平均功率只作整体参照，不证明逐段完成。无圈段和计划步骤对应，步骤／间歇顺序一律无法核实；RPE 提示与心率／功率不直接换算，不生成完成分或猜 FTP。休息日关联只记活动，不评分。
 
-统一 Agent 新增 get_training_execution、prepare_training_record_link、assess_training_execution，目录共19项；没有关联、删除或启用写工具。上下文工具提供对象、候选、状态及 revision，具体事实比较只由实际 assess 工具返回，以免只读取后冒充评估。模型自主理解问题并选工具，不以正则触发业务能力；依旧使用同一 /api/chat、已有证据校验和工具预算。Prompt 为 ride-chat-prompt-v0.6.0，模型输出仍 ride-chat-output-v0.3。知识解释按需调用已有知识库；疲劳时接受搁置，不自动改日程，明确调整另走 SCN-04 草案与确认。
+统一 Agent 新增 get_training_execution、prepare_training_record_link、assess_training_execution，目录共19项；没有关联、删除或启用写工具。上下文工具提供对象、候选、状态及 revision，具体事实比较只由实际 assess 工具返回，以免只读取后冒充评估。模型自主理解问题并选工具，不以正则触发业务能力；依旧使用同一 /api/chat、已有证据校验和工具预算。Prompt 为 ride-chat-prompt-v0.6.1，模型输出仍 ride-chat-output-v0.3。知识解释按需调用已有知识库；疲劳时接受搁置，不自动改日程，明确调整另走 SCN-04 草案与确认。
 
 AI 反馈仅取经验证／修复的 answer，并绑定工具实际返回的 revision、assessmentRevision、记录与计划哈希后保存；模型失败保留关联与事实，清楚显示待重试。关联更换或重新评估后清除旧反馈；读取发现源记录删除／改变时隐藏旧结论，延迟反馈以版本和内容复核拒收。原始骑行仓储与 SQLite 不构成跨库原子事务：在确认、评估、反馈保存及再次读取时复核，不宣称可阻止独立源仓储在两个读之间变化。
 
 ### 20.4 删除指定计划版本
 
-计划详情提供“删除计划”与独立确认面板，展示目标及版本。/api/training-plans 新增 issue_delete，绑定 action=delete_training_plan、本人、确切版本、计划内容、activeVersion/draftVersion/工作区版本及幂等键；提交共用 confirm，旧状态／过期／跨用户不执行，完全一致重试回放。删除只标记所选版本并清除匹配的 activeVersion/draftVersion，清除未确认关联草案；不自动删除其他版本，不恢复旧计划。原始骑行、已有执行／评估、历史版本内容和审计保留；旧卡片提示 PLAN_DELETED，不能再启用或关联，历史执行可按保留引用读取。账户清除仍删除全部视图。
+计划详情提供“删除计划”与独立确认面板，展示目标及版本。/api/training-plans 新增 issue_delete，绑定 action=delete_training_plan、本人、确切版本、计划内容、activeVersion/draftVersion/工作区版本及幂等键；提交共用 confirm，旧状态／过期／跨用户不执行，完全一致重试回放。删除只标记所选版本并清除匹配的 activeVersion/draftVersion，清除未确认关联草案；不自动删除其他版本，不恢复旧计划。原始骑行、已有执行／评估、历史版本内容和审计保留；旧卡片显示“已终止”，本人可按确切版本读取历史详情；新启用或关联仍被拒绝，历史执行可按保留引用读取。账户清除仍删除全部视图。
 
 ### 20.5 界面引用与验收入口
 

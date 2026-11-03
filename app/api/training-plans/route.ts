@@ -1,6 +1,7 @@
 import { getRequestSession, resolveOrCreateRequestSession, sessionCookieHeader } from "../../../src/auth/session.ts";
 import { planRuntime } from "../../../src/training/plan-service.ts";
 import { parsePlanIntakePatch, PlanError } from "../../../src/domain/training-plan.ts";
+import { trainingPlanStatus } from "../../../src/training/plan-view.ts";
 import { ConfirmedWriteError } from "../../../src/chat/chat-write-confirmation.ts";
 
 export const runtime = "nodejs";
@@ -11,10 +12,9 @@ async function view(ownerId: string, planId?: string | null, requestedVersion?: 
   const context = await (await planRuntime(ownerId)).context();
   const { workspace, ...rest } = context;
   if (planId && workspace.id !== planId) throw new PlanError("NOT_FOUND");
-  if (requestedVersion !== undefined && workspace.deletedVersions[String(requestedVersion)]) throw new PlanError("PLAN_DELETED");
   const viewPlan = requestedVersion === undefined ? context.draft ?? context.active : workspace.plans.find(plan => plan.version === requestedVersion) ?? null;
   if (requestedVersion !== undefined && !viewPlan) throw new PlanError("NOT_FOUND");
-  return { ...rest, profileChanged: !!viewPlan && viewPlan.basis.profileHash !== context.basis.profileHash, id: workspace.id, version: workspace.version, intake: workspace.intake, intakeVersion: workspace.intakeVersion, confirmedIntakeVersion: workspace.confirmedIntakeVersion, activeVersion: workspace.activeVersion, draftVersion: workspace.draftVersion, activatedAt: workspace.activatedAt, replacedAt: workspace.replacedAt, workoutRecords: workspace.workoutRecords, executionRecords: Object.fromEntries(Object.entries(workspace.executions).map(([key, value]) => [key, { rideId: value.rideId, revision: value.revision }])), viewPlan };
+  return { ...rest, profileChanged: !!viewPlan && viewPlan.basis.profileHash !== context.basis.profileHash, id: workspace.id, version: workspace.version, intake: workspace.intake, intakeVersion: workspace.intakeVersion, confirmedIntakeVersion: workspace.confirmedIntakeVersion, activeVersion: workspace.activeVersion, draftVersion: workspace.draftVersion, deletedVersions: workspace.deletedVersions, planStatuses: Object.fromEntries(workspace.plans.map(plan => [String(plan.version), trainingPlanStatus(workspace, plan.version)])), activatedAt: workspace.activatedAt, replacedAt: workspace.replacedAt, workoutRecords: workspace.workoutRecords, executionRecords: Object.fromEntries(Object.entries(workspace.executions).map(([key, value]) => [key, { rideId: value.rideId, revision: value.revision }])), viewPlan };
 }
 function failure(error: unknown) {
   if (error instanceof SyntaxError) return failure(new PlanError("INVALID_INPUT"));
@@ -54,7 +54,7 @@ export async function POST(request: Request) {
     } else if (input.action === "confirm" && exact(input, ["action", "request"])) {
       return Response.json(await service.confirmation.confirm({ ownerId: session.userId, request: input.request }), { headers: responseHeaders });
     } else if (input.action === "discard" && exact(input, ["action", "version"]) && version(input.version)) {
-      await service.store.transaction(session.userId, async tx => { if (tx.domain.version !== input.version) throw new PlanError("VERSION_CONFLICT"); tx.domain.draftVersion = null; });
+      await service.store.transaction(session.userId, async tx => { if (tx.domain.draftVersion !== input.version) throw new PlanError("VERSION_CONFLICT"); tx.domain.draftVersion = null; });
     } else throw new PlanError("INVALID_INPUT");
     return Response.json(await view(session.userId), { headers: responseHeaders });
   } catch (error) { return failure(error); }

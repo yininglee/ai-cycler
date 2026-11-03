@@ -1106,7 +1106,7 @@ async function runAutonomousToolLoop(input: {
         const firstValidation = validateChatOutput(response.rawText, validationContext);
         if (!firstValidation.ok && firstValidation.code === "OUTPUT_ACTION_UNSUPPORTED" && evidenceRecoveryAttempts === 0) {
           evidenceRecoveryAttempts++;
-          evidenceRequest = completed.some(item => isExecutionToolResult(item.result)) ? "候选回答声称完成关联或评估，但缺少实际依据。关联必须由本人在界面明确确认；已关联时请调用 assess_training_execution 后再说明评估结果。没有关联则展示选择入口，据实说明，不能用文字冒充写入。" : "候选回答声称已生成或更新计划草案，但本轮尚无 propose_training_plan 成功结果。读取上下文不能生成草案；请依据用户要求调用实际提案能力并通过规则后再说明结果，或据实说明缺项，不能用文字冒充已完成的动作。";
+          evidenceRequest = completed.some(item => isExecutionToolResult(item.result)) ? "候选回答声称完成关联或评估，但缺少实际依据。关联必须由本人在界面明确确认；已关联时请调用 assess_training_execution 后再说明评估结果。没有关联则展示选择入口，据实说明，不能用文字冒充写入。" : "候选回答声称已准备计划信息卡或已生成／更新草案，但缺少对应的实际产物。若你理解用户要制定新计划入口，先调用 prepare_training_plan(expectedVersion,patch,startNew:true)，使用已读取的 intakeVersion，返回制定计划卡片；不要用当前计划卡片冒充信息卡。若用户已核对并要求生成日程，本轮尚无 propose_training_plan 成功结果，需调用实际提案能力并通过规则。读取上下文不完成这些动作，不能仅修改措辞冒充完成。";
           validationRejections.push({ providerCall: providerCalls, code: firstValidation.code });
           continue;
         }

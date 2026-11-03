@@ -5,7 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import { BottomSheet } from "./profile-sheet";
 import { ArrowIcon } from "./icons";
 import { addPlanDays, emptyPlanIntake, planMonday, planToday, planWeekCount, type PlanIntake } from "../../src/domain/training-plan";
-import type { TrainingPlanView } from "../../src/training/plan-view";
+import { trainingPlanStatusLabel, type TrainingPlanView } from "../../src/training/plan-view";
 import type { ChatTrainingPlanArtifact } from "../../src/chat/chat-interaction";
 import styles from "./training-plan.module.css";
 
@@ -100,15 +100,21 @@ export function TrainingPlanCard({ reference, conversationId, onGenerate }: { re
   const [data, setData] = useState<TrainingPlanView>(), [open, setOpen] = useState(false), [error, setError] = useState("");
   const load = useCallback(() => { void planRequest(undefined, `?planId=${encodeURIComponent(reference.planId)}${reference.version ? `&version=${reference.version}` : ""}`).then(next => { setData(next); setError(""); }).catch(e => { setData(undefined); setError(e.message); }); }, [reference.planId, reference.version]);
   useEffect(() => { load(); window.addEventListener("cycler-plan-updated", load); return () => window.removeEventListener("cycler-plan-updated", load); }, [load]);
-  const plan = reference.view === "intake" ? null : data?.viewPlan;
-  const currentVersion = data?.draft?.version ?? data?.active?.version;
-  const stale = plan && currentVersion !== plan.version;
+  const creating = reference.view === "create";
+  const intakeCard = reference.view === "intake" || creating;
+  const plan = intakeCard ? null : data?.viewPlan;
+  const status = plan ? data?.planStatuses?.[String(plan.version)] : undefined;
+  const historical = status === "unadopted" || status === "terminated";
   if (error && !data) return <section className={styles.card}><p role="status">{error}</p><button onClick={load}>重新读取计划</button></section>;
-  return <section className={styles.card} aria-label={reference.view === "intake" ? "计划信息补充" : "训练计划草案"}>
-    <StatusBadge tone={!data || reference.view === "intake" ? "pending" : stale ? "neutral" : plan && data?.activeVersion === plan.version ? "active" : "pending"}>{!data ? "正在读取计划…" : reference.view === "intake" ? "计划信息 · 待核对" : stale ? "此版本已更新" : plan && data?.activeVersion === plan.version ? "训练计划 · 已生效" : "训练计划 · 待确认"}</StatusBadge>
-    <h3>{plan?.intake.goal || data?.intake?.goal || "补充训练计划信息"}</h3>
-    {plan ? <><p>{plan.intake.startDate} — {plan.intake.endDate} · 版本 {plan.version}</p><p>{plan.days.filter(day => day.week === 1 && day.minutes).length} 次／首周 · 首周 {plan.days.filter(day => day.week === 1).reduce((sum, day) => sum + day.minutes, 0)} 分钟</p><p className={styles.note}>{plan.proposal.rationale}</p><Link className="primary-button" href={planDetailHref(reference.planId, stale ? currentVersion : plan.version, conversationId)}>{stale ? "查看最新计划" : "查看计划"}</Link></>
-      : <><p className={styles.note}>补充本次计划的目标、日期与训练条件。核对后生成草案，启用另行确认。</p><button className="primary-button" onClick={() => setOpen(true)}>补充／核对计划信息</button></>}
+  return <section className={styles.card} aria-label={creating ? "制定计划" : intakeCard ? "计划信息补充" : "训练计划"}>
+    <StatusBadge tone={status === "active" ? "active" : historical ? "neutral" : "pending"}>{!data ? "正在读取计划…" : creating ? "新计划 · 待制定" : intakeCard ? "计划信息 · 待核对" : status ? trainingPlanStatusLabel[status] : "正在读取计划…"}</StatusBadge>
+    <h3>{creating ? "制定新计划" : plan?.intake.goal || data?.intake?.goal || "补充训练计划信息"}</h3>
+    {plan ? <><p>{plan.intake.startDate} — {plan.intake.endDate} · 版本 {plan.version}</p><p>{plan.days.filter(day => day.week === 1 && day.minutes).length} 次／首周 · 首周 {plan.days.filter(day => day.week === 1).reduce((sum, day) => sum + day.minutes, 0)} 分钟</p><p className={styles.note}>{plan.proposal.rationale}</p><Link className="primary-button" href={planDetailHref(reference.planId, plan.version, conversationId)}>{historical ? "查看历史计划" : "查看计划"}</Link></>
+      : <>
+        {creating && data?.active && <p className={styles.note}>当前计划：{data.active.intake.goal}，{data.active.intake.startDate} 至 {data.active.intake.endDate}。首周 {data.active.days.filter(day => day.week === 1 && day.minutes).length} 次训练，共 {data.active.days.filter(day => day.week === 1).reduce((sum, day) => sum + day.minutes, 0)} 分钟。</p>}
+        <p className={styles.note}>{creating && data?.active ? "新计划确认并启用后会覆盖原计划；在此之前，原计划继续生效。已完成的训练和历史记录保留。" : "补充本次计划的目标、日期与训练条件。核对后生成草案，启用另行确认。"}</p>
+        <button className="primary-button" disabled={!data} onClick={() => setOpen(true)}>{creating ? "制定计划" : "补充／核对计划信息"}</button>
+      </>}
     {error && <p role="status">{error}<button onClick={load}>重试读取</button></p>}
     <BottomSheet open={open} size="large" title="训练计划信息" onClose={() => setOpen(false)}>{open && <PlanIntakePanel onClose={() => setOpen(false)} onGenerate={onGenerate} />}</BottomSheet>
   </section>;
