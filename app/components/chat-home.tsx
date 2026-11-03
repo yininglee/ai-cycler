@@ -12,7 +12,7 @@ import { CHAT_IMPORT_QUEUE_KEY, parseImportReceipts, restoreImportReceipts } fro
 import { ChatRideList } from "./chat-ride-list";
 import { sanitizeChatInteractionPayload, isChatChoiceRef, type ChatChoiceRef, type ChatAgentInteraction } from "../../src/chat/chat-interaction";
 import { RideSyncLauncher } from "./ride-sync";
-import { TrainingPlanBar, TrainingPlanCard, notifyPlanUpdated, planRequest, planDetailHref } from "./training-plan";
+import { TrainingPlanBar, TrainingPlanCard, notifyPlanUpdated, planRequest, planDetailHref, useTrainingPlanView } from "./training-plan";
 import { planToday } from "../../src/domain/training-plan";
 import { TrainingExecutionCard, TrainingExecutionReply } from "./training-execution";
 import { parsePlanDiscussion, planDiscussionKey, planDiscussionText, type PlanDiscussion } from "../../src/training/plan-discussion";
@@ -85,6 +85,7 @@ function conversationTitle(messages: ChatMessage[]) {
 }
 
 export function ChatHome({ snapshot }: { snapshot: ChatHomeSnapshot }) {
+  const trainingPlan = useTrainingPlanView();
   const [previousProfile, setPreviousProfile] = useState<ProfileInput>({});
   const [proposal, setProposal] = useState<ProfileInput | null>(null);
   const [proposalMessage, setProposalMessage] = useState("");
@@ -272,14 +273,16 @@ export function ChatHome({ snapshot }: { snapshot: ChatHomeSnapshot }) {
     void ask(value, "typed_input");
   }
 
+  const currentPlan = trainingPlan?.active ?? trainingPlan?.draft;
+  const currentPlanHref = currentPlan ? planDetailHref(currentPlan.id, currentPlan.version, activeConversation.id) : undefined;
+
   return <section className="chat-home" aria-label="AI 骑行伙伴">
-    <header className="topbar">
+    <header className="topbar chat-plan-header">
       <button type="button" className="brand chat-brand" aria-label="Cycler，打开侧边抽屉" aria-haspopup="dialog" aria-expanded={historyOpen} aria-controls="chat-sidebar" onClick={() => setHistoryOpen(true)}>
         <span className="brand-mark"><BikeIcon /></span><span>Cycler</span>
       </button>
+      <TrainingPlanBar conversationId={activeConversation.id} data={trainingPlan} />
     </header>
-
-    <TrainingPlanBar conversationId={activeConversation.id} />
 
     <SideDrawer open={historyOpen} onClose={() => setHistoryOpen(false)}>
         <button type="button" className="primary-button chat-new-conversation" disabled={pending} onClick={startConversation}>＋ 新对话</button>
@@ -310,9 +313,16 @@ export function ChatHome({ snapshot }: { snapshot: ChatHomeSnapshot }) {
         const welcome = message.role === "assistant" && (message.kind === "welcome" || index === 0);
         const revealing = revealingMessage?.conversationId === activeConversation.id && revealingMessage.index === index;
         return <article key={`${activeConversation.id}-${index}`} className={`chat-message chat-message-${message.role}${welcome ? " chat-message-welcome" : ""}${message.kind === "rides" ? " chat-message-receipt" : ""}`} aria-label={message.role === "assistant" ? "Cycler 的消息" : "你的消息"} aria-busy={revealing || undefined}>
-          {message.role === "assistant" && <span className="chat-message-label">Cycler</span>}
+          {message.role === "assistant" && !welcome && <span className="chat-message-label">Cycler</span>}
           {message.role === "assistant" && message.kind === "rides" && <StatusBadge>骑行同步／导入结果</StatusBadge>}
-          {welcome ? <Onboarding rideCount={snapshot.totalRideCount} onImported={imported} conversationId={activeConversation.id} pending={pending} onStartPlan={() => { if (!pending) void ask("我想制定训练计划。", "typed_input"); }} /> : message.role === "assistant" ? message.interaction?.artifact?.kind === "training_execution" ? <TrainingExecutionReply reference={message.interaction.artifact.payload} onStale={() => { if (revealing) finishReveal(); }}><ChatReplyText text={message.text} reveal={revealing} onComplete={finishReveal} onProgress={followReply} /></TrainingExecutionReply> : <ChatReplyText text={message.text} reveal={revealing} onComplete={finishReveal} onProgress={followReply} /> : <p>{message.text}</p>}
+          {welcome ? <Onboarding
+            rideCount={snapshot.totalRideCount}
+            onImported={imported}
+            conversationId={activeConversation.id}
+            planHref={currentPlanHref}
+            pending={pending}
+            onStartPlan={() => { if (!pending) void ask("我想制定训练计划。", "typed_input"); }}
+          /> : message.role === "assistant" ? message.interaction?.artifact?.kind === "training_execution" ? <TrainingExecutionReply reference={message.interaction.artifact.payload} onStale={() => { if (revealing) finishReveal(); }}><ChatReplyText text={message.text} reveal={revealing} onComplete={finishReveal} onProgress={followReply} /></TrainingExecutionReply> : <ChatReplyText text={message.text} reveal={revealing} onComplete={finishReveal} onProgress={followReply} /> : <p>{message.text}</p>}
           {message.interaction && <ChatRideList {...message.interaction} pending={pending} conversationId={activeConversation.id} onInspect={inspectRide} onChoose={choice => { if (!pending) void ask("请分析我选择的这次骑行。", "typed_input", choice); }} />}
           {message.interaction?.artifact?.kind === "onboarding" && <div className="ux-actions" aria-label="首次使用引导入口">
             <button disabled={pending} onClick={() => window.dispatchEvent(new Event("cycler-open-profile"))}>完善／查看资料</button>

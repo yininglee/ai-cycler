@@ -7,6 +7,8 @@ export type TrainingPlanView = {
   viewPlan?: TrainingPlan | null; profileChanged?: boolean; activeProfileChanged?: boolean;
   deletedVersions?: Record<string, string>;
   activatedAt?: Record<string, string>; replacedAt?: Record<string, string>;
+  /** Current week: visible associated rides, with duration fraction or null when not comparable. */
+  weekProgress?: Record<string, number | null>;
   workoutRecords?: Record<string, { completedAt: string; rideId?: string }>;
   executionRecords?: Record<string, { rideId: string; revision: number }>;
 };

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { hasAnyProfileFact, type UserProfile } from "../../src/domain/user-profile";
 import { readProfile, saveUx } from "./profile-client";
@@ -29,7 +30,14 @@ export function PrototypeSettings() {
   </section>;
 }
 
-export function Onboarding({ rideCount, onImported, conversationId, onStartPlan, pending = false }: { rideCount: number; onImported?: (ids: string[], text: string, conversationId?: string) => void; conversationId?: string; onStartPlan: () => void; pending?: boolean }) {
+export function Onboarding({ rideCount, onImported, conversationId, planHref, onStartPlan, pending = false }: {
+  rideCount: number;
+  onImported?: (ids: string[], text: string, conversationId?: string) => void;
+  conversationId?: string;
+  planHref?: string;
+  onStartPlan: () => void;
+  pending?: boolean;
+}) {
   const router = useRouter();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [panel, setPanel] = useState<"profile" | null>(null);
@@ -51,8 +59,15 @@ export function Onboarding({ rideCount, onImported, conversationId, onStartPlan,
 
     {error && <p role="alert">{error}<button onClick={() => void refresh().catch(e => setError(e.message))}>重试读取</button></p>}
     {profile && !profile.ux?.skipped && <section className="ux-card ux-welcome">
-      <p className="kicker">CYCLER · 你的教练型伙伴</p><h1>{hasAnyProfileFact(profile) ? "从你的下一次骑行开始" : "你好，很高兴一起骑行"}</h1><p>一起看懂骑行，安排下一次训练。可以从下面开始，也可以直接问我。</p>
-      <div className="ux-steps"><button className={!hasAnyProfileFact(profile) ? "primary-button" : undefined} onClick={() => setPanel("profile")}>{hasAnyProfileFact(profile) ? "✓ 查看／补充资料" : "01 完善个人资料"}</button><RideSyncLauncher className={hasAnyProfileFact(profile) && !rideCount ? "primary-button" : undefined} label={rideCount ? `✓ 同步／查看骑行（${rideCount}）` : "02 同步／导入骑行"} onComplete={onImported} conversationId={conversationId} /><button className={hasAnyProfileFact(profile) && rideCount > 0 ? "primary-button" : undefined} disabled={pending} onClick={onStartPlan}>03 制定训练计划</button></div>
+      <p className="kicker">CYCLER · 你的教练型伙伴</p>
+      <p>一起看懂骑行，安排下一次训练。可以从下面开始，也可以直接问我。</p>
+      <div className="ux-steps">
+        <button className={!hasAnyProfileFact(profile) ? "primary-button" : undefined} onClick={() => setPanel("profile")}>{hasAnyProfileFact(profile) ? "查看／补充资料" : "完善个人资料"}</button>
+        <RideSyncLauncher className={hasAnyProfileFact(profile) && !rideCount ? "primary-button" : undefined} label={rideCount ? `同步／查看骑行（${rideCount}）` : "同步／导入骑行"} onComplete={onImported} conversationId={conversationId} />
+        {planHref
+          ? <Link href={planHref}>查看计划</Link>
+          : <button disabled={pending} onClick={onStartPlan}>制定训练计划</button>}
+      </div>
     </section>}
     {profile?.ux?.skipped && <><p className="chat-welcome-skipped">没关系，我们可以先聊聊。你可以随时补充资料、导入骑行或制定训练计划。</p><button className="clear-profile" disabled={busy} onClick={() => void action({ action: "skip", skipped: false })}>继续完善资料</button></>}
     <ProfileSheet open={panel !== null} onClose={() => setPanel(null)} onSaved={() => { void refresh(); window.dispatchEvent(new Event("cycler-profile-saved")); }} />

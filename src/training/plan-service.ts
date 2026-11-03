@@ -4,8 +4,9 @@ import { getApplicationRepository } from "../persistence/application-repository.
 import { getRideRepository } from "../persistence/demo-ride-repository.ts";
 import { TrainingPlanStore, type PlanWorkspace } from "../persistence/training-plan-store.ts";
 import { createConfirmedWriteService, type ConfirmedWriteHandler } from "../chat/chat-write-confirmation.ts";
+import { executionKey, rideShanghaiDate, validRideMetric } from "../domain/training-execution.ts";
 import { planExplanationValid } from "./plan-explanation.ts";
-import { createTrainingPlan, missingPlanIntake, parsePlanIntakePatch, parsePlanProposal, planConstraints, planDayIndex, planToday, validateTrainingPlan, PlanError, type PlanBasis, type PlanIntake, type PlanProposal, type TrainingPlan } from "../domain/training-plan.ts";
+import { createTrainingPlan, missingPlanIntake, parsePlanIntakePatch, parsePlanProposal, planConstraints, planDayIndex, planMonday, planToday, validateTrainingPlan, PlanError, type PlanBasis, type PlanIntake, type PlanProposal, type TrainingPlan } from "../domain/training-plan.ts";
 
 export async function planRuntime(ownerId: string, repository: ApplicationRepository = getApplicationRepository()) {
   const profile = await repository.getProfile(ownerId);
@@ -84,6 +85,21 @@ export async function planRuntime(ownerId: string, repository: ApplicationReposi
         return handler.loadCurrent(workspace, targetId);
       } };
       return createConfirmedWriteService(store, new Map([["activate_training_plan", checkedHandler]])).issue({ ownerId, action: "activate_training_plan", targetId: input.planId, expectedVersion: `v${input.version}`, idempotencyKey: input.idempotencyKey, ttlMs: 10 * 60 * 1000 });
+    },
+    weekProgress(workspace: PlanWorkspace, active: TrainingPlan | null): Record<string, number | null> {
+      if (!active) return {};
+      const monday = planMonday(today);
+      const records = new Map(entries.map(({ record }) => [record.activity.rideId, record]));
+      const progress: Record<string, number | null> = {};
+      for (const day of active.days) {
+        if (day.date < monday || day.date > today) continue;
+        const execution = workspace.executions[executionKey(active.version, day.date)];
+        const record = execution && records.get(execution.rideId);
+        if (!record || rideShanghaiDate(record) !== day.date) continue;
+        const moving = validRideMetric(record, "movingTimeS");
+        progress[day.date] = day.minutes > 0 && moving !== null ? Math.min(1, moving / (day.minutes * 60)) : null;
+      }
+      return progress;
     },
     async context() {
       const workspace = await store.read(ownerId);

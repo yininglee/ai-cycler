@@ -57,6 +57,21 @@ test("SCN-05: Shanghai day candidates remain separate and imports never associat
   await assert.rejects(s.service.confirmation.confirm({ ownerId: s.f.id, request: { ...confirmed(prepared), confirmed: false } }));
   assert.equal((await s.service.context()).execution, null);
 });
+test("SCN-05: weekly progress uses only the linked, visible ride's valid moving time", async () => {
+  const s = await setup();
+  const progress = async () => (await (await getPlan(s.f.request())).json()).weekProgress;
+  assert.deepEqual(await progress(), {}); // Imported rides are not attributed automatically.
+  await link(s, "b");
+  assert.equal((await progress())[today], 20 / 30); // Partial arc, even before AI assessment.
+  await link(s, "a", 1);
+  assert.equal((await progress())[today], 1); // Cap over-target durations at one full circle.
+  const missing = ride("missing"); delete missing.activity.metrics.movingTimeS;
+  await getApplicationRepository().saveRide(s.f.id, missing);
+  await link(s, "missing", 2);
+  assert.equal((await progress())[today], null);
+  await getApplicationRepository().deleteRide(s.f.id, "missing");
+  assert.deepEqual(await progress(), {});
+});
 test("SCN-05: candidate pagination has no truncation or automatic selection", async () => {
   const s = await setup();
   for (let i = 0; i < 23; i++) await getApplicationRepository().saveRide(s.f.id, ride(`many-${i}`));

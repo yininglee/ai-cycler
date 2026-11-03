@@ -77,8 +77,22 @@ export function TrainingExecutionCard({ reference, conversationId, pending, onAs
   if (!reference && ["no_plan", "draft_only"].includes(view.status)) return null;
   const execution = view.execution, facts = execution?.facts;
   const state = { no_plan: "还没有已启用的计划", draft_only: "草案尚未启用", not_started: "计划尚未开始", ended: "计划已结束", rest: "今天是休息日", training: "今日训练", replaced: "已替换的训练安排", deleted: "计划已删除 · 执行历史保留" }[view.status];
+  const title = view.day?.title ?? view.goal ?? "训练安排";
+  const planHref = view.ref && view.status !== "deleted"
+    ? planDetailHref(view.ref.planId, view.ref.version, conversationId, view.date)
+    : null;
+  const uploadLabel = reference ? "上传／同步本次训练" : "上传训练数据";
+  const linkRideButton = view.canLink && <button disabled={busy || pending} onClick={() => {
+    setSelected(undefined);
+    receipt.current = null;
+    setOpen(true);
+    void load();
+  }}>{execution ? "更换关联记录" : "关联已有骑行"}</button>;
   return <section className={`${styles.card} ${styles.executionCard}`} aria-label={reference ? "训练执行记录" : "今日计划"}>
-    <div className="ui-state-row"><StatusBadge tone={view.status === "training" ? "pending" : "neutral"}>{state}</StatusBadge><span className="ui-version">{view.date}</span>{view.staleReason ? <StatusBadge tone="error">评估需更新</StatusBadge> : execution?.narrative ? <StatusBadge tone="active">已有执行评估</StatusBadge> : null}</div><h3>{view.day?.title ?? view.goal ?? "训练安排"}</h3>
+    <div className="ui-state-row"><StatusBadge tone={view.status === "training" ? "pending" : "neutral"}>{state}</StatusBadge><span className="ui-version">{view.date}</span>{view.staleReason ? <StatusBadge tone="error">评估需更新</StatusBadge> : execution?.narrative ? <StatusBadge tone="active">已有执行评估</StatusBadge> : null}</div>
+    <h3>{!reference && planHref
+      ? <Link className={styles.executionPlanLink} href={planHref} aria-label={`查看计划：${title}`}>{title}</Link>
+      : title}</h3>
     {view.day && <p>{view.day.minutes ? `${view.day.minutes} 分钟 · ${view.day.purpose}` : "按计划休息，不需要补做或自动增加训练。"}</p>}
     {view.status === "not_started" && <p>{view.startDate} 开始；今天没有待完成任务。</p>}
     {view.status === "ended" && <p>可查看历史，新的安排需重新制定并确认。</p>}
@@ -95,8 +109,9 @@ export function TrainingExecutionCard({ reference, conversationId, pending, onAs
       {execution?.narrative && <p>{execution.narrative.reply}</p>}
     </details>}
     {execution && !execution.narrative && <p role="status">{execution.feedbackError ?? (facts ? "事实对比已就绪，AI反馈尚未生成。" : "已关联，尚未完成评估。")}</p>}
-    <div className={styles.executionActions}>
-      {view.canLink && <RideSyncLauncher className={!execution ? "primary-button" : undefined} label="上传／同步本次训练" conversationId={conversationId} onComplete={(ids, text, origin) => {
+    <div className={reference ? styles.executionActions : `${styles.executionActions} ${styles.todayActions}`}>
+      {!reference && linkRideButton}
+      {view.canLink && <RideSyncLauncher className={!execution ? "primary-button" : undefined} label={uploadLabel} conversationId={conversationId} onComplete={(ids, text, origin) => {
         if (onImported) { onImported(ids, text, origin); void load(); }
         else if (origin) {
           try {
@@ -106,14 +121,14 @@ export function TrainingExecutionCard({ reference, conversationId, pending, onAs
           } catch { setError("记录已导入；回执暂未保存，请返回原对话查看候选。"); void load(); }
         } else void load();
       }} />}
-      {view.ref && view.status !== "deleted" && <Link href={planDetailHref(view.ref.planId, view.ref.version, conversationId, view.date)}>查看计划</Link>}
-      {view.canLink && <button disabled={busy || pending} onClick={() => { setSelected(undefined); receipt.current = null; setOpen(true); void load(); }}>{execution ? "更换关联记录" : "关联已有骑行"}</button>}
+      {reference && planHref && <Link href={planHref}>查看计划</Link>}
+      {reference && linkRideButton}
       {execution && !["deleted", "replaced"].includes(view.status) && <button disabled={busy || pending} onClick={() => void feedback(view, !!execution.narrative || !!view.staleReason)}>{busy ? "正在评估…" : execution.narrative ? "重新评估" : "生成／重试评估"}</button>}
     </div>
     {error && <p role="alert">{error}</p>}
     <BottomSheet open={open} size="large" title="关联一条骑行记录" onClose={() => { if (!busy) setOpen(false); }}><div className={styles.form}>
       <p>仅展示 {view.date}（上海时间）开始的记录。选择后再确认；同步不会自动关联。{execution ? "更换会使原评估失效。" : ""}</p>
-      {!view.candidates.length && <p>当天暂无可选记录，请关闭后上传／同步。</p>}
+      {!view.candidates.length && <p>当天暂无可选记录。关闭后，可点击「{uploadLabel}」。</p>}
       <RideCardStack cards={view.candidates.map(candidate => ({ id: candidate.rideId, content: <article className={styles.card}>
         <small>{new Date(candidate.startTime).toLocaleString("zh-CN", { timeZone: "Asia/Shanghai" })} · {candidate.source}</small><h3>{candidate.minutes === null ? "时长未知" : `${Math.round(candidate.minutes)} 分钟`}{candidate.distanceM === null ? "" : ` · ${(candidate.distanceM / 1000).toFixed(1)} km`}</h3><p>{candidate.hasPower ? "有功率" : "无功率"} · {candidate.hasHeartRate ? "有心率" : "无心率"}</p>
         <button aria-pressed={selected === candidate.rideId} disabled={busy} onClick={() => { setSelected(candidate.rideId); receipt.current = null; }}>{selected === candidate.rideId ? "已选择这条记录" : "选择这条记录"}</button>

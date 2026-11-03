@@ -120,15 +120,47 @@ export function TrainingPlanCard({ reference, conversationId, onGenerate }: { re
   </section>;
 }
 
-export function TrainingPlanBar({ conversationId }: { conversationId: string }) {
+export function useTrainingPlanView() {
   const [data, setData] = useState<TrainingPlanView>();
   const load = useCallback(() => { void planRequest().then(setData).catch(() => {}); }, []);
-  useEffect(() => { load(); window.addEventListener("cycler-plan-updated", load); window.addEventListener("cycler-profile-saved", load); return () => { window.removeEventListener("cycler-plan-updated", load); window.removeEventListener("cycler-profile-saved", load); }; }, [load]);
-  const active = data?.active, today = planToday(), monday = planMonday(today);
-  if (!active) return data?.draft ? <div className={styles.emptyBar}><Link href={planDetailHref(data.draft.id, data.draft.version, conversationId)}>查看待确认计划<ArrowIcon /></Link></div> : null;
-  return <section className={styles.weekBar} aria-label="本周训练计划">
-    <div><Link href={planDetailHref(active.id, active.version, conversationId)}>{active.intake.startDate! > today ? "计划尚未开始" : active.intake.endDate! < today ? "计划已结束" : "本周计划"} · {monday.slice(5)} — {addPlanDays(monday, 6).slice(5)}</Link>{data?.draft && <Link href={planDetailHref(data.draft.id, data.draft.version, conversationId)}>待确认草案</Link>}</div>
-    {data?.activeProfileChanged && <p className={styles.note}>基础资料或目标已变化，计划需复核；请先核对后调整。</p>}
-    <nav>{["一", "二", "三", "四", "五", "六", "日"].map((label, i) => { const date = addPlanDays(monday, i), day = active.days.find(item => item.date === date); return <Link key={date} className={date === today ? styles.today : ""} href={planDetailHref(active.id, active.version, conversationId, date)} aria-current={date === today ? "date" : undefined} aria-label={`${date} ${day?.title ?? "无安排"}`}><span>{label}</span><b>{Number(date.slice(-2))}</b><small>{day ? day.minutes ? "训练" : "休息" : "—"}</small></Link>; })}</nav>
-  </section>;
+  useEffect(() => {
+    load();
+    let day = planToday();
+    const timer = window.setInterval(() => { const next = planToday(); if (next !== day) { day = next; load(); } }, 30_000);
+    const events = ["cycler-plan-updated", "cycler-profile-saved", "focus"];
+    events.forEach(event => window.addEventListener(event, load));
+    return () => { window.clearInterval(timer); events.forEach(event => window.removeEventListener(event, load)); };
+  }, [load]);
+  return data;
+}
+
+export function TrainingPlanBar({ conversationId, data }: { conversationId: string; data?: TrainingPlanView }) {
+  const active = data?.active, draft = data?.draft, today = planToday(), monday = planMonday(today);
+  const draftLink = draft && <Link className={styles.draftLink} href={planDetailHref(draft.id, draft.version, conversationId)}>查看待确认计划<ArrowIcon /></Link>;
+  if (!active) return draftLink || null;
+  const planStatus = active.intake.startDate! > today ? "计划尚未开始" : active.intake.endDate! < today ? "计划已结束" : null;
+  return <>
+    <nav className={styles.weekBar} aria-label={`本周训练计划，${monday} 至 ${addPlanDays(monday, 6)}`}>
+      {["一", "二", "三", "四", "五", "六", "日"].map((label, index) => {
+        const date = addPlanDays(monday, index), day = active.days.find(item => item.date === date);
+        const progress = data?.weekProgress?.[date], isToday = date === today;
+        const progressLabel = typeof progress === "number" ? `，已关联骑行，时长进度 ${progress === 1 ? 100 : Math.floor(progress * 100)}%` : progress === null ? "，已关联骑行，无可比时长进度" : "";
+        const description = `${isToday ? "今天，" : ""}${date} 周${label}，${day?.title ?? "无安排"}${progressLabel}`;
+        return <Link key={date} className={isToday ? styles.today : undefined} href={planDetailHref(active.id, active.version, conversationId, date)} aria-current={isToday ? "date" : undefined} aria-label={description} title={description}>
+          <span>{label}</span>
+          <svg className={styles.weekRing} viewBox="0 0 24 24" aria-hidden="true">
+            <circle className={styles.ringTrack} cx="12" cy="12" r="9.5" />
+            {!!day?.minutes && <circle className={styles.ringTraining} cx="12" cy="12" r="6.6" />}
+            {isToday && <circle className={styles.ringToday} cx="12" cy="12" r="5.2" />}
+            {typeof progress === "number" && progress > 0 && <circle className={styles.ringProgress} cx="12" cy="12" r="9.5" pathLength="100" strokeDasharray={`${progress * 100} 100`} transform="rotate(-90 12 12)" />}
+          </svg>
+        </Link>;
+      })}
+    </nav>
+    {(planStatus || data?.activeProfileChanged || draft) && <div className={styles.weekMeta}>
+      {planStatus && <span>{planStatus}</span>}
+      {data?.activeProfileChanged && <span>资料或目标已变化，计划需复核。</span>}
+      {draftLink}
+    </div>}
+  </>;
 }

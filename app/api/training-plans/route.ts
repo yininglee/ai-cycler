@@ -9,12 +9,13 @@ const headers = { "Cache-Control": "no-store" };
 const exact = (input: Record<string, unknown>, keys: string[]) => Object.keys(input).sort().join() === [...keys].sort().join();
 const version = (v: unknown): v is number => typeof v === "number" && Number.isSafeInteger(v) && v >= 0;
 async function view(ownerId: string, planId?: string | null, requestedVersion?: number) {
-  const context = await (await planRuntime(ownerId)).context();
+  const service = await planRuntime(ownerId);
+  const context = await service.context();
   const { workspace, ...rest } = context;
   if (planId && workspace.id !== planId) throw new PlanError("NOT_FOUND");
   const viewPlan = requestedVersion === undefined ? context.draft ?? context.active : workspace.plans.find(plan => plan.version === requestedVersion) ?? null;
   if (requestedVersion !== undefined && !viewPlan) throw new PlanError("NOT_FOUND");
-  return { ...rest, profileChanged: !!viewPlan && viewPlan.basis.profileHash !== context.basis.profileHash, id: workspace.id, version: workspace.version, intake: workspace.intake, intakeVersion: workspace.intakeVersion, confirmedIntakeVersion: workspace.confirmedIntakeVersion, activeVersion: workspace.activeVersion, draftVersion: workspace.draftVersion, deletedVersions: workspace.deletedVersions, planStatuses: Object.fromEntries(workspace.plans.map(plan => [String(plan.version), trainingPlanStatus(workspace, plan.version)])), activatedAt: workspace.activatedAt, replacedAt: workspace.replacedAt, workoutRecords: workspace.workoutRecords, executionRecords: Object.fromEntries(Object.entries(workspace.executions).map(([key, value]) => [key, { rideId: value.rideId, revision: value.revision }])), viewPlan };
+  return { ...rest, weekProgress: service.weekProgress(workspace, context.active), profileChanged: !!viewPlan && viewPlan.basis.profileHash !== context.basis.profileHash, id: workspace.id, version: workspace.version, intake: workspace.intake, intakeVersion: workspace.intakeVersion, confirmedIntakeVersion: workspace.confirmedIntakeVersion, activeVersion: workspace.activeVersion, draftVersion: workspace.draftVersion, deletedVersions: workspace.deletedVersions, planStatuses: Object.fromEntries(workspace.plans.map(plan => [String(plan.version), trainingPlanStatus(workspace, plan.version)])), activatedAt: workspace.activatedAt, replacedAt: workspace.replacedAt, workoutRecords: workspace.workoutRecords, executionRecords: Object.fromEntries(Object.entries(workspace.executions).map(([key, value]) => [key, { rideId: value.rideId, revision: value.revision }])), viewPlan };
 }
 function failure(error: unknown) {
   if (error instanceof SyntaxError) return failure(new PlanError("INVALID_INPUT"));

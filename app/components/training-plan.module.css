@@ -29,18 +29,19 @@
 .minutesInput { display: flex; align-items: center; gap: 12px; color: var(--muted); }
 .minutesInput input[type=number] { width: 96px; }
 .formFooter { display: grid; gap: 12px; position: sticky; bottom: -24px; padding: 16px 0 24px; background: var(--bg); border-top: 1px solid var(--line); }
-.emptyBar { padding: 4px 0 12px; }
-.emptyBar a { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 48px; padding: 12px 20px; border: 1px solid var(--line); border-radius: var(--radius-control); background: var(--surface); font-size: 16px; font-weight: 650; color: var(--ink); }
-.emptyBar svg { flex: 0 0 20px; width: 20px; height: 20px; }
-.weekBar { margin: 0 0 12px; padding: 12px 0; border-bottom: 1px solid var(--line); }
-.weekBar > div { display: flex; justify-content: space-between; align-items: center; gap: 12px; font-size: 14px; }
-.weekBar > div a { min-height: 44px; display: inline-flex; align-items: center; }
-.weekBar nav { display: grid; grid-template-columns: repeat(7,minmax(44px,1fr)); overflow-x: auto; gap: 2px; margin-top: 4px; }
-.weekBar nav a { display: grid; gap: 2px; align-content: center; min-height: 76px; text-align: center; padding: 8px 0; border: 1px solid transparent; border-radius: 12px; font-size: 14px; color: var(--muted); }
-.weekBar b { font-size: 20px; font-weight: 650; color: var(--ink); }
-.weekBar small { font-size: 12px; }
-.weekBar .today { border-color: #d0dfc8; color: var(--sport-ink); background: var(--sport-soft); }
-.weekBar .today b { color: var(--sport-ink); }
+.draftLink { justify-self: end; display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 6px 12px; border: 1px solid var(--line); border-radius: var(--radius-control); background: var(--surface); color: var(--ink); font-size: 13px; font-weight: 600; }
+.draftLink svg { flex: 0 0 16px; width: 16px; height: 16px; }
+.weekBar { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); justify-self: end; width: min(100%, 220px); }
+.weekBar a { display: grid; justify-items: center; align-content: center; gap: 1px; min-height: 44px; border-radius: 8px; color: var(--muted); font-size: 11px; line-height: 16px; }
+.weekBar a:hover { background: var(--surface); }
+.weekBar .today { color: var(--ink); font-weight: 700; }
+.weekBar .weekRing { width: 20px; height: 20px; }
+.ringTrack { fill: none; stroke: #d3d6da; stroke-width: 2.6; }
+.ringTraining { fill: none; stroke: #d49b16; stroke-width: 2.2; }
+.ringToday { fill: var(--sport-ink); }
+.ringProgress { fill: none; stroke: #8653bf; stroke-width: 3; }
+.weekMeta { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; padding-bottom: 4px; color: var(--muted); font-size: 12px; }
+.weekMeta .draftLink { margin-left: auto; }
 .detail { max-width: 760px; margin: 0 auto; padding: 0 0 40px; }
 .detail header { display: flex; justify-content: space-between; align-items: center; padding: 0 0 16px; font-size: 14px; }
 .weekNavigation { display: flex; gap: 8px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
@@ -66,7 +67,15 @@
 .executionActions > :global(.primary-button), .decisionActions > :global(.primary-button) { grid-column: 1 / -1; min-height: 52px; }
 .executionActions > a:not(:global(.primary-button)), .executionActions > button:not(:global(.primary-button)), .decisionActions > a:not(:global(.primary-button)), .decisionActions > button:not(:global(.primary-button)) { display: flex; align-items: center; justify-content: center; width: 100%; min-width: 0; min-height: 48px; padding: 10px 8px; border: 1px solid var(--line); border-radius: 16px; background: #f6f7f8; color: var(--ink); font-size: 14px; font-weight: 500; line-height: 1.5; text-align: center; text-decoration: none; }
 .executionActions > a:only-child, .executionActions > button:only-child { grid-column: 1 / -1; }
+.executionActions:empty { display: none; }
+.executionActions.todayActions { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 8px; }
+.executionActions.todayActions > button { grid-column: auto; min-height: 48px; padding: 8px 12px; border-radius: var(--radius-control); font-size: 14px; line-height: 1.5; }
+.executionCard { position: relative; }
 .executionCard > h3 { font-size: 24px; }
+.executionPlanLink::after { content: ""; position: absolute; inset: 0; border-radius: var(--radius-card); }
+.executionPlanLink:focus-visible { outline: none; }
+.executionPlanLink:focus-visible::after { outline: 2px solid var(--ink); outline-offset: 2px; }
+.executionCard > a, .executionCard > details, .executionActions > button { position: relative; z-index: 1; }
 @media(max-width:360px) { .weekdays { grid-template-columns: repeat(4,minmax(0,1fr)); gap: 8px; } .twoColumns { grid-template-columns: 1fr; } .card, .day { padding: 20px; } .weekNavigation { justify-content: flex-start; } }
 .card > :global(.ui-status-badge) { margin-bottom: 8px; }
 .day > div > :global(.ui-status-badge) { flex-shrink: 0; max-width: 100%; }

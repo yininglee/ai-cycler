@@ -873,6 +873,8 @@ fieldset.profile-fields { margin: 0; padding: 0; border: 0; min-width: 0; }
 @media (max-width: 480px) { .ux-card { padding: 16px; } .ux-steps { grid-template-columns: 1fr; } .ux-steps button, .ux-steps a { text-align: left; } }
 .chat-home { height: calc(100svh - 129px); }
 .chat-home > .topbar { flex-shrink: 0; }
+.chat-home > .chat-plan-header { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 8px; }
+.chat-plan-header .chat-brand { white-space: nowrap; }
 .chat-messages > .ux-card { margin: 0; }
 .ux-inline-panel { min-width: 0; }
 .ux-inline-panel .profile-layout { display: grid; grid-template-columns: 1fr; }
@@ -1045,7 +1047,6 @@ fieldset.profile-fields { margin: 0; padding: 0; border: 0; min-width: 0; }
 .ux-card, .profile-card, .profile-facts, .chat-ride-result, .sync-record { border-color: var(--line); border-radius: var(--radius-card); box-shadow: none; }
 .ux-card { padding: 24px; }
 .ux-card p, .profile-card-copy { font-size: 16px; line-height: 1.7; color: var(--muted); }
-.ux-welcome h1 { font-size: 28px; line-height: 1.35; letter-spacing: -.03em; }
 .ux-welcome .kicker { color: var(--muted); font-size: 12px; }
 .ux-steps { grid-template-columns: 1fr; gap: 12px; margin-top: 24px; }
 .ux-steps button, .ux-steps a, .ux-actions button:not(.primary-button) { min-height: 48px; border-radius: var(--radius-control); background: var(--surface); border-color: var(--line); color: var(--ink); text-align: left; padding: 12px 20px; font-size: 16px; }
@@ -1114,7 +1115,6 @@ fieldset.profile-fields { margin: 0; padding: 0; border: 0; min-width: 0; }
 @media (max-width: 360px) {
   .ux-card, .chat-ride-result, .sync-record { padding: 20px; }
   .profile-fields { grid-template-columns: 1fr; }
-  .ux-welcome h1 { font-size: 24px; }
   .chat-ride-result-actions { align-items: stretch; flex-direction: column; }
 }
 @media (prefers-reduced-motion: reduce) {
