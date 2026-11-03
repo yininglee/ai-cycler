@@ -1,6 +1,8 @@
 import { hasExplicitChatRideReference, isStandaloneChatKnowledge, lastChatRideChoice } from "../../../src/chat/chat-context.ts";
 import { chatExecutionRoute } from "../../../src/chat/chat-execution.ts";
 import { buildChatRecordInteraction, buildChatUserInteraction } from "../../../src/chat/chat-artifacts.ts";
+import { isExecutionToolResult } from "../../../src/chat/chat-execution-tools.ts";
+import { executionRuntime } from "../../../src/training/execution-service.ts";
 import { isChatChoiceRef, type ChatChoiceRef } from "../../../src/chat/chat-interaction.ts";
 import type { ChatToolResult } from "../../../src/chat/chat-tools.ts";
 import { extractExplicitRideDate } from "../../../src/chat/chat-ride-anchor.ts";
@@ -243,7 +245,7 @@ export async function POST(request: Request): Promise<Response> {
     tokenStatus: "not_observed",
     costStatus: "not_observed",
   });
-  const agentResult = await runChatAgent({
+  let agentResult = await runChatAgent({
     text: effectiveText,
     decision,
     provider: executionRoute === "agent_loop" ? observedProvider(createChatProvider(), modelMetrics) : undefined,
@@ -258,6 +260,15 @@ export async function POST(request: Request): Promise<Response> {
       ? { aggregateRecords: (await repository.listRides(session.userId)).map((entry) => entry.record) }
       : {}),
   });
+  const assessment = [...interactionEvidence].reverse().find(item => isExecutionToolResult(item) && item.assessmentBinding);
+  if (assessment && isExecutionToolResult(assessment) && assessment.assessmentBinding) {
+    try {
+      const accepted = ["validated", "repaired"].includes(agentResult.execution) && agentResult.responseKind !== "clarification";
+      await (await executionRuntime(session.userId)).saveFeedback({ ...assessment.assessmentBinding, reply: accepted ? agentResult.reply : null });
+    } catch {
+      agentResult = { ...agentResult, execution: "template", reply: "关联或记录数据已变化，本轮评估未保存。请重新读取当前关联后再评估。", fallbackCode: "TOOLS_LOOP_FAILED" };
+    }
+  }
   const selectionNeeded = agentResult.fallbackCode === "TOOLS_ANCHOR_CLARIFY" || agentResult.fallbackCode === "TOOLS_REFERENCE_NEEDED";
   const canPresent = selectionNeeded || (agentResult.responseKind !== "clarification" && (agentResult.execution === "validated" || agentResult.execution === "repaired"));
   const candidateInteraction = buildChatUserInteraction(interactionEvidence);
@@ -267,7 +278,9 @@ export async function POST(request: Request): Promise<Response> {
   const overallResponse = overview || (!selectedChoice
     && interactionEvidence.some(result => result.tool === "get_ride_history" && !result.anchorStartTime)
     && !interactionEvidence.some(result => ["get_ride_context", "get_route_overview", "compare_rides"].includes(result.tool)));
-  const activeChoice = overallResponse || selectionNeeded ? undefined : agentResult.choice ?? (!interactionEvidence.some(r => r.tool === "get_ride_history") && interaction.artifact?.kind === "ride_list" && interaction.artifact.payload.items.length === 1 ? { kind: "ride" as const, id: interaction.artifact.payload.items[0].rideId } : effectiveChoice);
+  const executionEvidence = [...interactionEvidence].reverse().find(item => isExecutionToolResult(item) && item.view?.execution);
+  const executionChoice = executionEvidence && isExecutionToolResult(executionEvidence) && executionEvidence.view?.execution ? { kind: "ride" as const, id: executionEvidence.view.execution.rideId } : undefined;
+  const activeChoice = overallResponse || selectionNeeded ? undefined : executionChoice ?? agentResult.choice ?? (!interactionEvidence.some(r => r.tool === "get_ride_history") && interaction.artifact?.kind === "ride_list" && interaction.artifact.payload.items.length === 1 ? { kind: "ride" as const, id: interaction.artifact.payload.items[0].rideId } : effectiveChoice);
   const eventType = agentResult.fallbackCode || agentResult.execution === "validation_rejected" ? "chat_degraded" : "chat_completed";
   console.log(`${tag} agent done | execution=${agentResult.execution} modelInvoked=${agentResult.modelInvoked} modelCalls=${modelMetrics.calls} toolCalls=${toolMetrics.calls} repairAttempts=${agentResult.repairAttempts ?? 0}${agentResult.fallbackCode ? ` fallbackCode=${agentResult.fallbackCode}` : ""}${agentResult.outputValidation ? ` validation.status=${agentResult.outputValidation.status} validation.code=${agentResult.outputValidation.code ?? "ok"}` : ""} | reply.len=${agentResult.reply.length}`);
   await recordChatEvent(session.userId, eventType, requestId, {

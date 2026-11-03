@@ -5,7 +5,7 @@ import { GET, PUT } from "../app/api/profile/route.ts";
 import { PUT as ux } from "../app/api/ux/route.ts";
 import { isProfileProposalInput } from "../src/chat/chat-user-capabilities.ts";
 
-test("clear and blank mode persist without reseeding; goal updates preserve profile", async () => {
+test("clear and blank mode persist; retired independent goal writes cannot alter profile", async () => {
   const initial = await GET(new Request("http://localhost/api/profile"));
   const cookie = initial.headers.get("set-cookie")!.split(";", 1)[0];
   const request = (body: unknown) => new Request("http://localhost/api/profile", { method: "PUT", headers: { Cookie: cookie, "Content-Type": "application/json" }, body: JSON.stringify(body) });
@@ -15,12 +15,14 @@ test("clear and blank mode persist without reseeding; goal updates preserve prof
   await ux(request({ action: "blank" }));
   await PUT(request({ age: 31, weightKg: 71 }));
   const goal = await ux(request({ action: "goal", goal: { title: "提升耐力", detail: "100 km" } }));
-  const profile = await goal.json();
+  assert.equal(goal.status, 410);
+  assert.equal((await goal.json()).error, "GOAL_MANAGED_BY_TRAINING_PLAN");
+  const profile = await (await GET(new Request("http://localhost/api/profile", { headers: { Cookie: cookie } }))).json();
   assert.equal(profile.age.value, 31);
   assert.equal(profile.ux.mode, "blank");
-  assert.equal(profile.ux.goal.detail, "100 km");
+  assert.equal(profile.ux.goal, null);
   const invalid = await ux(request({ action: "goal", goal: { title: "", detail: "" } }));
-  assert.equal(invalid.status, 422);
+  assert.equal(invalid.status, 410);
 });
 
 test("profile proposal parameters use domain ranges and exact fields without interpreting language", () => {

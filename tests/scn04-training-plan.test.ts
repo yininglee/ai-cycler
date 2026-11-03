@@ -187,6 +187,28 @@ test("SCN-04: SQLite rolls domain, consumed grants and audit back atomically; se
   assert.equal(JSON.parse(row.content).audits.length, 0);
 });
 
+test("Planning goal: a missing goal prevents intake confirmation without creating an independent goal", async () => {
+  const f = owner(), service = await planRuntime(f.id);
+  await service.prepare({ ...intake(), goal: "" }, 0);
+  const context = await service.context(); assert.ok(context.missing.includes("目标"));
+  await assert.rejects(service.confirmIntake({}, context.workspace.intakeVersion), code("MISSING_INTAKE"));
+  assert.equal((await service.context()).workspace.confirmedIntakeVersion, null);
+  assert.equal((await getApplicationRepository().getProfile(f.id))?.ux?.goal, undefined);
+});
+
+test("Planning goal: changing a goal belongs to the next plan draft and does not change the active target", async () => {
+  const { f, service, plan } = await draft();
+  await service.confirmation.confirm({ ownerId: f.id, request: confirmRequest(await service.issue({ planId: plan.id, version: 1, activeVersion: null, idempotencyKey: "goal-v1" })) });
+  await service.prepare({ goal: "提升爬坡表现" }, plan.intakeVersion);
+  let context = await service.context(); assert.equal(context.active!.intake.goal, "恢复规律骑行"); assert.equal(context.workspace.intake.goal, "提升爬坡表现");
+  const reviewed = await service.confirmIntake({}, context.workspace.intakeVersion);
+  const next = await service.propose({ intakeVersion: reviewed.intakeVersion, baseVersion: 1, proposal: proposal() });
+  context = await service.context(); assert.equal(context.draft!.intake.goal, "提升爬坡表现"); assert.equal(context.active!.intake.goal, "恢复规律骑行");
+  await service.confirmation.confirm({ ownerId: f.id, request: confirmRequest(await service.issue({ planId: next.id, version: 2, activeVersion: 1, idempotencyKey: "goal-v2" })) });
+  assert.equal((await service.context()).active!.intake.goal, "提升爬坡表现");
+  assert.equal((await getApplicationRepository().getProfile(f.id))?.ux?.goal, undefined);
+});
+
 test("SCN-04: two Node processes confirming the same SQLite grant commit once and replay once", async () => {
   const { f, service, plan } = await draft();
   const grant = await service.issue({ planId: plan.id, version: 1, activeVersion: null, idempotencyKey: "cross-process" });

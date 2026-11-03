@@ -6,4 +6,5 @@ export type TrainingPlanView = {
   viewPlan?: TrainingPlan | null; profileChanged?: boolean; activeProfileChanged?: boolean;
   activatedAt?: Record<string, string>; replacedAt?: Record<string, string>;
   workoutRecords?: Record<string, { completedAt: string; rideId?: string }>;
+  executionRecords?: Record<string, { rideId: string; revision: number }>;
 };

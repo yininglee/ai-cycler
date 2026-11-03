@@ -1,11 +1,10 @@
 import { createUserProfile, type ProfileInput } from "../domain/user-profile.ts";
-import { isUserGoalDraft, type UserGoalDraft } from "../domain/user-goal.ts";
+import { type UserGoalDraft } from "../domain/user-goal.ts";
 import type { ApplicationRepository } from "../persistence/application-repository.ts";
 import { sanitizeChatInteractionPayload, type ChatAgentInteraction } from "./chat-interaction.ts";
 
 export type ChatUserToolInvocation =
   | { tool: "get_user_context" | "show_onboarding"; input: Record<string, never> }
-  | { tool: "prepare_goal_editor"; input: { draft: UserGoalDraft | null } }
   | { tool: "prepare_profile_proposal"; input: { input: ProfileInput } };
 
 type UserClaim = { claimId: string; kind: "metric"; key: string; value: number; unit: string; confidence: "high"; displayValue?: string };
@@ -45,7 +44,6 @@ export function isProfileProposalInput(value: unknown): value is ProfileInput {
 export function parseChatUserToolInvocation(tool: unknown, input: Record<string, unknown>): ChatUserToolInvocation | undefined {
   const keys = Object.keys(input);
   if (tool === "get_user_context" || tool === "show_onboarding") return keys.length === 0 ? { tool, input: {} } : undefined;
-  if (tool === "prepare_goal_editor" && keys.length === 1 && keys[0] === "draft" && (input.draft === null || isUserGoalDraft(input.draft))) return { tool, input: { draft: input.draft } };
   if (tool === "prepare_profile_proposal" && keys.length === 1 && keys[0] === "input" && isProfileProposalInput(input.input)) return { tool, input: { input: input.input } };
   return undefined;
 }
@@ -61,14 +59,14 @@ export async function executeChatUserTool(repository: ApplicationRepository, own
     ["age", stored?.age?.source], ["heightCm", stored?.heightCm?.source], ["weightKg", stored?.weightKg?.source],
     ["maxHeartRateBpm", stored?.maxHeartRate?.source], ["ftpWatts", stored?.ftp?.source],
   ].filter(([, source]) => source !== undefined)) as ChatUserToolResult["profileSources"];
-  const goal = stored?.ux?.goal ? { title: stored.ux.goal.title, detail: stored.ux.goal.detail } : null;
+  // Legacy global goals are retained in storage but are no longer active profile facts.
+  const goal = null;
   const claims: UserClaim[] = [
-    { claimId: "claim:user:goal_present", kind: "metric", key: "goal_present", value: goal ? 1 : 0, unit: "count", confidence: "high" },
+    { claimId: "claim:user:context_available", kind: "metric", key: "user_context_available", value: 1, unit: "count", confidence: "high" },
     ...Object.entries(profile).map(([key, value]) => ({ claimId: `claim:user:${key}`, kind: "metric" as const, key, value: value as number, unit: key === "weightKg" ? "kg" : key === "heightCm" ? "cm" : key === "age" ? "year" : key === "ftpWatts" ? "W" : "bpm", confidence: "high" as const })),
   ];
   const clarificationNeeded = call.tool === "prepare_profile_proposal" && !hasExplicitProfileQuantities(call.input.input, source);
-  const artifact = call.tool === "prepare_goal_editor" ? { kind: "goal_editor", payload: { draft: call.input.draft } }
-    : call.tool === "prepare_profile_proposal" && !clarificationNeeded ? { kind: "profile_proposal", payload: { input: call.input.input, previous: profile } }
+  const artifact = call.tool === "prepare_profile_proposal" && !clarificationNeeded ? { kind: "profile_proposal", payload: { input: call.input.input, previous: profile } }
       : call.tool === "show_onboarding" ? { kind: "onboarding", payload: { goalDraft: "" } } : undefined;
   const { droppedFields: _, ...interaction } = sanitizeChatInteractionPayload({ artifact });
   return { schemaVersion: "chat-tools-v0.2", tool: call.tool, profile, profileSources, goal, claims, ...(artifact ? { interaction } : {}), ...(clarificationNeeded ? { clarificationNeeded: "PROFILE_UNITS_OR_VALUE" as const } : {}), saved: false };

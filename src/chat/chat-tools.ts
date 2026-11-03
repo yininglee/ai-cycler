@@ -1,3 +1,4 @@
+import { executeExecutionTool, isExecutionToolResult, parseExecutionTool, executionNumericFacts, type ExecutionToolInvocation, type ExecutionToolName, type ExecutionToolResult } from "./chat-execution-tools.ts";
 import {
   atomicCapabilityKeys,
   buildAtomicCapabilityProfile,
@@ -80,6 +81,7 @@ export const CHAT_FIND_RIDE_MAX_MATCHES = 5 as const;
 // 合同（输入校验 + 结果类型 + 证据声明），数据投影由 B1（全局三件）与 B2（记录两件）实现；
 // 未实装前 executeChatTool 抛 TEMPORARY_UNAVAILABLE，且 catalog 不下发（模型无法调用）。
 export type ChatToolName =
+  | ExecutionToolName
   | PlanToolName
   | "prepare_ride_import"
   | ChatUserToolInvocation["tool"]
@@ -156,6 +158,7 @@ type RideHistoryInput = { rideId: string | null; metrics: ChatComparisonMetricKe
 type RouteOverviewInput = { rideRef?: ChatRideRef; segments: number };
 
 export type ChatToolInvocation =
+  | ExecutionToolInvocation
   | PlanToolInvocation
   | { tool: "prepare_ride_import"; input: Record<string, never> }
   | ChatUserToolInvocation
@@ -401,6 +404,7 @@ export type RouteOverviewToolResult = {
 };
 
 export type ChatToolResult =
+  | ExecutionToolResult
   | PlanToolResult
   | RideImportToolResult
   | ChatUserToolResult
@@ -592,6 +596,8 @@ function validSegments(value: unknown): value is number {
 
 export function parseChatToolInvocation(value: unknown): ChatToolInvocation {
   if (!isPlainObject(value) || !hasExactKeys(value, ["tool", "input"]) || !isPlainObject(value.input)) throw new ChatToolError("INVALID_INPUT");
+  const executionCall = parseExecutionTool(value.tool, value.input);
+  if (executionCall) return executionCall;
   const userCall = parseChatUserToolInvocation(value.tool, value.input);
   if (userCall) return userCall;
   try { const planCall = parsePlanTool(value.tool, value.input); if (planCall) return planCall; } catch { throw new ChatToolError("INVALID_INPUT"); }
@@ -945,12 +951,18 @@ const userToolSpec: ChatToolSpec = {
   hasUsableEvidence: result => "saved" in result && result.claims.length > 0,
 };
 
+const executionToolSpec: ChatToolSpec = {
+  anchorMode: "none", evidenceKind: "claims", claimIds: result => isExecutionToolResult(result) ? result.claims.map(claim => claim.claimId) : [],
+  knowledgeIds: () => [], numericFacts: result => isExecutionToolResult(result) ? executionNumericFacts(result) : [], hasUsableEvidence: result => isExecutionToolResult(result),
+};
+
 const planToolSpec: ChatToolSpec = {
   anchorMode: "none", evidenceKind: "claims", claimIds: result => isPlanToolResult(result) ? result.claims.map(claim => claim.claimId) : [],
   knowledgeIds: () => [], numericFacts: result => isPlanToolResult(result) ? planNumericFacts(result) : [], hasUsableEvidence: result => isPlanToolResult(result),
 };
 
 export const chatToolSpecs: Record<ChatToolName, ChatToolSpec> = {
+  get_training_execution: executionToolSpec, prepare_training_record_link: executionToolSpec, assess_training_execution: executionToolSpec,
   get_training_plan_context: planToolSpec,
   prepare_training_plan: planToolSpec,
   propose_training_plan: planToolSpec,
@@ -962,7 +974,6 @@ export const chatToolSpecs: Record<ChatToolName, ChatToolSpec> = {
   },
   get_user_context: userToolSpec,
   show_onboarding: userToolSpec,
-  prepare_goal_editor: userToolSpec,
   prepare_profile_proposal: userToolSpec,
   get_ride_context: {
     anchorMode: "required",
@@ -1589,12 +1600,13 @@ async function buildRideContextResult(
 
 async function executeChatToolWithinBoundary(repository: ApplicationRepository, ownerId: string, invocation: ChatToolInvocation, userSource = ""): Promise<ChatToolExecutionResult> {
   try {
+    if (invocation.tool === "get_training_execution" || invocation.tool === "prepare_training_record_link" || invocation.tool === "assess_training_execution") return enforceResultSize(await executeExecutionTool(repository, ownerId, invocation));
     if (invocation.tool === "get_training_plan_context" || invocation.tool === "prepare_training_plan" || invocation.tool === "propose_training_plan") return executePlanTool(repository, ownerId, invocation);
     if (invocation.tool === "prepare_ride_import") return { schemaVersion: CHAT_TOOL_SCHEMA_VERSION, tool: invocation.tool, mode: "real_file_simulated_platform",
       platforms: PLATFORMS.map(({ id, name }) => ({ id, name })), fileFormats: ["FIT", "GPX"], maxFileSizeMB: MAX_UPLOAD_BYTES / (1024 * 1024),
       claims: [{ claimId: "claim:import:available", key: "import_entry_available", kind: "metric", value: 1, unit: "count", confidence: "high" }],
       interaction: { artifact: { kind: "ride_import", payload: {} } } };
-    if (invocation.tool === "get_user_context" || invocation.tool === "show_onboarding" || invocation.tool === "prepare_goal_editor" || invocation.tool === "prepare_profile_proposal") {
+    if (invocation.tool === "get_user_context" || invocation.tool === "show_onboarding" || invocation.tool === "prepare_profile_proposal") {
       return enforceResultSize(await executeChatUserTool(repository, ownerId, invocation, userSource));
     }
     // AGT-B1：三个全局工具（无锚点）先处理——它们不依赖某条骑行记录，若落进下面的

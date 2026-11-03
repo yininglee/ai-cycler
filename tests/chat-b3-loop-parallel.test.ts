@@ -174,7 +174,7 @@ test("AGT-B3 越权锚点：并行路径同样拦截（allowedRideIds 之外）"
 
 test("ARCH-02 catalog: old data labels share the full implemented registry", () => {
   const tools = buildChatToolCatalog("ride-1").tools;
-  assert.equal(tools.length, 17);
+  assert.equal(tools.length, 19);
   for (const route of ["autonomous_tools", "kb_qa", "level_assessment"] as const) {
     assert.deepEqual(buildChatToolCatalog("ride-1", route).tools, tools);
   }

@@ -4,17 +4,23 @@ import path from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import type { ConfirmedWriteStore, WriteAudit, WriteGrant, WriteReceipt } from "../chat/chat-write-confirmation.ts";
 import { emptyPlanIntake, type PlanIntake, type TrainingPlan } from "../domain/training-plan.ts";
+import type { TrainingExecution, TrainingLinkDraft } from "../domain/training-execution.ts";
 
 export type PlanWorkspace = {
   id: string; intakeVersion: number; confirmedIntakeVersion: number | null; intake: PlanIntake;
   version: number; draftVersion: number | null; activeVersion: number | null;
   plans: TrainingPlan[]; activatedAt: Record<string, string>; replacedAt: Record<string, string>;
   workoutRecords: Record<string, { completedAt: string; rideId?: string }>;
+  executions: Record<string, TrainingExecution>; linkDrafts: Record<string, TrainingLinkDraft>; deletedVersions: Record<string, string>;
 };
 type OwnerState = { workspace: PlanWorkspace; grants: Record<string, WriteGrant>; receipts: Record<string, WriteReceipt>; audits: WriteAudit[] };
 const globalQueues = globalThis as typeof globalThis & { __cyclerPlanQueues?: Map<string, Promise<unknown>> };
 const queues = globalQueues.__cyclerPlanQueues ??= new Map();
-const empty = (ownerId: string, viewKey: string): OwnerState => ({ workspace: { id: `plan-${createHash("sha256").update(JSON.stringify([ownerId, viewKey])).digest("hex").slice(0, 32)}`, intakeVersion: 0, confirmedIntakeVersion: null, intake: emptyPlanIntake(), version: 0, draftVersion: null, activeVersion: null, plans: [], activatedAt: {}, replacedAt: {}, workoutRecords: {} }, grants: {}, receipts: {}, audits: [] });
+const empty = (ownerId: string, viewKey: string): OwnerState => ({ workspace: { id: `plan-${createHash("sha256").update(JSON.stringify([ownerId, viewKey])).digest("hex").slice(0, 32)}`, intakeVersion: 0, confirmedIntakeVersion: null, intake: emptyPlanIntake(), version: 0, draftVersion: null, activeVersion: null, plans: [], activatedAt: {}, replacedAt: {}, workoutRecords: {}, executions: {}, linkDrafts: {}, deletedVersions: {} }, grants: {}, receipts: {}, audits: [] });
+function normalize(workspace: PlanWorkspace): PlanWorkspace {
+  workspace.executions ??= {}; workspace.linkDrafts ??= {}; workspace.deletedVersions ??= {};
+  return workspace;
+}
 
 /** SQLite serializes writers across processes and atomically commits domain,
  * confirmation consumption, receipts and audit. No model calls run in a transaction. */
@@ -41,6 +47,7 @@ export class TrainingPlanStore implements ConfirmedWriteStore<PlanWorkspace> {
         begun = true;
         const row = db.prepare("SELECT content FROM plan_state WHERE owner_id=? AND view_key=?").get(ownerId, this.viewKey) as { content: string } | undefined;
         const state: OwnerState = row ? JSON.parse(row.content) : empty(ownerId, this.viewKey);
+        normalize(state.workspace);
         const result = await work({ domain: state.workspace,
           getGrant: async key => state.grants[key] ?? null, putGrant: async grant => { state.grants[grant.tokenHash] = grant; },
           getReceipt: async key => state.receipts[key] ?? null, putReceipt: async receipt => { state.receipts[receipt.idempotencyKey] = receipt; },
@@ -60,7 +67,7 @@ export class TrainingPlanStore implements ConfirmedWriteStore<PlanWorkspace> {
     const db = this.open();
     try {
       const row = db.prepare("SELECT content FROM plan_state WHERE owner_id=? AND view_key=?").get(ownerId, this.viewKey) as { content: string } | undefined;
-      return row ? JSON.parse(row.content).workspace : empty(ownerId, this.viewKey).workspace;
+      return normalize(row ? JSON.parse(row.content).workspace : empty(ownerId, this.viewKey).workspace);
     } finally { db.close(); }
   }
   async deleteOwner(ownerId: string): Promise<void> {

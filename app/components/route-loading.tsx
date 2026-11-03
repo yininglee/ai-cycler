@@ -5,7 +5,7 @@ export type NavKey = "today" | "rides" | "partner" | "profile";
 export type LoadingKey = NavKey | "ride-detail";
 
 const ROUTE_LOADING_LABELS: Record<LoadingKey, { title: string; hint: string }> = {
-  profile: { title: "正在打开我的", hint: "读取已确认的资料与主要目标。" },
+  profile: { title: "正在打开我的", hint: "读取已确认的个人资料。" },
   today: { title: "正在打开今日", hint: "汇总最近一次骑行与本周进度。" },
   rides: { title: "正在打开骑行记录", hint: "基础事实会优先出现，不需要等待 AI。" },
   partner: { title: "正在打开骑行伙伴", hint: "正在读取你的骑行摘要，稍等一下。" },

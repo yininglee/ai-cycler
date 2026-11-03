@@ -12,11 +12,12 @@ export type ChatCapabilityRegistration = {
 };
 
 // Only implemented capabilities belong here. Activation stays behind explicit
-// confirmation, and execution assessment is absent. Missing data stays explicit.
+// confirmation. Missing data stays explicit.
 const categories: Record<ChatToolName, ChatCapabilityCategory> = {
+  get_training_execution: "tools", prepare_training_record_link: "workflow", assess_training_execution: "workflow",
   get_training_plan_context: "tools", prepare_training_plan: "workflow", propose_training_plan: "workflow",
   prepare_ride_import: "workflow",
-  get_user_context: "tools", show_onboarding: "workflow", prepare_goal_editor: "workflow", prepare_profile_proposal: "workflow",
+  get_user_context: "tools", show_onboarding: "workflow", prepare_profile_proposal: "workflow",
   get_ride_context: "tools", get_capabilities: "tools", compare_rides: "query",
   find_ride: "query", get_health_profile: "tools", get_training_load: "tools",
   search_knowledge_base: "knowledge", get_ride_history: "query", get_route_overview: "tools",
@@ -25,7 +26,7 @@ const categories: Record<ChatToolName, ChatCapabilityCategory> = {
 export function activeChatCapabilities(): readonly ChatCapabilityRegistration[] {
   return (Object.keys(categories) as ChatToolName[]).map(tool => ({
     tool, category: categories[tool], implemented: true, enabled: true,
-    effect: tool === "prepare_training_plan" || tool === "propose_training_plan" ? "prepare" as const : "read" as const, spec: chatToolSpecs[tool],
+    effect: tool === "prepare_training_plan" || tool === "propose_training_plan" || tool === "assess_training_execution" ? "prepare" as const : "read" as const, spec: chatToolSpecs[tool],
   })).filter(capability => capability.implemented && capability.enabled);
 }
 

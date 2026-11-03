@@ -11,7 +11,9 @@ import { CHAT_IMPORT_QUEUE_KEY, parseImportReceipts, restoreImportReceipts } fro
 import { ChatRideList } from "./chat-ride-list";
 import { sanitizeChatInteractionPayload, isChatChoiceRef, type ChatChoiceRef, type ChatAgentInteraction } from "../../src/chat/chat-interaction";
 import { RideSyncLauncher } from "./ride-sync";
-import { TrainingPlanBar, TrainingPlanCard, notifyPlanUpdated, planRequest } from "./training-plan";
+import { TrainingPlanBar, TrainingPlanCard, notifyPlanUpdated, planRequest, planDetailHref } from "./training-plan";
+import { planToday } from "../../src/domain/training-plan";
+import { TrainingExecutionCard, TrainingExecutionReply } from "./training-execution";
 import { parsePlanDiscussion, planDiscussionKey, planDiscussionText, type PlanDiscussion } from "../../src/training/plan-discussion";
 import { SideDrawer } from "./side-drawer";
 import { ChatReplyText } from "./chat-reply-text";
@@ -276,7 +278,7 @@ export function ChatHome({ snapshot }: { snapshot: ChatHomeSnapshot }) {
       </button>
     </header>
 
-    <TrainingPlanBar conversationId={activeConversation.id} pending={pending} onStart={() => { if (!pending) void ask("我想制定训练计划。", "typed_input"); }} />
+    <TrainingPlanBar conversationId={activeConversation.id} />
 
     <SideDrawer open={historyOpen} onClose={() => setHistoryOpen(false)}>
         <button type="button" className="primary-button chat-new-conversation" disabled={pending} onClick={startConversation}>＋ 新对话</button>
@@ -308,20 +310,21 @@ export function ChatHome({ snapshot }: { snapshot: ChatHomeSnapshot }) {
         const revealing = revealingMessage?.conversationId === activeConversation.id && revealingMessage.index === index;
         return <article key={`${activeConversation.id}-${index}`} className={`chat-message chat-message-${message.role}${welcome ? " chat-message-welcome" : ""}`} aria-label={message.role === "assistant" ? "Cycler 的消息" : "你的消息"} aria-busy={revealing || undefined}>
           {message.role === "assistant" && <span className="chat-message-label">Cycler</span>}
-          {welcome ? <Onboarding rideCount={snapshot.totalRideCount} onImported={imported} conversationId={activeConversation.id} /> : message.role === "assistant" ? <ChatReplyText text={message.text} reveal={revealing} onComplete={finishReveal} onProgress={followReply} /> : <p>{message.text}</p>}
+          {welcome ? <Onboarding rideCount={snapshot.totalRideCount} onImported={imported} conversationId={activeConversation.id} pending={pending} onStartPlan={() => { if (!pending) void ask("我想制定训练计划。", "typed_input"); }} /> : message.role === "assistant" ? message.interaction?.artifact?.kind === "training_execution" ? <TrainingExecutionReply reference={message.interaction.artifact.payload} onStale={() => { if (revealing) finishReveal(); }}><ChatReplyText text={message.text} reveal={revealing} onComplete={finishReveal} onProgress={followReply} /></TrainingExecutionReply> : <ChatReplyText text={message.text} reveal={revealing} onComplete={finishReveal} onProgress={followReply} /> : <p>{message.text}</p>}
           {message.interaction && <ChatRideList {...message.interaction} pending={pending} conversationId={activeConversation.id} onInspect={inspectRide} onChoose={choice => { if (!pending) void ask("请分析我选择的这次骑行。", "typed_input", choice); }} />}
           {message.interaction?.artifact?.kind === "onboarding" && <div className="ux-actions" aria-label="首次使用引导入口">
             <button disabled={pending} onClick={() => window.dispatchEvent(new Event("cycler-open-profile"))}>完善／查看资料</button>
             <RideSyncLauncher label="同步／导入骑行" onComplete={imported} conversationId={activeConversation.id} />
-            <button disabled={pending} onClick={() => window.dispatchEvent(new CustomEvent("cycler-goal-draft", { detail: null }))}>设置／查看目标</button>
+            <button disabled={pending} onClick={() => { if (!pending) void ask("我想制定训练计划。", "typed_input"); }}>制定训练计划</button>
           </div>}
           {message.interaction?.artifact?.kind === "ride_import" && <div className="ux-actions" aria-label="骑行同步导入入口">
             <RideSyncLauncher onComplete={imported} conversationId={activeConversation.id} />
           </div>}
           {message.interaction?.artifact?.kind === "training_plan" && <TrainingPlanCard reference={message.interaction.artifact.payload} conversationId={activeConversation.id} onGenerate={async () => { await ask("我已核对当前训练计划信息，请生成训练计划草案。", "typed_input"); notifyPlanUpdated(); }} />}
-          {message.interaction?.artifact?.kind === "goal_editor" && <div className="ux-actions" aria-label="目标编辑入口">
-            <button disabled={pending} onClick={() => window.dispatchEvent(new CustomEvent("cycler-goal-draft", { detail: message.interaction?.artifact?.kind === "goal_editor" ? message.interaction.artifact.payload.draft : null }))}>查看／修改目标</button>
-            <span>核对后点击保存才会更新目标</span>
+          {message.interaction?.artifact?.kind === "training_execution" && (message.interaction.artifact.payload.date === planToday() ? <Link href={planDetailHref(message.interaction.artifact.payload.planId, message.interaction.artifact.payload.version, activeConversation.id, message.interaction.artifact.payload.date)}>查看这天的训练计划与执行</Link> : <TrainingExecutionCard reference={message.interaction.artifact.payload} conversationId={activeConversation.id} pending={pending} onAsk={text => ask(text, "typed_input")} onImported={imported} />)}
+          {message.interaction?.artifact?.kind === "goal_editor" && <div className="ux-actions" aria-label="训练计划入口">
+            <button disabled={pending} onClick={() => { if (!pending) void ask("我想制定训练计划。", "typed_input"); }}>制定训练计划</button>
+            <span>目标在制定本次计划时补充</span>
           </div>}
           {message.kind === "rides" && message.rideIds?.length ? <div className="ux-actions"><Link href="/import">查看骑行记录</Link></div> : null}
         </article>;
@@ -342,6 +345,7 @@ export function ChatHome({ snapshot }: { snapshot: ChatHomeSnapshot }) {
         }}>确认保存资料</button><Link href="/profile" onClick={() => { setProposal(null); sessionStorage.removeItem("cycler-profile-proposal"); }}>到资料页修改</Link><button disabled={savingProfile} onClick={() => { setProposal(null); sessionStorage.removeItem("cycler-profile-proposal"); }}>取消</button></div>
       </section>}
       {proposalMessage && <p role="status">{proposalMessage}</p>}
+      {hydrated && <TrainingExecutionCard key={activeConversation.id} conversationId={activeConversation.id} pending={pending} onAsk={text => ask(text, "typed_input")} onImported={imported} />}
       {pendingTurn && <>
         <article className="chat-message chat-message-user"><p>{pendingTurn.userText}</p></article>
         <ChatPendingReply />
@@ -351,7 +355,7 @@ export function ChatHome({ snapshot }: { snapshot: ChatHomeSnapshot }) {
 
     <div className="chat-composer">
       <form className="chat-input-form" onSubmit={submit}>
-        {disclosureOpen && <p className="chat-disclosure-popover" role="note">可解读骑行、查询近期表现、解释骑行知识，补充计划信息并准备训练草案；计划需本人查看后明确启用。平台同步为模拟，执行评估尚未开放；对话记录保存在本浏览器。</p>}
+        {disclosureOpen && <p className="chat-disclosure-popover" role="note">可解读骑行、查询近期表现、解释骑行知识，准备训练草案，评估本人已确认关联的训练记录；计划启用、删除和记录关联需明确确认。平台同步为模拟；对话记录保存在本浏览器。</p>}
         <label className="sr-only" htmlFor="chat-input">输入问题</label>
         <input id="chat-input" value={input} onChange={(event) => { setInput(event.target.value); try { sessionStorage.setItem(`cycler-input:${activeConversation.id}`, event.target.value); } catch {} }} maxLength={120} placeholder="问问你的骑行伙伴" disabled={pending} />
         <button type="button" className="chat-info-button" aria-label="能力说明" aria-expanded={disclosureOpen} onClick={() => setDisclosureOpen((open) => !open)}><InfoIcon /></button>

@@ -6,6 +6,7 @@ import { PUT as saveProfile, GET as getProfile } from "../app/api/profile/route.
 import { PUT as ux } from "../app/api/ux/route.ts";
 import { resolveOrCreateRequestSession } from "../src/auth/session.ts";
 import { getApplicationRepository } from "../src/persistence/application-repository.ts";
+import { planRuntime } from "../src/training/plan-service.ts";
 import { sanitizeChatInteractionPayload } from "../src/chat/chat-interaction.ts";
 import { parseChatToolInvocation, executeChatTool } from "../src/chat/chat-tools.ts";
 
@@ -45,7 +46,7 @@ async function withModel(outputs: any[], work: (requests: any[]) => Promise<void
 
 test("SCN-01: first-use language reaches the model, which chooses existing onboarding actions", async () => {
   const f = await blank();
-  await withModel([call("show_onboarding"), answer("可以补充资料、导入记录或设置目标，也可以先直接提问。")], async requests => {
+  await withModel([call("show_onboarding"), answer("可以补充资料、导入记录或制定训练计划，也可以先直接提问。")], async requests => {
     const body = await (await POST(f.request({ text: "第一次使用，我该怎么开始？" }))).json();
     assert.equal(body.executionRoute, "agent_loop"); assert.equal(body.modelInvoked, true);
     assert.equal(body.artifact.kind, "onboarding"); assert.equal(requests.length, 2);
@@ -101,40 +102,40 @@ test("SCN-01: explicitly unknown FTP and HR remain pending; confirmed estimates 
   });
 });
 
-test("SCN-01: structured goal draft comes from a model-selected tool and saves only by explicit action", async () => {
-  const f = await blank();
-  const draft = { title: "提升耐力／完成长距离", detail: "完成100 km" };
-  await withModel([call("prepare_goal_editor", { draft }), answer("已准备目标草稿，请核对后点击保存。")], async requests => {
-    const body = await (await POST(f.request({ text: "我想把耐力练好，完成100 km" }))).json();
-    assert.equal(body.artifact.kind, "goal_editor"); assert.deepEqual(body.artifact.payload.draft, draft);
-    assert.equal((await f.repo.getProfile(f.owner))?.ux?.goal, null); assert.equal(requests.length, 2);
-    await ux(f.request({ action: "goal", goal: draft }));
-    assert.equal((await f.repo.getProfile(f.owner))?.ux?.goal?.detail, "完成100 km");
+test("Planning goal: model stages a per-plan goal without an independent goal record or activation", async () => {
+  const f = await blank(), goal = "提升耐力，完成100 km";
+  await withModel([call("get_training_plan_context"), call("prepare_training_plan", { expectedVersion: 0, patch: { goal } }), answer("已准备本次计划信息，请核对目标并补充时间安排。")], async requests => {
+    const body = await (await POST(f.request({ text: "帮我制定训练计划，我想提升耐力，完成100 km" }))).json();
+    assert.equal(body.execution, "validated", JSON.stringify(body)); assert.equal(body.artifact.kind, "training_plan");
+    const state = await (await planRuntime(f.owner)).context();
+    assert.equal(state.workspace.intake.goal, goal); assert.equal(state.workspace.confirmedIntakeVersion, null); assert.equal(state.active, null);
+    assert.equal((await f.repo.getProfile(f.owner))?.ux?.goal, null); assert.equal(requests.length, 3);
   });
 });
 
-test("SCN-01: short and unfamiliar goal requests reach the same contextual loop, even after unclear classification", async () => {
-  const f = await blank();
-  const original = { title: "提升耐力／完成长距离", detail: "完成100 km" };
-  await ux(f.request({ action: "goal", goal: original }));
-  for (const text of ["改目标", "该目标", "本周我想换一个追求", "先前那个方向不合适，我们换换", "最近的记录看完了，我想修改目标"] ) {
-    await withModel([call("get_user_context"), call("prepare_goal_editor", { draft: null }), answer("可以打开现有目标修改，核对后保存。")], async requests => {
-      const body = await (await POST(f.request({ text, summaries: [{ kind: "session_turn", route: "autonomous_tools", question: "我在考虑调整骑行目标" }] }))).json();
+test("Planning goal: short and unfamiliar requests use contextual plan tools without reviving a global editor", async () => {
+  const f = await blank(), profile = (await f.repo.getProfile(f.owner))!;
+  profile.ux = { ...profile.ux, goal: { title: "旧独立目标", detail: "完成100 km", updatedAt: new Date().toISOString() } };
+  await f.repo.saveProfile(f.owner, profile);
+  for (const text of ["改目标", "该目标", "本周我想换一个追求", "先前那个方向不合适，我们换换", "最近的记录看完了，我想修改目标"]) {
+    await withModel([call("get_training_plan_context"), answer("目标在制定本次训练计划时补充；你可以说明这次计划想达成的方向。")], async requests => {
+      const body = await (await POST(f.request({ text, summaries: [{ kind: "session_turn", route: "autonomous_tools", question: "我在考虑调整训练计划的目标" }] }))).json();
       assert.equal(body.execution, "validated", JSON.stringify(body)); assert.equal(body.executionRoute, "agent_loop");
-      assert.equal(body.artifact.kind, "goal_editor"); assert.equal(body.artifact.payload.draft, null);
-      assert.equal(requests[0].text, text); assert.ok(requests[0].sessionSummaries.length);
-      assert.deepEqual(requests[1].toolResults[0].context.goal, original);
-      assert.equal((await f.repo.getProfile(f.owner))?.ux?.goal?.detail, original.detail);
+      assert.equal(body.artifact.kind, "training_plan"); assert.equal(requests[1].toolResults[0].context.state.intake.goal, "");
+      assert.ok(!requests[0].toolCatalog.tools.some((tool: any) => tool.tool === "prepare_goal_editor"));
+      assert.equal((await f.repo.getProfile(f.owner))?.ux?.goal?.title, "旧独立目标");
+      assert.equal((await (await planRuntime(f.owner)).context()).workspace.intakeVersion, 0);
     }, true);
   }
 });
 
-test("SCN-01: known goal can be answered using saved facts without opening an editor", async () => {
-  const f = await blank();
-  await ux(f.request({ action: "goal", goal: { title: "提升耐力／完成长距离", detail: "完成100 km" } }));
-  await withModel([call("get_user_context"), answer("你当前的目标是提升耐力，完成100 km。")], async () => {
-    const body = await (await POST(f.request({ text: "之前保存的目标是什么？" }))).json();
-    assert.equal(body.execution, "validated", JSON.stringify(body)); assert.equal(body.artifact, undefined);
+test("Planning goal: queried goal numbers come from the actual pending plan, without a separate editor", async () => {
+  const f = await blank(), service = await planRuntime(f.owner);
+  await service.prepare({ goal: "提升耐力，完成100 km" }, 0);
+  await withModel([call("get_training_plan_context"), answer("你待核对的计划目标是提升耐力，完成100 km，计划尚未启用。")], async () => {
+    const body = await (await POST(f.request({ text: "我这次计划的目标是什么？" }))).json();
+    assert.equal(body.execution, "validated", JSON.stringify(body)); assert.equal(body.artifact.kind, "training_plan");
+    assert.equal((await service.context()).active, null);
   });
 });
 
@@ -166,17 +167,18 @@ test("SCN-01: preparation tools reject forged ownership, extra fields, invalid d
   for (const payload of [{ input: { weightKg: 9999 }, previous: {} }, { input: { ownerId: "other" }, previous: {} }, { input: { weightKg: 71 }, previous: {}, confirm: true }])
     assert.equal(sanitizeChatInteractionPayload({ artifact: { kind: "profile_proposal", payload } }).artifact, undefined);
   const f = await blank(); const other = await blank();
-  await ux(other.request({ action: "goal", goal: { title: "提升 FTP", detail: "private" } }));
+  const profile = (await other.repo.getProfile(other.owner))!; profile.ux = { ...profile.ux, goal: { title: "提升 FTP", detail: "private", updatedAt: new Date().toISOString() } }; await other.repo.saveProfile(other.owner, profile);
   const result = await executeChatTool(f.repo, f.owner, parseChatToolInvocation({ tool: "get_user_context", input: {} }));
   assert.equal("goal" in result && result.goal, null); assert.ok(!JSON.stringify(result).includes("private"));
 });
 
-test("SCN-01: rejected final model text cannot expose an already prepared goal editor", async () => {
+test("Planning goal: rejected model text cannot expose a plan intake or claim a goal is activated", async () => {
   const f = await blank();
   const invalid = { schemaVersion: "ride-chat-output-v0.2", route: "autonomous_tools", reply: "没有来源的数值99999。", claimIds: ["claim:loop:1:1"], capabilityKeys: [], knowledgeIds: [] };
-  await withModel([call("prepare_goal_editor", { draft: null }), invalid, invalid], async () => {
-    const body = await (await POST(f.request({ text: "修改目标" }))).json();
+  await withModel([call("get_training_plan_context"), call("prepare_training_plan", { expectedVersion: 0, patch: { goal: "提升耐力" } }), invalid, invalid], async () => {
+    const body = await (await POST(f.request({ text: "制定计划，目标是提升耐力。" }))).json();
     assert.equal(body.fallbackCode, "REPAIR_FAILED"); assert.equal(body.artifact, undefined);
+    assert.equal((await (await planRuntime(f.owner)).context()).active, null);
     assert.equal((await f.repo.getProfile(f.owner))?.ux?.goal, null);
   });
 });
@@ -194,9 +196,9 @@ test("ARCH clarification: contextual AI may ask about intent or units without in
 test("ARCH context: an expired inherited ride cannot block a goal request; explicit invalid selections remain rejected", async () => {
   const f = await blank();
   const summaries = [{ kind: "session_turn", route: "current_ride", question: "看这次骑行", choice: { kind: "ride", id: "deleted-ride" } }];
-  await withModel([call("prepare_goal_editor", { draft: null }), answer("可以查看并编辑当前目标。")], async requests => {
+  await withModel([call("get_training_plan_context"), answer("可以在制定训练计划时设置本次目标。")], async requests => {
     const body = await (await POST(f.request({ text: "改目标", summaries }))).json();
-    assert.equal(body.execution, "validated", JSON.stringify(body)); assert.equal(body.artifact.kind, "goal_editor");
+    assert.equal(body.execution, "validated", JSON.stringify(body)); assert.equal(body.artifact.kind, "training_plan");
     assert.equal(body.choice, undefined); assert.equal(body.rideScope, "cleared");
     assert.equal(requests[0].toolCatalog.anchorRideId, "");
   });

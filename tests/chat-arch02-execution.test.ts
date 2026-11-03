@@ -34,7 +34,7 @@ test("ARCH-02: every legacy data hint uses the same model loop, catalog and evid
     const provider: ChatProvider = { async run(input) {
       calls++;
       assert.equal(input.route, "autonomous_tools");
-      assert.equal(input.toolCatalog?.tools.length, 17);
+      assert.equal(input.toolCatalog?.tools.length, 19);
       assert.ok(input.toolCatalog.tools.some(entry => entry.tool === "compare_rides"));
       assert.ok(input.toolCatalog.tools.some(entry => entry.tool === "search_knowledge_base"));
       if (!input.toolResults) return toolRequest("get_ride_context", { rideRef: { ordinal: -1 }, dims: ["summary"] });

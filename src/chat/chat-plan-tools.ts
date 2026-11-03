@@ -20,7 +20,7 @@ function summary(plan: TrainingPlan | null) {
   return plan ? { id: plan.id, version: plan.version, intakeVersion: plan.intakeVersion, startDate: plan.intake.startDate, endDate: plan.intake.endDate,
     totalMinutes: plan.days.reduce((sum, day) => sum + day.minutes, 0), weeks: planWeekCount(plan.intake),
     weekly: Array.from({ length: planWeekCount(plan.intake) }, (_, i) => { const days = plan.days.filter(day => day.week === i + 1); return { week: i + 1, sessions: days.filter(day => day.minutes > 0).length, minutes: days.reduce((sum, day) => sum + day.minutes, 0) }; }),
-    proposal: plan.proposal, basisSource: plan.basis.source } : null;
+    goal: plan.intake.goal, proposal: plan.proposal, basisSource: plan.basis.source } : null;
 }
 type PlanContext = Awaited<ReturnType<Awaited<ReturnType<typeof planRuntime>>["context"]>>;
 export type PlanToolResult = {
@@ -47,7 +47,7 @@ export async function executePlanTool(repository: ApplicationRepository, ownerId
   const context = await service.context(), workspace = context.workspace;
   let selected: PlanToolResult["state"]["selected"] = null;
   if (call.tool === "get_training_plan_context" && (call.input.version !== undefined || call.input.date)) {
-    const plan = call.input.version !== undefined ? workspace.plans.find(plan => plan.version === call.input.version) : context.draft ?? context.active;
+    const plan = call.input.version !== undefined ? workspace.plans.find(plan => plan.version === call.input.version && !workspace.deletedVersions[String(plan.version)]) : context.draft ?? context.active;
     if (!plan) { status = "blocked"; issues.push({ code: "NOT_FOUND", message: "所选计划版本不可用，请核对当前版本。" }); }
     else selected = { plan: summary(plan), ...(call.input.date ? { date: call.input.date } : {}), day: call.input.date ? plan.days.find(day => day.date === call.input.date) ?? null : null };
   }
@@ -57,10 +57,10 @@ export async function executePlanTool(repository: ApplicationRepository, ownerId
     ...(state.draft ? [{ claimId: "claim:plan:minutes", kind: "metric" as const, key: "plan_total_minutes", value: state.draft.totalMinutes, unit: "min", confidence: "high" as const }] : [])];
   // Only references leave the server. No confirmation token is ever an Agent result.
   const referencedPlan = call.tool === "get_training_plan_context" ? selected?.plan ?? state.draft ?? state.active : status === "draft_ready" ? state.draft : null;
-  const artifact = { kind: "training_plan" as const, payload: { planId: workspace.id, intakeVersion: workspace.intakeVersion, version: referencedPlan?.version ?? null, view: referencedPlan ? referencedPlan.version === workspace.activeVersion ? "active" as const : "draft" as const : "intake" as const } };
+  const artifact = call.tool === "get_training_plan_context" && status === "blocked" ? undefined : { kind: "training_plan" as const, payload: { planId: workspace.id, intakeVersion: workspace.intakeVersion, version: referencedPlan?.version ?? null, view: referencedPlan ? referencedPlan.version === workspace.activeVersion ? "active" as const : "draft" as const : "intake" as const } };
   return { schemaVersion: "chat-tools-v0.2", tool: call.tool, status, state, issues, claims, ...(unchanged ? { unchanged: true } : {}), ...(artifact ? { interaction: { artifact } } : {}) };
 }
 export function planNumericFacts(result: PlanToolResult) {
   const numbers = (v: unknown): Array<{ value?: number; displayValue?: string }> => typeof v === "number" ? [{ value: v }] : Array.isArray(v) ? v.flatMap(numbers) : record(v) ? Object.entries(v).filter(([key]) => !["rationale", "profileHash", "id", "goal", "notes", "selfReportedBasis", "periodReason"].includes(key)).flatMap(([, entry]) => numbers(entry)) : typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v) ? [{ displayValue: v }] : [];
-  return [...numbers(result.state), ...result.issues.map(issue => ({ displayValue: issue.message }))];
+  return [...numbers(result.state), ...[result.state.intake.goal, result.state.active?.goal, result.state.draft?.goal, result.state.selected?.plan?.goal].flatMap(goal => goal ? [{ displayValue: goal }] : []), ...result.issues.map(issue => ({ displayValue: issue.message }))];
 }

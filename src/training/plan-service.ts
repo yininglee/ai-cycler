@@ -20,14 +20,13 @@ export async function planRuntime(ownerId: string, repository: ApplicationReposi
   const durations = recent.flatMap(record => { const metric = record.activity.metrics.movingTimeS; return metric?.qualityStatus === "valid" && Number.isFinite(metric.value) ? [metric.value / 60] : []; });
   const recordedBasis = { weeklyMinutes: durations.length ? Math.round(durations.reduce((a, b) => a + b, 0) / 4) : null, longestRideMinutes: durations.length ? Math.round(Math.max(...durations)) : null };
   const store = new TrainingPlanStore(profile?.ux?.mode === "blank" ? `blank:${profile.ux.blankSince}` : "default");
-  const goal = profile?.ux?.goal ? `${profile.ux.goal.title}${profile.ux.goal.detail ? `：${profile.ux.goal.detail}` : ""}`.replaceAll(/[\u0000-\u001f\u007f]/g, " ") : "";
   function basis(intake: PlanIntake): PlanBasis {
     const selfReported = intake.weeklyMinutes !== null || intake.longestRideMinutes !== null;
     return { profileHash, ftpWatts: profile?.ftp?.trustStatus === "user_confirmed" ? profile.ftp.valueWatts : null,
       weeklyMinutes: intake.weeklyMinutes ?? recordedBasis.weeklyMinutes, longestRideMinutes: intake.longestRideMinutes ?? recordedBasis.longestRideMinutes,
       rideCount: recent.length, source: selfReported ? "self_report" : recent.length ? "records" : "missing" };
   }
-  const current = (workspace: PlanWorkspace, version: number | null) => workspace.plans.find(plan => plan.version === version) ?? null;
+  const current = (workspace: PlanWorkspace, version: number | null) => workspace.plans.find(plan => plan.version === version && !workspace.deletedVersions[String(plan.version)]) ?? null;
   const handler: ConfirmedWriteHandler<PlanWorkspace> = {
     async loadCurrent(workspace, targetId) {
       const draft = current(workspace, workspace.draftVersion);
@@ -54,9 +53,31 @@ export async function planRuntime(ownerId: string, repository: ApplicationReposi
       return { planId: workspace.id, version: plan.version, activated: true };
     },
   };
-  const confirmation = createConfirmedWriteService(store, new Map([["activate_training_plan", handler]]));
+  const deleteHandler: ConfirmedWriteHandler<PlanWorkspace> = {
+    async loadCurrent(workspace, targetId) {
+      const match = targetId.match(/:v([1-9]\d*)$/);
+      const plan = match && targetId.slice(0, match.index) === workspace.id ? current(workspace, Number(match[1])) : null;
+      return plan ? { version: `v${plan.version}`, content: { plan, activeVersion: workspace.activeVersion, draftVersion: workspace.draftVersion, workspaceVersion: workspace.version } } : null;
+    },
+    validateSchema(content) { const plan = (content as { plan?: TrainingPlan })?.plan; return !!plan && plan.schemaVersion === "training-plan-v1" && Number.isSafeInteger(plan.version) && plan.version > 0 && Array.isArray(plan.days); },
+    validateRules() { return true; },
+    async apply(workspace, _id, draft) {
+      const plan = (draft.content as { plan: TrainingPlan }).plan;
+      workspace.deletedVersions[String(plan.version)] = new Date().toISOString();
+      if (workspace.activeVersion === plan.version) workspace.activeVersion = null;
+      if (workspace.draftVersion === plan.version) workspace.draftVersion = null;
+      for (const [id, link] of Object.entries(workspace.linkDrafts)) if (link.planVersion === plan.version) delete workspace.linkDrafts[id];
+      return { planId: workspace.id, version: plan.version, deleted: true };
+    },
+  };
+  const handlers = new Map([["activate_training_plan", handler], ["delete_training_plan", deleteHandler]]);
+  const confirmation = createConfirmedWriteService(store, handlers);
   return {
     store, confirmation,
+    async issueDelete(input: { planId: string; version: number; idempotencyKey: string }) {
+      if ((await store.read(ownerId)).id !== input.planId) throw new PlanError("NOT_FOUND");
+      return confirmation.issue({ ownerId, action: "delete_training_plan", targetId: `${input.planId}:v${input.version}`, expectedVersion: `v${input.version}`, idempotencyKey: input.idempotencyKey, ttlMs: 10 * 60 * 1000 });
+    },
     async issue(input: { planId: string; version: number; activeVersion: number | null; idempotencyKey: string }) {
       const checkedHandler = { ...handler, async loadCurrent(workspace: PlanWorkspace, targetId: string) {
         if (workspace.activeVersion !== input.activeVersion) throw new PlanError("VERSION_CONFLICT");
@@ -66,7 +87,6 @@ export async function planRuntime(ownerId: string, repository: ApplicationReposi
     },
     async context() {
       const workspace = await store.read(ownerId);
-      if (!workspace.intake.goal && goal) workspace.intake.goal = goal;
       const actualBasis = basis(workspace.intake);
       const draft = current(workspace, workspace.draftVersion), active = current(workspace, workspace.activeVersion);
       return { workspace, basis: actualBasis, constraints: planConstraints(actualBasis), missing: missingPlanIntake(workspace.intake, actualBasis), draft, active, profileChanged: !!(draft ?? active) && (draft ?? active)!.basis.profileHash !== profileHash, activeProfileChanged: !!active && active.basis.profileHash !== profileHash };
@@ -78,7 +98,7 @@ export async function planRuntime(ownerId: string, repository: ApplicationReposi
       return store.transaction<PlanWorkspace>(ownerId, async tx => {
         const workspace = tx.domain;
         if (expectedVersion !== undefined && workspace.intakeVersion !== expectedVersion) throw new PlanError("VERSION_CONFLICT");
-        const next = { ...workspace.intake, ...(!workspace.intake.goal && goal ? { goal } : {}), ...parsed };
+        const next = { ...workspace.intake, ...parsed };
         if (JSON.stringify(next) !== JSON.stringify(workspace.intake)) {
           workspace.intake = next; workspace.intakeVersion++; workspace.confirmedIntakeVersion = null; workspace.draftVersion = null;
         }

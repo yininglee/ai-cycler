@@ -1,3 +1,4 @@
+import { isExecutionToolResult, type ExecutionToolResult } from "./chat-execution-tools.ts";
 import { chatExecutionRoute, type ChatExecutionRoute } from "./chat-execution.ts";
 import { classifyChatInputL0, makeChatDecision } from "./chat-routing.ts";
 import { CHAT_ROUTING_SCHEMA_VERSION, RIDE_IDENTITY, type ChatRoutingDecision, type ChatSessionSummary } from "./chat-routing.ts";
@@ -100,6 +101,7 @@ export type ChatProviderLoopToolResult = {
 export type ChatProviderLoopClaims = RideContextToolResult["claims"];
 
 export type ChatProviderToolContext =
+  | ExecutionToolResult
   | PlanToolResult
   | RideImportToolResult
   | ChatUserToolResult
@@ -550,6 +552,11 @@ function projectToolResultForProvider(
   comparePrefix: string,
   findPrefix: string,
 ): ChatProviderToolProjection {
+  if (isExecutionToolResult(toolResult)) {
+    const { assessmentBinding: _binding, ...context } = toolResult;
+    return { context: { ...context, claims: toolResult.claims.map((claim, index) => ({ ...claim, claimId: `${contextPrefix}:${index + 1}` })) },
+      claimReferences: Object.fromEntries(toolResult.claims.map((claim, index) => [`${contextPrefix}:${index + 1}`, claim.claimId])) };
+  }
   if (isPlanToolResult(toolResult)) return { context: { ...toolResult, claims: toolResult.claims.map((claim, index) => ({ ...claim, claimId: `${contextPrefix}:${index + 1}` })) },
     claimReferences: Object.fromEntries(toolResult.claims.map((claim, index) => [`${contextPrefix}:${index + 1}`, claim.claimId])) };
   if (toolResult.tool === "prepare_ride_import") {
@@ -1019,6 +1026,8 @@ async function runAutonomousToolLoop(input: {
   let evidenceRecoveryAttempts = 0;
   let planProposalRepairAttempts = 0;
   let evidenceRequest: string | undefined;
+  let deferredToolOutput: { rawText: string } | undefined;
+  let toolRepairContinuationUsed = false;
   // AGT-B0：记录"第几轮被哪条校验规则拒了"——用于量化误拦率（见细规划 §2.1）。
   const validationRejections: Array<{ providerCall: number; code: string }> = [];
   const startedAt = Date.now();
@@ -1071,9 +1080,13 @@ async function runAutonomousToolLoop(input: {
         ...(toolCallError ? { toolCallError } : {}),
         ...(evidenceRequest ? { evidenceRequest } : {}),
       };
-      console.log(`${tag} L2b provider.run #${providerCalls + 1} | toolCalls=${toolCalls}/${CHAT_TOOL_LOOP_MAX_TOOL_CALLS} results=${completed.length}`);
-      providerCalls += 1;
-      const response = await input.provider.run(invocation);
+      let response: { rawText: string };
+      if (deferredToolOutput) { response = deferredToolOutput; deferredToolOutput = undefined; }
+      else {
+        console.log(`${tag} L2b provider.run #${providerCalls + 1} | toolCalls=${toolCalls}/${CHAT_TOOL_LOOP_MAX_TOOL_CALLS} results=${completed.length}`);
+        providerCalls += 1;
+        response = await input.provider.run(invocation);
+      }
       const request = parseChatToolCallRequest(response.rawText);
       if (!request) {
         const last = completed.at(-1)?.result;
@@ -1093,7 +1106,7 @@ async function runAutonomousToolLoop(input: {
         const firstValidation = validateChatOutput(response.rawText, validationContext);
         if (!firstValidation.ok && firstValidation.code === "OUTPUT_ACTION_UNSUPPORTED" && evidenceRecoveryAttempts === 0) {
           evidenceRecoveryAttempts++;
-          evidenceRequest = "候选回答声称已生成或更新计划草案，但本轮尚无 propose_training_plan 成功结果。读取上下文不能生成草案；请依据用户要求调用实际提案能力并通过规则后再说明结果，或据实说明缺项，不能用文字冒充已完成的动作。";
+          evidenceRequest = completed.some(item => isExecutionToolResult(item.result)) ? "候选回答声称完成关联或评估，但缺少实际依据。关联必须由本人在界面明确确认；已关联时请调用 assess_training_execution 后再说明评估结果。没有关联则展示选择入口，据实说明，不能用文字冒充写入。" : "候选回答声称已生成或更新计划草案，但本轮尚无 propose_training_plan 成功结果。读取上下文不能生成草案；请依据用户要求调用实际提案能力并通过规则后再说明结果，或据实说明缺项，不能用文字冒充已完成的动作。";
           validationRejections.push({ providerCall: providerCalls, code: firstValidation.code });
           continue;
         }
@@ -1107,7 +1120,7 @@ async function runAutonomousToolLoop(input: {
             reply: appendKnowledgeSources(firstValidation.output.reply, firstValidation.output.knowledgeIds, completed.map(entry => entry.result)),
             responseKind: firstValidation.output.responseKind,
             outputValidation: firstValidation.publicResult,
-            repairAttempts: 0,
+            repairAttempts: toolRepairContinuationUsed ? 1 : 0,
           }, "completed");
         }
         console.log(`${tag} L2b final answer REJECTED | code=${firstValidation.publicResult.code ?? "ok"}`);
@@ -1130,6 +1143,13 @@ async function runAutonomousToolLoop(input: {
           repairInstruction: repairInstruction(firstValidation.publicResult.code, "autonomous_tools"),
           previousOutput: response.rawText,
         });
+        // A missing-action repair may legitimately request the actual tool.
+        // Execute it through the same permission/budget checks on the next
+        // iteration, without counting this already-paid response twice.
+        if (firstValidation.code === "OUTPUT_ACTION_UNSUPPORTED" && !toolRepairContinuationUsed && parseChatToolCallRequest(repaired.rawText)) {
+          deferredToolOutput = repaired; toolRepairContinuationUsed = true;
+          continue toolLoop;
+        }
         const repairedValidation = validateChatOutput(repaired.rawText, validationContext);
         if (repairedValidation.ok) {
           console.log(`${tag} L2b repair ACCEPTED | providerCalls=${providerCalls} toolCalls=${toolCalls}`);
@@ -1231,6 +1251,10 @@ async function runAutonomousToolLoop(input: {
         // rideId 做后续追问（get_ride_context/compare_rides），仍限本人本轮工具结果范围。
         if (receipt.result.tool === "find_ride") {
           for (const match of receipt.result.matches) allowedRideIds.push(match.rideId);
+        }
+        if (isExecutionToolResult(receipt.result)) {
+          if (receipt.result.view?.execution) allowedRideIds.push(receipt.result.view.execution.rideId);
+          for (const candidate of receipt.result.view?.candidates ?? []) allowedRideIds.push(candidate.rideId);
         }
         toolCalls += 1;
       }

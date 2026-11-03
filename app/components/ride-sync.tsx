@@ -77,7 +77,7 @@ function PlatformMark({ provider }: { provider: PlatformId }) {
 export function RideSync({ onComplete, conversationId }: { onComplete?: (ids: string[], text: string, conversationId?: string) => void; conversationId?: string }) {
   const pathname = usePathname();
   const [view, setView] = useState<"sources" | "file">("sources");
-  const from = pathname === "/chat" ? "chat" : pathname === "/profile" ? "profile" : "import";
+  const from = conversationId || pathname === "/chat" ? "chat" : pathname === "/profile" ? "profile" : "import";
   if (view === "file") return <div className="ride-sync">
     <button className="import-back" onClick={() => setView("sources")}>‹ 返回导入方式</button>
     <RideFileUpload onImported={onComplete ? (id, duplicate) => onComplete([id], duplicate ? "这个文件已导入，已找到原记录，没有重复创建。" : "文件上传成功，已真实导入 1 条骑行记录。", conversationId) : undefined} />

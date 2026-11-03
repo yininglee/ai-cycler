@@ -303,6 +303,15 @@ export function validateChatOutput(rawOutput: string, context: ChatOutputValidat
   // Preparing metadata or a draft cannot activate it. This validates a claimed
   // side effect; it never chooses a business intent or invokes a capability.
   const planResults = (context.loopToolResults ?? []).filter(result => result.tool === "get_training_plan_context" || result.tool === "prepare_training_plan" || result.tool === "propose_training_plan");
+  const executionResults = (context.loopToolResults ?? []).filter(result => ["get_training_execution", "prepare_training_record_link", "assess_training_execution"].includes(result.tool));
+  if (executionResults.length) {
+    const linked = executionResults.some(result => "view" in result && result.view?.execution);
+    const evaluated = executionResults.some(result => result.tool === "assess_training_execution" && "assessmentBinding" in result || "view" in result && result.view && ["deleted", "replaced"].includes(result.view.status) && result.view.execution?.facts);
+    if (!linked && hasUnnegatedHit(output.reply, /已(?:经)?(?:确认)?关联/)) return reject("OUTPUT_ACTION_UNSUPPORTED", output.claimIds.length, output.capabilityKeys.length);
+    if (!evaluated && hasUnnegatedHit(output.reply, /已(?:经)?(?:完成|生成|更新|重新)[^。，；！？]{0,8}(?:执行评估|训练评估|评估结果)/)) return reject("OUTPUT_ACTION_UNSUPPORTED", output.claimIds.length, output.capabilityKeys.length);
+    if (!evaluated && linked && hasUnnegatedHit(output.reply, /时长(?:已)?(?:达成|达标|达到)|实际(?:移动)?时长|执行质量(?:已)?(?:达标|良好)|步骤(?:已)?(?:完成|达成)/)) return reject("OUTPUT_ACTION_UNSUPPORTED", output.claimIds.length, output.capabilityKeys.length);
+    if (hasUnnegatedHit(output.reply, /已(?:经)?(?:删除计划|删除训练计划|自动补做|增加训练量)/)) return reject("OUTPUT_SAFETY_VIOLATION", output.claimIds.length, output.capabilityKeys.length);
+  }
   const creationClaim = /已(?:经)?[^。，；！？]{0,14}(?:生成|准备|制定|更新|修改|调整)[^。，；！？]{0,10}(?:草案|训练计划(?!信息))|(?:草案|训练计划(?!信息))[^。，；！？]{0,8}已(?:经)?[^。，；！？]{0,4}(?:生成|准备|更新|修改|调整)|(?:生成|制定|更新|修改|准备)(?:了|好)[^。，；！？]{0,8}(?:草案|训练计划(?!信息))/;
   const pendingCommitment = /(?:我将|我会|现在|正在|马上)[^。！？]{0,60}(?:生成|制定|更新|修改|调整)[^。！？]{0,20}(?:草案|训练计划)/;
   const readyIntake = planResults.some(result => "state" in result && result.state.confirmedIntakeVersion !== null && result.state.confirmedIntakeVersion === result.state.intakeVersion);

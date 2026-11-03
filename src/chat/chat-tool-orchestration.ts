@@ -142,6 +142,9 @@ export const CHAT_TOOL_CATALOG_SCOPE: Record<ChatToolCatalogRoute, readonly Chat
 // 每个工具的模型侧输入说明（catalog 下发内容）。与 parseChatToolInvocation 的严格键集对应：
 // 说明里写了"可选"的字段，由 normalizeLoopCall 补缺省值。
 const CHAT_TOOL_CATALOG_INPUTS: Record<ChatToolName, Record<string, unknown>> = {
+  get_training_execution: { planId: "可选本人计划ID，省略当前生效计划；可选字段不用时省略，不能填null。", version: "可选计划版本，不能把草案当生效安排。", date: "可选YYYY-MM-DD，省略上海今天；只读取安排、关联与版本，评估需继续按返回的assessmentRequest调用实际评估工具。" },
+  prepare_training_record_link: { planId: "可选本人计划ID。", version: "可选版本，先读实际计划。", date: "可选YYYY-MM-DD，省略上海今天。只准备单条记录选择入口，不关联记录、不评估。" },
+  assess_training_execution: { planId: "必填，取自 get_training_execution.view.ref.planId。", version: "必填，ref.version。", date: "必填，ref.date。", expectedRevision: "必填，view.revision；须本人已确认关联，不能猜记录ID或替用户关联。只计算并保存事实，最终回答通过校验后保存AI反馈。" },
   get_training_plan_context: { version: "可选，指定本人计划历史／当前版本整数；省略读取当前草案／生效摘要。", date: "可选YYYY-MM-DD，读取所选版本该天的真实训练步骤；不存在的日期day=null，不推测日程。" },
   prepare_training_plan: {
     expectedVersion: "必填整数，取自 get_training_plan_context.state.intakeVersion；修改前先读取，不能猜版本。",
@@ -155,7 +158,6 @@ const CHAT_TOOL_CATALOG_INPUTS: Record<ChatToolName, Record<string, unknown>> = 
   prepare_ride_import: {},
   get_user_context: {},
   show_onboarding: {},
-  prepare_goal_editor: { draft: '必填；用户尚未说明要改成什么时用 null，打开时重读当前内容。用户已明确新的目标方向时，必须传新草稿 {title,detail}，不得仍填 null 或沿用旧目标。title 为 保持规律骑行/提升耐力／完成长距离/提升 FTP/提升爬坡表现/备赛/自定义 之一，detail≤400字（自定义及备赛非空）。只准备界面，不保存。' },
   prepare_profile_proposal: { input: '必填对象；仅用户明确给出的 age/heightCm/weightKg/maxHeartRateBpm/ftpWatts 数值或明确不知道的 null；单位、多值或意图不明先追问。只准备提案，不保存。' },
   get_ride_context: {
     rideRef: "可选；缺省用本轮锚点记录。显式指定某一次时传对象，**三选一**：{\"date\":\"2026-08-20\"}（绝对日期）｜{\"ordinal\":-1}（-1=最近一次，-2=倒数第二次）｜{\"rideId\":\"…\"}（必须是本轮工具结果返回过的 rideId）",
@@ -218,13 +220,15 @@ export function chatToolCatalogRouteOf(route: string): ChatToolCatalogRoute {
 // 每个工具的用途与边界（catalog 下发给模型）。写"用来做什么 + 不要用它做什么"，
 // 因为实测的选错工具都发生在边界上：单次指标 vs 单次路线 vs 跨记录检索 vs 跨记录统计。
 export const CHAT_TOOL_CATALOG_PURPOSE: Record<ChatToolName, string> = {
+  get_training_execution: "读取今日训练、指定日安排、本人确认的关联与版本。需要评估时必须继续调用返回的assessmentRequest，仅读取不能冒充评估；已删除／替换版本可只读历史评估。无计划、休息、未来或缺记录据实说明。",
+  prepare_training_record_link: "提供当日骑行候选的堆叠选择入口，必须本人选择单条并点击确认；同步导入不自动关联。可更换关联，不能拿其他用户或其他日期记录评估。",
+  assess_training_execution: "对已确认关联计算真实计划与实际对比，提供时长、可比功率和限制，再由你基于事实及按需知识给亮点、差异、建议。无分段对应不能证明间歇步骤完成，不强给评分、不自动调整计划。",
   get_training_plan_context: "读取本人计划信息、已保存目标和资料、近期记录／自述基础、规则限制、当前草案与生效计划。制定或修改计划前先用它，不需要骑行锚点，不启用计划。",
   prepare_training_plan: "准备／补充同一份待确认计划信息及原信息卡。与聊天补缺共同维护，保存可恢复的草稿信息；不生成正式日程、不启用。信息要由用户在卡片明确核对后才能生成草案。",
   propose_training_plan: "对已由用户确认的信息生成或修改真实日程草案；AI只选择周阶段、合法类型与时长，服务端扩展步骤并经过领域规则硬门。规则失败保留原信息与原草案，可修正。草案生成不等于生效，启用只能由详情页明确按钮完成。",
   prepare_ride_import: "提供同步／导入骑行入口，用户自行选择真实 FIT/GPX 上传或明确模拟的平台。只准备入口，不代表已连接账户、已导入或已生成解读；不需要骑行锚点。",
-  get_user_context: "读取本人已保存资料、来源与当前主要目标。理解目标指代和资料变更前用它核实状态；不能将历史对话当成已保存事实。无骑行记录也可用。",
-  show_onboarding: "用户希望了解如何开始或补充信息时，提供资料、骑行导入和目标三个现有入口。只准备引导，不写入。",
-  prepare_goal_editor: "用户希望设置或修改目标时，准备现有目标编辑抽屉。仅查看可先用 get_user_context 回答；概念问题走知识检索，歧义先结合上下文追问。draft=null 保留现有目标，不把管理命令写作目标草稿。",
+  get_user_context: "读取本人已保存身体资料和来源，不读取旧独立目标；当前训练目标由 get_training_plan_context 核实。不能将历史对话当成已保存事实。无骑行记录也可用。",
+  show_onboarding: "用户希望了解如何开始或补充信息时，提供个人资料、骑行导入和制定训练计划三个入口。目标仅在制定具体计划时补充，不提供独立目标设置。只准备引导，不写入。",
   prepare_profile_proposal: "用户主动补充或更正个人资料时，生成待核对卡片；已有值由服务端读取。不能用它回答资料概念问题，不能猜单位或猜未知指标。",
   get_ride_context: "查**某一次**骑行的指标明细（功率/心率/踏频/速度/距离…）。问“这次/那次多少”用它；问“这一次**算不算**/是否符合某个特征”（算不算负分割、有没有心率漂移）也用它——对单次骑行做判断要先拿到它的指标。",
   get_capabilities: "查**数据可用性与质量**（有没有功率、心率、路线），不返回具体数值。问“能看哪些数据”用它。",

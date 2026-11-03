@@ -91,7 +91,8 @@ export function ProfileSheet({ open, onClose, onSaved }: {
   onClose: () => void;
   onSaved: () => void;
 }) {
-  return <BottomSheet open={open} title="完善个人资料" onClose={onClose}>
+  return <BottomSheet open={open} size="large" title="个人资料" onClose={onClose}>
+    <h3 className="profile-sheet-section-title">基本资料</h3>
     <ProfileEditor formOnly onSaved={onSaved} />
   </BottomSheet>;
 }

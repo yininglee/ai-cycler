@@ -17,10 +17,7 @@ export async function PUT(request: Request) {
     } else if (input.action === "skip") {
       profile.ux = { ...profile.ux, skipped: input.skipped === true };
     } else if (input.action === "goal") {
-      if (input.goal !== null && (typeof input.goal?.title !== "string" || !input.goal.title.trim() || input.goal.title.length > 80 || typeof input.goal.detail !== "string" || input.goal.detail.length > 400)) {
-        return Response.json({ error: "请填写目标，补充说明不超过 400 字" }, { status: 422 });
-      }
-      profile.ux = { ...profile.ux, goal: input.goal === null ? null : { title: input.goal.title.trim(), detail: input.goal.detail.trim(), updatedAt: now } };
+      return Response.json({ error: "GOAL_MANAGED_BY_TRAINING_PLAN", message: "请在制定训练计划时设置本次计划目标。" }, { status: 410 });
     } else return Response.json({ error: "未知操作" }, { status: 400 });
     await repository.saveProfile(session.userId, profile);
     return Response.json(profile, { headers: { "Cache-Control": "no-store", ...sessionCookieHeader(session) } });

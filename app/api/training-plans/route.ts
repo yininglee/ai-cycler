@@ -11,9 +11,10 @@ async function view(ownerId: string, planId?: string | null, requestedVersion?: 
   const context = await (await planRuntime(ownerId)).context();
   const { workspace, ...rest } = context;
   if (planId && workspace.id !== planId) throw new PlanError("NOT_FOUND");
+  if (requestedVersion !== undefined && workspace.deletedVersions[String(requestedVersion)]) throw new PlanError("PLAN_DELETED");
   const viewPlan = requestedVersion === undefined ? context.draft ?? context.active : workspace.plans.find(plan => plan.version === requestedVersion) ?? null;
   if (requestedVersion !== undefined && !viewPlan) throw new PlanError("NOT_FOUND");
-  return { ...rest, profileChanged: !!viewPlan && viewPlan.basis.profileHash !== context.basis.profileHash, id: workspace.id, version: workspace.version, intake: workspace.intake, intakeVersion: workspace.intakeVersion, confirmedIntakeVersion: workspace.confirmedIntakeVersion, activeVersion: workspace.activeVersion, draftVersion: workspace.draftVersion, activatedAt: workspace.activatedAt, replacedAt: workspace.replacedAt, workoutRecords: workspace.workoutRecords, viewPlan };
+  return { ...rest, profileChanged: !!viewPlan && viewPlan.basis.profileHash !== context.basis.profileHash, id: workspace.id, version: workspace.version, intake: workspace.intake, intakeVersion: workspace.intakeVersion, confirmedIntakeVersion: workspace.confirmedIntakeVersion, activeVersion: workspace.activeVersion, draftVersion: workspace.draftVersion, activatedAt: workspace.activatedAt, replacedAt: workspace.replacedAt, workoutRecords: workspace.workoutRecords, executionRecords: Object.fromEntries(Object.entries(workspace.executions).map(([key, value]) => [key, { rideId: value.rideId, revision: value.revision }])), viewPlan };
 }
 function failure(error: unknown) {
   if (error instanceof SyntaxError) return failure(new PlanError("INVALID_INPUT"));
@@ -48,6 +49,8 @@ export async function POST(request: Request) {
     } else if (input.action === "issue" && exact(input, ["action", "planId", "version", "activeVersion", "idempotencyKey"]) && typeof input.planId === "string" && version(input.version) && (input.activeVersion === null || version(input.activeVersion)) && typeof input.idempotencyKey === "string") {
       const grant = await service.issue({ planId: input.planId, version: input.version, activeVersion: input.activeVersion, idempotencyKey: input.idempotencyKey });
       return Response.json({ grant }, { headers: responseHeaders });
+    } else if (input.action === "issue_delete" && exact(input, ["action", "planId", "version", "idempotencyKey"]) && typeof input.planId === "string" && version(input.version) && typeof input.idempotencyKey === "string") {
+      return Response.json({ grant: await service.issueDelete({ planId: input.planId, version: input.version, idempotencyKey: input.idempotencyKey }) }, { headers: responseHeaders });
     } else if (input.action === "confirm" && exact(input, ["action", "request"])) {
       return Response.json(await service.confirmation.confirm({ ownerId: session.userId, request: input.request }), { headers: responseHeaders });
     } else if (input.action === "discard" && exact(input, ["action", "version"]) && version(input.version)) {

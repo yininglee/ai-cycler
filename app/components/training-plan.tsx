@@ -7,7 +7,10 @@ import type { TrainingPlanView } from "../../src/training/plan-view";
 import type { ChatTrainingPlanArtifact } from "../../src/chat/chat-interaction";
 import styles from "./training-plan.module.css";
 
+const planGoalOptions = ["保持规律骑行", "提升耐力／完成长距离", "提升速度", "提升 FTP", "提升爬坡表现", "备赛"];
+
 export function planErrorText(code?: string): string {
+  if (code === "PLAN_DELETED") return "此版本计划已删除，原始骑行和历史执行记录已保留。";
   if (code === "VERSION_CONFLICT" || code === "CONTENT_CHANGED") return "信息或草案已更新，请刷新后核对最新版本。";
   if (code === "CONFIRMATION_EXPIRED") return "确认已过期，请重新核对并点击启用。";
   if (code === "TRAINING_CONCERN") return "存在影响训练的不适，暂不生成计划；先取得适合自己的专业建议。";
@@ -52,9 +55,15 @@ export function PlanIntakePanel({ onGenerate, onClose }: { onGenerate: () => Pro
     finally { setBusy(false); }
   }
   if (!loaded) return <div className={styles.form}>{error ? <p role="alert">{error}<button onClick={() => void load()}>重试读取</button></p> : <p role="status">正在读取已有目标、资料和骑行基础…</p>}</div>;
+  const preservedGoal = data?.intake?.goal;
   return <form className={styles.form} onSubmit={event => { event.preventDefault(); if (!busy) void save(true); }}>
-    <p>先核对信息，再生成待确认草案。可直接填写，也可返回对话补充；不会在这里启用计划。</p>
-    <label>本次计划目标<input value={intake.goal} onChange={e => change("goal", e.target.value)} maxLength={500} required /></label>
+    <p>先选择目标并核对其他信息，再生成待确认草案。也可返回对话补充；不会在这里启用计划。</p>
+    <label>本次计划目标<select value={intake.goal} onChange={e => change("goal", e.target.value)} required>
+      <option value="">请选择本次计划目标</option>
+      {preservedGoal && !planGoalOptions.includes(preservedGoal) && <option value={preservedGoal}>{preservedGoal}</option>}
+      {planGoalOptions.map(goal => <option key={goal} value={goal}>{goal}</option>)}
+    </select></label>
+    <p className={styles.note}>可在对话中补充期望距离、赛事等具体诉求；已有目标会完整保留。</p>
     <div className={styles.twoColumns}><label>开始日期<input type="date" value={intake.startDate ?? ""} onChange={e => change("startDate", e.target.value || null)} required /></label><label>结束日期<input type="date" value={intake.endDate ?? ""} onChange={e => change("endDate", e.target.value || null)} required /></label></div>
     {intake.periodReason && <p className={styles.note}>周期依据：{intake.periodReason}</p>}
     <fieldset><legend>每周可训练时间</legend>{["周一", "周二", "周三", "周四", "周五", "周六", "周日"].map((label, index) => {
@@ -76,27 +85,28 @@ export function PlanIntakePanel({ onGenerate, onClose }: { onGenerate: () => Pro
 
 export function TrainingPlanCard({ reference, conversationId, onGenerate }: { reference: ChatTrainingPlanArtifact["payload"]; conversationId: string; onGenerate: () => Promise<void> }) {
   const [data, setData] = useState<TrainingPlanView>(), [open, setOpen] = useState(false), [error, setError] = useState("");
-  const load = useCallback(() => { void planRequest(undefined, `?planId=${encodeURIComponent(reference.planId)}${reference.version ? `&version=${reference.version}` : ""}`).then(setData).catch(e => setError(e.message)); }, [reference.planId, reference.version]);
+  const load = useCallback(() => { void planRequest(undefined, `?planId=${encodeURIComponent(reference.planId)}${reference.version ? `&version=${reference.version}` : ""}`).then(next => { setData(next); setError(""); }).catch(e => { setData(undefined); setError(e.message); }); }, [reference.planId, reference.version]);
   useEffect(() => { load(); window.addEventListener("cycler-plan-updated", load); return () => window.removeEventListener("cycler-plan-updated", load); }, [load]);
   const plan = reference.view === "intake" ? null : data?.viewPlan;
   const currentVersion = data?.draft?.version ?? data?.active?.version;
   const stale = plan && currentVersion !== plan.version;
+  if (error && !data) return <section className={styles.card}><p role="status">{error}</p><button onClick={load}>重新读取计划</button></section>;
   return <section className={styles.card} aria-label={reference.view === "intake" ? "计划信息补充" : "训练计划草案"}>
     <small>{!data ? "正在读取计划…" : reference.view === "intake" ? "计划信息 · 待核对" : stale ? "此版本已更新" : plan && data?.activeVersion === plan.version ? "训练计划 · 已生效" : "训练计划 · 待确认"}</small>
     <h3>{plan?.intake.goal || data?.intake?.goal || "补充训练计划信息"}</h3>
     {plan ? <><p>{plan.intake.startDate} — {plan.intake.endDate} · 版本 {plan.version}</p><p>{plan.days.filter(day => day.week === 1 && day.minutes).length} 次／首周 · 首周 {plan.days.filter(day => day.week === 1).reduce((sum, day) => sum + day.minutes, 0)} 分钟</p><p className={styles.note}>{plan.proposal.rationale}</p><Link className="primary-button" href={planDetailHref(reference.planId, stale ? currentVersion : plan.version, conversationId)}>{stale ? "查看最新计划" : "查看计划"}</Link></>
-      : <><p className={styles.note}>复用已有目标与资料，只补缺项。核对后生成草案，启用另行确认。</p><button className="primary-button" onClick={() => setOpen(true)}>补充／核对计划信息</button></>}
+      : <><p className={styles.note}>补充本次计划的目标、日期与训练条件。核对后生成草案，启用另行确认。</p><button className="primary-button" onClick={() => setOpen(true)}>补充／核对计划信息</button></>}
     {error && <p role="status">{error}<button onClick={load}>重试读取</button></p>}
     <BottomSheet open={open} size="large" title="训练计划信息" onClose={() => setOpen(false)}>{open && <PlanIntakePanel onClose={() => setOpen(false)} onGenerate={onGenerate} />}</BottomSheet>
   </section>;
 }
 
-export function TrainingPlanBar({ conversationId, onStart, pending }: { conversationId: string; onStart: () => void; pending: boolean }) {
+export function TrainingPlanBar({ conversationId }: { conversationId: string }) {
   const [data, setData] = useState<TrainingPlanView>();
   const load = useCallback(() => { void planRequest().then(setData).catch(() => {}); }, []);
   useEffect(() => { load(); window.addEventListener("cycler-plan-updated", load); window.addEventListener("cycler-profile-saved", load); return () => { window.removeEventListener("cycler-plan-updated", load); window.removeEventListener("cycler-profile-saved", load); }; }, [load]);
   const active = data?.active, today = planToday(), monday = planMonday(today);
-  if (!active) return <div className={styles.emptyBar}>{data?.draft ? <Link href={planDetailHref(data.draft.id, data.draft.version, conversationId)}>查看待确认计划</Link> : <button disabled={pending} onClick={onStart}>制定训练计划</button>}</div>;
+  if (!active) return data?.draft ? <div className={styles.emptyBar}><Link href={planDetailHref(data.draft.id, data.draft.version, conversationId)}>查看待确认计划</Link></div> : null;
   return <section className={styles.weekBar} aria-label="本周训练计划">
     <div><Link href={planDetailHref(active.id, active.version, conversationId)}>{active.intake.startDate! > today ? "计划尚未开始" : active.intake.endDate! < today ? "计划已结束" : "本周计划"} · {monday.slice(5)} — {addPlanDays(monday, 6).slice(5)}</Link>{data?.draft && <Link href={planDetailHref(data.draft.id, data.draft.version, conversationId)}>待确认草案</Link>}</div>
     {data?.activeProfileChanged && <p className={styles.note}>基础资料或目标已变化，计划需复核；请先核对后调整。</p>}
