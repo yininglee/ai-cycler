@@ -25,6 +25,8 @@ import type { MetricKey, RideRecord } from "../domain/ride-schema.ts";
 import type { ApplicationRepository } from "../persistence/application-repository.ts";
 import { buildHistoricalRide, buildHistoricalRides } from "../persistence/persistent-history.ts";
 import type { ChatNumericFact } from "./chat-numeric-evidence.ts";
+import { executePlanTool, isPlanToolResult, parsePlanTool, planNumericFacts, type PlanToolInvocation, type PlanToolName, type PlanToolResult } from "./chat-plan-tools.ts";
+import { historyRangeDays, parseChatHistoryDateRange, type ChatHistoryDateRange } from "./chat-history-range.ts";
 import type { ChatAgentInteraction } from "./chat-interaction.ts";
 import { PLATFORMS } from "../ux/platform-catalog.ts";
 import { MAX_UPLOAD_BYTES } from "../parsers/parser-utils.ts";
@@ -78,6 +80,7 @@ export const CHAT_FIND_RIDE_MAX_MATCHES = 5 as const;
 // 合同（输入校验 + 结果类型 + 证据声明），数据投影由 B1（全局三件）与 B2（记录两件）实现；
 // 未实装前 executeChatTool 抛 TEMPORARY_UNAVAILABLE，且 catalog 不下发（模型无法调用）。
 export type ChatToolName =
+  | PlanToolName
   | "prepare_ride_import"
   | ChatUserToolInvocation["tool"]
   | "get_ride_context"
@@ -147,10 +150,13 @@ type HealthProfileInput = { fields: HealthProfileField[] };
 type TrainingLoadInput = { anchorDate: string; windowDays: number };
 type SearchKnowledgeBaseInput = { dimensionIds: ChatKnowledgeDimensionId[]; keywords: string[]; maxEntries: number };
 // rideId 为 null 表示"不锚定某一次骑行"，按窗口跨记录统计（D-B3：可选锚点）。
-type RideHistoryInput = { rideId: string | null; windowDays: number; metrics: ChatComparisonMetricKey[] };
+type RideHistoryInput = { rideId: string | null; metrics: ChatComparisonMetricKey[] } & (
+  { windowDays: number; dateRange?: never } | { dateRange: ChatHistoryDateRange; windowDays?: never }
+);
 type RouteOverviewInput = { rideRef?: ChatRideRef; segments: number };
 
 export type ChatToolInvocation =
+  | PlanToolInvocation
   | { tool: "prepare_ride_import"; input: Record<string, never> }
   | ChatUserToolInvocation
   | { tool: "get_ride_context"; input: RideContextInput }
@@ -395,6 +401,7 @@ export type RouteOverviewToolResult = {
 };
 
 export type ChatToolResult =
+  | PlanToolResult
   | RideImportToolResult
   | ChatUserToolResult
   | RideContextToolResult
@@ -587,6 +594,7 @@ export function parseChatToolInvocation(value: unknown): ChatToolInvocation {
   if (!isPlainObject(value) || !hasExactKeys(value, ["tool", "input"]) || !isPlainObject(value.input)) throw new ChatToolError("INVALID_INPUT");
   const userCall = parseChatUserToolInvocation(value.tool, value.input);
   if (userCall) return userCall;
+  try { const planCall = parsePlanTool(value.tool, value.input); if (planCall) return planCall; } catch { throw new ChatToolError("INVALID_INPUT"); }
   if (value.tool === "prepare_ride_import" && hasExactKeys(value.input, [])) return { tool: value.tool, input: {} };
   if (value.tool === "get_ride_context") {
     const input = value.input;
@@ -672,6 +680,11 @@ export function parseChatToolInvocation(value: unknown): ChatToolInvocation {
     };
   }
   if (value.tool === "get_ride_history") {
+    if (hasExactKeys(value.input, ["rideId", "dateRange", "metrics"])) {
+      const dateRange = parseChatHistoryDateRange(value.input.dateRange);
+      if (value.input.rideId !== null || !dateRange || !uniqueEnumValues(value.input.metrics, chatComparisonMetricKeys, chatComparisonMetricKeys.length)) throw new ChatToolError("INVALID_INPUT");
+      return { tool: value.tool, input: { rideId: null, dateRange, metrics: value.input.metrics } };
+    }
     if (
       !hasExactKeys(value.input, ["rideId", "windowDays", "metrics"])
       || !validNullableRideId(value.input.rideId)
@@ -932,7 +945,15 @@ const userToolSpec: ChatToolSpec = {
   hasUsableEvidence: result => "saved" in result && result.claims.length > 0,
 };
 
+const planToolSpec: ChatToolSpec = {
+  anchorMode: "none", evidenceKind: "claims", claimIds: result => isPlanToolResult(result) ? result.claims.map(claim => claim.claimId) : [],
+  knowledgeIds: () => [], numericFacts: result => isPlanToolResult(result) ? planNumericFacts(result) : [], hasUsableEvidence: result => isPlanToolResult(result),
+};
+
 export const chatToolSpecs: Record<ChatToolName, ChatToolSpec> = {
+  get_training_plan_context: planToolSpec,
+  prepare_training_plan: planToolSpec,
+  propose_training_plan: planToolSpec,
   prepare_ride_import: {
     anchorMode: "none", evidenceKind: "claims",
     claimIds: result => result.tool === "prepare_ride_import" ? result.claims.map(claim => claim.claimId) : [],
@@ -1079,6 +1100,7 @@ export const chatToolSpecs: Record<ChatToolName, ChatToolSpec> = {
       ? [
         { value: result.windowDays },
         { value: result.rideCount },
+        { value: result.rows.length },
         ...(result.windowStartDate ? [{ displayValue: result.windowStartDate }] : []),
         ...(result.windowEndDate ? [{ displayValue: result.windowEndDate }] : []),
         ...result.claims.map((claim) => ({ value: claim.value, unit: claim.unit, key: claim.key, displayValue: claim.displayValue })),
@@ -1354,19 +1376,20 @@ function dayIndex(dateKey: string): number {
 async function buildRideHistoryResult(
   repository: ApplicationRepository,
   ownerId: string,
-  input: { rideId: string | null; windowDays: number; metrics: ChatComparisonMetricKey[] },
+  input: RideHistoryInput,
 ): Promise<RideHistoryToolResult> {
   const records = (await repository.listRides(ownerId)).map((entry) => entry.record);
   const anchorRecord = input.rideId ? records.find((record) => record.activity.rideId === input.rideId) : undefined;
   if (input.rideId && !anchorRecord) throw new ChatToolError("NOT_FOUND");
 
   // 窗口终点：锚定某条时取该条的骑行日（"那次之前的 90 天"），否则取今天。
-  const anchorDate = anchorRecord
+  const anchorDate = input.dateRange?.endDate ?? (anchorRecord
     ? shanghaiDateKey(anchorRecord.activity.startTime ?? "")
-    : shanghaiDateKey(new Date());
+    : shanghaiDateKey(new Date()));
   if (!anchorDate) throw new ChatToolError("TEMPORARY_UNAVAILABLE");
+  const windowDays = input.dateRange ? historyRangeDays(input.dateRange) : input.windowDays;
   const anchorDay = dayIndex(anchorDate);
-  const startDay = anchorDay - input.windowDays + 1;
+  const startDay = anchorDay - windowDays + 1;
 
   const inWindow = records
     .map((record) => ({ record, date: shanghaiDateKey(record.activity.startTime ?? "") }))
@@ -1384,16 +1407,19 @@ async function buildRideHistoryResult(
   // 汇总：任一记录缺该指标就记 METRIC_MISSING（汇总值只累加 valid 值，缺失按 0 计但明示）。
   const metricKeys = ["distanceM", "movingTimeS", "elevationGainM"] as const;
   const totals = new Map<MetricKey, number>();
+  const limitations: string[] = [];
   for (const key of metricKeys) {
     let total = 0;
     let missing = false;
+    let validCount = 0;
     for (const item of inWindow) {
       const value = validMetricValue(item.record, key);
       if (value === undefined) missing = true;
-      else total += value;
+      else { total += value; validCount++; }
     }
-    totals.set(key, total);
+    if (validCount) totals.set(key, total);
     if (missing && !reasonCodes.includes("METRIC_MISSING")) reasonCodes.push("METRIC_MISSING");
+    if (missing) limitations.push(`${key}:部分或全部记录缺少有效数据，汇总只包含有效值，不将缺失当作零。`);
   }
 
   // claim.key 用领域指标键（distanceM / movingTimeS / elevationGainM），
@@ -1410,9 +1436,9 @@ async function buildRideHistoryResult(
     },
     ...(inWindow.length > 0
       ? [
-        { claimId: "claim:history:totalDistanceM", kind: "metric" as const, key: "distanceM", value: totals.get("distanceM") ?? 0, unit: "m", confidence: "high" as const, displayValue: String(totals.get("distanceM") ?? 0) },
-        { claimId: "claim:history:totalMovingTimeS", kind: "metric" as const, key: "movingTimeS", value: totals.get("movingTimeS") ?? 0, unit: "s", confidence: "high" as const, displayValue: String(totals.get("movingTimeS") ?? 0) },
-        { claimId: "claim:history:totalElevationGainM", kind: "metric" as const, key: "elevationGainM", value: totals.get("elevationGainM") ?? 0, unit: "m", confidence: "high" as const, displayValue: String(totals.get("elevationGainM") ?? 0) },
+        ...(totals.has("distanceM") ? [{ claimId: "claim:history:totalDistanceM", kind: "metric" as const, key: "distanceM", value: totals.get("distanceM")!, unit: "m", confidence: "high" as const, displayValue: String(totals.get("distanceM")) }] : []),
+        ...(totals.has("movingTimeS") ? [{ claimId: "claim:history:totalMovingTimeS", kind: "metric" as const, key: "movingTimeS", value: totals.get("movingTimeS")!, unit: "s", confidence: "high" as const, displayValue: String(totals.get("movingTimeS")) }] : []),
+        ...(totals.has("elevationGainM") ? [{ claimId: "claim:history:totalElevationGainM", kind: "metric" as const, key: "elevationGainM", value: totals.get("elevationGainM")!, unit: "m", confidence: "high" as const, displayValue: String(totals.get("elevationGainM")) }] : []),
       ]
       : []),
   ];
@@ -1428,7 +1454,6 @@ async function buildRideHistoryResult(
       .filter((claim): claim is FindRideClaim => claim !== undefined),
   }));
 
-  const limitations: string[] = [];
   if (inWindow.length > rows.length) {
     limitations.push(`rows_truncated:${rows.length}/${inWindow.length}`);
   }
@@ -1436,8 +1461,8 @@ async function buildRideHistoryResult(
   return {
     schemaVersion: CHAT_TOOL_SCHEMA_VERSION,
     tool: "get_ride_history",
-    windowDays: input.windowDays,
-    windowStartDate: new Date(Date.parse(`${anchorDate}T00:00:00Z`) - (input.windowDays - 1) * DAY_MS).toISOString().slice(0, 10),
+    windowDays,
+    windowStartDate: input.dateRange?.startDate ?? new Date(Date.parse(`${anchorDate}T00:00:00Z`) - (windowDays - 1) * DAY_MS).toISOString().slice(0, 10),
     windowEndDate: anchorDate,
     ...(anchorRecord?.activity.startTime ? { anchorStartTime: anchorRecord.activity.startTime } : {}),
     status: inWindow.length > 0 ? "matched" : "no_match",
@@ -1564,6 +1589,7 @@ async function buildRideContextResult(
 
 async function executeChatToolWithinBoundary(repository: ApplicationRepository, ownerId: string, invocation: ChatToolInvocation, userSource = ""): Promise<ChatToolExecutionResult> {
   try {
+    if (invocation.tool === "get_training_plan_context" || invocation.tool === "prepare_training_plan" || invocation.tool === "propose_training_plan") return executePlanTool(repository, ownerId, invocation);
     if (invocation.tool === "prepare_ride_import") return { schemaVersion: CHAT_TOOL_SCHEMA_VERSION, tool: invocation.tool, mode: "real_file_simulated_platform",
       platforms: PLATFORMS.map(({ id, name }) => ({ id, name })), fileFormats: ["FIT", "GPX"], maxFileSizeMB: MAX_UPLOAD_BYTES / (1024 * 1024),
       claims: [{ claimId: "claim:import:available", key: "import_entry_available", kind: "metric", value: 1, unit: "count", confidence: "high" }],

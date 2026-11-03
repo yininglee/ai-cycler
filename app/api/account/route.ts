@@ -1,6 +1,7 @@
 import { getRequestSession, requiresOidcSession } from "../../../src/auth/session.ts";
 import { getApplicationRepository } from "../../../src/persistence/application-repository.ts";
 import { createDemoEvent } from "../../../src/observability/demo-events.ts";
+import { TrainingPlanStore } from "../../../src/persistence/training-plan-store.ts";
 
 export const runtime = "nodejs";
 
@@ -10,6 +11,7 @@ export async function DELETE(request: Request): Promise<Response> {
   if (!session) return Response.json({ error: "UNAUTHORIZED" }, { status: 401, headers: { "Cache-Control": "no-store" } });
   await getApplicationRepository().saveDemoEvent(session.userId, createDemoEvent({ type: "deletion_requested", attributes: { scope: "account" } }));
   await getApplicationRepository().saveDemoEvent(session.userId, createDemoEvent({ type: "deletion_completed", attributes: { scope: "account" } }));
+  await new TrainingPlanStore().deleteOwner(session.userId);
   await getApplicationRepository().deleteAccount(session.userId);
   return Response.json({ deleted: true }, { headers: { "Cache-Control": "no-store", "Set-Cookie": "ai-cycling-buddy-session=; HttpOnly; SameSite=Lax; Path=/; Max-Age=0" } });
 }

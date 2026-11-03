@@ -106,6 +106,9 @@ export type ChatToolLoopTrace = {
   toolCalls: number;
   providerCalls: number;
   summarySlots: number;
+  toolArgumentRepairAttempts?: number;
+  evidenceRecoveryAttempts?: number;
+  planProposalRepairAttempts?: number;
   // AGT-B0：被输出校验拒绝的轮次与原因码。旧实现只在修复失败时落 fallbackCode=REPAIR_FAILED，
   // 真实原因（哪条规则在拦）藏在 outputValidation.code 里且不聚合，导致"误拦率"无法量化。
   // 有了这条，才能回答"是数字太白话、还是措辞规则误伤"。
@@ -117,6 +120,8 @@ export type ChatToolLoopTrace = {
 export type ChatProviderToolCatalog = {
   schemaVersion: typeof CHAT_TOOL_CATALOG_SCHEMA_VERSION;
   anchorRideId: string;
+  today?: string;
+  timeZone?: "Asia/Shanghai";
   tools: ReadonlyArray<{
     tool: ChatToolName;
     // AGT-B5：每个工具带一句"用途 + 边界"。实测（ORCH-08「最近一次骑行的路线爬坡多吗」）
@@ -137,6 +142,16 @@ export const CHAT_TOOL_CATALOG_SCOPE: Record<ChatToolCatalogRoute, readonly Chat
 // 每个工具的模型侧输入说明（catalog 下发内容）。与 parseChatToolInvocation 的严格键集对应：
 // 说明里写了"可选"的字段，由 normalizeLoopCall 补缺省值。
 const CHAT_TOOL_CATALOG_INPUTS: Record<ChatToolName, Record<string, unknown>> = {
+  get_training_plan_context: { version: "可选，指定本人计划历史／当前版本整数；省略读取当前草案／生效摘要。", date: "可选YYYY-MM-DD，读取所选版本该天的真实训练步骤；不存在的日期day=null，不推测日程。" },
+  prepare_training_plan: {
+    expectedVersion: "必填整数，取自 get_training_plan_context.state.intakeVersion；修改前先读取，不能猜版本。",
+    patch: '待核对信息的部分对象。允许 goal(目标文本)、startDate/endDate(YYYY-MM-DD或null)、periodReason(周期依据)、availability:[{weekday:1至7周一至周日,minutes:15至240}]、weeklyMinutes/longestRideMinutes(分钟或null)、selfReportedBasis(用户原话基础)、powerMeter(boolean或null)、avoidDates:[YYYY-MM-DD]、healthConcern(true或null)、notes。只补用户表达和已有资料，不猜时间与基础。healthConcern=false仅用户在信息卡确认，AI不能声明无不适。没有确定周期就留null并追问；也可提出有依据、待用户核对的周期。',
+  },
+  propose_training_plan: {
+    intakeVersion: "必填整数，当前已由用户按钮确认的 state.intakeVersion，必须等于 confirmedIntakeVersion。",
+    baseVersion: "必填整数，当前 state.version；每次修改都先读取，不猜版本。",
+    proposal: '必填 {rationale:中文制定依据,blocks:[{fromWeek:1,toWeek:N,sessions:[{weekday:1,kind:"endurance",minutes:30}]}]}。kind仅recovery/endurance/tempo/threshold。最多16阶段，每阶段最多6个不同weekday，阶段覆盖state.intake整个周期且不重叠；周数按开始日期所在周一计算，实际按可用日期展开。必须遵守state.constraints、availability、avoidDates；先读上下文，未确认信息不能生成。若规则拒绝，可在原预算内修正后再提出。所有结果仍是待确认草案，不能启用。',
+  },
   prepare_ride_import: {},
   get_user_context: {},
   show_onboarding: {},
@@ -144,7 +159,7 @@ const CHAT_TOOL_CATALOG_INPUTS: Record<ChatToolName, Record<string, unknown>> = 
   prepare_profile_proposal: { input: '必填对象；仅用户明确给出的 age/heightCm/weightKg/maxHeartRateBpm/ftpWatts 数值或明确不知道的 null；单位、多值或意图不明先追问。只准备提案，不保存。' },
   get_ride_context: {
     rideRef: "可选；缺省用本轮锚点记录。显式指定某一次时传对象，**三选一**：{\"date\":\"2026-08-20\"}（绝对日期）｜{\"ordinal\":-1}（-1=最近一次，-2=倒数第二次）｜{\"rideId\":\"…\"}（必须是本轮工具结果返回过的 rideId）",
-    dims: `字符串数组（可多选）：${rideContextDimensions.join("/")}`,
+    dims: `字符串数组（可多选）：${rideContextDimensions.join("/")}。例如平均功率用 ["power"]，平均心率用 ["heart_rate"]，距离／速度／时长用 ["summary"]；不能填写 avgPowerW 等指标名。`,
   },
   get_capabilities: {
     rideId: "可选；缺省用锚点记录，指定时必须来自本轮工具结果返回的 rideId",
@@ -186,6 +201,7 @@ const CHAT_TOOL_CATALOG_INPUTS: Record<ChatToolName, Record<string, unknown>> = 
   get_ride_history: {
     rideId: "可选；缺省用锚点记录；要跨记录统计时传 null（不锚定）",
     windowDays: `可选；1-${CHAT_RIDE_HISTORY_MAX_WINDOW_DAYS}，缺省 ${CHAT_RIDE_HISTORY_DEFAULT_WINDOW_DAYS}`,
+    dateRange: '与 windowDays 二选一；明确起止日期时用 {"startDate":"YYYY-MM-DD","endDate":"YYYY-MM-DD"}，含首尾、最多365天，不限于距今365天内；此时 rideId 必须为 null，不得同时传 windowDays。不要把明确日期改成相对天数。',
     metrics: `字符串数组（可多选）：${chatComparisonMetricKeys.join("/")}`,
   },
   get_route_overview: {
@@ -202,6 +218,9 @@ export function chatToolCatalogRouteOf(route: string): ChatToolCatalogRoute {
 // 每个工具的用途与边界（catalog 下发给模型）。写"用来做什么 + 不要用它做什么"，
 // 因为实测的选错工具都发生在边界上：单次指标 vs 单次路线 vs 跨记录检索 vs 跨记录统计。
 export const CHAT_TOOL_CATALOG_PURPOSE: Record<ChatToolName, string> = {
+  get_training_plan_context: "读取本人计划信息、已保存目标和资料、近期记录／自述基础、规则限制、当前草案与生效计划。制定或修改计划前先用它，不需要骑行锚点，不启用计划。",
+  prepare_training_plan: "准备／补充同一份待确认计划信息及原信息卡。与聊天补缺共同维护，保存可恢复的草稿信息；不生成正式日程、不启用。信息要由用户在卡片明确核对后才能生成草案。",
+  propose_training_plan: "对已由用户确认的信息生成或修改真实日程草案；AI只选择周阶段、合法类型与时长，服务端扩展步骤并经过领域规则硬门。规则失败保留原信息与原草案，可修正。草案生成不等于生效，启用只能由详情页明确按钮完成。",
   prepare_ride_import: "提供同步／导入骑行入口，用户自行选择真实 FIT/GPX 上传或明确模拟的平台。只准备入口，不代表已连接账户、已导入或已生成解读；不需要骑行锚点。",
   get_user_context: "读取本人已保存资料、来源与当前主要目标。理解目标指代和资料变更前用它核实状态；不能将历史对话当成已保存事实。无骑行记录也可用。",
   show_onboarding: "用户希望了解如何开始或补充信息时，提供资料、骑行导入和目标三个现有入口。只准备引导，不写入。",
@@ -226,6 +245,8 @@ export function buildChatToolCatalog(anchorRideId: string, route: ChatToolCatalo
   return {
     schemaVersion: CHAT_TOOL_CATALOG_SCHEMA_VERSION,
     anchorRideId,
+    today: new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Shanghai", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date()),
+    timeZone: "Asia/Shanghai",
     tools: (route === "none" ? [] : activeChatCapabilities()).map(({ tool }) => ({ tool, purpose: CHAT_TOOL_CATALOG_PURPOSE[tool], input: CHAT_TOOL_CATALOG_INPUTS[tool] })),
   };
 }
@@ -375,9 +396,10 @@ function normalizeLoopCall(call: ChatToolLoopCallRequest, anchorRideId: string, 
     if (raw.maxEntries === undefined) raw.maxEntries = CHAT_KNOWLEDGE_MAX_ENTRIES;
   }
   if (call.tool === "get_ride_history") {
+    if (raw.dateRange !== undefined && call.input.rideId === undefined) raw.rideId = null;
     if (raw.rideId === undefined) raw.rideId = anchorRideId;
     if (recentOverview && call.input.rideId === undefined) raw.rideId = null;
-    if (raw.windowDays === undefined) raw.windowDays = recentOverview ? 30 : CHAT_RIDE_HISTORY_DEFAULT_WINDOW_DAYS;
+    if (raw.windowDays === undefined && raw.dateRange === undefined) raw.windowDays = recentOverview ? 30 : CHAT_RIDE_HISTORY_DEFAULT_WINDOW_DAYS;
     if (raw.metrics === undefined) raw.metrics = [...chatComparisonMetricKeys];
   }
   if (call.tool === "get_route_overview" && raw.segments === undefined) {

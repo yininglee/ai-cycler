@@ -43,6 +43,9 @@ test("AGT-B4：kb_qa / level_assessment 的 decision 已是真链路（allowMode
 // capabilities 文案与 9 工具的一致性：每个工具对应一句"用户可感知的能力表述"，
 // Prompt 的固定清单里必须出现——防止"工具加了但'我能做什么'还是旧话术"。
 const TOOL_CAPABILITY_PHRASES: Record<ChatToolName, string> = {
+  get_training_plan_context: "训练计划上下文",
+  prepare_training_plan: "计划信息补充",
+  propose_training_plan: "训练计划草案",
   prepare_ride_import: "骑行同步与文件导入入口",
   get_user_context: "当前目标查看",
   show_onboarding: "首次使用引导",
@@ -61,7 +64,7 @@ const TOOL_CAPABILITY_PHRASES: Record<ChatToolName, string> = {
 
 test("AGT-B4：capabilities 清单覆盖全部 14 个工具（机械比对）", () => {
   const tools = CHAT_TOOL_CATALOG_SCOPE.autonomous_tools;
-  assert.equal(tools.length, 14);
+  assert.equal(tools.length, 17);
   for (const tool of tools) {
     const phrase = TOOL_CAPABILITY_PHRASES[tool];
     assert.ok(phrase, `${tool} 缺能力表述映射`);
@@ -71,5 +74,5 @@ test("AGT-B4：capabilities 清单覆盖全部 14 个工具（机械比对）", 
     );
   }
   // 未开放的两项必须明说，防止模型自己编"训练计划已支持"
-  assert.ok(CHAT_WORKFLOW_SYSTEM_PROMPT.includes("训练计划与训练监督尚未开放"));
+  assert.ok(CHAT_WORKFLOW_SYSTEM_PROMPT.includes("执行评估仍未开放"));
 });

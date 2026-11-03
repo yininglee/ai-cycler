@@ -129,7 +129,7 @@ test("capability_gap questions get the in-scope-but-locked template without invo
     execution: "template", modelInvoked: false, route: "capability_gap",
   });
   // AGT-B4 预期变更：跨次筛选排序、历史统计、负荷评估**已开放**，缺口只剩训练计划/监督。
-  assert.match(result.reply, /训练计划与训练监督仍在路线图中/);
+  assert.match(result.reply, /训练执行评估仍在规划中/);
   assert.match(result.reply, /跨记录的条件检索与排名/);
   assert.match(result.reply, /与最近 30 天历史的比较/);
   assert.equal(provider.calls.length, 0);

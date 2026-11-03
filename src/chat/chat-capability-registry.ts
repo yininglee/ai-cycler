@@ -7,13 +7,14 @@ export type ChatCapabilityRegistration = {
   category: ChatCapabilityCategory;
   implemented: boolean;
   enabled: boolean;
-  effect: "read";
+  effect: "read" | "prepare";
   spec: ChatToolSpec;
 };
 
-// Only implemented capabilities belong here. Plan/assessment workflow placeholders
-// are deliberately absent; missing sensor data is reported by the tool result.
+// Only implemented capabilities belong here. Activation stays behind explicit
+// confirmation, and execution assessment is absent. Missing data stays explicit.
 const categories: Record<ChatToolName, ChatCapabilityCategory> = {
+  get_training_plan_context: "tools", prepare_training_plan: "workflow", propose_training_plan: "workflow",
   prepare_ride_import: "workflow",
   get_user_context: "tools", show_onboarding: "workflow", prepare_goal_editor: "workflow", prepare_profile_proposal: "workflow",
   get_ride_context: "tools", get_capabilities: "tools", compare_rides: "query",
@@ -24,7 +25,7 @@ const categories: Record<ChatToolName, ChatCapabilityCategory> = {
 export function activeChatCapabilities(): readonly ChatCapabilityRegistration[] {
   return (Object.keys(categories) as ChatToolName[]).map(tool => ({
     tool, category: categories[tool], implemented: true, enabled: true,
-    effect: "read" as const, spec: chatToolSpecs[tool],
+    effect: tool === "prepare_training_plan" || tool === "propose_training_plan" ? "prepare" as const : "read" as const, spec: chatToolSpecs[tool],
   })).filter(capability => capability.implemented && capability.enabled);
 }
 

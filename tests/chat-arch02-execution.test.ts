@@ -34,7 +34,7 @@ test("ARCH-02: every legacy data hint uses the same model loop, catalog and evid
     const provider: ChatProvider = { async run(input) {
       calls++;
       assert.equal(input.route, "autonomous_tools");
-      assert.equal(input.toolCatalog?.tools.length, 14);
+      assert.equal(input.toolCatalog?.tools.length, 17);
       assert.ok(input.toolCatalog.tools.some(entry => entry.tool === "compare_rides"));
       assert.ok(input.toolCatalog.tools.some(entry => entry.tool === "search_knowledge_base"));
       if (!input.toolResults) return toolRequest("get_ride_context", { rideRef: { ordinal: -1 }, dims: ["summary"] });
@@ -96,7 +96,7 @@ test("ARCH-02: data and knowledge from one query can be cited together under any
 });
 
 test("ARCH-02: unimplemented writes stay outside both model catalog and execution admission", async () => {
-  assert.ok(activeChatCapabilities().every(capability => capability.effect === "read"));
+  assert.ok(activeChatCapabilities().every(capability => ["read", "prepare"].includes(capability.effect)));
   const result = await runChatAgent({ text: "查看骑行数据。", decision: makeChatDecision("autonomous_tools", "none", "AUTONOMOUS_TOOLS", 12),
     loopRunner: createChatToolLoopRunner(repository(), "owner"),
     provider: { async run() { return toolRequest("generate_training_plan", {}); } },

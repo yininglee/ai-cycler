@@ -80,13 +80,13 @@ function audit(binding: WriteBinding, status: WriteAudit["status"], now: number)
 }
 
 /** Server-only extension. Handlers are supplied by trusted application code,
- * never by a tool request. No production write handler is registered yet.
+ * never by a tool request. Training plan activation registers a server handler.
  */
 export function createConfirmedWriteService<Domain>(store: ConfirmedWriteStore<Domain>, handlers: ReadonlyMap<string, ConfirmedWriteHandler<Domain>>) {
   // Snapshot registration so a caller cannot later replace an approved action.
   const registered = new Map(handlers);
   return {
-    async issue(input: { ownerId: string; action: string; targetId: string; idempotencyKey: string; ttlMs: number; now?: number }) {
+    async issue(input: { ownerId: string; action: string; targetId: string; idempotencyKey: string; ttlMs: number; expectedVersion?: string; now?: number }) {
       const now = input.now ?? Date.now();
       if (![input.ownerId, input.action, input.targetId, input.idempotencyKey].every(identifier)
         || !Number.isSafeInteger(now) || !Number.isSafeInteger(input.ttlMs) || input.ttlMs <= 0 || !Number.isSafeInteger(now + input.ttlMs)) fail("INVALID_CONFIRMATION");
@@ -96,6 +96,7 @@ export function createConfirmedWriteService<Domain>(store: ConfirmedWriteStore<D
         if (await tx.getReceipt(input.idempotencyKey)) fail("IDEMPOTENCY_CONFLICT");
         const current = await handler.loadCurrent(tx.domain, input.targetId);
         if (!current) return fail("NOT_FOUND");
+        if (input.expectedVersion !== undefined && current.version !== input.expectedVersion) fail("VERSION_CONFLICT");
         const draft = structuredClone(current);
         checkContent(handler, draft);
         const token = randomBytes(32).toString("base64url");

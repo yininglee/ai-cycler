@@ -37,6 +37,7 @@ export type ChatOutputValidationCode =
   | "OUTPUT_SCHEMA_INVALID"
   | "OUTPUT_ROUTE_MISMATCH"
   | "OUTPUT_TOOL_CONTEXT_MISSING"
+  | "OUTPUT_ACTION_UNSUPPORTED"
   | "OUTPUT_CLAIM_INVALID"
   | "OUTPUT_CAPABILITY_INVALID"
   | "OUTPUT_NUMERIC_UNSUPPORTED"
@@ -241,7 +242,7 @@ function validateLoopEvidence(
   // A typed clarification is a question, not a data answer. It requires no
   // fabricated Claim just to ask for intent/units; numeric and safety checks stay.
   if (output.responseKind === "clarification") {
-    if (output.claimIds.length || output.knowledgeIds.length || output.capabilityKeys.length || !/[？?]$/.test(output.reply)) return "OUTPUT_SCHEMA_INVALID";
+    if (output.claimIds.length || output.knowledgeIds.length || output.capabilityKeys.length || !/[？?]/.test(output.reply)) return "OUTPUT_SCHEMA_INVALID";
     return supportedByFacts(output.reply, results, context.userText) ? undefined : "OUTPUT_NUMERIC_UNSUPPORTED";
   }
   if (results.length === 0) {
@@ -299,6 +300,17 @@ export function validateChatOutput(rawOutput: string, context: ChatOutputValidat
   if (hasUnnegatedHit(output.reply, INJECTION_TERMS)) return reject("OUTPUT_INJECTION_VIOLATION", output.claimIds.length, output.capabilityKeys.length);
   if (hasUnnegatedHit(output.reply, PRIVACY_TERMS)) return reject("OUTPUT_PRIVACY_VIOLATION", output.claimIds.length, output.capabilityKeys.length);
   if (hasUnnegatedHit(output.reply, SAFETY_TERMS)) return reject("OUTPUT_SAFETY_VIOLATION", output.claimIds.length, output.capabilityKeys.length);
+  // Preparing metadata or a draft cannot activate it. This validates a claimed
+  // side effect; it never chooses a business intent or invokes a capability.
+  const planResults = (context.loopToolResults ?? []).filter(result => result.tool === "get_training_plan_context" || result.tool === "prepare_training_plan" || result.tool === "propose_training_plan");
+  const creationClaim = /已(?:经)?[^。，；！？]{0,14}(?:生成|准备|制定|更新|修改|调整)[^。，；！？]{0,10}(?:草案|训练计划(?!信息))|(?:草案|训练计划(?!信息))[^。，；！？]{0,8}已(?:经)?[^。，；！？]{0,4}(?:生成|准备|更新|修改|调整)|(?:生成|制定|更新|修改|准备)(?:了|好)[^。，；！？]{0,8}(?:草案|训练计划(?!信息))/;
+  const pendingCommitment = /(?:我将|我会|现在|正在|马上)[^。！？]{0,60}(?:生成|制定|更新|修改|调整)[^。！？]{0,20}(?:草案|训练计划)/;
+  const readyIntake = planResults.some(result => "state" in result && result.state.confirmedIntakeVersion !== null && result.state.confirmedIntakeVersion === result.state.intakeVersion);
+  const existingPlan = planResults.some(result => "state" in result && (result.state.draft || result.state.active));
+  const freshChange = output.reply.split(/[。，；！？]/).some(clause => creationClaim.test(clause) && /(?:重新|新的|更新|修改|调整|已按|已根据)/.test(clause));
+  if ((hasUnnegatedHit(output.reply, creationClaim) && (!existingPlan || freshChange) || readyIntake && hasUnnegatedHit(output.reply, pendingCommitment)) && !planResults.some(result => result.tool === "propose_training_plan" && result.status === "draft_ready")) return reject("OUTPUT_ACTION_UNSUPPORTED", output.claimIds.length, output.capabilityKeys.length);
+  if (planResults.length && (!planResults.some(result => "state" in result && result.state.active) || planResults.some(result => result.tool === "prepare_training_plan" || result.tool === "propose_training_plan"))
+    && hasUnnegatedHit(output.reply, /(?:已|已经)(?:确认)?(?:启用|生效|激活)/)) return reject("OUTPUT_SAFETY_VIOLATION", output.claimIds.length, output.capabilityKeys.length);
 
   if (output.route === "social") {
     if (output.claimIds.length || output.capabilityKeys.length || output.knowledgeIds.length || !chatNumbersSupported(output.reply, [], context.userText)) return reject("OUTPUT_CLAIM_INVALID", output.claimIds.length, output.capabilityKeys.length);

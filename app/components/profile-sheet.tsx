@@ -5,11 +5,12 @@ import { createPortal } from "react-dom";
 import { CloseButton } from "./close-button";
 import ProfileEditor from "./profile-editor";
 
-export function BottomSheet({ open, title, onClose, children }: {
+export function BottomSheet({ open, title, onClose, children, size = "content" }: {
   open: boolean;
   title: string;
   onClose: () => void;
   children: ReactNode;
+  size?: "content" | "large";
 }) {
   const titleId = useId();
   const panelRef = useRef<HTMLElement>(null);
@@ -24,11 +25,14 @@ export function BottomSheet({ open, title, onClose, children }: {
   useLayoutEffect(() => {
     const panel = panelRef.current;
     if (!present || !panel) return;
+    // Long async forms reserve their space before data arrives, rather than
+    // locking the panel to the short loading message's height.
+    if (size === "large") { panel.style.height = ""; return; }
     // Fit the contents once, before the entering frame is painted. Keep that
     // height for this opening so loading, validation and focus cannot bounce it.
     panel.style.height = "auto";
     panel.style.height = `${panel.getBoundingClientRect().height}px`;
-  }, [present]);
+  }, [present, size]);
 
   useEffect(() => {
     if (!present) return;
@@ -69,7 +73,7 @@ export function BottomSheet({ open, title, onClose, children }: {
   if (!mounted) return null;
   // Keep the form mounted while hidden so closing and reopening retains drafts.
   return createPortal(<div className="profile-sheet-layer" hidden={!present} data-state={open ? "open" : "closing"} onClick={event => { if (event.target === event.currentTarget) onClose(); }}>
-    <section ref={panelRef} className="profile-sheet-panel" role="dialog" aria-modal="true" aria-labelledby={titleId} tabIndex={-1} onAnimationEnd={event => {
+    <section ref={panelRef} className="profile-sheet-panel" data-size={size} role="dialog" aria-modal="true" aria-labelledby={titleId} tabIndex={-1} onAnimationEnd={event => {
       if (event.target === event.currentTarget && event.animationName === "profileSheetExit" && !open) setPresent(false);
     }}>
       <header className="profile-sheet-header">

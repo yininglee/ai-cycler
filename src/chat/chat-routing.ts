@@ -36,16 +36,19 @@ export type ChatRoute =
   | "kb_qa";
 
 // CHAT-14 P1：会话摘要网关合同（架构设计 v0.4 4.2.2 节）——白名单槽位仅含本轮问题、
-// 路由枚举与可选骑乘锚点日期；不含 assistant 回复、数值或 Claim 引用（历史轮数字不得
-// 成为事实来源）。数量上限与 chat-session 槽位上限一致（≤6 条，仅当前活跃对话）。
+// 路由、可选骑乘锚点及有界 answerContext；历史问答片段中的数字或 Claim 引用不得
+// 成为事实来源。数量上限与 chat-session 槽位上限一致（≤6 条，仅当前活跃对话）。
 export const CHAT_SESSION_SUMMARY_LIMIT = 6;
 export const CHAT_SESSION_SUMMARY_QUESTION_MAX_CHARS = 120;
-// 摘要随请求传递的字节预算（6 条 × ≤120 字问题 + 路由/锚点开销），与正文限额分开计。
-export const CHAT_SUMMARIES_MAX_BYTES = 3 * 1_024;
+// 摘要随请求传递的字节预算包含最多六条问题及160字回答片段，与正文限额分开计。
+export const CHAT_SUMMARIES_MAX_BYTES = 8 * 1_024;
+export const CHAT_SESSION_ANSWER_CONTEXT_MAX_CHARS = 160;
 
 export type ChatSessionSummary = {
   kind: "session_turn";
   question: string;
+  /** Untrusted topic context only; never evidence, an ID authorization, or a numeric source. */
+  answerContext?: string;
   route: ChatRoute;
   rideAnchor?: string;
   // AGT-H0（摘要槽位 v0.3）：跨轮选择记忆——用户点选的记录/目标/计划槽位。
@@ -103,7 +106,7 @@ export function sanitizeChatSummaries(value: unknown): { summaries: ChatSessionS
     if (typeof item !== "object" || item === null || Array.isArray(item)) return { summaries: [], dropped: true };
     const record = item as Record<string, unknown>;
     const keys = Object.keys(record);
-    if (keys.some((key) => key !== "kind" && key !== "question" && key !== "route" && key !== "rideAnchor" && key !== "choice" && key !== "rideScope")) {
+    if (keys.some((key) => key !== "kind" && key !== "question" && key !== "answerContext" && key !== "route" && key !== "rideAnchor" && key !== "choice" && key !== "rideScope")) {
       return { summaries: [], dropped: true };
     }
     if (record.kind !== "session_turn") return { summaries: [], dropped: true };
@@ -111,6 +114,7 @@ export function sanitizeChatSummaries(value: unknown): { summaries: ChatSessionS
       return { summaries: [], dropped: true };
     }
     if (CONTROL_CHARACTERS.test(record.question)) return { summaries: [], dropped: true };
+    if (record.answerContext !== undefined && (typeof record.answerContext !== "string" || !record.answerContext || record.answerContext.length > CHAT_SESSION_ANSWER_CONTEXT_MAX_CHARS || CONTROL_CHARACTERS.test(record.answerContext))) return { summaries: [], dropped: true };
     if (typeof record.route !== "string" || !CHAT_ROUTE_SET.has(record.route)) return { summaries: [], dropped: true };
     if (record.rideAnchor !== undefined) {
       if (typeof record.rideAnchor !== "string" || !RIDE_ANCHOR_PATTERN.test(record.rideAnchor) || !isRealCalendarDate(record.rideAnchor)) {
@@ -126,6 +130,7 @@ export function sanitizeChatSummaries(value: unknown): { summaries: ChatSessionS
     summaries.push({
       kind: "session_turn",
       question: record.question,
+      ...(typeof record.answerContext === "string" ? { answerContext: record.answerContext } : {}),
       route: record.route as ChatRoute,
       ...(record.rideAnchor !== undefined ? { rideAnchor: record.rideAnchor } : {}),
       ...(record.choice !== undefined ? { choice: record.choice as ChatChoiceRef } : {}),

@@ -1,7 +1,7 @@
 import type { ChatSessionSummary } from "./chat-routing.ts";
 import type { ChatChoiceRef } from "./chat-interaction.ts";
 
-export const CHAT_CONTEXT_CONTRACT_VERSION = "ride-chat-context-v0.1" as const;
+export const CHAT_CONTEXT_CONTRACT_VERSION = "ride-chat-context-v0.2" as const;
 
 export type ChatRideScope = "overview" | "cleared" | "pending";
 export function isChatRideScope(value: unknown): value is ChatRideScope {

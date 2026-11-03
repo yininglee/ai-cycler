@@ -260,9 +260,14 @@ export async function POST(request: Request): Promise<Response> {
   });
   const selectionNeeded = agentResult.fallbackCode === "TOOLS_ANCHOR_CLARIFY" || agentResult.fallbackCode === "TOOLS_REFERENCE_NEEDED";
   const canPresent = selectionNeeded || (agentResult.responseKind !== "clarification" && (agentResult.execution === "validated" || agentResult.execution === "repaired"));
-  const userInteraction = canPresent && !selectionNeeded ? buildChatUserInteraction(interactionEvidence) : {};
+  const candidateInteraction = buildChatUserInteraction(interactionEvidence);
+  const intakeQuestion = agentResult.responseKind === "clarification" && (agentResult.execution === "validated" || agentResult.execution === "repaired") && candidateInteraction.artifact?.kind === "training_plan" && candidateInteraction.artifact.payload.view === "intake";
+  const userInteraction = (canPresent || intakeQuestion) && !selectionNeeded ? candidateInteraction : {};
   const interaction = userInteraction.artifact ? userInteraction : canPresent ? buildChatRecordInteraction(interactionEvidence, (await repository.listRides(session.userId)).map(e => e.record), selectionNeeded, candidateIds.length ? candidateIds : undefined) : {};
-  const activeChoice = overview || selectionNeeded ? undefined : agentResult.choice ?? (!interactionEvidence.some(r => r.tool === "get_ride_history") && interaction.artifact?.kind === "ride_list" && interaction.artifact.payload.items.length === 1 ? { kind: "ride" as const, id: interaction.artifact.payload.items[0].rideId } : effectiveChoice);
+  const overallResponse = overview || (!selectedChoice
+    && interactionEvidence.some(result => result.tool === "get_ride_history" && !result.anchorStartTime)
+    && !interactionEvidence.some(result => ["get_ride_context", "get_route_overview", "compare_rides"].includes(result.tool)));
+  const activeChoice = overallResponse || selectionNeeded ? undefined : agentResult.choice ?? (!interactionEvidence.some(r => r.tool === "get_ride_history") && interaction.artifact?.kind === "ride_list" && interaction.artifact.payload.items.length === 1 ? { kind: "ride" as const, id: interaction.artifact.payload.items[0].rideId } : effectiveChoice);
   const eventType = agentResult.fallbackCode || agentResult.execution === "validation_rejected" ? "chat_degraded" : "chat_completed";
   console.log(`${tag} agent done | execution=${agentResult.execution} modelInvoked=${agentResult.modelInvoked} modelCalls=${modelMetrics.calls} toolCalls=${toolMetrics.calls} repairAttempts=${agentResult.repairAttempts ?? 0}${agentResult.fallbackCode ? ` fallbackCode=${agentResult.fallbackCode}` : ""}${agentResult.outputValidation ? ` validation.status=${agentResult.outputValidation.status} validation.code=${agentResult.outputValidation.code ?? "ok"}` : ""} | reply.len=${agentResult.reply.length}`);
   await recordChatEvent(session.userId, eventType, requestId, {
@@ -291,5 +296,5 @@ export async function POST(request: Request): Promise<Response> {
     ...(agentResult.outputValidation?.code ? { validationCode: agentResult.outputValidation.code } : {}),
     ...routingEventAttributes({ routedBy, route: agentResult.decision.route, outcome: routingOutcome, configStatus }),
   });
-  return Response.json({ ...publicChatAgentResult({ ...agentResult, ...(overview || selectionNeeded ? { rideAnchor: undefined, choice: undefined } : {}), ...interaction, ...(selectionNeeded ? { decision: { ...agentResult.decision, action: "select" } } : {}) }), ...(activeChoice ? { choice: activeChoice } : {}), ...(overview ? { rideScope: "overview" } : selectionNeeded ? { rideScope: "pending" } : inheritedChoiceExpired && !activeChoice ? { rideScope: "cleared" } : {}), text: result.text }, { headers });
+  return Response.json({ ...publicChatAgentResult({ ...agentResult, ...(overallResponse || selectionNeeded ? { rideAnchor: undefined, choice: undefined } : {}), ...interaction, ...(selectionNeeded ? { decision: { ...agentResult.decision, action: "select" } } : {}) }), ...(activeChoice ? { choice: activeChoice } : {}), ...(overallResponse ? { rideScope: "overview" } : selectionNeeded ? { rideScope: "pending" } : inheritedChoiceExpired && !activeChoice ? { rideScope: "cleared" } : {}), text: result.text }, { headers });
 }

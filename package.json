@@ -46,7 +46,7 @@
     "eval:m3:chat:fixed-set": "node scripts/run-m3-chat-fixed-set.ts"
   },
   "engines": {
-    "node": ">=22.6"
+    "node": ">=22.13"
   },
   "dependencies": {
     "fast-xml-parser": "5.11.0",

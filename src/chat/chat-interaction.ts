@@ -96,16 +96,17 @@ export type ChatPlanArtifact = {
   kind: "plan";
   payload: Record<string, unknown>;
 };
+export type ChatTrainingPlanArtifact = { kind: "training_plan"; payload: { planId: string; intakeVersion: number; version: number | null; view: "intake" | "draft" | "active" } };
 
 export type ChatProfileProposalArtifact = { kind: "profile_proposal"; payload: { input: ProfileInput; previous: ProfileInput } };
 export type ChatOnboardingArtifact = { kind: "onboarding"; payload: { goalDraft: string } };
 export type ChatGoalEditorArtifact = { kind: "goal_editor"; payload: { draft: UserGoalDraft | null } };
 export type ChatRideImportArtifact = { kind: "ride_import"; payload: Record<string, never> };
-export type ChatArtifact = ChatRideListArtifact | ChatGoalOptionsArtifact | ChatPlanArtifact | ChatProfileProposalArtifact | ChatOnboardingArtifact | ChatGoalEditorArtifact | ChatRideImportArtifact;
+export type ChatArtifact = ChatRideListArtifact | ChatGoalOptionsArtifact | ChatPlanArtifact | ChatProfileProposalArtifact | ChatOnboardingArtifact | ChatGoalEditorArtifact | ChatRideImportArtifact | ChatTrainingPlanArtifact;
 
 export type ChatArtifactKind = ChatArtifact["kind"];
 
-export const CHAT_ARTIFACT_KINDS: readonly ChatArtifactKind[] = ["ride_list", "plan", "goal_options", "profile_proposal", "onboarding", "goal_editor", "ride_import"];
+export const CHAT_ARTIFACT_KINDS: readonly ChatArtifactKind[] = ["ride_list", "plan", "goal_options", "profile_proposal", "onboarding", "goal_editor", "ride_import", "training_plan"];
 
 // ---------------------------------------------------------------------------
 // quickActions：可执行动作（按钮）
@@ -263,6 +264,12 @@ export function sanitizeChatArtifact(input: unknown): ChatSanitized<ChatArtifact
   if (!isRecord(input.payload)) return { dropped: true };
   if (new TextEncoder().encode(JSON.stringify(input.payload)).byteLength > CHAT_ARTIFACT_PAYLOAD_MAX_BYTES) return { dropped: true };
   switch (input.kind) {
+    case "training_plan": {
+      const p = input.payload;
+      if (!hasExactKeys(p, ["planId", "intakeVersion", "version", "view"]) || !isIdentifier(p.planId) || typeof p.intakeVersion !== "number" || !Number.isSafeInteger(p.intakeVersion) || p.intakeVersion < 0
+        || !(p.version === null || typeof p.version === "number" && Number.isSafeInteger(p.version) && p.version >= 1) || !["intake", "draft", "active"].includes(String(p.view)) || (p.view !== "intake" && p.version === null)) return { dropped: true };
+      return { value: { kind: "training_plan", payload: p as ChatTrainingPlanArtifact["payload"] }, dropped: false };
+    }
     case "ride_import":
       return hasExactKeys(input.payload, []) ? { value: { kind: "ride_import", payload: {} }, dropped: false } : { dropped: true };
     case "goal_editor":

@@ -913,6 +913,7 @@ fieldset.profile-fields { margin: 0; padding: 0; border: 0; min-width: 0; }
 .profile-sheet-layer { position: fixed; inset: 0; z-index: 80; display: flex; align-items: flex-end; justify-content: center; overflow: hidden; background: rgba(20,25,22,.35); color: var(--ink); }
 .profile-sheet-layer[hidden] { display: none; }
 .profile-sheet-panel { position: relative; width: min(100%, 640px); height: auto; max-height: 88svh; display: flex; flex-direction: column; overflow: hidden; background: #fafbf9; border-radius: 26px 26px 0 0; box-shadow: 0 -12px 40px rgba(0,0,0,.12); outline: none; }
+.profile-sheet-panel[data-size="large"] { height: 92dvh; max-height: calc(100dvh - max(16px, env(safe-area-inset-top))); }
 .profile-sheet-layer[data-state="open"] { animation: profileSheetFadeIn .25s ease-out both; }
 .profile-sheet-layer[data-state="open"] .profile-sheet-panel { animation: profileSheetEnter .48s cubic-bezier(.2,.8,.2,1) both; }
 .profile-sheet-layer[data-state="closing"] { animation: profileSheetFadeOut .22s ease-in both; }
@@ -953,8 +954,6 @@ fieldset.profile-fields { margin: 0; padding: 0; border: 0; min-width: 0; }
 .sync-record small { color: #737780; }
 .sync-record p { margin: 8px 0; }
 .sync-record .primary-button { font-size: 14px; padding: 12px 16px; }
-.chat-sync-action { margin-bottom: 6px; }
-.chat-sync-action > button { background: transparent; border: 0; color: #646970; font-size: 12px; padding: 3px 8px; }
 .ride-sync .ux-actions { flex-wrap: wrap; }
 .interpretation-sheet-header .dialog-close-button { position: absolute; top: 16px; right: 20px; }
 .interpretation-sheet-backdrop { z-index: 120; }

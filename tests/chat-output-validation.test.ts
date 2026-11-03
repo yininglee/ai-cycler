@@ -375,6 +375,7 @@ test("contextual clarification requires its typed question contract, empty evide
   const decision = makeChatDecision("autonomous_tools", "none", "AUTONOMOUS_TOOLS", 4);
   const output = { schemaVersion: "ride-chat-output-v0.3", route: "autonomous_tools", responseKind: "clarification", reply: "你想调整哪个目标？", claimIds: [], capabilityKeys: [], knowledgeIds: [] };
   assert.equal(validateChatOutput(JSON.stringify(output), { decision }).ok, true);
+  assert.equal(validateChatOutput(JSON.stringify({ ...output, reply: "你的目标是什么？也可以在信息卡填写。" }), { decision }).ok, true);
   for (const override of [{ reply: "已经完成目标修改。" }, { reply: "要改成99999吗？" }, { responseKind: "answer" }, { claimIds: ["claim:loop:1:1"] }, { responseKind: "confirm_write" }])
     assert.equal(validateChatOutput(JSON.stringify({ ...output, ...override }), { decision }).ok, false);
 });

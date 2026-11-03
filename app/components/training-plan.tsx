@@ -1,0 +1,105 @@
+"use client";
+import Link from "next/link";
+import { useCallback, useEffect, useState } from "react";
+import { BottomSheet } from "./profile-sheet";
+import { addPlanDays, emptyPlanIntake, planMonday, planToday, planWeekCount, type PlanIntake } from "../../src/domain/training-plan";
+import type { TrainingPlanView } from "../../src/training/plan-view";
+import type { ChatTrainingPlanArtifact } from "../../src/chat/chat-interaction";
+import styles from "./training-plan.module.css";
+
+export function planErrorText(code?: string): string {
+  if (code === "VERSION_CONFLICT" || code === "CONTENT_CHANGED") return "信息或草案已更新，请刷新后核对最新版本。";
+  if (code === "CONFIRMATION_EXPIRED") return "确认已过期，请重新核对并点击启用。";
+  if (code === "TRAINING_CONCERN") return "存在影响训练的不适，暂不生成计划；先取得适合自己的专业建议。";
+  if (code === "MISSING_INTAKE") return "还有必要信息未补齐，请核对目标、日期、时间安排与基础。";
+  if (code === "INVALID_PERIOD") return "请检查起止日期，周期不得超过366天，也不能已经结束。";
+  if (["RULES_REJECTED", "SCHEMA_REJECTED"].includes(code ?? "")) return "资料或规则已变化，当前草案不能启用，请重新生成并核对。";
+  if (code === "NOT_FOUND") return "计划已更新或不可用，请查看当前计划。";
+  return "暂时未能完成操作，输入已保留，可以重试。";
+}
+export async function planRequest(body?: unknown, query = ""): Promise<TrainingPlanView> {
+  const response = await fetch(`/api/training-plans${query}`, body ? { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body), cache: "no-store" } : { cache: "no-store" });
+  const data = await response.json();
+  if (!response.ok) throw new Error(planErrorText(data.error));
+  return data;
+}
+export const notifyPlanUpdated = () => window.dispatchEvent(new Event("cycler-plan-updated"));
+export function planDetailHref(id: string, version?: number | null, conversationId?: string, date?: string) {
+  const query = new URLSearchParams({ ...(version ? { version: String(version) } : {}), ...(conversationId ? { conversation: conversationId } : {}), ...(date ? { date } : {}) });
+  return `/plans/${encodeURIComponent(id)}${query.size ? `?${query}` : ""}`;
+}
+
+export function PlanIntakePanel({ onGenerate, onClose }: { onGenerate: () => Promise<void>; onClose: () => void }) {
+  const [data, setData] = useState<TrainingPlanView>();
+  const [intake, setIntake] = useState<PlanIntake>(emptyPlanIntake);
+  const [avoid, setAvoid] = useState("");
+  const [busy, setBusy] = useState(false), [error, setError] = useState(""), [loaded, setLoaded] = useState(false);
+  const load = useCallback(async () => {
+    setError("");
+    try { const next = await planRequest({ action: "prepare", patch: {}, expectedVersion: null }); setData(next); setIntake(next.intake!); setAvoid(next.intake!.avoidDates.join("，")); setLoaded(true); }
+    catch (e) { setError((e as Error).message); }
+  }, []);
+  useEffect(() => { void load(); }, [load]);
+  const change = <K extends keyof PlanIntake>(key: K, value: PlanIntake[K]) => setIntake(current => ({ ...current, [key]: value }));
+  async function save(generate: boolean) {
+    setBusy(true); setError("");
+    const input = { ...intake, avoidDates: avoid.split(/[,，、\s]+/).filter(Boolean), notes: intake.notes.replaceAll(/[\r\n\t]/g, " "), periodReason: intake.periodReason.replaceAll(/[\r\n\t]/g, " "), selfReportedBasis: intake.selfReportedBasis.replaceAll(/[\r\n\t]/g, " ") };
+    try {
+      const next = await planRequest(generate ? { action: "confirm_intake", intake: input, expectedVersion: data!.intakeVersion, confirmed: true } : { action: "prepare", patch: input, expectedVersion: data!.intakeVersion });
+      setData(next); notifyPlanUpdated();
+      if (generate) { onClose(); await onGenerate(); } else setError("已保存待确认信息，可以稍后继续。");
+    } catch (e) { setError((e as Error).message); }
+    finally { setBusy(false); }
+  }
+  if (!loaded) return <div className={styles.form}>{error ? <p role="alert">{error}<button onClick={() => void load()}>重试读取</button></p> : <p role="status">正在读取已有目标、资料和骑行基础…</p>}</div>;
+  return <form className={styles.form} onSubmit={event => { event.preventDefault(); if (!busy) void save(true); }}>
+    <p>先核对信息，再生成待确认草案。可直接填写，也可返回对话补充；不会在这里启用计划。</p>
+    <label>本次计划目标<input value={intake.goal} onChange={e => change("goal", e.target.value)} maxLength={500} required /></label>
+    <div className={styles.twoColumns}><label>开始日期<input type="date" value={intake.startDate ?? ""} onChange={e => change("startDate", e.target.value || null)} required /></label><label>结束日期<input type="date" value={intake.endDate ?? ""} onChange={e => change("endDate", e.target.value || null)} required /></label></div>
+    {intake.periodReason && <p className={styles.note}>周期依据：{intake.periodReason}</p>}
+    <fieldset><legend>每周可训练时间</legend>{["周一", "周二", "周三", "周四", "周五", "周六", "周日"].map((label, index) => {
+      const entry = intake.availability.find(day => day.weekday === index + 1);
+      return <div className={styles.availability} key={label}><label><input type="checkbox" checked={!!entry} onChange={event => change("availability", event.target.checked ? [...intake.availability, { weekday: index + 1, minutes: 30 }].sort((a, b) => a.weekday - b.weekday) : intake.availability.filter(day => day.weekday !== index + 1))} />{label}</label>{entry && <label><input aria-label={`${label}可训练分钟`} type="number" min={15} max={240} value={entry.minutes} onChange={e => change("availability", intake.availability.map(day => day.weekday === index + 1 ? { ...day, minutes: Number(e.target.value) } : day))} />分钟</label>}</div>;
+    })}</fieldset>
+    <p className={styles.note}>{data?.basis?.rideCount ? `近期有 ${data.basis.rideCount} 条记录，记录可用基础约 ${data.basis.weeklyMinutes ?? "未知"} 分钟／周、单次最长 ${data.basis.longestRideMinutes ?? "未知"} 分钟。记录不完整时可补充自述。` : "没有近期记录也可以填写自述基础；不知道 FTP 不影响生成入门草案。"}</p>
+    <div className={styles.twoColumns}><label>近期平均每周骑行（分钟）<input type="number" min={0} max={2400} placeholder={data?.basis?.weeklyMinutes === null ? "请补充" : String(data?.basis?.weeklyMinutes ?? "")} value={intake.weeklyMinutes ?? ""} onChange={e => change("weeklyMinutes", e.target.value === "" ? null : Number(e.target.value))} /></label><label>近期单次最长骑行（分钟）<input type="number" min={0} max={600} placeholder={data?.basis?.longestRideMinutes === null ? "请补充" : String(data?.basis?.longestRideMinutes ?? "")} value={intake.longestRideMinutes ?? ""} onChange={e => change("longestRideMinutes", e.target.value === "" ? null : Number(e.target.value))} /></label></div>
+    <label>自述基础（可选）<textarea value={intake.selfReportedBasis} maxLength={400} onChange={e => change("selfReportedBasis", e.target.value)} /></label>
+    <label>是否使用功率计<select value={intake.powerMeter === null ? "unknown" : String(intake.powerMeter)} onChange={e => change("powerMeter", e.target.value === "unknown" ? null : e.target.value === "true")}><option value="unknown">不知道／暂不使用功率目标</option><option value="false">没有</option><option value="true">有</option></select></label>
+    <label>需要避开的日期（YYYY-MM-DD，以逗号分隔）<input value={avoid} onChange={e => setAvoid(e.target.value)} maxLength={1200} /></label>
+    <label>当前是否有影响骑行训练的不适<select value={intake.healthConcern === null ? "unknown" : String(intake.healthConcern)} onChange={e => change("healthConcern", e.target.value === "unknown" ? null : e.target.value === "true")} required><option value="unknown">请由本人核对</option><option value="false">目前没有影响训练的不适</option><option value="true">有，需要先取得专业建议</option></select></label>
+    <label>其他条件／需避开事项<textarea value={intake.notes} maxLength={400} onChange={e => change("notes", e.target.value)} /></label>
+    <p className={styles.note}>无已确认 FTP 或没有功率计时使用主观用力与交谈提示，不推测 FTP 或最大心率。</p>
+    {error && <p role="status">{error}</p>}
+    <div className={styles.actions}><button className="primary-button" disabled={busy} type="submit">{busy ? "正在处理…" : "核对信息并生成草案"}</button><button disabled={busy} type="button" onClick={() => void save(false)}>保存信息，稍后继续</button></div>
+  </form>;
+}
+
+export function TrainingPlanCard({ reference, conversationId, onGenerate }: { reference: ChatTrainingPlanArtifact["payload"]; conversationId: string; onGenerate: () => Promise<void> }) {
+  const [data, setData] = useState<TrainingPlanView>(), [open, setOpen] = useState(false), [error, setError] = useState("");
+  const load = useCallback(() => { void planRequest(undefined, `?planId=${encodeURIComponent(reference.planId)}${reference.version ? `&version=${reference.version}` : ""}`).then(setData).catch(e => setError(e.message)); }, [reference.planId, reference.version]);
+  useEffect(() => { load(); window.addEventListener("cycler-plan-updated", load); return () => window.removeEventListener("cycler-plan-updated", load); }, [load]);
+  const plan = reference.view === "intake" ? null : data?.viewPlan;
+  const currentVersion = data?.draft?.version ?? data?.active?.version;
+  const stale = plan && currentVersion !== plan.version;
+  return <section className={styles.card} aria-label={reference.view === "intake" ? "计划信息补充" : "训练计划草案"}>
+    <small>{!data ? "正在读取计划…" : reference.view === "intake" ? "计划信息 · 待核对" : stale ? "此版本已更新" : plan && data?.activeVersion === plan.version ? "训练计划 · 已生效" : "训练计划 · 待确认"}</small>
+    <h3>{plan?.intake.goal || data?.intake?.goal || "补充训练计划信息"}</h3>
+    {plan ? <><p>{plan.intake.startDate} — {plan.intake.endDate} · 版本 {plan.version}</p><p>{plan.days.filter(day => day.week === 1 && day.minutes).length} 次／首周 · 首周 {plan.days.filter(day => day.week === 1).reduce((sum, day) => sum + day.minutes, 0)} 分钟</p><p className={styles.note}>{plan.proposal.rationale}</p><Link className="primary-button" href={planDetailHref(reference.planId, stale ? currentVersion : plan.version, conversationId)}>{stale ? "查看最新计划" : "查看计划"}</Link></>
+      : <><p className={styles.note}>复用已有目标与资料，只补缺项。核对后生成草案，启用另行确认。</p><button className="primary-button" onClick={() => setOpen(true)}>补充／核对计划信息</button></>}
+    {error && <p role="status">{error}<button onClick={load}>重试读取</button></p>}
+    <BottomSheet open={open} size="large" title="训练计划信息" onClose={() => setOpen(false)}>{open && <PlanIntakePanel onClose={() => setOpen(false)} onGenerate={onGenerate} />}</BottomSheet>
+  </section>;
+}
+
+export function TrainingPlanBar({ conversationId, onStart, pending }: { conversationId: string; onStart: () => void; pending: boolean }) {
+  const [data, setData] = useState<TrainingPlanView>();
+  const load = useCallback(() => { void planRequest().then(setData).catch(() => {}); }, []);
+  useEffect(() => { load(); window.addEventListener("cycler-plan-updated", load); window.addEventListener("cycler-profile-saved", load); return () => { window.removeEventListener("cycler-plan-updated", load); window.removeEventListener("cycler-profile-saved", load); }; }, [load]);
+  const active = data?.active, today = planToday(), monday = planMonday(today);
+  if (!active) return <div className={styles.emptyBar}>{data?.draft ? <Link href={planDetailHref(data.draft.id, data.draft.version, conversationId)}>查看待确认计划</Link> : <button disabled={pending} onClick={onStart}>制定训练计划</button>}</div>;
+  return <section className={styles.weekBar} aria-label="本周训练计划">
+    <div><Link href={planDetailHref(active.id, active.version, conversationId)}>{active.intake.startDate! > today ? "计划尚未开始" : active.intake.endDate! < today ? "计划已结束" : "本周计划"} · {monday.slice(5)} — {addPlanDays(monday, 6).slice(5)}</Link>{data?.draft && <Link href={planDetailHref(data.draft.id, data.draft.version, conversationId)}>待确认草案</Link>}</div>
+    {data?.activeProfileChanged && <p className={styles.note}>基础资料或目标已变化，计划需复核；请先核对后调整。</p>}
+    <nav>{["一", "二", "三", "四", "五", "六", "日"].map((label, i) => { const date = addPlanDays(monday, i), day = active.days.find(item => item.date === date); return <Link key={date} className={date === today ? styles.today : ""} href={planDetailHref(active.id, active.version, conversationId, date)} aria-label={`${date} ${day?.title ?? "无安排"}`}><span>{label}</span><b>{day ? day.minutes ? "骑" : "休" : "—"}</b></Link>; })}</nav>
+  </section>;
+}

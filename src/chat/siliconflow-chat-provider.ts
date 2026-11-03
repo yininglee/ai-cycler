@@ -81,6 +81,8 @@ export class SiliconFlowChatProvider implements ChatProvider {
       ...(input.toolContext ? { toolContext: input.toolContext } : {}),
       ...(input.toolCatalog ? { toolCatalog: input.toolCatalog } : {}),
       ...(input.toolResults?.length ? { toolResults: input.toolResults } : {}),
+      ...(input.toolCallError ? { toolCallError: input.toolCallError } : {}),
+      ...(input.evidenceRequest ? { evidenceRequest: input.evidenceRequest } : {}),
       ...(input.sessionSummaries?.length ? { sessionSummaries: input.sessionSummaries } : {}),
     };
     const body = JSON.stringify({

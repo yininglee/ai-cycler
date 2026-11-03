@@ -1,0 +1,118 @@
+import { createHash } from "node:crypto";
+import type { ApplicationRepository } from "../persistence/application-repository.ts";
+import { getApplicationRepository } from "../persistence/application-repository.ts";
+import { getRideRepository } from "../persistence/demo-ride-repository.ts";
+import { TrainingPlanStore, type PlanWorkspace } from "../persistence/training-plan-store.ts";
+import { createConfirmedWriteService, type ConfirmedWriteHandler } from "../chat/chat-write-confirmation.ts";
+import { planExplanationValid } from "./plan-explanation.ts";
+import { createTrainingPlan, missingPlanIntake, parsePlanIntakePatch, parsePlanProposal, planConstraints, planDayIndex, planToday, validateTrainingPlan, PlanError, type PlanBasis, type PlanIntake, type PlanProposal, type TrainingPlan } from "../domain/training-plan.ts";
+
+export async function planRuntime(ownerId: string, repository: ApplicationRepository = getApplicationRepository()) {
+  const profile = await repository.getProfile(ownerId);
+  const profileHash = createHash("sha256").update(JSON.stringify({ age: profile?.age, ftp: profile?.ftp, maxHeartRate: profile?.maxHeartRate, goal: profile?.ux?.goal })).digest("hex");
+  const entries = await (await getRideRepository()).listRides(ownerId);
+  const today = planToday();
+  const recent = entries.map(e => e.record).filter(record => {
+    if (!record.activity.startTime || !Number.isFinite(Date.parse(record.activity.startTime))) return false;
+    const date = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Shanghai", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(record.activity.startTime));
+    return date <= today && planDayIndex(today) - planDayIndex(date) < 28;
+  });
+  const durations = recent.flatMap(record => { const metric = record.activity.metrics.movingTimeS; return metric?.qualityStatus === "valid" && Number.isFinite(metric.value) ? [metric.value / 60] : []; });
+  const recordedBasis = { weeklyMinutes: durations.length ? Math.round(durations.reduce((a, b) => a + b, 0) / 4) : null, longestRideMinutes: durations.length ? Math.round(Math.max(...durations)) : null };
+  const store = new TrainingPlanStore(profile?.ux?.mode === "blank" ? `blank:${profile.ux.blankSince}` : "default");
+  const goal = profile?.ux?.goal ? `${profile.ux.goal.title}${profile.ux.goal.detail ? `：${profile.ux.goal.detail}` : ""}`.replaceAll(/[\u0000-\u001f\u007f]/g, " ") : "";
+  function basis(intake: PlanIntake): PlanBasis {
+    const selfReported = intake.weeklyMinutes !== null || intake.longestRideMinutes !== null;
+    return { profileHash, ftpWatts: profile?.ftp?.trustStatus === "user_confirmed" ? profile.ftp.valueWatts : null,
+      weeklyMinutes: intake.weeklyMinutes ?? recordedBasis.weeklyMinutes, longestRideMinutes: intake.longestRideMinutes ?? recordedBasis.longestRideMinutes,
+      rideCount: recent.length, source: selfReported ? "self_report" : recent.length ? "records" : "missing" };
+  }
+  const current = (workspace: PlanWorkspace, version: number | null) => workspace.plans.find(plan => plan.version === version) ?? null;
+  const handler: ConfirmedWriteHandler<PlanWorkspace> = {
+    async loadCurrent(workspace, targetId) {
+      const draft = current(workspace, workspace.draftVersion);
+      return workspace.id === targetId && draft ? { version: `v${draft.version}`, content: { plan: draft, activeVersion: workspace.activeVersion, replacementDate: planToday() } } : null;
+    },
+    validateSchema(content) {
+      const plan = (content as { plan?: TrainingPlan })?.plan;
+      if (!plan) return false;
+      try {
+        parsePlanIntakePatch(plan.intake); parsePlanProposal(plan.proposal);
+        const canonical = createTrainingPlan({ id: plan.id, version: plan.version, intakeVersion: plan.intakeVersion, intake: plan.intake, basis: plan.basis, proposal: plan.proposal, now: plan.createdAt });
+        return JSON.stringify(canonical) === JSON.stringify(plan);
+      } catch { return false; }
+    },
+    validateRules(content) {
+      const plan = (content as { plan: TrainingPlan }).plan;
+      return plan.basis.profileHash === profileHash && validateTrainingPlan(plan).length === 0 && planExplanationValid(plan);
+    },
+    async apply(workspace, _id, draft) {
+      const plan = (draft.content as { plan: TrainingPlan }).plan;
+      if (workspace.activeVersion !== null) workspace.replacedAt[String(workspace.activeVersion)] = `${(draft.content as { replacementDate: string }).replacementDate}T00:00:00+08:00`;
+      workspace.activeVersion = plan.version; workspace.draftVersion = null;
+      workspace.activatedAt[String(plan.version)] = new Date().toISOString();
+      return { planId: workspace.id, version: plan.version, activated: true };
+    },
+  };
+  const confirmation = createConfirmedWriteService(store, new Map([["activate_training_plan", handler]]));
+  return {
+    store, confirmation,
+    async issue(input: { planId: string; version: number; activeVersion: number | null; idempotencyKey: string }) {
+      const checkedHandler = { ...handler, async loadCurrent(workspace: PlanWorkspace, targetId: string) {
+        if (workspace.activeVersion !== input.activeVersion) throw new PlanError("VERSION_CONFLICT");
+        return handler.loadCurrent(workspace, targetId);
+      } };
+      return createConfirmedWriteService(store, new Map([["activate_training_plan", checkedHandler]])).issue({ ownerId, action: "activate_training_plan", targetId: input.planId, expectedVersion: `v${input.version}`, idempotencyKey: input.idempotencyKey, ttlMs: 10 * 60 * 1000 });
+    },
+    async context() {
+      const workspace = await store.read(ownerId);
+      if (!workspace.intake.goal && goal) workspace.intake.goal = goal;
+      const actualBasis = basis(workspace.intake);
+      const draft = current(workspace, workspace.draftVersion), active = current(workspace, workspace.activeVersion);
+      return { workspace, basis: actualBasis, constraints: planConstraints(actualBasis), missing: missingPlanIntake(workspace.intake, actualBasis), draft, active, profileChanged: !!(draft ?? active) && (draft ?? active)!.basis.profileHash !== profileHash, activeProfileChanged: !!active && active.basis.profileHash !== profileHash };
+    },
+    async prepare(patch: Partial<PlanIntake>, expectedVersion?: number, fromAgent = false) {
+      const parsed = parsePlanIntakePatch(patch);
+      // Only a direct user form confirmation may declare no training concern.
+      if (fromAgent && parsed.healthConcern === false) delete parsed.healthConcern;
+      return store.transaction<PlanWorkspace>(ownerId, async tx => {
+        const workspace = tx.domain;
+        if (expectedVersion !== undefined && workspace.intakeVersion !== expectedVersion) throw new PlanError("VERSION_CONFLICT");
+        const next = { ...workspace.intake, ...(!workspace.intake.goal && goal ? { goal } : {}), ...parsed };
+        if (JSON.stringify(next) !== JSON.stringify(workspace.intake)) {
+          workspace.intake = next; workspace.intakeVersion++; workspace.confirmedIntakeVersion = null; workspace.draftVersion = null;
+        }
+        return structuredClone(workspace);
+      });
+    },
+    async confirmIntake(input: unknown, expectedVersion: number) {
+      const parsed = parsePlanIntakePatch(input);
+      return store.transaction<PlanWorkspace>(ownerId, async tx => {
+        const workspace = tx.domain;
+        if (workspace.intakeVersion !== expectedVersion) throw new PlanError("VERSION_CONFLICT");
+        workspace.intake = { ...workspace.intake, ...parsed }; workspace.intakeVersion++;
+        const actualBasis = basis(workspace.intake), missing = missingPlanIntake(workspace.intake, actualBasis);
+        if (missing.length) throw new PlanError("MISSING_INTAKE", missing.map(message => ({ code: "MISSING_INTAKE", message })));
+        if (workspace.intake.healthConcern !== false) throw new PlanError("TRAINING_CONCERN");
+        const { startDate, endDate } = workspace.intake;
+        if (!startDate || !endDate || endDate < startDate || planDayIndex(endDate) - planDayIndex(startDate) > 365 || endDate < today) throw new PlanError("INVALID_PERIOD");
+        workspace.confirmedIntakeVersion = workspace.intakeVersion; workspace.draftVersion = null;
+        return structuredClone(workspace);
+      });
+    },
+    async propose(input: { intakeVersion: number; baseVersion: number; proposal: PlanProposal }) {
+      const proposal = parsePlanProposal(input.proposal);
+      return store.transaction<TrainingPlan>(ownerId, async tx => {
+        const workspace = tx.domain;
+        if (input.baseVersion !== workspace.version || input.intakeVersion !== workspace.intakeVersion) throw new PlanError("VERSION_CONFLICT");
+        if (workspace.confirmedIntakeVersion !== workspace.intakeVersion) throw new PlanError("INTAKE_NOT_CONFIRMED");
+        const draft = createTrainingPlan({ id: workspace.id, version: workspace.version + 1, intakeVersion: workspace.intakeVersion, intake: workspace.intake, basis: basis(workspace.intake), proposal });
+        if (!planExplanationValid(draft)) throw new PlanError("RULES_REJECTED", [{ code: "EXPLANATION_UNSUPPORTED", message: "计划说明含未经支持的数值或承诺，请仅解释已核对的基础与当前安排。" }]);
+        const existing = current(workspace, workspace.draftVersion);
+        if (existing && existing.intakeVersion === draft.intakeVersion && JSON.stringify(existing.basis) === JSON.stringify(draft.basis) && JSON.stringify(existing.days) === JSON.stringify(draft.days)) return structuredClone(existing);
+        workspace.version = draft.version; workspace.draftVersion = draft.version; workspace.plans.push(draft);
+        return structuredClone(draft);
+      });
+    },
+  };
+}

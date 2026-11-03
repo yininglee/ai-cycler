@@ -336,6 +336,6 @@ test("AGT-B0：主对话 Prompt 归档副本与代码常量逐字一致", () => 
   assert.equal(block, CHAT_WORKFLOW_SYSTEM_PROMPT);
   // 版本号与输出合同必须同步升版，否则归档副本会"看起来很新、实际是旧的"。
   // AGT-B4 起为 v0.2.0（能力清单 + 三路由循环）。
-  assert.equal(CHAT_WORKFLOW_PROMPT_VERSION, "ride-chat-prompt-v0.3.3");
+  assert.equal(CHAT_WORKFLOW_PROMPT_VERSION, "ride-chat-prompt-v0.4.0");
   assert.match(md, /ride-chat-output-v0\.2/);
 });

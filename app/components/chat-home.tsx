@@ -11,6 +11,8 @@ import { CHAT_IMPORT_QUEUE_KEY, parseImportReceipts, restoreImportReceipts } fro
 import { ChatRideList } from "./chat-ride-list";
 import { sanitizeChatInteractionPayload, isChatChoiceRef, type ChatChoiceRef, type ChatAgentInteraction } from "../../src/chat/chat-interaction";
 import { RideSyncLauncher } from "./ride-sync";
+import { TrainingPlanBar, TrainingPlanCard, notifyPlanUpdated, planRequest } from "./training-plan";
+import { parsePlanDiscussion, planDiscussionKey, planDiscussionText, type PlanDiscussion } from "../../src/training/plan-discussion";
 import { SideDrawer } from "./side-drawer";
 import { ChatReplyText } from "./chat-reply-text";
 import { Onboarding, PrototypeSettings } from "./ux-onboarding";
@@ -89,6 +91,7 @@ export function ChatHome({ snapshot }: { snapshot: ChatHomeSnapshot }) {
   const [revealingMessage, setRevealingMessage] = useState<{ conversationId: string; index: number } | null>(null);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [disclosureOpen, setDisclosureOpen] = useState(false);
+  const [planFocus, setPlanFocus] = useState<(PlanDiscussion & { conversationId: string }) | null>(null);
   const [pendingTurn, setPendingTurn] = useState<{ userText: string } | null>(null);
   const restoredSessionRef = useRef(false);
   const [hydrated, setHydrated] = useState(false);
@@ -106,6 +109,20 @@ export function ChatHome({ snapshot }: { snapshot: ChatHomeSnapshot }) {
   const activeConversation = getActiveChatConversation(session);
   const messages = activeConversation.messages;
   const pending = pendingTurn !== null || revealingMessage?.conversationId === activeConversation.id;
+  const activePlanFocus = planFocus?.conversationId === activeConversation.id ? planFocus : null;
+
+  useEffect(() => {
+    if (!hydrated) return;
+    let live = true;
+    setPlanFocus(null);
+    try {
+      const focus = parsePlanDiscussion(JSON.parse(sessionStorage.getItem(planDiscussionKey(activeConversation.id)) ?? "null"));
+      if (focus) void planRequest(undefined, `?${new URLSearchParams({ planId: focus.planId, version: String(focus.version) })}`).then(data => {
+        if (live && data.viewPlan?.id === focus.planId && data.viewPlan.version === focus.version && (!focus.date || data.viewPlan.days.some(day => day.date === focus.date))) setPlanFocus({ ...focus, conversationId: activeConversation.id });
+      }).catch(() => {});
+    } catch {}
+    return () => { live = false; };
+  }, [hydrated, activeConversation.id]);
 
   useEffect(() => {
     if (messages.some(m => m.role === "user") && followRepliesRef.current) followReply();
@@ -204,6 +221,14 @@ export function ChatHome({ snapshot }: { snapshot: ChatHomeSnapshot }) {
     setPendingTurn({ userText });
     // CHAT-14 P1：携带当前对话白名单摘要请求服务端（指代消解/锚点继承依赖）。
     const summaries = buildChatSessionSummaries(activeConversation);
+    if (activePlanFocus) {
+      summaries.splice(0, Math.max(0, summaries.length - 5));
+      summaries.push({ kind: "session_turn", question: planDiscussionText(activePlanFocus), route: "autonomous_tools" });
+      // Hand off the detail reference once; subsequent turns use normal
+      // conversation context rather than repeatedly pinning an old plan.
+      try { sessionStorage.removeItem(planDiscussionKey(activeConversation.id)); } catch {}
+      setPlanFocus(null);
+    }
     const result = await requestChatReply(userText, summaries, choice);
     setPendingTurn(null);
     if (result.interaction?.artifact?.kind === "profile_proposal") {
@@ -212,6 +237,7 @@ export function ChatHome({ snapshot }: { snapshot: ChatHomeSnapshot }) {
       sessionStorage.setItem("cycler-profile-proposal", JSON.stringify(payload));
     }
     addReply(userText, result.reply, source, { route: result.route, rideAnchor: result.rideAnchor, choice: result.choice, rideScope: result.rideScope }, result.interaction);
+    notifyPlanUpdated();
   }
 
   useEffect(() => {
@@ -249,6 +275,8 @@ export function ChatHome({ snapshot }: { snapshot: ChatHomeSnapshot }) {
         <span className="brand-mark"><BikeIcon /></span><span>Cycler</span>
       </button>
     </header>
+
+    <TrainingPlanBar conversationId={activeConversation.id} pending={pending} onStart={() => { if (!pending) void ask("我想制定训练计划。", "typed_input"); }} />
 
     <SideDrawer open={historyOpen} onClose={() => setHistoryOpen(false)}>
         <button type="button" className="primary-button chat-new-conversation" disabled={pending} onClick={startConversation}>＋ 新对话</button>
@@ -290,6 +318,7 @@ export function ChatHome({ snapshot }: { snapshot: ChatHomeSnapshot }) {
           {message.interaction?.artifact?.kind === "ride_import" && <div className="ux-actions" aria-label="骑行同步导入入口">
             <RideSyncLauncher onComplete={imported} conversationId={activeConversation.id} />
           </div>}
+          {message.interaction?.artifact?.kind === "training_plan" && <TrainingPlanCard reference={message.interaction.artifact.payload} conversationId={activeConversation.id} onGenerate={async () => { await ask("我已核对当前训练计划信息，请生成训练计划草案。", "typed_input"); notifyPlanUpdated(); }} />}
           {message.interaction?.artifact?.kind === "goal_editor" && <div className="ux-actions" aria-label="目标编辑入口">
             <button disabled={pending} onClick={() => window.dispatchEvent(new CustomEvent("cycler-goal-draft", { detail: message.interaction?.artifact?.kind === "goal_editor" ? message.interaction.artifact.payload.draft : null }))}>查看／修改目标</button>
             <span>核对后点击保存才会更新目标</span>
@@ -321,9 +350,8 @@ export function ChatHome({ snapshot }: { snapshot: ChatHomeSnapshot }) {
     </div>
 
     <div className="chat-composer">
-      <div className="chat-sync-action"><RideSyncLauncher onComplete={imported} conversationId={activeConversation.id} /></div>
       <form className="chat-input-form" onSubmit={submit}>
-        {disclosureOpen && <p className="chat-disclosure-popover" role="note">单次骑行与能力问题调用对话模型（扣子 Workflow，服务端校验并降级）；累计/本周类问题由服务端确定性计算；跨次比较与水平评估属后续能力；对话记录保存在本浏览器。</p>}
+        {disclosureOpen && <p className="chat-disclosure-popover" role="note">可解读骑行、查询近期表现、解释骑行知识，补充计划信息并准备训练草案；计划需本人查看后明确启用。平台同步为模拟，执行评估尚未开放；对话记录保存在本浏览器。</p>}
         <label className="sr-only" htmlFor="chat-input">输入问题</label>
         <input id="chat-input" value={input} onChange={(event) => { setInput(event.target.value); try { sessionStorage.setItem(`cycler-input:${activeConversation.id}`, event.target.value); } catch {} }} maxLength={120} placeholder="问问你的骑行伙伴" disabled={pending} />
         <button type="button" className="chat-info-button" aria-label="能力说明" aria-expanded={disclosureOpen} onClick={() => setDisclosureOpen((open) => !open)}><InfoIcon /></button>
