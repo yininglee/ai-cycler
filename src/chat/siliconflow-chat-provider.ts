@@ -13,6 +13,7 @@ import {
   type ChatProviderInvocation,
 } from "./chat-agent.ts";
 import { buildChatWorkflowUserPrompt, CHAT_WORKFLOW_SYSTEM_PROMPT } from "./chat-workflow-prompt.ts";
+import { CHAT_LEGACY_WORKFLOW_SYSTEM_PROMPT } from "./chat-legacy-workflow-prompt.ts";
 
 export const SILICONFLOW_CHAT_PROVIDER_VERSION = "siliconflow-chat-provider-v0.1" as const;
 export const DEFAULT_SILICONFLOW_CHAT_MODEL_ID = "deepseek-ai/DeepSeek-V3.2" as const;
@@ -88,7 +89,10 @@ export class SiliconFlowChatProvider implements ChatProvider {
     const body = JSON.stringify({
       model: this.config.modelId,
       messages: [
-        { role: "system", content: CHAT_WORKFLOW_SYSTEM_PROMPT },
+        {
+          role: "system",
+          content: input.route === "autonomous_tools" ? CHAT_WORKFLOW_SYSTEM_PROMPT : CHAT_LEGACY_WORKFLOW_SYSTEM_PROMPT,
+        },
         {
           role: "user",
           content: buildChatWorkflowUserPrompt({

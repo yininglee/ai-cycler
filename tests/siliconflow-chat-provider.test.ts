@@ -7,7 +7,8 @@ import {
   SiliconFlowChatProvider,
   type SiliconFlowChatProviderConfig,
 } from "../src/chat/siliconflow-chat-provider.ts";
-import { CHAT_WORKFLOW_PROMPT_VERSION, CHAT_WORKFLOW_SYSTEM_PROMPT } from "../src/chat/chat-workflow-prompt.ts";
+import { CHAT_WORKFLOW_SYSTEM_PROMPT } from "../src/chat/chat-workflow-prompt.ts";
+import { CHAT_LEGACY_WORKFLOW_SYSTEM_PROMPT } from "../src/chat/chat-legacy-workflow-prompt.ts";
 import { ChatProviderError } from "../src/chat/chat-agent.ts";
 
 const config: SiliconFlowChatProviderConfig = {
@@ -74,12 +75,8 @@ test("SiliconFlow chat provider sends the code-hosted prompt with a de-identifie
   assert.equal(body.temperature, 0.3);
   assert.equal(body.enable_thinking, false);
   assert.equal(body.response_format.type, "json_object");
-  // Prompt 从代码库发送：system = v0.1.6 常量（版本归档于 chat-workflow-prompt.ts）。
   assert.equal(body.messages.length, 2);
-  assert.equal(body.messages[0]?.role, "system");
-  assert.equal(body.messages[0]?.content, CHAT_WORKFLOW_SYSTEM_PROMPT);
-  // AGT-B0/B3/B4 预期变更：Prompt 升 v0.2.0（输出合同 v0.2 + 数字等价类 + 三路由 + 预算 4/5 + 能力清单）。
-  assert.equal(CHAT_WORKFLOW_PROMPT_VERSION, "ride-chat-prompt-v0.6.1");
+  assert.deepEqual(body.messages[0], { role: "system", content: CHAT_LEGACY_WORKFLOW_SYSTEM_PROMPT });
   const userContent = body.messages[1]?.content ?? "";
   assert.match(userContent, /<chat_request>/);
   assert.match(userContent, /<repair_instruction>\n\n<\/repair_instruction>/);
@@ -194,6 +191,9 @@ test("SiliconFlow chat carries L2b toolCatalog/toolResults and repair turns (CHA
   // 工具调用请求被识别为合法输出原样返回（编排层解析后执行）。
   assert.equal(result.rawText, JSON.stringify(toolCallRequest));
   const body = JSON.parse(String(requests[0]?.body)) as { messages: Array<{ role: string; content: string }> };
+  assert.deepEqual(body.messages[0], { role: "system", content: CHAT_WORKFLOW_SYSTEM_PROMPT });
+  assert.match(body.messages[0].content, /"route": "autonomous_tools"/);
+  assert.doesNotMatch(body.messages[0].content, /按 route 输出|claim:context:|claim:compare:/);
   const userContent = body.messages[1]?.content ?? "";
   assert.match(userContent, /<repair_instruction>\n修复数字引用\n<\/repair_instruction>/);
   assert.match(userContent, /<previous_output>\n\{"schemaVersion":"ride-chat-output-v0\.1"\}\n<\/previous_output>/);
