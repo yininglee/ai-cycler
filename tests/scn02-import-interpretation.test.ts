@@ -67,9 +67,11 @@ test("SCN-02: receipts return to the origin once; an inspected record survives r
   let state = startChatConversation(first, snapshot);
   const receipt = { receiptId: "sync-1", conversationId: first.activeConversationId, ids: ["same-day-a", "same-day-b", "same-day-a"], text: "同步完成" };
   const parsed = parseImportReceipts([receipt], state.activeConversationId);
-  state = restoreImportReceipts(state, parsed, first.activeConversationId);
-  state = restoreImportReceipts(state, parsed, first.activeConversationId);
+  const activeId = state.activeConversationId;
+  state = restoreImportReceipts(state, parsed);
+  state = restoreImportReceipts(state, parsed);
   assert.equal(state.conversations[0].messages.length, 2); assert.equal(state.conversations[1].messages.length, 1);
+  assert.equal(state.activeConversationId, activeId);
   assert.equal(buildChatSessionSummaries(getActiveChatConversation(state)).length, 0, "import alone selects no ride");
   state = rememberChatRideSelection(state, "same-day-b");
   state = appendChatTurn(state, "谢谢", "不客气", "typed_input", { route: "social" });

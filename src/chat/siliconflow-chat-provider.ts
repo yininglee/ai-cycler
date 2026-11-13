@@ -86,21 +86,20 @@ export class SiliconFlowChatProvider implements ChatProvider {
       ...(input.evidenceRequest ? { evidenceRequest: input.evidenceRequest } : {}),
       ...(input.sessionSummaries?.length ? { sessionSummaries: input.sessionSummaries } : {}),
     };
+    return this.completeJson(input.requestId, input.route === "autonomous_tools" ? CHAT_WORKFLOW_SYSTEM_PROMPT : CHAT_LEGACY_WORKFLOW_SYSTEM_PROMPT,
+      buildChatWorkflowUserPrompt({
+        chatRequestJson: JSON.stringify(chatRequest),
+        repairInstruction: input.repairInstruction,
+        previousOutput: input.previousOutput,
+      }));
+  }
+
+  async completeJson(requestId: string, systemPrompt: string, userPrompt: string): Promise<{ rawText: string }> {
     const body = JSON.stringify({
       model: this.config.modelId,
       messages: [
-        {
-          role: "system",
-          content: input.route === "autonomous_tools" ? CHAT_WORKFLOW_SYSTEM_PROMPT : CHAT_LEGACY_WORKFLOW_SYSTEM_PROMPT,
-        },
-        {
-          role: "user",
-          content: buildChatWorkflowUserPrompt({
-            chatRequestJson: JSON.stringify(chatRequest),
-            repairInstruction: input.repairInstruction,
-            previousOutput: input.previousOutput,
-          }),
-        },
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt },
       ],
       // 采样锁定（2026-10-06 骑后链路决策的同一原则）：低温 + 关闭 thinking——
       // 输出校验 + 一次修复轮的流水线依赖稳定输出。
@@ -141,7 +140,7 @@ export class SiliconFlowChatProvider implements ChatProvider {
         headers: {
           Authorization: `Bearer ${this.config.apiToken}`,
           "Content-Type": "application/json",
-          "X-Client-Request-Id": input.requestId,
+          "X-Client-Request-Id": requestId,
         },
         body,
         cache: "no-store",

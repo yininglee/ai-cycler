@@ -1,12 +1,13 @@
 import { createHash } from "node:crypto";
 import type { ApplicationRepository } from "../persistence/application-repository.ts";
 import { getApplicationRepository } from "../persistence/application-repository.ts";
+import { isDemoImportedRideId } from "../fixtures/demo-imported-ride-manifest.ts";
 import { getRideRepository } from "../persistence/demo-ride-repository.ts";
 import { TrainingPlanStore, type PlanWorkspace } from "../persistence/training-plan-store.ts";
 import { createConfirmedWriteService, type ConfirmedWriteHandler } from "../chat/chat-write-confirmation.ts";
 import { executionKey, rideShanghaiDate, validRideMetric } from "../domain/training-execution.ts";
 import { planExplanationValid } from "./plan-explanation.ts";
-import { createTrainingPlan, missingPlanIntake, parsePlanIntakePatch, parsePlanProposal, planConstraints, planDayIndex, planMonday, planToday, validateTrainingPlan, PlanError, type PlanBasis, type PlanIntake, type PlanProposal, type TrainingPlan } from "../domain/training-plan.ts";
+import { addPlanDays, createTrainingPlan, missingPlanIntake, parsePlanIntakePatch, parsePlanProposal, planConstraints, planDayIndex, planMonday, planToday, validateTrainingPlan, PlanError, type PlanBasis, type PlanIntake, type PlanProposal, type TrainingPlan } from "../domain/training-plan.ts";
 
 export async function planRuntime(ownerId: string, repository: ApplicationRepository = getApplicationRepository()) {
   const profile = await repository.getProfile(ownerId);
@@ -14,18 +15,20 @@ export async function planRuntime(ownerId: string, repository: ApplicationReposi
   const entries = await (await getRideRepository()).listRides(ownerId);
   const today = planToday();
   const recent = entries.map(e => e.record).filter(record => {
-    if (!record.activity.startTime || !Number.isFinite(Date.parse(record.activity.startTime))) return false;
-    const date = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Shanghai", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(record.activity.startTime));
-    return date <= today && planDayIndex(today) - planDayIndex(date) < 28;
+    const date = rideShanghaiDate(record);
+    return !isDemoImportedRideId(record.activity.rideId) && date !== null && date <= today && planDayIndex(today) - planDayIndex(date) < 28;
   });
-  const durations = recent.flatMap(record => { const metric = record.activity.metrics.movingTimeS; return metric?.qualityStatus === "valid" && Number.isFinite(metric.value) ? [metric.value / 60] : []; });
+  const durations = recent.flatMap(record => {
+    const seconds = validRideMetric(record, "movingTimeS");
+    return seconds === null ? [] : [seconds / 60];
+  });
   const recordedBasis = { weeklyMinutes: durations.length ? Math.round(durations.reduce((a, b) => a + b, 0) / 4) : null, longestRideMinutes: durations.length ? Math.round(Math.max(...durations)) : null };
   const store = new TrainingPlanStore(profile?.ux?.mode === "blank" ? `blank:${profile.ux.blankSince}` : "default");
   function basis(intake: PlanIntake): PlanBasis {
     const selfReported = intake.weeklyMinutes !== null || intake.longestRideMinutes !== null;
     return { profileHash, ftpWatts: profile?.ftp?.trustStatus === "user_confirmed" ? profile.ftp.valueWatts : null,
       weeklyMinutes: intake.weeklyMinutes ?? recordedBasis.weeklyMinutes, longestRideMinutes: intake.longestRideMinutes ?? recordedBasis.longestRideMinutes,
-      rideCount: recent.length, source: selfReported ? "self_report" : recent.length ? "records" : "missing" };
+      rideCount: recent.length, source: selfReported ? "self_report" : durations.length ? "records" : "missing" };
   }
   const current = (workspace: PlanWorkspace, version: number | null) => workspace.plans.find(plan => plan.version === version && !workspace.deletedVersions[String(plan.version)]) ?? null;
   const handler: ConfirmedWriteHandler<PlanWorkspace> = {
@@ -107,6 +110,35 @@ export async function planRuntime(ownerId: string, repository: ApplicationReposi
       const draft = current(workspace, workspace.draftVersion), active = current(workspace, workspace.activeVersion);
       return { workspace, basis: actualBasis, constraints: planConstraints(actualBasis), missing: missingPlanIntake(workspace.intake, actualBasis), draft, active, profileChanged: !!(draft ?? active) && (draft ?? active)!.basis.profileHash !== profileHash, activeProfileChanged: !!active && active.basis.profileHash !== profileHash };
     },
+    generationEvidence() {
+      const rides = recent.flatMap(record => {
+        const date = rideShanghaiDate(record);
+        if (!date) return [];
+        const movingTimeS = validRideMetric(record, "movingTimeS");
+        return [{
+          date, movingMinutes: movingTimeS === null ? null : Math.round(movingTimeS / 60),
+          averagePowerW: validRideMetric(record, "avgPowerW"),
+          averageHeartRateBpm: validRideMetric(record, "avgHeartRateBpm"),
+          elevationGainM: validRideMetric(record, "elevationGainM"),
+        }];
+      }).sort((a, b) => b.date.localeCompare(a.date));
+      const weeks = Array.from({ length: 4 }, (_, index) => {
+        const endDate = addPlanDays(today, -7 * (3 - index)), startDate = addPlanDays(endDate, -6);
+        const records = rides.filter(ride => ride.date >= startDate && ride.date <= endDate);
+        const durations = records.flatMap(ride => ride.movingMinutes === null ? [] : [ride.movingMinutes]);
+        return {
+          startDate, endDate, recordedRides: records.length, ridesWithDuration: durations.length,
+          recordedMinutes: durations.length ? durations.reduce((sum, minutes) => sum + minutes, 0) : null,
+          longestRecordedRideMinutes: durations.length ? Math.max(...durations) : null,
+          ridesWithPower: records.filter(ride => ride.averagePowerW !== null).length,
+          ridesWithHeartRate: records.filter(ride => ride.averageHeartRateBpm !== null).length,
+        };
+      });
+      return {
+        profile: { age: profile?.age ?? null, weightKg: profile?.weightKg ?? null, maxHeartRate: profile?.maxHeartRate ?? null, ftp: profile?.ftp?.trustStatus === "user_confirmed" ? profile.ftp : null },
+        recentRiding: { weeks, latestRides: rides.slice(0, 8), coverage: "仅包含已导入且在近四周内的骑行。缺少记录或指标时，实际活动量与强度未知。" },
+      };
+    },
     async prepare(patch: Partial<PlanIntake>, expectedVersion?: number, fromAgent = false, startNew = false) {
       const parsed = parsePlanIntakePatch(patch);
       // Only a direct user form confirmation may declare no training concern.
@@ -136,15 +168,18 @@ export async function planRuntime(ownerId: string, repository: ApplicationReposi
         return structuredClone(workspace);
       });
     },
-    async propose(input: { intakeVersion: number; baseVersion: number; proposal: PlanProposal }) {
+    async propose(input: { intakeVersion: number; baseVersion: number; proposal: PlanProposal; reviseDraftOnly?: boolean }) {
       const proposal = parsePlanProposal(input.proposal);
       return store.transaction<TrainingPlan>(ownerId, async tx => {
         const workspace = tx.domain;
         if (input.baseVersion !== workspace.version || input.intakeVersion !== workspace.intakeVersion) throw new PlanError("VERSION_CONFLICT");
         if (workspace.confirmedIntakeVersion !== workspace.intakeVersion) throw new PlanError("INTAKE_NOT_CONFIRMED");
+        const existing = current(workspace, workspace.draftVersion);
+        if (input.reviseDraftOnly && existing?.intakeVersion !== input.intakeVersion) {
+          throw new PlanError("DRAFT_GENERATION_REQUIRED", [{ code: "DRAFT_GENERATION_REQUIRED", message: "请在计划信息卡点击核对信息并生成草案。" }]);
+        }
         const draft = createTrainingPlan({ id: workspace.id, version: workspace.version + 1, intakeVersion: workspace.intakeVersion, intake: workspace.intake, basis: basis(workspace.intake), proposal });
         if (!planExplanationValid(draft)) throw new PlanError("RULES_REJECTED", [{ code: "EXPLANATION_UNSUPPORTED", message: "计划说明含未经支持的数值或承诺，请仅解释已核对的基础与当前安排。" }]);
-        const existing = current(workspace, workspace.draftVersion);
         if (existing && existing.intakeVersion === draft.intakeVersion && JSON.stringify(existing.basis) === JSON.stringify(draft.basis) && JSON.stringify(existing.days) === JSON.stringify(draft.days)) return structuredClone(existing);
         workspace.version = draft.version; workspace.draftVersion = draft.version; workspace.plans.push(draft);
         return structuredClone(draft);

@@ -25,6 +25,29 @@ function tabFromLocation(): RideDetailTab {
   return tab === "analysis" || tab === "data" ? tab : "summary";
 }
 
+export function RideDetailNavigation({ children }: { children: ReactNode }) {
+  const [returnPath, setReturnPath] = useState("/import");
+  const fromChat = returnPath.startsWith("/chat");
+  useEffect(() => {
+    const query = new URLSearchParams(window.location.search);
+    setReturnPath(query.get("from") === "chat" ? chatReturnPath(query.get("conversation") ?? undefined) : "/import");
+  }, []);
+
+  return <header className="detail-nav">
+    <Link className="icon-button" href={returnPath} aria-label={fromChat ? "返回原对话" : "返回选择记录"}><BackIcon /></Link>
+    {children}
+    <span className="nav-spacer" aria-hidden="true" />
+  </header>;
+}
+
+export function RideDetailLoadingNavigation() {
+  return <RideDetailNavigation>
+    <div className="detail-tabs ride-detail-loading-tabs" aria-hidden="true">
+      {TABS.map(tab => <span key={tab.key}>{tab.label}</span>)}
+    </div>
+  </RideDetailNavigation>;
+}
+
 export function RideDetailTabs({
   initialTab,
   rideId,
@@ -40,9 +63,6 @@ export function RideDetailTabs({
   analysisPanel: ReactNode;
   dataPanel: ReactNode;
 }) {
-  const [returnPath, setReturnPath] = useState("/import");
-  const fromChat = returnPath.startsWith("/chat");
-  useEffect(() => { const query = new URLSearchParams(window.location.search); setReturnPath(query.get("from") === "chat" ? chatReturnPath(query.get("conversation") ?? undefined) : "/import"); }, []);
   const [activeTab, setActiveTab] = useState<RideDetailTab>(initialTab);
   const pageClassName = activeTab === "summary" && !rejected ? "ride-detail-page ride-detail-summary-page" : "ride-detail-page";
 
@@ -92,8 +112,7 @@ export function RideDetailTabs({
 
   return (
     <div className={pageClassName}>
-      <header className="detail-nav">
-        <Link className="icon-button" href={returnPath} aria-label={fromChat ? "返回原对话" : "返回选择记录"}><BackIcon /></Link>
+      <RideDetailNavigation>
         <nav className="detail-tabs" aria-label="骑行记录详情" role="tablist">
           {TABS.map((tab, index) => <button
             aria-controls={`ride-detail-panel-${tab.key}`}
@@ -108,12 +127,11 @@ export function RideDetailTabs({
             type="button"
           >{tab.label}</button>)}
         </nav>
-        <span className="nav-spacer" aria-hidden="true" />
-      </header>
+      </RideDetailNavigation>
 
-      <div aria-labelledby="ride-detail-tab-summary" hidden={activeTab !== "summary"} id="ride-detail-panel-summary" role="tabpanel">{summaryPanel}</div>
-      <div aria-labelledby="ride-detail-tab-analysis" hidden={activeTab !== "analysis"} id="ride-detail-panel-analysis" role="tabpanel">{analysisPanel}</div>
-      <div aria-labelledby="ride-detail-tab-data" hidden={activeTab !== "data"} id="ride-detail-panel-data" role="tabpanel">{dataPanel}</div>
+      <div className="ride-route-enter" aria-labelledby="ride-detail-tab-summary" hidden={activeTab !== "summary"} id="ride-detail-panel-summary" role="tabpanel">{summaryPanel}</div>
+      <div className="ride-route-enter" aria-labelledby="ride-detail-tab-analysis" hidden={activeTab !== "analysis"} id="ride-detail-panel-analysis" role="tabpanel">{analysisPanel}</div>
+      <div className="ride-route-enter" aria-labelledby="ride-detail-tab-data" hidden={activeTab !== "data"} id="ride-detail-panel-data" role="tabpanel">{dataPanel}</div>
     </div>
   );
 }

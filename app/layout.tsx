@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 
-import { RouteTransitionOverlay } from "./components/route-transition";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -18,11 +17,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
   return (
     <html lang="zh-CN">
-      <body>
-        {children}
-        {/* 常驻在根布局：点击链接后立即铺上的加载层，跨路由不被卸载重建。 */}
-        <RouteTransitionOverlay />
-      </body>
+      <body>{children}</body>
     </html>
   );
 }

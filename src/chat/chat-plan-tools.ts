@@ -40,7 +40,7 @@ export async function executePlanTool(repository: ApplicationRepository, ownerId
   let issues: PlanToolResult["issues"] = [];
   try {
     if (call.tool === "prepare_training_plan") { await service.prepare(call.input.patch, call.input.expectedVersion, true, call.input.startNew); status = "intake_ready"; }
-    if (call.tool === "propose_training_plan") { const plan = await service.propose(call.input); unchanged = plan.version === call.input.baseVersion; status = "draft_ready"; }
+    if (call.tool === "propose_training_plan") { const plan = await service.propose({ ...call.input, reviseDraftOnly: true }); unchanged = plan.version === call.input.baseVersion; status = "draft_ready"; }
   } catch (error) {
     if (!(error instanceof PlanError)) throw error;
     status = "blocked"; issues = error.issues.length ? error.issues : [{ code: error.code, message: error.code === "INTAKE_NOT_CONFIRMED" ? "请先在信息卡核对并确认生成。" : error.code === "VERSION_CONFLICT" ? "信息或草案版本已变化，请重新读取后再修改。" : "信息或规则未通过，当前计划没有启用。" }];

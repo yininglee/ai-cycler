@@ -6,6 +6,7 @@ import { chatInitialMessage, type ChatHomeSnapshot, type ChatMessage } from "./c
 
 export const CHAT_SESSION_SUMMARY_LIMIT = 6;
 export const CHAT_SESSION_QUESTION_MAX_CHARS = 120;
+export const CHAT_SESSION_IDLE_MS = 24 * 60 * 60 * 1000;
 
 export type ChatSessionSummarySource = "quick_question" | "typed_input" | "ride_selection";
 
@@ -28,6 +29,7 @@ export type ChatConversation = {
   id: string;
   messages: ChatMessage[];
   summarySlots: ChatSessionSummarySlot[];
+  lastTurnAt?: number;
 };
 
 export type ChatSessionState = {
@@ -85,6 +87,20 @@ export function startChatConversation(state: ChatSessionState, snapshot: ChatHom
   };
 }
 
+export function isChatConversationExpired(conversation: ChatConversation, now = Date.now()): boolean {
+  return conversation.lastTurnAt !== undefined && now - conversation.lastTurnAt >= CHAT_SESSION_IDLE_MS;
+}
+
+export function resumeChatSession(state: ChatSessionState, snapshot: ChatHomeSnapshot, now = Date.now()): ChatSessionState {
+  const active = getActiveChatConversation(state);
+  // Existing histories have no timestamps. Keep their order and open a fresh context once.
+  const legacyContext = active.lastTurnAt === undefined && active.messages.some(message => message.role === "user");
+  if (legacyContext || isChatConversationExpired(active, now) || state.conversations.at(-1)?.id !== active.id) {
+    return startChatConversation(state, snapshot);
+  }
+  return refreshChatSnapshot(state, snapshot);
+}
+
 /** Refresh data without discarding the current conversation or its explicit ride choice. */
 export function refreshChatSnapshot(state: ChatSessionState, snapshot: ChatHomeSnapshot): ChatSessionState {
   return { ...state, snapshotFingerprint: chatHomeSnapshotFingerprint(snapshot) };
@@ -102,9 +118,11 @@ export function rememberChatRideSelection(state: ChatSessionState, rideId: strin
   } : c) };
 }
 
-export function selectChatConversation(state: ChatSessionState, id: string): ChatSessionState {
-  if (!state.conversations.some((conversation) => conversation.id === id)) return state;
-  return { ...state, activeConversationId: id };
+export function buildChatTimeline(state: ChatSessionState) {
+  return state.conversations.flatMap(conversation => conversation.messages.flatMap((message, index) => {
+    const legacyWelcome = index === 0 && message.role === "assistant" && !message.kind && !message.interaction;
+    return message.kind === "welcome" || legacyWelcome ? [] : [{ conversationId: conversation.id, index, message }];
+  }));
 }
 
 // CHAT-14 P1：已知该轮 route 时记 session_turn 槽位（服务端响应返回 route/rideAnchor）；
@@ -117,6 +135,7 @@ export function appendChatTurn(
   turn?: { route: ChatRoute; rideAnchor?: string; choice?: ChatChoiceRef; rideScope?: ChatRideScope },
   interaction?: ChatAgentInteraction,
   conversationId = state.activeConversationId,
+  completedAt = Date.now(),
 ): ChatSessionState {
   const summarySlot: ChatSessionSummarySlot = turn
     ? {
@@ -137,6 +156,7 @@ export function appendChatTurn(
         ...conversation,
         messages: [...conversation.messages, { role: "user", text: userText }, { role: "assistant", text: assistantText, ...(interaction ? { interaction } : {}) }],
         summarySlots: [...conversation.summarySlots, summarySlot].slice(-CHAT_SESSION_SUMMARY_LIMIT),
+        lastTurnAt: completedAt,
       }
       : conversation),
   };
@@ -187,6 +207,7 @@ function isChatSessionState(value: unknown): value is ChatSessionState {
   if (!state.conversations.some((conversation) => conversation?.id === state.activeConversationId)) return false;
   return state.conversations.every((conversation) =>
     typeof conversation?.id === "string"
+    && (conversation.lastTurnAt === undefined || (Number.isSafeInteger(conversation.lastTurnAt) && conversation.lastTurnAt >= 0))
     && Array.isArray(conversation.messages)
     && conversation.messages.every((message) =>
       (message?.role === "user" || message?.role === "assistant") && typeof message?.text === "string"

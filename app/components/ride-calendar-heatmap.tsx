@@ -64,7 +64,7 @@ function RideTimeline({ rides, onUpload }: { rides: CalendarRide[]; onUpload: ()
       <h3>{date === "undated" ? "日期未记录" : dateLabel(date)}</h3>
       <div className={styles.timelineItems}>{items.map((ride) => {
         const facts = [ride.durationS === null ? null : calendarDuration(ride.durationS), ride.avgSpeedMps === null ? null : calendarNumber(ride.avgSpeedMps * 3.6) + " km/h", ride.elevationM === null ? null : "爬升 " + calendarNumber(ride.elevationM) + " m"].filter(Boolean);
-        return <PendingLink key={ride.id} href={"/rides/" + ride.id} transitionKey="ride-detail" className={styles.rideCard}>
+        return <PendingLink key={ride.id} href={"/rides/" + ride.id} className={styles.rideCard}>
           <div className={styles.rideCardContent}>
             <div className={styles.rideCardTop}><span className={styles.rideIcon}><BikeIcon /></span><span className={styles.rideName}>骑行记录<span className={styles.rideMeta}><small>{ride.startTime ? timeFormatter.format(new Date(ride.startTime)) : "时间未记录"} · {ride.source}</small>{isDemoImportedRideId(ride.id) && <span className={styles.demoTag}>演示</span>}</span></span><ArrowIcon className={styles.cardArrow} /></div>
             <p className={styles.rideDistance}>{ride.distanceM === null ? <span className={styles.unrecorded}>距离未记录</span> : <>{calendarNumber(ride.distanceM / 1000)}<span>km</span></>}</p>
@@ -121,7 +121,7 @@ export function RideCalendar({ rides, initialToday, upload }: { rides: CalendarR
     return () => window.clearInterval(timer);
   }, [initialToday]);
 
-  return <div className={styles.page}>
+  return <div className={`${styles.page} ride-route-enter`}>
     <section className={styles.overviewCard} aria-label="骑行汇总与月度热力图">
       <SummaryCard total={total} week={week} />
       <div className={styles.heatmapCard} aria-label="月度骑行热力图">

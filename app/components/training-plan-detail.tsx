@@ -112,7 +112,7 @@ export function TrainingPlanDetail({ planId, requestedVersion, conversationId, d
         return <article className={`${styles.day} ${day.date === (date ?? today) ? styles.highlight : ""}`} id={`day-${day.date}`} key={day.date}>
           <div><h2>{day.date} {day.title}</h2><StatusBadge tone={linked || completed ? "active" : status === "待确认" || status === "待完成" ? "pending" : "neutral"}>{status}</StatusBadge></div>
           {day.minutes > 0 && <><p>{day.minutes} 分钟 · {day.purpose}</p><ol>{day.steps.map((step, index) => <li key={index}><strong>{step.label} · {step.minutes} 分钟</strong><p>{step.effort}{step.powerWatts && !data?.profileChanged ? ` · ${step.powerWatts[0]}–${step.powerWatts[1]} W` : ""}</p></li>)}</ol></>}
-          <Link href={chatReturnPath(conversationId)} onClick={() => discuss(day.date)}>解释／调整这天</Link>
+          <Link href={chatReturnPath(conversationId, true)} onClick={() => discuss(day.date)}>解释／调整这天</Link>
           {(active || data?.activatedAt?.[String(plan.version)]) && day.date <= today && <TrainingExecutionButton reference={{ planId, version: plan.version, date: day.date }} conversationId={conversationId} />}
         </article>;
       })}</div>
@@ -121,13 +121,13 @@ export function TrainingPlanDetail({ planId, requestedVersion, conversationId, d
           <p className={styles.note}>{data?.active ? "启用后将替换旧计划从今天起的安排，已完成和历史执行记录保留。" : "草案尚未生效，确认后将启用这份训练安排。"}</p>
           <div className={styles.decisionActions}>
             <button className="primary-button" disabled={busy || data?.profileChanged} onClick={() => void activate()}>{busy ? "正在处理…" : "确认并启用计划"}</button>
-            <Link href={chatReturnPath(conversationId)} onClick={() => discuss(date)}>修改草案</Link>
+            <Link href={chatReturnPath(conversationId, true)} onClick={() => discuss(date)}>修改草案</Link>
             <button disabled={busy} onClick={() => void discard()}>放弃草案</button>
           </div>
         </> : <>
           <p className={styles.note}>{active ? "调整将生成新草案，确认后才会替换当前计划。" : terminated ? "此计划已终止，原始骑行与历史执行记录保留，不能再次启用。" : "此草案未采纳，不能直接启用。可返回对话重新制定计划。"}</p>
           <div className={styles.decisionActions}>
-            {active ? <Link className="primary-button" href={chatReturnPath(conversationId)} onClick={() => discuss(date)}>调整计划</Link> : latest && latest !== plan.version ? <Link className="primary-button" href={planDetailHref(planId, latest, conversationId)}>查看当前计划</Link> : <Link className="primary-button" href={chatReturnPath(conversationId)}>返回原对话</Link>}
+            {active ? <Link className="primary-button" href={chatReturnPath(conversationId, true)} onClick={() => discuss(date)}>调整计划</Link> : latest && latest !== plan.version ? <Link className="primary-button" href={planDetailHref(planId, latest, conversationId)}>查看当前计划</Link> : <Link className="primary-button" href={chatReturnPath(conversationId)}>返回原对话</Link>}
           </div>
         </>}
         {!data?.deletedVersions?.[String(plan.version)] && <details className={styles.moreActions}>

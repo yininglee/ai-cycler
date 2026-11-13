@@ -1,4 +1,5 @@
 import { getRequestSession, resolveOrCreateRequestSession, sessionCookieHeader } from "../../../src/auth/session.ts";
+import { generateTrainingPlanDraft } from "../../../src/training/plan-generation.ts";
 import { planRuntime } from "../../../src/training/plan-service.ts";
 import { parsePlanIntakePatch, PlanError } from "../../../src/domain/training-plan.ts";
 import { trainingPlanStatus } from "../../../src/training/plan-view.ts";
@@ -21,7 +22,7 @@ function failure(error: unknown) {
   if (error instanceof SyntaxError) return failure(new PlanError("INVALID_INPUT"));
   const known = error instanceof PlanError || error instanceof ConfirmedWriteError;
   const code = known ? error.code : "PLAN_UNAVAILABLE";
-  return Response.json({ error: code, ...(error instanceof PlanError ? { issues: error.issues } : {}) }, { status: code === "NOT_FOUND" ? 404 : ["VERSION_CONFLICT", "CONTENT_CHANGED", "IDEMPOTENCY_CONFLICT", "CONFIRMATION_EXPIRED"].includes(code) ? 409 : known ? 422 : 503, headers });
+  return Response.json({ error: code, ...(error instanceof PlanError ? { issues: error.issues } : {}) }, { status: code === "NOT_FOUND" ? 404 : ["VERSION_CONFLICT", "CONTENT_CHANGED", "IDEMPOTENCY_CONFLICT", "CONFIRMATION_EXPIRED"].includes(code) ? 409 : known && code !== "PLAN_GENERATION_UNAVAILABLE" ? 422 : 503, headers });
 }
 export async function GET(request: Request) {
   const session = getRequestSession(request);
@@ -47,6 +48,9 @@ export async function POST(request: Request) {
       await service.prepare(parsePlanIntakePatch(input.patch), input.expectedVersion === null ? undefined : input.expectedVersion);
     } else if (input.action === "confirm_intake" && exact(input, ["action", "intake", "expectedVersion", "confirmed"]) && input.confirmed === true && version(input.expectedVersion)) {
       await service.confirmIntake(input.intake, input.expectedVersion);
+    } else if (input.action === "generate_draft" && exact(input, ["action", "intakeVersion"]) && version(input.intakeVersion)) {
+      const draft = await generateTrainingPlanDraft(service, input.intakeVersion);
+      return Response.json(await view(session.userId, draft.id, draft.version), { headers: responseHeaders });
     } else if (input.action === "issue" && exact(input, ["action", "planId", "version", "activeVersion", "idempotencyKey"]) && typeof input.planId === "string" && version(input.version) && (input.activeVersion === null || version(input.activeVersion)) && typeof input.idempotencyKey === "string") {
       const grant = await service.issue({ planId: input.planId, version: input.version, activeVersion: input.activeVersion, idempotencyKey: input.idempotencyKey });
       return Response.json({ grant }, { headers: responseHeaders });

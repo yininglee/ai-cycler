@@ -1,12 +1,15 @@
-import { appendImportedRides, selectChatConversation, readStoredChatSession, rememberChatRideSelection, storeChatSession, type ChatSessionState } from "./chat-session.ts";
+import { appendImportedRides, readStoredChatSession, rememberChatRideSelection, storeChatSession, type ChatSessionState } from "./chat-session.ts";
 
 export type ChatImportReceipt = { receiptId: string; conversationId: string; ids: string[]; text: string };
 export const CHAT_IMPORT_QUEUE_KEY = "cycler-import-results";
 export function isConversationId(value: unknown): value is string {
   return typeof value === "string" && value.length > 0 && value.length <= 128 && !/[\u0000-\u001f\u007f]/.test(value);
 }
-export function chatReturnPath(conversationId?: string): string {
-  return isConversationId(conversationId) ? `/chat?${new URLSearchParams({ conversation: conversationId })}` : "/chat";
+export function chatReturnPath(conversationId?: string, discussPlan = false): string {
+  if (!isConversationId(conversationId)) return "/chat";
+  const query = new URLSearchParams({ conversation: conversationId });
+  if (discussPlan) query.set("discussPlan", "1");
+  return `/chat?${query}`;
 }
 export function rememberStoredRideInspection(rideId: string, conversationId?: string): void {
   const state = readStoredChatSession();
@@ -24,8 +27,8 @@ export function parseImportReceipts(value: unknown, fallbackConversationId: stri
     return [{ receiptId, conversationId, ids, text: item.text }];
   });
 }
-export function restoreImportReceipts(state: ChatSessionState, receipts: readonly ChatImportReceipt[], returnTo?: string): ChatSessionState {
+export function restoreImportReceipts(state: ChatSessionState, receipts: readonly ChatImportReceipt[]): ChatSessionState {
   let next = state;
   for (const receipt of receipts) next = appendImportedRides(next, receipt.ids, receipt.text, receipt.conversationId, receipt.receiptId);
-  return returnTo ? selectChatConversation(next, returnTo) : next;
+  return next;
 }

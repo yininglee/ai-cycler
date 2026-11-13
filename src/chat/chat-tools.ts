@@ -20,6 +20,7 @@ import type { AnalysisDimensionId } from "../domain/ride-analysis-evidence-v2.ts
 import { buildRidePmcLoadV2, type RidePmcDailyLoadInput } from "../domain/ride-pmc-load-v2.ts";
 import { buildRideElevationSummary } from "../domain/ride-elevation.ts";
 import { buildRideRouteShapeSummary } from "../domain/ride-route-shape.ts";
+import { trainingKnowledgeBase } from "../domain/training-knowledge-base.ts";
 import { rideKnowledgeBaseV21 } from "../domain/ride-knowledge-base-v21.ts";
 import { computeRideTss } from "../domain/ride-training-stress.ts";
 import type { MetricKey, RideRecord } from "../domain/ride-schema.ts";
@@ -316,6 +317,7 @@ export type KnowledgeBaseItem = {
   conclusionStrength: "high" | "moderate" | "limited";
   limitations: string[];
   excerpt: string;
+  sources?: readonly { label: string; url: string }[];
 };
 
 export type KnowledgeSearchToolResult = {
@@ -1261,18 +1263,16 @@ function buildKnowledgeSearchResult(input: { dimensionIds: ChatKnowledgeDimensio
   // 用 Set<string> 做维度匹配：检索入参是 7 维、条目维度是 9 维领域枚举，
   // 直接 includes 会因联合类型窄于宽而编译不过（运行时语义完全一致）。
   const dimensionFilter = new Set<string>(input.dimensionIds);
-  const ranked = rideKnowledgeBaseV21
-    .map((entry) => {
-      const dimensionHit = dimensionFilter.has(entry.dimensionId);
-      const haystack = `${entry.topic} ${entry.title} ${entry.explanation}`.toLowerCase();
-      const keywordHits = keywords.filter((keyword) => haystack.includes(keyword)).length;
-      // 维度精确命中直接入选；否则必须至少命中一个关键词——不能把全库倒给模型。
-      if (!dimensionHit && keywordHits === 0) return undefined;
-      return { entry, dimensionHit, keywordHits };
-    })
-    .filter((item): item is { entry: (typeof rideKnowledgeBaseV21)[number]; dimensionHit: boolean; keywordHits: number } => item !== undefined)
-    // 维度命中优先，其次关键词命中数；同分保持 KB 原顺序（7 条固定，排序稳定可复现）。
-    .sort((a, b) => Number(b.dimensionHit) - Number(a.dimensionHit) || b.keywordHits - a.keywordHits);
+  const entries = [...rideKnowledgeBaseV21, ...trainingKnowledgeBase];
+  const ranked = entries.flatMap(entry => {
+    const dimensionHit = dimensionFilter.has(entry.dimensionId);
+    const tags = "keywords" in entry ? entry.keywords.map(keyword => keyword.toLowerCase()) : [];
+    const haystack = `${entry.topic} ${entry.title} ${entry.explanation}`.toLowerCase();
+    const keywordHits = keywords.filter(keyword => haystack.includes(keyword) || tags.some(tag => keyword.includes(tag))).length;
+    if (!dimensionHit && keywordHits === 0) return [];
+    const topicHit = tags.some(tag => keywords.some(keyword => keyword.includes(tag)));
+    return [{ entry, dimensionHit, keywordHits, topicHit }];
+  }).sort((a, b) => Number(b.topicHit) - Number(a.topicHit) || Number(b.dimensionHit) - Number(a.dimensionHit) || b.keywordHits - a.keywordHits);
 
   const items: KnowledgeBaseItem[] = ranked.slice(0, input.maxEntries).map(({ entry }) => ({
     knowledgeId: entry.knowledgeId,
@@ -1282,6 +1282,7 @@ function buildKnowledgeSearchResult(input: { dimensionIds: ChatKnowledgeDimensio
     conclusionStrength: entry.conclusionStrength,
     limitations: [...entry.limitations],
     excerpt: knowledgeExcerpt(entry.explanation),
+    ...("sources" in entry ? { sources: entry.sources } : {}),
   }));
 
   return {

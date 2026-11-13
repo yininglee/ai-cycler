@@ -33,3 +33,7 @@ export function InfoIcon(props: IconProps) {
 export function MoreIcon(props: IconProps) {
   return <svg viewBox="0 0 24 24" aria-hidden="true" {...props}><circle cx="5" cy="12" r="1.9" fill="currentColor" /><circle cx="12" cy="12" r="1.9" fill="currentColor" /><circle cx="19" cy="12" r="1.9" fill="currentColor" /></svg>;
 }
+
+export function RefreshIcon(props: IconProps) {
+  return <svg viewBox="0 0 24 24" aria-hidden="true" {...props}><path d="M20 4v5h-5M4 20v-5h5M4.9 9a7.5 7.5 0 0 1 12.4-4L20 8M4 16l2.7 3a7.5 7.5 0 0 0 12.4-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>;
+}

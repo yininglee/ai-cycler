@@ -154,7 +154,7 @@ const CHAT_TOOL_CATALOG_INPUTS: Record<ChatToolName, Record<string, unknown>> = 
   propose_training_plan: {
     intakeVersion: "必填整数，当前已由用户按钮确认的 state.intakeVersion，必须等于 confirmedIntakeVersion。",
     baseVersion: "必填整数，当前 state.version；每次修改都先读取，不猜版本。",
-    proposal: '必填 {rationale:中文制定依据,blocks:[{fromWeek:1,toWeek:N,sessions:[{weekday:1,kind:"endurance",minutes:30}]}]}。kind仅recovery/endurance/tempo/threshold。最多16阶段，每阶段最多6个不同weekday，阶段覆盖state.intake整个周期且不重叠；周数按开始日期所在周一计算，实际按可用日期展开。必须遵守state.constraints、availability、avoidDates；先读上下文，未确认信息不能生成。若规则拒绝，可在原预算内修正后再提出。所有结果仍是待确认草案，不能启用。',
+    proposal: '必填 {rationale:中文制定依据,blocks:[{fromWeek:1,toWeek:N,sessions:[{weekday:1,kind:"endurance",minutes:30}]}]}。kind仅recovery/endurance/tempo/threshold。最多16阶段，每阶段最多6个不同weekday，阶段覆盖state.intake整个周期且不重叠；周数按开始日期所在周一计算，实际按可用日期展开。必须遵守state.constraints、availability、avoidDates；先读上下文，须已有同一已确认信息版本的待确认草案。若规则拒绝，可在原预算内修正后再提出。所有结果仍是待确认草案，不能启用。',
   },
   prepare_ride_import: {},
   get_user_context: {},
@@ -226,7 +226,7 @@ export const CHAT_TOOL_CATALOG_PURPOSE: Record<ChatToolName, string> = {
   assess_training_execution: "对已确认关联计算真实计划与实际对比，提供时长、可比功率和限制，再由你基于事实及按需知识给亮点、差异、建议。无分段对应不能证明间歇步骤完成，不强给评分、不自动调整计划。",
   get_training_plan_context: "读取本人计划信息、已保存目标和资料、近期记录／自述基础、规则限制、当前草案与生效计划。制定或修改计划前先用它，不需要骑行锚点，不启用计划。",
   prepare_training_plan: "准备／补充待确认计划信息。明确制定新计划时先读取现有计划，再传startNew:true，返回制定计划入口和覆盖提示；不返回现有计划卡片。与聊天补缺共同维护，保存可恢复的草稿信息；不生成正式日程、不启用。信息要由用户在卡片明确核对后才能生成草案。",
-  propose_training_plan: "对已由用户确认的信息生成或修改真实日程草案；AI只选择周阶段、合法类型与时长，服务端扩展步骤并经过领域规则硬门。规则失败保留原信息与原草案，可修正。草案生成不等于生效，启用只能由详情页明确按钮完成。",
+  propose_training_plan: "修改同一已确认信息版本的现有待确认草案；首次生成由信息卡按钮触发。AI只选择周阶段、合法类型与时长，服务端扩展步骤并经过领域规则硬门。规则失败保留原信息与原草案，可修正。草案生成不等于生效，启用只能由详情页明确按钮完成。",
   prepare_ride_import: "提供同步／导入骑行入口，用户自行选择真实 FIT/GPX 上传或明确模拟的平台。只准备入口，不代表已连接账户、已导入或已生成解读；不需要骑行锚点。",
   get_user_context: "读取本人已保存身体资料和来源，不读取旧独立目标；当前训练目标由 get_training_plan_context 核实。不能将历史对话当成已保存事实。无骑行记录也可用。",
   show_onboarding: "用户希望了解如何开始或补充信息时，提供个人资料、骑行导入和制定训练计划三个入口。目标仅在制定具体计划时补充，不提供独立目标设置。只准备引导，不写入。",
@@ -241,7 +241,7 @@ export const CHAT_TOOL_CATALOG_PURPOSE: Record<ChatToolName, string> = {
   find_ride: "在窗口内**检索/排名某一条**骑行（哪次最远、哪次平均心率超过 X）。**只做跨记录检索，不要用它查某一次的具体指标或路线形状。**",
   get_health_profile: "查用户**身体基线**（体重 / 最大心率 / FTP）。做评估、解释强度区间、算负荷前先用它取基准。",
   get_training_load: "查**训练负荷**（CTL 长期 / ATL 急性 / TSB 平衡）。问“练得多不多 / 最近状态如何”用它。",
-  search_knowledge_base: "查**训练科学知识**（训练原理、区间、配速、负荷模型）。问“为什么 / 是什么原理”用它；回答必须引用返回的 knowledgeId。",
+  search_knowledge_base: "查**训练科学知识**（训练进阶、长距离、恢复、FTP、强度分配、备赛，以及骑行指标与配速）。问“为什么 / 是什么原理”用它；回答必须引用返回的 knowledgeId。",
   get_ride_history: "**跨记录窗口统计**（次数 / 总里程 / 总时长 / 总爬升 + 逐条摘要）。问“最近三个月骑了多少”用它。",
   get_route_overview: "查**某一次骑行的路线形状**（爬坡/平路/下坡里程占比、最长连续爬坡段）。问“那次/这次路线爬坡多吗”用它，**不要用 find_ride**。",
 };

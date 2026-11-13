@@ -16,6 +16,8 @@ export function planErrorText(code?: string): string {
   if (code === "VERSION_CONFLICT" || code === "CONTENT_CHANGED") return "信息或草案已更新，请刷新后核对最新版本。";
   if (code === "CONFIRMATION_EXPIRED") return "确认已过期，请重新核对并点击启用。";
   if (code === "TRAINING_CONCERN") return "存在影响训练的不适，暂不生成计划；先取得适合自己的专业建议。";
+  if (code === "PLAN_GENERATION_UNAVAILABLE") return "暂时无法生成草案，已核对的信息已保存。可以重试生成。";
+  if (code === "INTAKE_NOT_CONFIRMED") return "请核对当前计划信息后再生成草案。";
   if (code === "MISSING_INTAKE") return "还有必要信息未补齐，请核对目标、日期、时间安排与基础。";
   if (code === "INVALID_PERIOD") return "请检查起止日期，周期不得超过366天，也不能已经结束。";
   if (["RULES_REJECTED", "SCHEMA_REJECTED"].includes(code ?? "")) return "资料或规则已变化，当前草案不能启用，请重新生成并核对。";
@@ -25,7 +27,12 @@ export function planErrorText(code?: string): string {
 export async function planRequest(body?: unknown, query = ""): Promise<TrainingPlanView> {
   const response = await fetch(`/api/training-plans${query}`, body ? { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body), cache: "no-store" } : { cache: "no-store" });
   const data = await response.json();
-  if (!response.ok) throw new Error(planErrorText(data.error));
+  if (!response.ok) {
+    if ((body as { action?: string } | undefined)?.action === "generate_draft" && data.error === "RULES_REJECTED") {
+      throw new Error("这次草案未通过训练规则。已核对的信息已保存，可以重试生成。");
+    }
+    throw new Error(planErrorText(data.error));
+  }
   return data;
 }
 export const notifyPlanUpdated = () => window.dispatchEvent(new Event("cycler-plan-updated"));
@@ -34,7 +41,7 @@ export function planDetailHref(id: string, version?: number | null, conversation
   return `/plans/${encodeURIComponent(id)}${query.size ? `?${query}` : ""}`;
 }
 
-export function PlanIntakePanel({ onGenerate, onClose }: { onGenerate: () => Promise<void>; onClose: () => void }) {
+export function PlanIntakePanel({ onGenerate, onClose }: { onGenerate: (intakeVersion: number) => Promise<void>; onClose: () => void }) {
   const [data, setData] = useState<TrainingPlanView>();
   const [intake, setIntake] = useState<PlanIntake>(emptyPlanIntake);
   const [avoid, setAvoid] = useState("");
@@ -50,9 +57,18 @@ export function PlanIntakePanel({ onGenerate, onClose }: { onGenerate: () => Pro
     setBusy(true); setError("");
     const input = { ...intake, avoidDates: avoid.split(/[,，、\s]+/).filter(Boolean), notes: intake.notes.replaceAll(/[\r\n\t]/g, " "), periodReason: intake.periodReason.replaceAll(/[\r\n\t]/g, " "), selfReportedBasis: intake.selfReportedBasis.replaceAll(/[\r\n\t]/g, " ") };
     try {
-      const next = await planRequest(generate ? { action: "confirm_intake", intake: input, expectedVersion: data!.intakeVersion, confirmed: true } : { action: "prepare", patch: input, expectedVersion: data!.intakeVersion });
-      setData(next); notifyPlanUpdated();
-      if (generate) { onClose(); await onGenerate(); } else setError("已保存待确认信息，可以稍后继续。");
+      if (!data || data.intakeVersion === undefined) return;
+      if (!generate) {
+        const next = await planRequest({ action: "prepare", patch: input, expectedVersion: data.intakeVersion });
+        setData(next); notifyPlanUpdated();
+        setError("已保存待确认信息，可以稍后继续。");
+        return;
+      }
+      const confirmed = data.confirmedIntakeVersion === data.intakeVersion && JSON.stringify(input) === JSON.stringify(data.intake)
+        ? data : await planRequest({ action: "confirm_intake", intake: input, expectedVersion: data.intakeVersion, confirmed: true });
+      setData(confirmed); notifyPlanUpdated();
+      await onGenerate(confirmed.intakeVersion!);
+      onClose();
     } catch (e) { setError((e as Error).message); }
     finally { setBusy(false); }
   }
@@ -60,7 +76,7 @@ export function PlanIntakePanel({ onGenerate, onClose }: { onGenerate: () => Pro
   const preservedGoal = data?.intake?.goal;
   return <form className={styles.form} onSubmit={event => { event.preventDefault(); if (!busy) void save(true); }}>
     <p className={styles.note}>核对以下信息后生成草案，查看并确认后才会启用。也可以返回对话补充。</p>
-    <fieldset className={styles.formSection}><legend>目标与安排</legend>
+    <fieldset className={styles.formSection} disabled={busy}><legend>目标与安排</legend>
     <label>本次计划目标<select value={intake.goal} onChange={e => change("goal", e.target.value)} required>
       <option value="">请选择本次计划目标</option>
       {preservedGoal && !planGoalOptions.includes(preservedGoal) && <option value={preservedGoal}>{preservedGoal}</option>}
@@ -79,13 +95,13 @@ export function PlanIntakePanel({ onGenerate, onClose }: { onGenerate: () => Pro
         <label>周{["一", "二", "三", "四", "五", "六", "日"][entry.weekday - 1]}<span className={styles.minutesInput}><input aria-label={`周${["一", "二", "三", "四", "五", "六", "日"][entry.weekday - 1]}可训练分钟`} type="number" min={15} max={240} value={entry.minutes} onChange={e => change("availability", intake.availability.map(day => day.weekday === entry.weekday ? { ...day, minutes: Number(e.target.value) } : day))} />分钟</span></label>
       </div>)}
     </fieldset></fieldset>
-    <fieldset className={styles.formSection}><legend>骑行基础</legend>
+    <fieldset className={styles.formSection} disabled={busy}><legend>骑行基础</legend>
     <p className={styles.note}>{data?.basis?.rideCount ? `近期有 ${data.basis.rideCount} 条记录，记录可用基础约 ${data.basis.weeklyMinutes ?? "未知"} 分钟／周、单次最长 ${data.basis.longestRideMinutes ?? "未知"} 分钟。记录不完整时可补充自述。` : "没有近期记录也可以填写自述基础；不知道 FTP 不影响生成入门草案。"}</p>
     <div className={styles.twoColumns}><label>近期平均每周骑行（分钟）<input type="number" min={0} max={2400} placeholder={data?.basis?.weeklyMinutes === null ? "请补充" : String(data?.basis?.weeklyMinutes ?? "")} value={intake.weeklyMinutes ?? ""} onChange={e => change("weeklyMinutes", e.target.value === "" ? null : Number(e.target.value))} /></label><label>近期单次最长骑行（分钟）<input type="number" min={0} max={600} placeholder={data?.basis?.longestRideMinutes === null ? "请补充" : String(data?.basis?.longestRideMinutes ?? "")} value={intake.longestRideMinutes ?? ""} onChange={e => change("longestRideMinutes", e.target.value === "" ? null : Number(e.target.value))} /></label></div>
     <label>自述基础（可选）<textarea value={intake.selfReportedBasis} maxLength={400} onChange={e => change("selfReportedBasis", e.target.value)} /></label>
     <label>是否使用功率计<select value={intake.powerMeter === null ? "unknown" : String(intake.powerMeter)} onChange={e => change("powerMeter", e.target.value === "unknown" ? null : e.target.value === "true")}><option value="unknown">不知道／暂不使用功率目标</option><option value="false">没有</option><option value="true">有</option></select></label>
     </fieldset>
-    <fieldset className={styles.formSection}><legend>训练条件</legend>
+    <fieldset className={styles.formSection} disabled={busy}><legend>训练条件</legend>
     <label>需要避开的日期（YYYY-MM-DD，以逗号分隔）<input value={avoid} onChange={e => setAvoid(e.target.value)} maxLength={1200} /></label>
     <label>当前是否有影响骑行训练的不适<select value={intake.healthConcern === null ? "unknown" : String(intake.healthConcern)} onChange={e => change("healthConcern", e.target.value === "unknown" ? null : e.target.value === "true")} required><option value="unknown">请由本人核对</option><option value="false">目前没有影响训练的不适</option><option value="true">有，需要先取得专业建议</option></select></label>
     <label>其他条件／需避开事项<textarea value={intake.notes} maxLength={400} onChange={e => change("notes", e.target.value)} /></label>
@@ -96,7 +112,7 @@ export function PlanIntakePanel({ onGenerate, onClose }: { onGenerate: () => Pro
   </form>;
 }
 
-export function TrainingPlanCard({ reference, conversationId, onGenerate }: { reference: ChatTrainingPlanArtifact["payload"]; conversationId: string; onGenerate: () => Promise<void> }) {
+export function TrainingPlanCard({ reference, conversationId, onGenerate }: { reference: ChatTrainingPlanArtifact["payload"]; conversationId: string; onGenerate: (intakeVersion: number) => Promise<void> }) {
   const [data, setData] = useState<TrainingPlanView>(), [open, setOpen] = useState(false), [error, setError] = useState("");
   const load = useCallback(() => { void planRequest(undefined, `?planId=${encodeURIComponent(reference.planId)}${reference.version ? `&version=${reference.version}` : ""}`).then(next => { setData(next); setError(""); }).catch(e => { setData(undefined); setError(e.message); }); }, [reference.planId, reference.version]);
   useEffect(() => { load(); window.addEventListener("cycler-plan-updated", load); return () => window.removeEventListener("cycler-plan-updated", load); }, [load]);

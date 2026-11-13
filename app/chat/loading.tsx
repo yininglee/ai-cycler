@@ -1,7 +1,12 @@
 import { AppShell } from "../components/app-shell";
-import { RouteLoadingBody } from "../components/route-loading";
+import { BikeIcon } from "../components/icons";
+import { RouteProgress } from "../components/route-loading";
 
-// 伙伴（聊天页）：路由级加载态。该页要读会话与骑行记录，首次进入最慢。
 export default function ChatLoading() {
-  return <AppShell active="partner"><RouteLoadingBody active="partner" /></AppShell>;
+  return <AppShell active="partner" pageClassName="chat-page-content">
+    <section className="chat-home" aria-label="AI 骑行伙伴">
+      <header className="topbar chat-plan-header"><span className="brand chat-brand"><span className="brand-mark"><BikeIcon /></span>Cycler</span></header>
+      <RouteProgress label="正在读取对话" />
+    </section>
+  </AppShell>;
 }

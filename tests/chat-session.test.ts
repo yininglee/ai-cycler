@@ -4,6 +4,9 @@ import test from "node:test";
 import { buildChatHomeSnapshot } from "../src/chat/chat-home.ts";
 import {
   appendChatTurn,
+  buildChatSessionSummaries,
+  buildChatTimeline,
+  CHAT_SESSION_IDLE_MS,
   CHAT_SESSION_STORAGE_KEY,
   CHAT_SESSION_SUMMARY_LIMIT,
   chatHomeSnapshotFingerprint,
@@ -11,8 +14,7 @@ import {
   getActiveChatConversation,
   isChatSessionStale,
   readStoredChatSession,
-  selectChatConversation,
-  startChatConversation,
+  resumeChatSession,
   storeChatSession,
 } from "../src/chat/chat-session.ts";
 import { getRideFixture } from "../src/fixtures/rides.ts";
@@ -26,18 +28,31 @@ function snapshotWithRideCount(count: number) {
   })), new Date("2026-09-04T12:00:00.000Z"));
 }
 
-test("chat session starts new conversations and switches only within the current page state", () => {
+test("24 hours after a completed turn, a fresh context opens and old messages remain in the timeline", () => {
   const snapshot = snapshotWithRideCount(1);
-  const first = appendChatTurn(createChatSession(snapshot), "我一共骑了多少？", "目前已记录 1 次骑行。", "quick_question");
-  const second = startChatConversation(first, snapshot);
+  const completedAt = 1_000;
+  const first = appendChatTurn(createChatSession(snapshot), "我一共骑了多少？", "目前已记录 1 次骑行。", "quick_question", { route: "aggregate" }, undefined, undefined, completedAt);
+  assert.equal(resumeChatSession(first, snapshot, completedAt + CHAT_SESSION_IDLE_MS - 1).activeConversationId, first.activeConversationId);
+  const second = resumeChatSession(first, snapshot, completedAt + CHAT_SESSION_IDLE_MS);
 
   assert.equal(second.conversations.length, 2);
   assert.equal(getActiveChatConversation(second).id, "conversation-2");
   assert.equal(getActiveChatConversation(second).messages.length, 1);
   assert.equal(getActiveChatConversation(second).messages[0]?.kind, "welcome");
-  assert.equal(getActiveChatConversation(selectChatConversation(second, "conversation-1")).messages[0]?.kind, "welcome");
-  assert.equal(getActiveChatConversation(selectChatConversation(second, "conversation-1")).messages.length, 3);
-  assert.equal(selectChatConversation(second, "missing"), second);
+  assert.deepEqual(buildChatSessionSummaries(getActiveChatConversation(second)), []);
+  assert.deepEqual(buildChatTimeline(second).map(row => [row.conversationId, row.message.role]), [["conversation-1", "user"], ["conversation-1", "assistant"]]);
+  assert.equal(resumeChatSession(second, snapshot, completedAt + 2 * CHAT_SESSION_IDLE_MS).conversations.length, 2);
+});
+
+test("opening a legacy history preserves its messages and clears the inherited ride choice", () => {
+  const snapshot = snapshotWithRideCount(1);
+  const original = appendChatTurn(createChatSession(snapshot), "这次骑得怎样？", "已找到所选记录。", "typed_input", { route: "current_ride", choice: { kind: "ride", id: "old-ride" } });
+  const [previous] = original.conversations;
+  const legacy = { ...original, conversations: [{ ...previous, lastTurnAt: undefined }] };
+  const restored = resumeChatSession(legacy, snapshot);
+  assert.deepEqual(restored.conversations[0], legacy.conversations[0]);
+  assert.deepEqual(buildChatSessionSummaries(getActiveChatConversation(restored)), []);
+  assert.equal(buildChatTimeline(restored).length, 2);
 });
 
 test("chat session keeps at most six structured summary slots per conversation", () => {

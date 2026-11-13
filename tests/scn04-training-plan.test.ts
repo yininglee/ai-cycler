@@ -11,6 +11,8 @@ import { getApplicationRepository } from "../src/persistence/application-reposit
 import { TrainingPlanStore } from "../src/persistence/training-plan-store.ts";
 import { createUserProfile } from "../src/domain/user-profile.ts";
 import { addPlanDays, planMonday, planToday, emptyPlanIntake, parsePlanProposal, parsePlanIntakePatch, createTrainingPlan, PlanError, type PlanIntake, type PlanBasis, type PlanProposal } from "../src/domain/training-plan.ts";
+import { getRideFixture } from "../src/fixtures/rides.ts";
+import { TRAINING_PLAN_GENERATION_PROMPT } from "../src/training/plan-generation-prompt.ts";
 import { planRuntime } from "../src/training/plan-service.ts";
 import { executePlanTool, parsePlanTool } from "../src/chat/chat-plan-tools.ts";
 import { parsePlanDiscussion, planDiscussionText } from "../src/training/plan-discussion.ts";
@@ -225,45 +227,75 @@ test("SCN-04: two Node processes confirming the same SQLite grant commit once an
   assert.equal(JSON.parse(row.content).audits.filter((a: any) => a.status === "committed").length, 1);
 });
 
-test("SCN-04: real chat orchestration prepares and proposes through model-selected capabilities without enabling", async () => {
+test("SCN-04: confirmed intake runs dedicated evidence-based generation, retries rules and shares knowledge with chat", async () => {
   const f = owner(), original = globalThis.fetch;
   const env = { CHAT_MODEL_ENABLED: "true", CHAT_CLASSIFIER_ENABLED: "false", CHAT_PROVIDER_KIND: "siliconflow", SILICONFLOW_API_TOKEN: "test-only" };
   const previous = Object.fromEntries(Object.keys(env).map(k => [k, process.env[k]])); Object.assign(process.env, env);
-  let proposedInvalid = false, repaired = false, fabricated = false;
+  const repo = getApplicationRepository();
+  await repo.saveProfile(f.id, createUserProfile({ age: 35, ftpWatts: 200 }));
+  const { activity, series } = structuredClone(getRideFixture("l3-fit-power"));
+  activity.rideId = series.rideId = "plan-recent-ride";
+  const recentDate = addPlanDays(planToday(), -1);
+  activity.startTime = `${recentDate}T10:00:00+08:00`;
+  await repo.saveRide(f.id, { activity, series });
+  let generationCalls = 0;
+  const respond = (content: unknown) => Response.json({ choices: [{ message: { content: JSON.stringify(content) } }] });
+  const tool = (name: string, input: unknown) => respond({ schemaVersion: "ride-chat-tool-call-v0.1", calls: [{ tool: name, input }] });
   globalThis.fetch = (async (_url, options) => {
-    const body = JSON.parse(String(options?.body)), request = JSON.parse(body.messages[1].content.split("<chat_request>\n")[1].split("\n</chat_request>")[0]);
-    const tool = (name: string, input: unknown) => Response.json({ choices: [{ message: { content: JSON.stringify({ schemaVersion: "ride-chat-tool-call-v0.1", calls: [{ tool: name, input }] }) } }] });
-    const results = request.toolResults ?? [], last = results.at(-1)?.context;
-    if (!last) return tool("get_training_plan_context", {});
-    if (last.tool === "propose_training_plan" && last.status === "blocked") {
-      assert.match(request.evidenceRequest, /修正 proposal/); repaired = true;
-      return tool("propose_training_plan", { intakeVersion: last.state.intakeVersion, baseVersion: last.state.version, proposal: proposal() });
+    const { messages } = JSON.parse(String(options?.body));
+    if (messages[0].content === TRAINING_PLAN_GENERATION_PROMPT) {
+      const input = JSON.parse(messages[1].content);
+      generationCalls++;
+      assert.equal(input.intake.goal, "提升耐力／完成长距离");
+      assert.equal(input.profile.ftp.valueWatts, 200);
+      assert.ok(input.recentRiding.latestRides.some((ride: any) => ride.date === recentDate));
+      assert.equal(input.recentRiding.weeks.length, 4);
+      assert.ok(input.knowledge.some((entry: any) => entry.knowledgeId === "kb-training-endurance"));
+      assert.doesNotMatch(messages[1].content, /profileHash|plan-recent-ride/);
+      if (generationCalls === 1) assert.equal(input.issues, undefined);
+      else assert.ok(input.issues.some((issue: any) => issue.code === "WEEKLY_VOLUME"));
+      return respond({ proposal: proposal(generationCalls === 1 ? 45 : 30), knowledgeIds: ["kb-training-endurance"] });
     }
-    if (last.tool === "get_training_plan_context" && request.text !== "不错，可以看看。") {
-      if (last.state.confirmedIntakeVersion !== last.state.intakeVersion) return tool("prepare_training_plan", { expectedVersion: last.state.intakeVersion, patch: intake() });
-      if (!fabricated) {
-        fabricated = true;
-        return Response.json({ choices: [{ message: { content: JSON.stringify({ schemaVersion: "ride-chat-output-v0.3", route: request.route, responseKind: "answer", reply: "已读取当前信息。我将每次耐力骑缩短为30分钟，生成新的待确认草案。请查看草案详情。", claimIds: [last.claims[0].claimId], capabilityKeys: [], knowledgeIds: [] }) } }] });
-      }
-      assert.match(request.evidenceRequest, /尚无 propose_training_plan 成功结果/);
-      proposedInvalid = true;
-      return tool("propose_training_plan", { intakeVersion: last.state.intakeVersion, baseVersion: last.state.version, proposal: proposal(45) });
-    }
-    const intakeQuestion = last.status === "intake_ready";
-    return Response.json({ choices: [{ message: { content: JSON.stringify({ schemaVersion: "ride-chat-output-v0.3", route: request.route, responseKind: intakeQuestion ? "clarification" : "answer", reply: intakeQuestion ? "这些信息是否准确？也可以在信息卡继续填写。" : last.status === "draft_ready" ? "草案已准备，请查看详情后明确点击启用。" : "请核对计划信息；聊天中的同意不会启用计划。", claimIds: intakeQuestion ? [] : [last.claims[0].claimId], capabilityKeys: [], knowledgeIds: [] }) } }] });
+    const request = JSON.parse(messages[1].content.split("<chat_request>\n")[1].split("\n</chat_request>")[0]);
+    const last = request.toolResults?.at(-1)?.context;
+    const knowledgeQuestion = request.text.includes("赛前减量");
+    if (!last) return knowledgeQuestion ? tool("search_knowledge_base", { keywords: ["赛前减量"] }) : tool("get_training_plan_context", {});
+    if (last.tool === "get_training_plan_context" && !last.state.draft) return tool("prepare_training_plan", { expectedVersion: last.state.intakeVersion, patch: { ...intake(), goal: "提升耐力／完成长距离" } });
+    if (knowledgeQuestion) assert.ok(last.items.some((entry: any) => entry.knowledgeId === "kb-training-taper"));
+    const prepared = last.status === "intake_ready";
+    return respond({ schemaVersion: "ride-chat-output-v0.3", route: request.route, responseKind: prepared ? "clarification" : "answer",
+      reply: prepared ? "这些信息是否准确？也可以在信息卡继续填写。" : knowledgeQuestion ? "赛前减量可以降低累积疲劳。" : "可以打开已有草案查看安排。",
+      claimIds: prepared || knowledgeQuestion ? [] : [last.claims[0].claimId], capabilityKeys: [], knowledgeIds: knowledgeQuestion ? ["kb-training-taper"] : [] });
   }) as typeof fetch;
   const ask = async (text: string) => (await chat(new Request("http://localhost/api/chat", { method: "POST", headers: { Cookie: f.cookie, "Content-Type": "application/json" }, body: JSON.stringify({ text }) }))).json();
+  const generate = (intakeVersion: number) => POST(f.request({ action: "generate_draft", intakeVersion }));
   try {
-    const first = await ask("帮我制定训练计划。"); assert.equal(first.execution, "validated"); assert.equal(first.artifact.kind, "training_plan"); assert.equal(first.artifact.payload.view, "intake");
+    const first = await ask("帮我制定训练计划。");
+    assert.equal(first.execution, "validated"); assert.equal(first.artifact.payload.view, "intake");
     const service = await planRuntime(f.id), state = await service.context();
-    await service.confirmIntake({ healthConcern: false }, state.workspace.intakeVersion);
-    const second = await ask("我已核对当前训练计划信息，请生成训练计划草案。"); assert.equal(second.execution, "validated"); assert.equal(second.artifact.payload.view, "draft");
-    assert.equal(proposedInvalid && repaired && fabricated, true); assert.equal(second.loopTrace.evidenceRecoveryAttempts, 1); assert.equal(second.loopTrace.planProposalRepairAttempts, 1); assert.ok(second.loopTrace.providerCalls <= 6);
-    const consent = await ask("不错，可以看看。"); assert.equal(consent.execution, "validated");
-    const current = await service.context(); assert.equal(current.workspace.activeVersion, null); assert.equal(current.workspace.draftVersion, 1);
+    const unconfirmed = await generate(state.workspace.intakeVersion);
+    assert.equal((await unconfirmed.json()).error, "INTAKE_NOT_CONFIRMED");
+    assert.equal(generationCalls, 0);
+    const reviewed = await POST(f.request({ action: "confirm_intake", intake: { healthConcern: false }, expectedVersion: state.workspace.intakeVersion, confirmed: true }));
+    const { intakeVersion } = await reviewed.json();
+    const blocked = await executePlanTool(repo, f.id, { tool: "propose_training_plan", input: { intakeVersion, baseVersion: 0, proposal: proposal() } });
+    assert.equal(blocked.issues[0].code, "DRAFT_GENERATION_REQUIRED");
+    const response = await generate(intakeVersion);
+    const result = await response.json();
+    assert.equal(response.status, 200, JSON.stringify(result));
+    assert.equal(result.viewPlan.version, 1);
+    assert.match(result.viewPlan.proposal.rationale, /长距离目标与持续骑行能力/);
+    assert.equal(result.activeVersion, null);
+    assert.equal((await (await generate(intakeVersion)).json()).viewPlan.version, 1);
+    assert.equal(generationCalls, 2);
+    assert.equal((await generate(intakeVersion - 1)).status, 409);
+    const consent = await ask("不错，可以看看。");
+    assert.equal(consent.artifact.payload.view, "draft");
+    const knowledge = await ask("赛前减量是什么？");
+    assert.equal(knowledge.execution, "validated");
+    assert.match(knowledge.reply, /赛前减量与训练疲劳/);
   } finally { globalThis.fetch = original; for (const [key, value] of Object.entries(previous)) { if (value === undefined) delete process.env[key]; else process.env[key] = value; } }
 });
-
 
 test("SCN-04: discarded drafts are unadopted, replacements and deletions terminated, historical reads stay on their version", async () => {
   const { f, service, plan } = await draft();
