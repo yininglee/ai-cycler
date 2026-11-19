@@ -1560,7 +1560,7 @@ export async function runChatAgent(input: ChatAgentInput): Promise<ChatAgentResu
     ...(input.anchorOverride ? { anchorOverride: input.anchorOverride } : {}),
     // Reference interpretation and default history window are contextual hints,
     // independent of the single execution route and model output protocol.
-    referenceDecision: ["current_ride", "capabilities", "history_compare", "kb_qa", "level_assessment"].includes(decision.route) ? decision : loopDecision,
+    referenceDecision: loopDecision,
     deferReference: true,
   });
   return { ...result, decision, executionRoute };

@@ -34,6 +34,15 @@ test("ARCH-03: neutral turns preserve choice, explicit reset blocks both IDs and
   }
 });
 
+test("business labels cannot reset explicit choice or inherited date; scope markers can", () => {
+  for (const route of ["level_assessment", "kb_qa", "history_compare", "training_plan", "training_supervision", "capability_gap"] as const) {
+    const turn: ChatSessionSummary = { kind: "session_turn", question: "继续刚才的话题", route };
+    assert.deepEqual(lastChatRideChoice([chosen, turn]), chosen.choice);
+    assert.equal(lastSummarizedAnchor([chosen, turn]), chosen.rideAnchor);
+    assert.equal(lastChatRideChoice([chosen, { ...turn, rideScope: "overview" }]), undefined);
+  }
+});
+
 test("ARCH-03: scope markers round-trip storage without changing old sessions or new-conversation boundaries", () => {
   const snapshot = buildChatHomeSnapshot([]);
   let session = createChatSession(snapshot);
@@ -134,7 +143,7 @@ test("ARCH-03 API: pending reset still permits confirmation of the original ques
   });
   const second = await (await POST(request({ text: "是的", summaries: [{ kind: "session_turn", question: "本次骑行的距离是多少？", route: "current_ride", rideScope: "pending" }] }))).json();
   assert.equal(second.choice.id, "newest");
-  assert.equal(second.decision.route, "current_ride");
+  assert.equal(second.decision.route, "autonomous_tools");
   assert.equal(second.rideScope, undefined);
 });
 

@@ -17,7 +17,7 @@ test("chat route derives a missing current ride server-side without accepting or
   }));
   assert.equal(response.status, 200);
   const body = await response.json() as { decision: { route: string; allowModel: boolean }; modelInvoked: boolean; execution: string; fallbackCode: string; providerRawOutput?: string; toolContext?: unknown; toolTrace?: unknown };
-  assert.equal(body.decision.route, "current_ride");
+  assert.equal(body.decision.route, "autonomous_tools");
   assert.equal(body.decision.allowModel, true);
   assert.equal(body.modelInvoked, false);
   assert.equal(body.execution, "template");
@@ -73,7 +73,7 @@ test("chat route uses the unified loop and reports missing provider instead of s
     providerRawOutput?: string;
   };
   assert.deepEqual({ route: body.decision.route, action: body.decision.action, modelInvoked: body.modelInvoked, execution: body.execution }, {
-    route: "history_compare", action: "tool_then_model", modelInvoked: false, execution: "template",
+    route: "autonomous_tools", action: "tool_then_model", modelInvoked: false, execution: "template",
   });
   assert.equal(body.fallbackCode, "MODEL_NOT_CONFIGURED");
   assert.match(body.reply, /对话模型尚未配置/);
@@ -85,7 +85,7 @@ test("chat route uses the unified loop and reports missing provider instead of s
   const completed = events.filter((event) => event.type !== "chat_requested").at(-1);
   assert.ok(completed);
   assert.equal(completed.type, "chat_degraded");
-  assert.equal(completed.attributes?.route, "history_compare");
+  assert.equal(completed.attributes?.route, "autonomous_tools");
   assert.equal(completed.attributes?.executionRoute, "agent_loop");
   assert.equal(completed.attributes?.toolStatus, "not_called");
   assert.equal(completed.attributes?.toolCalls, "0");
@@ -127,7 +127,7 @@ test("chat route lets the enabled classifier route companion chit-chat and recor
   globalThis.fetch = (async (_input: RequestInfo | URL, init?: RequestInit) => {
     classifierCalls.push(init ?? {});
     return new Response(JSON.stringify({
-      choices: [{ message: { role: "assistant", content: JSON.stringify({ schemaVersion: "chat-classifier-v0.2", intent: "companion", needsClarification: false }) } }],
+      choices: [{ message: { role: "assistant", content: JSON.stringify({ schemaVersion: "chat-classifier-v0.3", intent: "allow", needsClarification: false }) } }],
     }), { status: 200 });
   }) as typeof fetch;
   try {
@@ -139,7 +139,7 @@ test("chat route lets the enabled classifier route companion chit-chat and recor
     }));
     assert.equal(response.status, 200);
     const body = await response.json() as { decision: { route: string }; modelInvoked: boolean; fallbackCode?: string };
-    assert.equal(body.decision.route, "social");
+    assert.equal(body.decision.route, "autonomous_tools");
     assert.equal(body.modelInvoked, false);
     assert.equal(body.fallbackCode, "MODEL_NOT_CONFIGURED");
     assert.equal(classifierCalls.length, 1);
@@ -148,7 +148,7 @@ test("chat route lets the enabled classifier route companion chit-chat and recor
     assert.ok(completed);
     assert.equal(completed.type, "chat_degraded");
     assert.equal(completed.attributes?.classifierStatus, "ok");
-    assert.equal(completed.attributes?.classifierIntent, "companion");
+    assert.equal(completed.attributes?.classifierIntent, "allow");
     assert.equal(completed.attributes?.classifierNeedsClarification, "false");
     assert.equal(completed.attributes?.classifierAgrees, "true");
     assert.ok(completed.attributes?.classifierDurationMs !== undefined);
@@ -179,7 +179,7 @@ test("unclear classifier hints reach the Agent and report missing provider witho
   globalThis.fetch = (async (_input: RequestInfo | URL, init?: RequestInit) => {
     classifierCalls.push(init ?? {});
     return new Response(JSON.stringify({
-      choices: [{ message: { role: "assistant", content: JSON.stringify({ schemaVersion: "chat-classifier-v0.2", intent: "unclear", needsClarification: true }) } }],
+      choices: [{ message: { role: "assistant", content: JSON.stringify({ schemaVersion: "chat-classifier-v0.3", intent: "allow", needsClarification: false }) } }],
     }), { status: 200 });
   }) as typeof fetch;
   try {
@@ -192,7 +192,7 @@ test("unclear classifier hints reach the Agent and report missing provider witho
     assert.equal(response.status, 200);
     const body = await response.json() as { decision: { route: string }; modelInvoked: boolean; execution: string; reply: string };
     assert.deepEqual({ route: body.decision.route, modelInvoked: body.modelInvoked, execution: body.execution }, {
-      route: "clarification",
+      route: "autonomous_tools",
       modelInvoked: false,
       execution: "template",
     });
@@ -201,8 +201,8 @@ test("unclear classifier hints reach the Agent and report missing provider witho
     const events = await getApplicationRepository().listDemoEvents(session.userId);
     const requested = events.find((event) => event.type === "chat_requested");
     assert.equal(requested?.attributes?.routedBy, "classifier");
-    assert.equal(requested?.attributes?.classifierIntent, "unclear");
-    assert.equal(requested?.attributes?.route, "clarification");
+    assert.equal(requested?.attributes?.classifierIntent, "allow");
+    assert.equal(requested?.attributes?.route, "autonomous_tools");
   } finally {
     globalThis.fetch = originalFetch;
     for (const [key, value] of Object.entries(previous)) {
@@ -271,7 +271,7 @@ test("active mode without classifier configuration degrades to the rule layer (C
     assert.equal(response.status, 200);
     const body = await response.json() as { decision: { route: string }; modelInvoked: boolean; execution: string; fallbackCode: string };
     assert.deepEqual({ route: body.decision.route, modelInvoked: body.modelInvoked, execution: body.execution, fallbackCode: body.fallbackCode }, {
-      route: "current_ride",
+      route: "autonomous_tools",
       modelInvoked: false,
       execution: "template",
       fallbackCode: "MODEL_NOT_CONFIGURED",
@@ -327,7 +327,7 @@ test("chat route does not invent a ride clarification without a provider; legacy
   }));
   assert.equal(second.status, 200);
   const secondBody = await second.json() as { decision: { route: string }; execution: string; rideAnchor?: string; reply: string };
-  assert.equal(secondBody.decision.route, "current_ride");
+  assert.equal(secondBody.decision.route, "autonomous_tools");
   assert.equal(secondBody.execution, "template");
   assert.match(secondBody.reply, /对话模型尚未配置/);
   assert.equal(secondBody.rideAnchor, "2026-08-18");

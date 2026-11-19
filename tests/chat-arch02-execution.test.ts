@@ -193,7 +193,7 @@ test("ARCH-02: compound aggregate questions use the loop while plain totals rema
 test("ARCH-02: rule-era historical data gaps are admitted, unimplemented plans remain explicit", async () => {
   const { classifyChatInput } = await import("../src/chat/chat-routing.ts");
   const { resolveChatExecutionRouting } = await import("../src/chat/chat-classifier.ts");
-  for (const [text, expected] of [["分析那次骑行", "autonomous_tools"], ["我的体能水平怎么样？", "level_assessment"], ["帮我制定训练计划", "training_plan"]] as const) {
+  for (const [text, expected] of [["分析那次骑行", "autonomous_tools"], ["我的体能水平怎么样？", "autonomous_tools"], ["帮我制定训练计划", "autonomous_tools"]] as const) {
     const resolution = await resolveChatExecutionRouting({ text, ruleDecision: classifyChatInput(text), requestId: "arch-test" });
     assert.equal(resolution.decision?.route, expected);
   }
@@ -220,4 +220,31 @@ test("ARCH execution: the model can resolve a ride, then use its authorized ID f
     provider, loopRunner: createChatToolLoopRunner(repository(), "owner") });
   assert.equal(result.execution, "validated", JSON.stringify(result));
   assert.equal(result.loopTrace?.toolCalls, 2);
+});
+
+
+test("business labels cannot change the unified history query window or anchor", async () => {
+  for (const route of ["autonomous_tools", "level_assessment", "kb_qa", "current_ride", "history_compare", "training_plan"] as const) {
+    const records = repository();
+    const base = createChatToolLoopRunner(records, "owner");
+    let queryResult: any;
+    const runner = { ...base, async executeLoopCalls(input: Parameters<typeof base.executeLoopCalls>[0]) {
+      const result = await base.executeLoopCalls(input);
+      queryResult = result[0];
+      return result;
+    } };
+    let calls = 0;
+    await runChatAgent({
+      text: "查询历史记录", decision: makeChatDecision(route, "none", "AUTONOMOUS_TOOLS", 6),
+      loopRunner: runner, anchorOverride: { rideId: "arch-ride" },
+      provider: { async run(input) {
+        if (++calls === 1) return toolRequest("get_ride_history", {});
+        return { rawText: JSON.stringify({ schemaVersion: "ride-chat-output-v0.3", route: input.route, responseKind: "clarification",
+          reply: "还需要查看哪个指标？", claimIds: [], capabilityKeys: [], knowledgeIds: [] }) };
+      } },
+    });
+    assert.equal(queryResult.status, "completed");
+    assert.equal(queryResult.result.windowDays, 90);
+    assert.equal(queryResult.result.anchorStartTime, (await records.listRides("owner"))[0].record.activity.startTime);
+  }
 });

@@ -34,7 +34,7 @@ test("real chat API: semantic intent -> autonomous data/KB tools -> validated an
   const invocations: any[] = [];
   globalThis.fetch = (async (_url, options) => {
     const body = JSON.parse(String(options?.body));
-    if (body.model === "test-classifier") return reply({ schemaVersion: "chat-classifier-v0.2", intent: mode === "overview" ? "level_assessment" : "ride_summary", needsClarification: false });
+    if (body.model === "test-classifier") return reply({ schemaVersion: "chat-classifier-v0.3", intent: "allow", needsClarification: false });
     const raw = body.messages[1].content.match(/<chat_request>\s*([\s\S]*?)\s*<\/chat_request>/)![1];
     const input = JSON.parse(raw); invocations.push(input);
     if (mode === "single" && !input.toolResults) return reply({ schemaVersion: "ride-chat-tool-call-v0.1", calls: [{ tool: "get_ride_context", input: { dims: ["summary", "heart_rate"] } }] });

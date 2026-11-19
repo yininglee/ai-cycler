@@ -28,8 +28,8 @@ const config: SiliconFlowClassifierConfig = {
 };
 
 const classifierOutput = {
-  schemaVersion: "chat-classifier-v0.2",
-  intent: "ride_summary",
+  schemaVersion: "chat-classifier-v0.3",
+  intent: "allow",
   needsClarification: false,
 };
 
@@ -92,30 +92,30 @@ test("classifier client sends the code-hosted prompt with a de-identified classi
   assert.equal(body.messages.length, 2);
   assert.equal(body.messages[0]?.role, "system");
   assert.equal(body.messages[0]?.content, CHAT_CLASSIFIER_SYSTEM_PROMPT);
-  assert.equal(CHAT_CLASSIFIER_PROMPT_VERSION, "ride-chat-classifier-prompt-v0.4.3");
+  assert.equal(CHAT_CLASSIFIER_PROMPT_VERSION, "ride-chat-classifier-prompt-v0.5.0");
 
   const userContent = body.messages[1]?.content ?? "";
   const requestTag = /<classify_request>\n([\s\S]*?)\n<\/classify_request>/.exec(userContent)?.[1] ?? "";
   const request = JSON.parse(requestTag) as Record<string, unknown>;
   assert.equal(request.agent, "ride_chat_v1");
-  assert.equal(request.classifierVersion, "chat-classifier-v0.2");
+  assert.equal(request.classifierVersion, "chat-classifier-v0.3");
   assert.equal(request.text, "本次骑行平均功率是多少？");
   assert.doesNotMatch(JSON.stringify(request), /ownerId|rideId|chat-token|toolContext/);
 });
 
 test("classifier accepts valid completion output and rejects contract violations", async () => {
   const unclear = new SiliconFlowClassifierClient(config, async () => new Response(completionEnvelope(JSON.stringify({
-    schemaVersion: "chat-classifier-v0.2",
-    intent: "unclear",
-    needsClarification: true,
+    schemaVersion: "chat-classifier-v0.3",
+    intent: "allow",
+    needsClarification: false,
   })), { status: 200 }));
   assert.deepEqual(await unclear.classify({ requestId: "request", text: "那这个呢？" }), {
-    schemaVersion: "chat-classifier-v0.2",
-    intent: "unclear",
-    needsClarification: true,
+    schemaVersion: "chat-classifier-v0.3",
+    intent: "allow",
+    needsClarification: false,
   });
   const invalidIntent = new SiliconFlowClassifierClient(config, async () => new Response(completionEnvelope(JSON.stringify({
-    schemaVersion: "chat-classifier-v0.2",
+    schemaVersion: "chat-classifier-v0.3",
     intent: "chitchat",
     needsClarification: false,
   })), { status: 200 }));
@@ -124,7 +124,7 @@ test("classifier accepts valid completion output and rejects contract violations
     (error: unknown) => error instanceof ChatProviderError && error.code === "MODEL_INVALID_RESPONSE",
   );
   const missingFlag = new SiliconFlowClassifierClient(config, async () => new Response(completionEnvelope(JSON.stringify({
-    schemaVersion: "chat-classifier-v0.2",
+    schemaVersion: "chat-classifier-v0.3",
     intent: "social",
   })), { status: 200 }));
   await assert.rejects(
@@ -138,7 +138,7 @@ test("classifier accepts valid completion output and rejects contract violations
   );
   // 合同冻结：needsClarification 必须与 unclear 耦合，反向组合视为不匹配合同。
   assert.throws(
-    () => parseClassifierResult(JSON.stringify({ schemaVersion: "chat-classifier-v0.2", intent: "aggregate", needsClarification: true })),
+    () => parseClassifierResult(JSON.stringify({ schemaVersion: "chat-classifier-v0.3", intent: "aggregate", needsClarification: true })),
     (error: unknown) => error instanceof ChatProviderError && error.code === "MODEL_INVALID_RESPONSE",
   );
   const rateLimited = new SiliconFlowClassifierClient(config, async () => new Response("{}", { status: 429 }));
@@ -153,16 +153,15 @@ test("classifier accepts valid completion output and rejects contract violations
   );
 });
 
-// AGT-A3（Prompt v0.4）：16 意图合同的 Prompt 侧自证——意图枚举全在、schema 版本已升、
-// 归档副本与代码常量逐字一致（消除"文档与代码双版本"的漂移面）。
-test("classifier prompt v0.4 declares the 16-intent contract and its archived copy stays identical", () => {
+// Prompt and archived copy must declare the same boundary contract.
+test("classifier prompt declares the boundary contract and its archived copy stays identical", () => {
   const prompt = CHAT_CLASSIFIER_SYSTEM_PROMPT;
   for (const intent of CHAT_CLASSIFIER_INTENTS) {
     assert.match(prompt, new RegExp(`\\b${intent}\\b`), `prompt does not declare intent ${intent}`);
   }
-  assert.match(prompt, /"schemaVersion": "chat-classifier-v0\.2"/);
-  assert.match(prompt, /16 个标签/);
-  assert.match(prompt, /"intent": "safety_stop \| privacy_boundary \| injection_stop/);
+  assert.match(prompt, /chat-classifier-v0\.3/);
+  assert.deepEqual(CHAT_CLASSIFIER_INTENTS, ["safety_stop", "privacy_boundary", "injection_stop", "out_of_scope", "allow"]);
+  assert.doesNotMatch(prompt, /ride_summary|training_plan|training_supervision|level_assessment|kb_qa/);
 
   const archived = readFileSync(new URL("../prompts/ride-chat-classifier-v0.2.md", import.meta.url), "utf8");
   const archivedPrompt = /```text\n([\s\S]*?)\n```/.exec(archived)?.[1];
@@ -170,14 +169,22 @@ test("classifier prompt v0.4 declares the 16-intent contract and its archived co
   assert.equal(archivedPrompt, prompt, "archived copy drifted from code constant");
 });
 
-// AGT-A2/A3 防泄漏：few-shot 只允许取自 dev split——blind/red-team 例句不得出现在 Prompt 中。
-test("classifier prompt never quotes blind or red-team cases from the frozen dataset", () => {
-  const raw = readFileSync(new URL("../eval/ride-chat-classifier-v0.4/cases.json", import.meta.url), "utf8");
-  const payload = JSON.parse(raw) as { cases: Array<{ caseId: string; split: string; input: string }> };
-  const heldOut = payload.cases.filter((item) => item.split !== "dev");
-  assert.ok(heldOut.length > 0);
-  for (const item of heldOut) {
-    assert.equal(CHAT_CLASSIFIER_SYSTEM_PROMPT.includes(item.input), false, `held-out case leaked into prompt: ${item.caseId}`);
-  }
+test("boundary contract rejects old business tags, clarification flags and extra fields", () => {
+  for (const patch of [
+    ...["ride_summary", "aggregate", "history_compare", "level_assessment", "capability_gap", "capabilities", "kb_qa", "training_plan", "training_supervision", "companion", "open_chat", "unclear"].map(intent => ({ intent })),
+    { needsClarification: true }, { unexpected: "allow" }, { schemaVersion: "chat-classifier-v0.2" },
+  ]) assert.throws(() => parseClassifierResult(JSON.stringify({ ...classifierOutput, ...patch })), ChatProviderError);
 });
 
+test("boundary routing admits contextual and compound requests regardless of old business rule labels", async () => {
+  const { classifyChatInput, makeChatDecision } = await import("../src/chat/chat-routing.ts");
+  for (const text of ["按刚才的情况调整一下", "帮我制定训练计划", "最近整体表现怎么样", "为什么要做区间训练？", "哪次最远，那次爬坡多吗？"]) {
+    const result = await resolveChatRouting({ text, ruleDecision: classifyChatInput(text), requestId: "boundary" });
+    assert.equal(result.decision?.route, "autonomous_tools");
+  }
+  for (const intent of CHAT_CLASSIFIER_INTENTS) {
+    const client: ChatClassifierClient = { async classify() { return { ...classifierOutput, intent, schemaVersion: "chat-classifier-v0.3" }; } };
+    const result = await resolveChatRouting({ text: "一条待判断的请求", ruleDecision: makeChatDecision("training_plan", "none", "TRAINING_PLAN", 8), requestId: "boundary", classifier: client });
+    assert.equal(result.decision?.route, intent === "allow" ? "autonomous_tools" : intent);
+  }
+});

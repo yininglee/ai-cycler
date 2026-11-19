@@ -1,4 +1,4 @@
-// AGT-A3 验收 smoke：分类器 Prompt v0.4 真实调用（硅基流动），验证 16 意图合同端到端可用。
+// AGT-A3 验收 smoke：分类器 Prompt v0.4 真实调用（硅基流动），验证 边界合同端到端可用。
 // 用法：node --experimental-strip-types scripts/smoke-classifier-v04.ts
 // 需要 .env.local 中 SILICONFLOW_API_TOKEN；脚本仅在进程内强制 CHAT_CLASSIFIER_ENABLED=true，
 // 不改写 .env.local（A0~A5 中间态线上仍走规则基线）。
@@ -22,14 +22,14 @@ try {
 environment.CHAT_CLASSIFIER_ENABLED = "true";
 
 const probes = [
-  { expected: "training_plan", text: "帮我安排下周的骑行训练" },
-  { expected: "training_supervision", text: "今天这课完成度怎么样？" },
-  { expected: "kb_qa", text: "为什么要做区间训练？" },
-  { expected: "capability_gap", text: "能把骑行记录同步到 Strava 吗？" },
-  { expected: "companion", text: "你好呀，最近过得怎么样？" },
-  { expected: "level_assessment", text: "我的骑行能力水平怎么样？" },
-  { expected: "open_chat", text: "距离最远的那次骑行，平均心率是多少？" },
-  { expected: "aggregate", text: "我总共骑了多少公里？" },
+  { expected: "allow", text: "帮我安排下周的骑行训练" },
+  { expected: "allow", text: "今天这课完成度怎么样？" },
+  { expected: "allow", text: "为什么要做区间训练？" },
+  { expected: "allow", text: "能把骑行记录同步到 Strava 吗？" },
+  { expected: "allow", text: "你好呀，最近过得怎么样？" },
+  { expected: "allow", text: "我的骑行能力水平怎么样？" },
+  { expected: "allow", text: "距离最远的那次骑行，平均心率是多少？" },
+  { expected: "allow", text: "我总共骑了多少公里？" },
 ];
 
 const classifier = createChatClassifier(environment);
@@ -55,7 +55,7 @@ for (const probe of probes) {
 
 console.log(`\nsmoke summary: schema ${schemaValid}/${probes.length} · intent ${matched}/${probes.length} (advisory only, not an accuracy gate)`);
 if (schemaValid !== probes.length) {
-  console.error("SMOKE_FAIL: some responses did not satisfy chat-classifier-v0.2");
+  console.error("SMOKE_FAIL: some responses did not satisfy chat-classifier-v0.3");
   process.exit(1);
 }
 console.log("SMOKE_OK");

@@ -32,7 +32,7 @@ async function withModel(outputs: any[], work: (requests: any[]) => Promise<void
   globalThis.fetch = (async (_url, options) => {
     const body = JSON.parse(String(options?.body));
     const prompt = body.messages[1].content;
-    if (prompt.includes("<classify_request>")) return Response.json({ choices: [{ message: { content: JSON.stringify({ schemaVersion: "chat-classifier-v0.2", intent: "unclear", needsClarification: true }) } }] });
+    if (prompt.includes("<classify_request>")) return Response.json({ choices: [{ message: { content: JSON.stringify({ schemaVersion: "chat-classifier-v0.3", intent: "allow", needsClarification: false }) } }] });
     const request = JSON.parse(prompt.split("<chat_request>\n")[1].split("\n</chat_request>")[0]);
     requests.push(request);
     assert.ok(outputs.length, "unexpected model round");

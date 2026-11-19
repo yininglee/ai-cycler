@@ -185,7 +185,7 @@ export async function POST(request: Request): Promise<Response> {
   // 轮（工具路由、无锚点 = 上一轮触发了锚点澄清）存在时，以确认结果建立锚点并重答挂起原问题；
   // 日期无匹配时确定性回复（零模型调用）。摘要不参与新问题路由，仅用于挂起识别。
   const explicitReference = hasExplicitChatRideReference(result.text);
-  const overview = !selectedChoice && !explicitReference && (decision.route === "level_assessment" || isRecentOverviewQuestion(result.text));
+  const overview = !selectedChoice && !explicitReference && isRecentOverviewQuestion(result.text);
   const standaloneKnowledge = !selectedChoice && isStandaloneChatKnowledge(result.text);
   const executionRoute = chatExecutionRoute(result.text, decision);
   const canInherit = executionRoute === "agent_loop";
@@ -205,8 +205,6 @@ export async function POST(request: Request): Promise<Response> {
       : resolution.reason === "same_day_multiple" && resolution.candidates?.some(candidate => candidate.rideId === selectedChoice.id);
     if (!matches) return Response.json({ reply: "点选的记录与文字中的记录指向不一致，请重新选择要分析的骑行。", text: result.text, decision: { ...decision, route: "clarification", action: "select" }, rideScope: "cleared", executionRoute: "deterministic" }, { headers });
   }
-  if (!overview && (selectedChoice || explicitReference) && decision.route === "level_assessment") decision = { ...decision, route: "current_ride", reasonCode: "CURRENT_RIDE" };
-  if (standaloneKnowledge && executionRoute === "agent_loop") decision = { ...decision, route: "kb_qa", reasonCode: "KB_QA" };
   let effectiveText = result.text;
   let anchorConfirmation = false;
   let anchorOverride: RideAnchorOverride | undefined = effectiveChoice ? { rideId: effectiveChoice.id } : undefined;
@@ -229,7 +227,7 @@ export async function POST(request: Request): Promise<Response> {
       return Response.json({ reply: resolved.reply, text: result.text }, { headers });
     }
     effectiveText = resolved.text;
-    decision = resolved.decision;
+    decision = { ...decision, route: "autonomous_tools", reasonCode: "AUTONOMOUS_TOOLS", action: "tool_then_model" };
     anchorConfirmation = true;
     anchorOverride = resolved.anchor;
     console.log(`${tag} anchor confirmation → complete pending question | text="${effectiveText}" anchor=${JSON.stringify(resolved.anchor)}`);

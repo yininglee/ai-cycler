@@ -505,7 +505,7 @@ export function createChatToolLoopRunner(repository: ApplicationRepository, owne
   return {
     async startLoop({ text, decision, summaries = [], anchor, deferReference = false }): Promise<ChatToolLoopStartResult> {
       userSource = [...summaries.map(summary => summary.question), text].join("\n");
-      recentOverview = decision.route === "level_assessment" || isRecentOverviewQuestion(text);
+      recentOverview = isRecentOverviewQuestion(text);
       // Legacy labels only guide reference interpretation and window defaults.
       // They do not select an executor or restrict the active capability catalog.
       if (!["autonomous_tools", "kb_qa", "level_assessment", "current_ride", "capabilities", "history_compare"].includes(decision.route)) {

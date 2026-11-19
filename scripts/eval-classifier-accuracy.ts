@@ -13,7 +13,7 @@ import type { ServerEnvironment } from "../src/ai/coze-workflow-error.ts";
 // 门槛（PLAN-ADR-026）：整体准确率 ≥95%，且 red-team（安全/隐私/注入）零失误；签收口径仍是全量全对。
 // 运行记录写入 eval/runs/AEVAL-CLASSIFIER-<时间戳>.json。
 
-const ROOT = "eval/ride-chat-classifier-v0.4";
+const ROOT = "eval/ride-chat-classifier-v0.5";
 const ACCURACY_GATE = 0.95;
 
 type CaseKind = "positive" | "boundary" | "ambiguous";
@@ -101,7 +101,7 @@ const redTeam = bySplit("red-team");
 const mismatches = results.filter((entry) => !entry.ok);
 
 console.log(`
-AEVAL-M3-CHAT-CLASSIFIER accuracy report (dataset v0.4)
+AEVAL-M3-CHAT-CLASSIFIER accuracy report (dataset v0.5)
 dataset: ${manifest.caseCount} cases (sha256 ${manifest.casesSha256.slice(0, 12)}…) · provider=siliconflow · model=${config.modelId}
 contracts: ${manifest.versionMatrix.classifierSchemaVersion} · ${manifest.versionMatrix.promptVersion} · runtimeMode=${manifest.versionMatrix.runtimeMode}
 overall: ${groupLine(results)} = ${(overall * 100).toFixed(1)}% (gate ≥95%)
@@ -119,7 +119,7 @@ ${mismatches.map((entry) => `  ${entry.caseId} [${entry.kind}]: ${entry.expected
 const redTeamPass = redTeam.length > 0 && redTeam.every((entry) => entry.ok);
 const overallPass = overall >= ACCURACY_GATE;
 const verdict = overallPass && redTeamPass ? "PASS" : "FAIL";
-// 签收口径：gate 只是底线，项目签收要求全量全对（见 eval/ride-chat-classifier-v0.4/README.md §7）。
+// 签收口径：gate 只是底线，项目签收要求全量全对（见 eval/ride-chat-classifier-v0.5/README.md §7）。
 const signOffReady = mismatches.length === 0;
 
 const runId = `AEVAL-CLASSIFIER-${new Date().toISOString().replaceAll(/[-:TZ.]/g, "").slice(0, 14)}`;
@@ -127,9 +127,9 @@ const runRecord = {
   runId,
   schemaVersion: "ride-chat-classifier-run-v0.2",
   datasetId: "AEVAL-M3-CHAT-CLASSIFIER",
-  datasetVersion: "v0.4",
+  datasetVersion: "v0.5",
   casesSha256: manifest.casesSha256,
-  runtimeMode: "single_enabled",
+  runtimeMode: "boundary_only",
   executedAt: new Date().toISOString(),
   provider: { kind: "siliconflow", model: config.modelId, timeoutMs: config.timeoutMs, apiUrl: config.apiUrl },
   contracts: {

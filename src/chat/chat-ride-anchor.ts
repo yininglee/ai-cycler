@@ -121,9 +121,8 @@ function resolveByDate(
 
 // 上下文继承：从最近一轮摘要向前找已建立的锚点日期（锚点跨轮持续，直到被新锚点替换）。
 export function lastSummarizedAnchor(summaries: readonly ChatSessionSummary[]): string | undefined {
-  if (summaries.at(-1)?.route === "level_assessment") return undefined;
   for (let index = summaries.length - 1; index >= 0; index -= 1) {
-    if (summaries[index]?.rideScope || summaries[index]?.route === "level_assessment") return undefined;
+    if (summaries[index]?.rideScope) return undefined;
     const anchor = summaries[index]?.rideAnchor;
     if (anchor) return anchor;
   }
@@ -265,13 +264,14 @@ export function detectAnchorConfirmation(input: {
 }): AnchorConfirmationPending | null {
   const pending = input.summaries[input.summaries.length - 1];
   if (!pending || pending.rideAnchor !== undefined || pending.choice !== undefined || (pending.rideScope !== undefined && pending.rideScope !== "pending")) return null;
-  if (!RIDE_ANCHOR_TOOL_ROUTES.includes(pending.route)) return null;
+  if (pending.route === "autonomous_tools" && pending.rideScope !== "pending") return null;
+  if (pending.rideScope !== "pending" && !RIDE_ANCHOR_TOOL_ROUTES.includes(pending.route)) return null;
   if (!CONFIRMATION_ROUTES.has(input.decision.route)) return null;
   const compact = input.text.trim().replaceAll(/\s/g, "");
   if (CONFIRMATION_YES.test(compact) || CONFIRMATION_LATEST.test(compact)) {
     return { type: "latest", question: pending.question, route: pending.route };
   }
-  const date = extractExplicitRideDate(compact);
+  const date = /^(?:\d{4}[-年])?\d{1,2}[-月]\d{1,2}[日号]?[。！!？?]?$/.test(compact) ? extractExplicitRideDate(compact) : undefined;
   if (date) return { type: "date", question: pending.question, route: pending.route, date };
   return null;
 }
@@ -316,7 +316,7 @@ export function rideIdentityReply(summaries: readonly ChatSessionSummary[], entr
     const time = date ? new Date(record.activity.startTime!).toLocaleTimeString("zh-CN", { timeZone: "Asia/Shanghai", hour: "2-digit", minute: "2-digit", hour12: false }) : undefined;
     return date ? `当前对话选择的是 ${rideAnchorDateLabel(date)} ${time} 出发的骑行。` : "当前对话使用你已选择的记录；该记录没有有效出发日期。";
   }
-  if (!lastSummarizedAnchor(summaries) && summaries.some(summary => summary.rideScope || summary.route === "level_assessment")) return "当前没有选定单次骑行；可以从记录中选择要分析的那一次。";
+  if (!lastSummarizedAnchor(summaries) && summaries.some(summary => summary.rideScope)) return "当前没有选定单次骑行；可以从记录中选择要分析的那一次。";
   const anchorDate = lastSummarizedAnchor(summaries);
   if (anchorDate) {
     const target = parseRideAnchorDate(anchorDate);

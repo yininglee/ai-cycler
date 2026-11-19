@@ -1,7 +1,7 @@
 import type { ChatSessionSummary } from "./chat-routing.ts";
 import type { ChatChoiceRef } from "./chat-interaction.ts";
 
-export const CHAT_CONTEXT_CONTRACT_VERSION = "ride-chat-context-v0.2" as const;
+export const CHAT_CONTEXT_CONTRACT_VERSION = "ride-chat-context-v0.3" as const;
 
 export type ChatRideScope = "overview" | "cleared" | "pending";
 export function isChatRideScope(value: unknown): value is ChatRideScope {
@@ -12,7 +12,7 @@ export function isChatRideScope(value: unknown): value is ChatRideScope {
 export function lastChatRideChoice(summaries: readonly ChatSessionSummary[]): ChatChoiceRef | undefined {
   for (let index = summaries.length - 1; index >= 0; index--) {
     const summary = summaries[index];
-    if (summary.rideScope || summary.route === "level_assessment") return undefined;
+    if (summary.rideScope) return undefined;
     if (summary.choice?.kind === "ride") return summary.choice;
   }
   return undefined;
