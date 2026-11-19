@@ -11,10 +11,13 @@ import type { PlatformAction, PlatformState, SyncResult } from "../../src/ux/pla
 import { BottomSheet } from "./profile-sheet";
 import { RideFileUpload } from "./ride-file-upload";
 
+type ConnectionStatus = PlatformState & { lastAttemptAt?: string; error?: string; result?: SyncResult };
+
 export function PlatformConnection({ provider, fromChat = false, conversationId }: { provider: PlatformId; fromChat?: boolean; conversationId?: string }) {
   const info = platformInfo(provider);
   const router = useRouter();
-  const [platform, setPlatform] = useState<PlatformState | null>(null);
+  const [platform, setPlatform] = useState<ConnectionStatus | null>(null);
+  const [live, setLive] = useState(false);
   const [step, setStep] = useState<"idle" | "authorize" | "range">("idle");
   const [range, setRange] = useState<7 | 30 | 90>(30);
   const [ready, setReady] = useState(false);
@@ -24,7 +27,7 @@ export function PlatformConnection({ provider, fromChat = false, conversationId 
   const [scenario, setScenario] = useState("normal");
   async function load() {
     setError("");
-    try { const r = await fetch(`/api/platform?provider=${provider}`); if (!r.ok) throw Error(); const data = await r.json(); setPlatform(data.platform); setRange(data.platform?.range ?? 30); setReady(true); }
+    try { const r = await fetch(`/api/platform?provider=${provider}`); if (!r.ok) throw Error(); const data = await r.json(); setLive(data.live === true); setPlatform(data.platform); setRange(data.platform?.range ?? 30); setReady(true); }
     catch { setError("平台状态暂时无法读取，请重试。"); }
   }
   useEffect(() => { void load(); }, [provider]);
@@ -33,16 +36,17 @@ export function PlatformConnection({ provider, fromChat = false, conversationId 
     try {
       const r = await fetch("/api/platform", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action, range, scenario, provider }) });
       const data = await r.json(); if (!r.ok) throw Error(data.error);
+      setLive(data.live === true);
       setPlatform(data.platform); setStep("idle");
-      if (data.result) {
-        setResult(data.result);
-        const v = data.result as SyncResult;
-        if (fromChat) {
+      const v = (data.live && action === "sync" ? data.platform?.result : data.result) as SyncResult | undefined;
+      if (v) {
+        setResult(v);
+        if (fromChat && (!data.live || v.rideIds.length > 0)) {
           try {
             const origin = conversationId ?? sessionStorage.getItem("cycler-import-conversation") ?? readStoredChatSession()?.activeConversationId;
             if (!origin) throw new Error("missing origin conversation");
             const pending = parseImportReceipts(JSON.parse(sessionStorage.getItem(CHAT_IMPORT_QUEUE_KEY) ?? "[]"), origin);
-            pending.push({ receiptId: createClientRequestId(), ids: v.rideIds, text: `${info.name}模拟同步完成：新增 ${v.added} 条、重复 ${v.duplicate} 条、失败 ${v.failed} 条。`, conversationId: origin });
+            pending.push({ receiptId: createClientRequestId(), ids: v.rideIds, text: `${info.name}${data.live ? "" : "模拟"}同步结果：新增 ${v.added} 条、重复 ${v.duplicate} 条、失败 ${v.failed} 条。`, conversationId: origin });
             sessionStorage.setItem(CHAT_IMPORT_QUEUE_KEY, JSON.stringify(pending));
           } catch { /* The page still displays the completed sync if browser storage is unavailable. */ }
         }
@@ -50,6 +54,24 @@ export function PlatformConnection({ provider, fromChat = false, conversationId 
       router.refresh();
     } catch (e) { setError((e as Error).message || "同步失败，请重试。"); }
     finally { setBusy(false); }
+  }
+  if (live && ready) {
+    const latest = result ?? platform?.result;
+    const connected = platform?.status === "connected";
+    return <div className="ride-sync"><section className="ux-card" aria-label="顽鹿同步">
+      <div className="connection-identity"><PlatformMark provider={provider} /><div><h2>{info.name}</h2><p className="ux-meta">骑行同步 · 测试接入</p></div></div>
+      <p><StatusBadge tone={connected ? "active" : platform ? "error" : "neutral"}>{connected ? "已连接" : platform ? "连接需要更新" : "尚未连接"}</StatusBadge></p>
+      <p>{connected ? "点击「立即同步」，导入顽鹿上的新骑行。" : "连接顽鹿后，可手动同步骑行记录。"}</p>
+      {platform?.lastSyncAt && <p className="ux-meta">上次成功同步：{new Date(platform.lastSyncAt).toLocaleString("zh-CN")}</p>}
+      <div className="ux-actions">
+        <button className="primary-button" disabled={busy} onClick={() => void act(connected ? "sync" : "connect")}>{connected ? "立即同步" : platform ? "重新连接" : "连接顽鹿"}</button>
+        {platform && <button disabled={busy} onClick={() => void act("disconnect")}>断开连接</button>}
+      </div>
+      {busy && <p role="status">正在处理顽鹿同步请求…</p>}
+      {(error || platform?.error) && <p role="alert">{error || platform?.error}</p>}
+      {latest && <div className="ui-notice" role="status"><p>最近一次同步：新增 {latest.added} 条 · 重复 {latest.duplicate} 条 · 失败 {latest.failed} 条</p></div>}
+      {latest && latest.rideIds.length > 0 && <div className="ux-actions"><Link className="secondary-button" href="/import">查看骑行记录<span aria-hidden="true">→</span></Link></div>}
+    </section></div>;
   }
   return <div className="ride-sync">
     <section className="ux-card" aria-label={`${info.name}模拟关联`}>
@@ -93,7 +115,7 @@ export function RideSync({ onComplete, conversationId }: { onComplete?: (ids: st
           try { if (id) sessionStorage.setItem("cycler-import-conversation", id); } catch {}
         }
       }}><PlatformMark provider={info.id} /><span className="import-source-copy"><strong>{info.name}</strong></span><span className="import-source-arrow" aria-hidden="true">›</span></Link>)}</div>
-      <p className="import-source-note">平台关联与同步为模拟演示</p>
+      <p className="import-source-note">各平台的同步状态以连接页为准</p>
     </section>
     <section className="import-source-group" aria-label="本地文件导入">
       <button className="import-source-row import-file-row" onClick={() => setView("file")}>

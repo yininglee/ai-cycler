@@ -6,6 +6,19 @@ import type { DemoEvent } from "../observability/demo-events.ts";
 
 export interface AnalysisRunRecord { rideId: string; result: unknown; storedAt: string }
 export interface ConsentRecord { policyVersion: string; acceptedAt: string }
+export type OneLapConnection = {
+  id: string;
+  accountKey: string;
+  connectedAt: string;
+  lastAttemptAt?: string;
+  lastSyncAt?: string;
+  paused?: boolean;
+  retryAt?: number;
+  error?: string;
+  result?: { added: number; duplicate: number; failed: number; rideIds: string[] };
+};
+type OneLapSource = { connectionId: string; key: string };
+type ImportResult = { rideId: string | null; duplicate: boolean };
 export interface ApplicationRepository {
   saveRide(ownerId: string, record: RideRecord, contentHash?: string): Promise<void>;
   /** 幂等导入去重：按 (ownerId, 内容哈希) 查找已导入记录；哈希随记录删除/账户删除一并移除。 */
@@ -30,6 +43,8 @@ type State = {
   analysisRuns: Record<string, { ownerId: string; run: AnalysisRunRecord }>;
   consents: Record<string, ConsentRecord>;
   demoEvents: Record<string, { ownerId: string; event: DemoEvent }>;
+  oneLapConnections: Record<string, OneLapConnection>;
+  oneLapActivities: Record<string, { ownerId: string; rideId: string | null }>;
 };
 
 // Next.js dev mode compiles each route into its own bundle, so module-level
@@ -46,7 +61,7 @@ function repositoryInstances(): Map<string, FileApplicationRepository> {
 
 const defaultRoot = () => process.env.LOCAL_DATA_DIR || path.join(process.cwd(), ".local-data");
 
-function emptyState(): State { return { rides: {}, profiles: {}, analysisRuns: {}, consents: {}, demoEvents: {} }; }
+function emptyState(): State { return { rides: {}, profiles: {}, analysisRuns: {}, consents: {}, demoEvents: {}, oneLapConnections: {}, oneLapActivities: {} }; }
 
 function sanitized(record: RideRecord): RideRecord {
   const next = structuredClone(record);
@@ -83,14 +98,15 @@ export class FileApplicationRepository implements ApplicationRepository {
     return this.state;
   }
 
-  private async mutate(fn: (state: State) => void): Promise<void> {
-    this.queue = this.queue.then(async () => {
-      const state = await this.load();
-      fn(state);
+  private async mutate(fn: (state: State) => void | Promise<void>): Promise<void> {
+    this.queue = this.queue.catch(() => {}).then(async () => {
+      const state = structuredClone(await this.load());
+      await fn(state);
       await mkdir(this.root, { recursive: true });
       const temp = `${this.filePath}.${process.pid}.${crypto.randomUUID()}.tmp`;
       await writeFile(temp, JSON.stringify(state), "utf8");
       await rename(temp, this.filePath);
+      this.state = state;
       this.stateFileMtimeMs = await this.fileMtimeMs();
     });
     return this.queue;
@@ -109,6 +125,51 @@ export class FileApplicationRepository implements ApplicationRepository {
       .find((item) => item.ownerId === ownerId && item.contentHash === contentHash);
     return entry?.record.activity.rideId ?? null;
   }
+  async importRide(ownerId: string, contentHash: string, parse: () => Promise<RideRecord>, source?: OneLapSource): Promise<ImportResult | null> {
+    let result: ImportResult | null = null;
+    await this.mutate(async state => {
+      if (source) {
+        if (state.oneLapConnections[ownerId]?.id !== source.connectionId) return;
+        const known = state.oneLapActivities[source.key];
+        if (known?.ownerId === ownerId) {
+          result = { rideId: known.rideId, duplicate: true };
+          return;
+        }
+      }
+      const existing = Object.values(state.rides).find(item => item.ownerId === ownerId && item.contentHash === contentHash);
+      let rideId: string;
+      if (!existing) {
+        const record = await parse();
+        rideId = record.activity.rideId;
+        state.rides[rideId] = { ownerId, record: sanitized(record), storedAt: new Date().toISOString(), contentHash };
+      } else {
+        rideId = existing.record.activity.rideId;
+        const ux = state.profiles[ownerId]?.ux;
+        if (!source && ux?.mode === "blank" && existing.storedAt < (ux.blankSince ?? "")) existing.storedAt = new Date().toISOString();
+      }
+      if (source) state.oneLapActivities[source.key] = { ownerId, rideId };
+      result = { rideId, duplicate: Boolean(existing) };
+    });
+    return result;
+  }
+  async getOneLapConnection(ownerId: string): Promise<OneLapConnection | null> {
+    return structuredClone((await this.load()).oneLapConnections[ownerId] ?? null);
+  }
+  async setOneLapConnection(ownerId: string, connection: OneLapConnection | null, expectedId?: string) {
+    await this.mutate(state => {
+      if (expectedId !== undefined && state.oneLapConnections[ownerId]?.id !== expectedId) return;
+      if (connection) {
+        const next = structuredClone(connection);
+        if (next.result) next.result.rideIds = next.result.rideIds.filter(id => state.rides[id]?.ownerId === ownerId);
+        state.oneLapConnections[ownerId] = next;
+      }
+      else delete state.oneLapConnections[ownerId];
+    });
+  }
+  async findOneLapActivity(ownerId: string, key: string): Promise<{ rideId: string | null } | null> {
+    const activity = (await this.load()).oneLapActivities[key];
+    return activity?.ownerId === ownerId ? { rideId: activity.rideId } : null;
+  }
   async getRide(ownerId: string, rideId: string): Promise<RideRecord | null> {
     const item = (await this.load()).rides[rideId];
     return item?.ownerId === ownerId ? structuredClone(item.record) : null;
@@ -121,7 +182,17 @@ export class FileApplicationRepository implements ApplicationRepository {
   }
   async deleteRide(ownerId: string, rideId: string): Promise<boolean> {
     let deleted = false;
-    await this.mutate((state) => { const item = state.rides[rideId]; if (item?.ownerId === ownerId) { delete state.rides[rideId]; delete state.analysisRuns[rideId]; deleted = true; } });
+    await this.mutate(state => {
+      if (state.rides[rideId]?.ownerId !== ownerId) return;
+      delete state.rides[rideId];
+      delete state.analysisRuns[rideId];
+      for (const activity of Object.values(state.oneLapActivities)) {
+        if (activity.ownerId === ownerId && activity.rideId === rideId) activity.rideId = null;
+      }
+      const result = state.oneLapConnections[ownerId]?.result;
+      if (result) result.rideIds = result.rideIds.filter(id => id !== rideId);
+      deleted = true;
+    });
     return deleted;
   }
   async getProfile(ownerId: string): Promise<UserProfile | null> { const value = (await this.load()).profiles[ownerId]; return value ? structuredClone(value) : null; }
@@ -143,8 +214,10 @@ export class FileApplicationRepository implements ApplicationRepository {
       for (const [id, item] of Object.entries(state.demoEvents)) if (item.ownerId === ownerId) delete state.demoEvents[id];
       delete state.profiles[ownerId];
       delete state.consents[ownerId];
+      delete state.oneLapConnections[ownerId];
+      for (const [key, activity] of Object.entries(state.oneLapActivities)) if (activity.ownerId === ownerId) delete state.oneLapActivities[key];
     });
   }
 }
 
-export function getApplicationRepository(): ApplicationRepository { const root = defaultRoot(); const instances = repositoryInstances(); let instance = instances.get(root); if (!instance) { instance = new FileApplicationRepository(root); instances.set(root, instance); } return instance; }
+export function getApplicationRepository(): FileApplicationRepository { const root = defaultRoot(); const instances = repositoryInstances(); let instance = instances.get(root); if (!instance) { instance = new FileApplicationRepository(root); instances.set(root, instance); } return instance; }

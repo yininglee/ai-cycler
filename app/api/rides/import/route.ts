@@ -1,13 +1,13 @@
-import { createHash } from "node:crypto";
-
-import { createImportedRideId, saveImportedRide } from "../../../../src/imports/demo-ride-store.ts";
+import { saveImportedRide } from "../../../../src/imports/demo-ride-store.ts";
 import { AuthConfigurationError, resolveOrCreateRequestSession, sessionCookieHeader, type RequestSession } from "../../../../src/auth/session.ts";
 import { getApplicationRepository } from "../../../../src/persistence/application-repository.ts";
 import { createDemoEvent } from "../../../../src/observability/demo-events.ts";
-import { parseRideRecord, isRideParseError } from "../../../../src/parsers/index.ts";
+import { isRideParseError } from "../../../../src/parsers/index.ts";
 import { MAX_UPLOAD_BYTES } from "../../../../src/parsers/parser-utils.ts";
 import { assertDeclaredMimeType } from "../../../../src/parsers/file-signature.ts";
 import { getImportRateLimiter } from "../../../../src/imports/import-rate-limit.ts";
+
+import { importRideBytes } from "../../../../src/imports/ride-import-service.ts";
 
 export const runtime = "nodejs";
 
@@ -90,45 +90,20 @@ export async function POST(request: Request): Promise<Response> {
   }
 
   const bytes = new Uint8Array(await upload.arrayBuffer());
-  const contentHash = createHash("sha256").update(bytes).digest("base64url");
-
-  // 幂等去重：同一会话重复导入相同内容时返回既有记录，不再重复解析与存储。
-  const existingRideId = await getApplicationRepository().findRideIdByContentHash(session.userId, contentHash);
-  if (existingRideId) {
-    // Explicitly importing a previously hidden file makes that same normalized
-    // record visible again in blank mode, without allocating another ride ID.
-    const repository = getApplicationRepository();
-    const profile = await repository.getProfile(session.userId);
-    if (profile?.ux?.mode === "blank") {
-      const entry = (await repository.listRides(session.userId)).find(item => item.record.activity.rideId === existingRideId);
-      if (entry && entry.storedAt < (profile.ux.blankSince ?? "")) await repository.saveRide(session.userId, entry.record, contentHash);
-    }
-    await getApplicationRepository().saveDemoEvent(session.userId, createDemoEvent({
-      type: "import_completed",
-      rideId: existingRideId,
-      requestId,
-      attributes: { deduplicated: "true" },
-    }));
-    return noStoreJson({ rideId: existingRideId, duplicate: true }, 200, sessionCookieHeader(session));
-  }
-
-  const rideId = createImportedRideId();
   try {
-    const record = await parseRideRecord({
-      rideId,
-      fileName: upload.name,
-      content: bytes,
-    });
-    await getApplicationRepository().saveRide(session.userId, record, contentHash);
-    await getApplicationRepository().saveDemoEvent(session.userId, createDemoEvent({
+    const repository = getApplicationRepository();
+    const { result, record } = await importRideBytes(repository, session.userId, upload.name, bytes);
+    if (!result?.rideId) throw new Error("Import did not return a ride ID");
+    await repository.saveDemoEvent(session.userId, createDemoEvent({
       type: "import_completed",
-      rideId,
+      rideId: result.rideId,
       requestId,
-      attributes: { source: record.activity.source.kind },
+      attributes: record ? { source: record.activity.source.kind } : { deduplicated: "true" },
     }));
-    // Keep the legacy in-memory fixture bridge for existing development tests.
-    saveImportedRide(record);
-    return noStoreJson({ rideId }, 201, sessionCookieHeader(session));
+    if (record) saveImportedRide(record);
+    return result.duplicate
+      ? noStoreJson({ rideId: result.rideId, duplicate: true }, 200, sessionCookieHeader(session))
+      : noStoreJson({ rideId: result.rideId }, 201, sessionCookieHeader(session));
   } catch (error) {
     if (isRideParseError(error)) {
       const status = error.code === "FILE_TOO_LARGE" ? 413 : 422;
