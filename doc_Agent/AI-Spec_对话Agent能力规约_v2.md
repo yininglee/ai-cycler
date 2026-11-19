@@ -1,20 +1,17 @@
 # AI-Spec · 对话 Agent 能力规约 v2（集中合同文档）
 
-> 2026-11-20 边界分类更新。当前分类合同为 `chat-classifier-v0.3`，Prompt 为 `ride-chat-classifier-prompt-v0.5.0`。仅保留安全、隐私、注入、明确域外和 allow，needsClarification 固定 false。所有获准业务请求进入统一循环。业务标签退出正式链路的记录继承、上下文清空和查询范围选择，显式 choice、rideScope、用户日期与工具参数决定对象与范围。旧标签仅供历史资产读取。已配置分类器失败仍显式降级。本文后续历史意图分派说明由本段覆盖。
-
-
 > **2026-11-02 执行流程修订**：以[当前开发规划](开发规划/VIBE_CODING_Agent_开发规划_v2.md)为准，先完成共用架构，再按 UX 五场景执行“场景 → 输入输出合同 → Agent 能力与界面 → 端到端验收”。单节点、任务级测评及专项建集／冻结／Run 前置暂缓；必要时再决策建集。本文已有技术合同和历史证据保留，旧排期、样本数、专项测评门槛不自动成为当前阻塞。类型／构建等工程检查、规则硬门和用户验收继续。目标合同不等于全部已实装；本次未更改代码 schema 版本。
 
 - 建立日期：2026-10-27｜取代：[AI-Spec v1（已归档）](archive/AI-Spec_对话Agent能力规约.md)
 - 结构依据：[Agent 结构设计与改造定案 v1.0](开发规划/2026-10-27_Agent结构设计与改造定案.md)｜[需求分析 v2](2026-10-27_骑行伙伴Agent改造_需求分析_v2.md)
 - 命名修订（2026-10-27）：响应中的可点按钮由 `actions` 更名 **`quickActions`**，避免与系统能力枚举 `action` 撞名
-- **事实源分工（最高原则，继承 D-A6）**：Prompt 正文唯一事实源 = 代码库（`src/chat/` 版本化常量）；本文档承载**合同**（路由/动作/交互/工具/上下文/输出/校验），代码与文档冲突视为缺陷须修复其一
+- **事实源分工（继承 D-A6）**：提示词正文以 `src/chat/` 和 `src/training/` 的代码常量为准；本文承载路由、动作、交互、工具、上下文、输出与校验合同。
 
 ---
 
 ## 0. 当前合同适用范围（ARCH-04，2026-11-02 更新）
 
-本文区分现役合同、实施快照和目标合同。**当前共用执行边界及模型最终输出 v0.3 以 §16 为准；旧 v0.1/v0.2 输出继续兼容。****共用校验与写确认扩展以 §15 为准，上下文沿用 §14，统一执行主链沿用 §13**；§12 保留 ARCH-01 改造前源码核对快照。共同的输入上限、HTTP 错误、证据与交互净化规则继续沿用；写确认和计划领域合同仍待后续实施。模型最终输出、HTTP 响应、工具调用与执行模式是不同协议，不共用一个版本号。
+现役统一执行与提示词见 §2、§13.3，共用校验与写确认见 §15，模型最终输出 v0.3 见 §16。会话隔离见 §4.3，上下文见 §14，骑行导入／顽鹿联调见 §17，训练计划生成与启用见 §19。§12 及标注日期的实施快照保留追溯用途。模型输出、HTTP 响应、工具调用与执行模式各自版本化。
 
 改造前合同与迁移约束保留作历史快照，不作为当前状态快照。本文只记录技术合同；架构与场景的状态、检查证据和验收结论统一见[开发进度](开发规划/Agent改造开发进度.md)。
 
@@ -25,7 +22,7 @@
 | 平面 | 内容 | 状态 |
 |---|---|---|
 | 控制平面 | L0 硬闸 + executionRoute 三值 | ARCH-02 执行合同 |
-| 认知平面 | 统一工具循环 + 能力注册（tools/knowledge/query，workflow 暂无实装） | ARCH-02/03 共用机制 |
+| 认知平面 | 统一工具循环与能力注册，首次训练草案由专用工作流生成 | ARCH-02/03、SCN-04 |
 | 交互平面 | 动作 7 值 + choice 状态 + artifact 通道 + quickActions | **AGT-H 落地** |
 | 校验三层 | 文本证据（现役）/ artifact schema / 领域硬门 | H/F 递进落地 |
 
@@ -40,12 +37,10 @@ executionRoute ∈ { stop, deterministic, agent_loop }
 ```
 
 - stop：安全与授权边界，固定受控回复。
-- deterministic：纯问候、明确精确聚合、范围／能力边界、澄清与尚未开放的计划能力。
+- deterministic：纯问候、明确精确聚合、受控边界和确定性澄清。
 - agent_loop：允许的数据、知识与分析请求均进入同一工具循环，由模型按完整可用目录选择工具。
 
-`decision.route` 暂时保留旧 16 值，供历史会话读取、上下文语义和遥测使用；`allowModel` 与实际执行模式对齐。它不再选择数据执行器、工具目录或正式模型的证据校验分支。统一循环的模型协议 route 固定为 `autonomous_tools`，沿用 output v0.2，公开结果恢复旧业务标签；两种 route 不应混淆。
-
-分类器本轮保留语义边界与上下文提示；已配置的分类器失败时保持明确终局降级，不绕过边界继续主模型。未配置分类器时，普通数据／知识问法进入统一循环；规则历史遗留的记录／水平能力缺口不再拦截已实现查询。具体迁移与保留项见 §13。
+正式工具循环的模型协议 route 固定为 `autonomous_tools`，最终输出使用 `ride-chat-output-v0.3`。旧 route 值供历史会话和评测资产兼容读取。分类器只判断本轮请求边界，业务工具与澄清由带上下文的 Agent 处理。详见 §13.3。
 
 ## 3. 动作合同（SD-3）
 
@@ -98,6 +93,8 @@ session_turn 槽位 = { question ≤120 字, route, rideAnchor?, choice?: {kind,
 - 目标：`rideAnchor`（日期）降级为纯展示与日志，跨轮唯一选择以 `choice.id`（rideId）为准。ARCH-03 起优先使用唯一 choice，旧日期仅供旧摘要兼容与展示；作用域重置阻止旧日期重新继承，日期字段继续兼容保留。
 - 槽位总数 ≤6 不变；非法整体丢弃规则不变
 - 旧槽位（v0.2，无 `choice`）原样读取并传递——**不需要迁移、不清理用户本地历史**
+
+客户端在同一窗口保留多个本地会话段，距最后一轮结束满 24 小时自动切到新段。发请求时从当前段取最多六轮摘要；历史分页和定位只改变展示。过期会话的摘要、记录选择和临时资料提案不进入新段，已保存资料、计划和骑行仍可重新读取。旧历史若缺少时间戳，保留原消息并开启新段。导入回执按起始 `conversationId` 恢复、按事件 ID 去重；该 ID 用于前端定位，数据访问仍以服务端会话归属为准。
 
 ### 4.5 交互载荷定稿值（AGT-H0 落地，2026-10-27）
 
@@ -215,7 +212,7 @@ session_turn 槽位 = { question ≤120 字, route, rideAnchor?, choice?: {kind,
 | 待补 | AGT-F | 计划 schema、写路径合同、硬门规则、确认令牌 | 占位（v1 §3.3 占位继承） |
 
 
-## 2026-11-02 · UX-P3 / AGT-H 联调实装补记
+## 2026-11-02 · UX-P3 / AGT-H 联调快照
 
 - /api/chat 的 choice 请求通道现已启用 ride kind；goal / plan_slot 仍为合同预留、请求暂拒。id 还需排除纯日期并校验当前会话可见性。显式点选与摘要 choice 都映射唯一 rideId，失效不替换。
 - 结构化卡片由完成工具结果中的 ID 与授权仓储记录同源投影；pending 只显示实际 candidates。新增可选 title（≤40字符）。正常有效回答可带 artifact/quickActions，澄清轮带 select/choices；纯知识查询未查记录时不凭快照附记录。
@@ -297,7 +294,7 @@ ARCH-04 建立共用约束与可扩展验证机制，场景四再定实际 endpo
 
 ## 13. ARCH-02 统一主链与能力注册（2026-11-02）
 
-### 13.1 已实装的共用机制
+### 13.1 共用机制的初次实装（2026-11-02 快照）
 
 事实源为 `src/chat/chat-execution.ts`（`chat-execution-v0.1`）、`chat-capability-registry.ts`（`chat-capability-registry-v0.1`）与 `chat-agent.ts` 的 runChatAgent。
 
@@ -308,7 +305,7 @@ ARCH-04 建立共用约束与可扩展验证机制，场景四再定实际 endpo
 - 缺传感器数据由工具结果与 limitations 说明，不当作该能力未实现。无骑行记录可使用无锚点的个人档案／知识库工具。
 - 纯问候零模型直答；简单精确汇总由仓储和规则计算。带“为什么／分析／建议／比较”等复合诉求的汇总不被 L0 聚合快路径吞掉，可进入统一循环查询和解释。
 
-### 13.2 当前请求到输出的合同
+### 13.2 请求到输出的初次实装（2026-11-02 快照）
 
 请求顶层仍是 text/summaries/choice，没有新增客户端执行模式开关。executionRoute 由服务端计算，不能由用户或模型指定。HTTP 错误、正文／摘要上限、交互净化、隐私投影继续沿用 §12.2～3。
 
@@ -320,11 +317,11 @@ API 不再装配固定单工具 runner。未配置主模型时，不会先执行
 
 模型输出合同仍为 ride-chat-output-v0.2，交互合同仍为 ride-chat-interaction-v0.3；主 Prompt 升至 ride-chat-prompt-v0.3.0 并同步归档。统一循环允许纯知识回答只引用 knowledgeIds，个人事实继续要求实际 claimIds，复合回答可同时引用两类证据；不放宽数字、引用或安全检查。
 
-### 13.3 分类器决策与范围
+### 13.3 现役分类器与提示词（2026-11-20）
 
-本轮保留已有分类器作为语义边界检查及上下文提示，避免在没有真实模型边界证据时删除纵深保护。仍使用旧分类协议返回业务标签，但这些标签不能选择另一条取数执行器或裁剪目录。分类器已配置时的失败保持显式降级；配置错误也降级，已知 L0 快路径仍可独立运行。
-
-分类器未配置时，未知知识／数据措辞进入统一循环，并继续受工具白名单、归属、预算和证据校验约束；旧规则把“那次／历史骑行／能力水平”等标为能力缺口的情况，改为允许查询的上下文提示。明确请求制定计划／执行评估继续说明未开放。此处没有承诺所有语义变体都能正确理解；真实模型边界与生成质量尚未重新验证。
+- **边界分类器**使用 `chat-classifier-v0.3` 与 `ride-chat-classifier-prompt-v0.5.0`。只读本轮文本，固定输出 `schemaVersion`、`intent`、`needsClarification: false` 三个字段。`intent` 限定为 `safety_stop`、`privacy_boundary`、`injection_stop`、`out_of_scope`、`allow`。L0 快路径可独立执行。配置有效且放行时进入统一 Agent；未配置时普通请求仍走统一 Agent；配置错误或已配置调用失败时显式降级。[分类提示词归档](../prompts/ride-chat-classifier-v0.2.md)
+- **主 Agent Prompt** 为 `ride-chat-prompt-v0.6.3`，围绕 `autonomous_tools` 规定工具调用、证据引用、澄清及结构化回答。硅基流动适配器对旧协议显式选用 legacy Prompt。记录继承、上下文清空和查询范围由 `choice`、`rideScope`、用户原话与工具参数决定。日期只在已有等待确认且新输入符合确认语义时完成挂起问题。[主提示词归档](../prompts/ride-chat-workflow-v0.1.md)
+- **首份训练草案 Prompt** 由信息卡确认后的专用工作流调用。计划依据、输出与保存合同见 §19.3。[专用提示词源码](../src/training/plan-generation-prompt.ts)
 
 ### 13.4 历史入口、兼容与回退
 
@@ -350,8 +347,8 @@ API 不再装配固定单工具 runner。未配置主模型时，不会先执行
 
 ### 14.2 记录对象与追问
 
-- 中间的问候等中性轮不丢失选择：统一向前查找最近的唯一 choice，遇到作用域标记或旧版近期整体轮立即停止。日期兼容继承也遵循相同屏障；不能在 reset 后重新找到更早日期。
-- 明确点选优先于隐式继承；文字明确指定日期、最近一次或序数时，不注入旧 choice。点选与文字对象冲突先请用户重新选择，不带旧对象执行。明确点选／单次指涉不会被“水平评估”标签误当近期整体。
+- 中间的问候等中性轮保留选择。向前查找最近的唯一 choice，遇到 `rideScope` 标记立即停止，兼容日期继承遵循相同屏障。历史业务标签本身不触发清空。
+- 明确点选优先于隐式继承；文字明确指定日期、最近一次或序数时，不注入旧 choice。点选与文字对象冲突先请用户重新选择。无显式选择或记录指涉的整体问题可进入 overview 范围。
 - 支持“倒数第二次”等简单中文序数与数字序数；不存在或未识别的序号给候选，不回退为最新记录。无明确对象的“分析骑行数据”等请求先给候选；跨记录检索原有窗口基准与用户单次选择分开，保留既有检索口径。
 - 服务端明确解析出的记录 ID 随 choice 返回，包括已选对象但主模型未配置的情况；确认后不只保存日期，同日多条也可继续定位。
 - 纯知识问题不继承失效个人对象；保留问题摘要供理解概念，去掉传给该轮引用解析的个人 ID／日期。带“这次／我的”等个人指涉的问题仍验证对象，不把个人追问降为通用知识。
@@ -443,15 +440,18 @@ prepare_goal_editor 已从能力注册、目录和参数解析中撤下。旧 go
 
 ### 17.1 AI 入口与导入结果
 
-`prepare_ride_import({})` 是已注册的第十四项只读能力，无 rideRef、ownerId、路径或文件参数；AI 自主选择调用，不在模型前用同步关键词分派。结果说明真实文件／模拟平台边界，提供平台白名单、FIT/GPX、大小上限及系统可用性 claim；`ride_import {payload:{}}` artifact 由服务端完成工具后生成，最终文本通过校验才展示。前端复用原 RideSyncLauncher；此工具不连接账号、不上传文件、不生成解读。
+`prepare_ride_import({})` 是只读入口能力，无 rideRef、ownerId、路径或文件参数。工具结果仍是 `real_file_simulated_platform`，含平台白名单、FIT／GPX、大小上限及入口可用性 claim。主 Prompt 当前沿用该模拟口径。服务端根据有效结果创建 `ride_import {payload:{}}`，前端打开 RideSyncLauncher；顽鹿联调资格由平台接口按服务端配置与当前会话判断。
 
-真实文件沿用 /api/rides/import，50MB 限制、格式与 MIME 校验、归属及 contentHash 去重不变。空白起点下显式重新导入同一旧文件，会恢复同一记录的可见时间，不新建另一个 ID；解析失败保留选择并可重试。四平台继续明确模拟，新增／重复／失败数量来自实际模拟服务结果。
+真实文件沿用 `POST /api/rides/import`，执行 50 MB 限制、格式与 MIME 校验、归属和内容哈希去重。空白起点下显式重新导入同一旧文件，恢复同一记录的可见时间。模拟平台按各自实际模拟结果展示新增／重复／失败。
+
+顽鹿单账号试验路径使用 `GET /api/platform?provider=onelap` 读取状态，`POST /api/platform` 接受 `connect`、`sync`、`disconnect`。仅 `sync` 发起上游拉取，最多三页、每页二十条。同步文件与手动上传共享解析和入库服务，按账号活动 ID 及文件哈希去重；入库前复核连接。状态和去重索引持久化，凭据仅在服务端。[第三方同步技术方案](开发规划/Cycler_第三方骑行自动同步技术方案.md)
 
 ### 17.2 对话归属、回执与明确选择
 
 - 同步／导入启动时捕获 conversationId，平台关联 URL 及返回链接携带该 ID。回执 `{receiptId,conversationId,ids,text}` 暂存在原标签页 sessionStorage，恢复到对应本地对话；有效返回 ID 选中原对话，不擅自新建或串入其他会话。
 - 完成区域仅显示新增／重复／失败或文件导入结果，最多一个“查看骑行记录”链接指向 /import；不渲染同步／导入记录卡片。既有本地 rides 消息保持原 shape，内部 ids 只供回执和去重兼容，不作为默认选择。
 - ids 最多 20 条，逐个校验字符串和长度并去重；text 最多 600 字。新回执使用随机事件 ID；旧无 ID 回执按内容生成稳定标识兼容。先持久化恢复结果再清队列，重复恢复同一事件不重复追加消息。
+- 顽鹿试验从聊天发起且有新增骑行时尝试向起始会话追加回执。当前回执解析上限为 20 个 ID，单轮新增超过上限时以平台页的汇总和记录列表为准。
 - 导入本身不选择记录，也不自动问 AI。用户点击“查看深度解读”或详情时，记录唯一 ID 以 source=ride_selection 的白名单摘要保存；不伪造模型回答。离开聊天前同步持久化选择；从平台页查看也绑定原对话。后续 text/summaries/choice 仍由原网关校验，服务端验证记录归属和可见性。
 - 返回详情页和平台页均携带原对话 ID；聊天输入草稿、消息和位置仍沿用既有本地恢复。缓存、回执或选择不能恢复已删除／当前视图不可见的记录。
 
@@ -486,7 +486,7 @@ get_ride_history 保留 `{rideId,windowDays,metrics}`；增量接受 `{rideId:nu
 
 ### 18.3 知识依据与回答片段
 
-知识解释必须检索并引用本轮 knowledgeId。通过最终输出校验后，服务端仅按被引用条目的实际 title 附加“知识依据”自然语言（模型叙事仍按600字符／2KB校验，系统来源附注单独追加），不采信模型编造的来源、不新建固定依据面板。知识无命中时与无骑行记录区分说明；组合请求仍可先回答有依据部分。
+知识解释必须检索并引用本轮 knowledgeId。聊天检索已复用生成草案使用的科学训练条目，条目保留来源和适用限制。通过最终输出校验后，服务端按被引用条目的实际 title 附加“知识依据”（模型叙事仍按600字符／2KB校验）。知识无命中时与无骑行记录区分说明；组合请求可先回答有依据部分。[训练知识库](../src/domain/training-knowledge-base.ts)
 
 摘要新增可选 answerContext，最多160字符、无控制字符，只用于辨认之前回答里的概念；本地从返回文本截取，刷新后可恢复。摘要仍最多6条，总字节预算从3KB扩为8KB；非法字段或超预算整体丢弃。旧摘要仍兼容，当前具体对象仍由 choice.id 决定，新对话不继承摘要。上下文合同为 ride-chat-context-v0.2，主 Prompt 为 ride-chat-prompt-v0.3.7。
 
@@ -494,13 +494,13 @@ answerContext 与历史问题都是不可信语境，不能授权 ID、充当来
 
 ## 19. SCN-04 真实计划与明确启用合同
 
-本节覆盖前文“计划尚未开放／没有生产事务适配”的历史描述；不改变执行评估尚未开放的边界。主 Prompt 为 ride-chat-prompt-v0.4.0，同步维护原归档路径；模型输出仍为七字段 v0.3，响应增加严格 training_plan 引用，不能由模型伪造。完成／执行承诺校验只核验模型声明与实际工具结果，不根据用户文本选择或触发业务能力；查看已存在草案的事实表述不要求重新生成。
+模型输出使用七字段 v0.3，主 Prompt 版本见 §13.3。响应携带服务端生成的 `training_plan` 引用。完成／执行承诺校验核对模型声明与实际工具结果；查看已存在草案可采用读取结果。
 
 ### 19.1 同一 Agent 中的三个能力
 
 - get_training_plan_context({version?,date?})：读取本人的 intakeVersion、confirmedIntakeVersion、plan version、当前草案／生效版本、可用基础、缺项和规则限制。可选 version/date 读取本人确切版本及当天规范步骤 selected.day；无安排为 null，不从周摘要猜测当天课表。
 - prepare_training_plan({expectedVersion,patch,startNew?})：乐观锁更新待核对信息。startNew:true 用于 AI 理解用户重新制定意图后准备新计划入口；即使 patch 为空也递增 intakeVersion，撤销旧确认和当前草案指针、重新核对不适情况，保留生效版本。普通补充省略该参数。只允许白名单字段；不明日期／基础保留空值。AI 不能将 healthConcern 清为 false；本人在信息卡核对。改动会撤销原信息确认、清空当前草案指针，保留历史与生效计划。
-- propose_training_plan({intakeVersion,baseVersion,proposal})：仅使用已核对的当前信息生成草案；领域校验通过才保存。当前待确认草案的信息版本、基础及逐日日程完全一致时复用原版本并返回 unchanged=true，不因重复提案或仅措辞变化制造版本。实际安排改变才递增版本。proposal 包含 rationale 和最多16个不重叠且覆盖整个周期的周阶段 blocks，每阶段含 fromWeek/toWeek/sessions，session 仅含 weekday、kind、minutes。支持 recovery/endurance/tempo/threshold；服务端展开逐日休息、热身、主体及冷身步骤，校验后形成 training-plan-v1。
+- propose_training_plan({intakeVersion,baseVersion,proposal})：聊天工具用于修改现有待确认草案；首份草案由信息卡工作流复用同一计划服务生成。信息版本、基础和逐日日程完全一致时复用原版本，实际安排改变才递增版本。proposal 包含 rationale 和最多16个不重叠且覆盖整个周期的周阶段 blocks，每阶段含 fromWeek/toWeek/sessions，session 仅含 weekday、kind、minutes。支持 recovery/endurance/tempo/threshold；服务端展开逐日休息、热身、主体及冷身步骤，校验后形成 training-plan-v1。
 
 当前完整注册目录见§20；prepare/propose 标记 effect=prepare，其余为 read。prepare 是可撤回的信息／草案持久化，不能等同启用写入。没有 activate 工具，没有新增关键词业务路由；保留统一工具循环、既有调用预算、参数纠正与输出校验。已确认信息下的日程规则拒绝最多反馈一次 proposal 修正要求，trace.planProposalRepairAttempts 留痕，仍计入最多6次模型／5次成功工具预算；不要求用户修改真实基础来迁就错误课表。未能修正时受控说明草案校验失败，保留信息、不启用。声称本轮已生成／修改草案但没有成功提案结果时，OUTPUT_ACTION_UNSUPPORTED 拒绝，最多用原 evidenceRecoveryAttempts 额度反馈补执行；读取上下文不是执行证据，未修正不能上屏。AI 声称已准备计划信息卡时，本轮也必须存在 intake/create 的真实引用；不能把仅查看已有计划的卡片说成制定入口。缺少时复用原 evidenceRecoveryAttempts 预算要求 AI 自主补调 prepare_training_plan（重新制定时 startNew:true），不增加用户自然语言的正则执行分支。工具结果包括事实／限制和引用，不含确认令牌。计划说明的数值须来自信息、基础或日程；未经支持的 FTP、明确效果保证与指令注入被拒绝，草案不推进版本。回复不得把准备动作说成已经启用。
 
@@ -516,7 +516,9 @@ training-plan-rules-v1 是原型的保守产品限制，**不代表经临床验�
 
 ### 19.3 HTTP、引用与事务
 
-/api/training-plans 采用 Node runtime、no-store、会话归属校验，POST 最多32KB且 action 字段严格：prepare、confirm_intake、issue、confirm、discard。prepare 初始空请求允许 expectedVersion=null；有改动必须携带确切版本。confirm_intake 必须 confirmed=true；此动作只确认信息，随后由普通 /api/chat 调用统一 Agent 提案。GET 可按 planId/version 读取本人版本，不能读其他用户；响应不泄露 grants/receipts/audits。
+/api/training-plans 采用 Node runtime、no-store、会话归属校验，POST 最多32KB。prepare 初始空请求允许 expectedVersion=null；有改动必须携带确切版本。GET 按 planId/version 读取本人版本，响应排除 grants/receipts/audits。删除确认见 §20.4。
+
+「核对信息并生成草案」先用 `confirm_intake` 确认信息，再以 `{action: "generate_draft", intakeVersion}` 调用独立流程。服务验证版本、必填项及不适核对状态，同一已确认信息版本已有草案时可直接返回。否则以专用 Prompt 接收已核对信息、身体资料投影、近 28 天骑行及数据覆盖、领域约束、按目标检索的训练知识。模型输出 `{knowledgeIds, proposal}`，引用 1～3 个本轮条目，由服务端附加实际标题。计划服务复用版本检查、领域校验及事务保存；提案或规则错误最多修正一次。成功后聊天展示待确认版本，启用须在计划详情明确确认。[生成工作流](../src/training/plan-generation.ts)
 
 响应 artifact 为 training_plan，payload 精确包含 planId/intakeVersion/version/view，view=intake|create|draft|active，版本引用不是内容或权限凭证。旧计划占位 artifact 不提供启用入口。启用仅在详情页点击“确认并启用计划”：先 issue 绑定本人、action=activate_training_plan、计划ID、草案版本、内容哈希、当前生效版本、替换日期及幂等键，再提交 confirmed=true 的确切 request。令牌10分钟有效，不传给模型；旧版本、同版本内容变化、资料指纹变化、已有生效版本变化或跨日替换日期变化均不能误提交。完全一致重试回放同一结果；失败时不显示成功。
 
@@ -548,7 +550,7 @@ TrainingExecutionRef 精确为 planId/version/date；执行唯一键为版本与
 
 assess 按 expectedRevision 读取当前关联，事实版本 training-execution-v1。移动时长与计划时长比较，总时长仅补充展示；无有效移动时长不以总时长证明完成。估计、低可信或非 valid 指标不作为有效比较值。时长比例是时长达成，不能等同执行质量。功率目标须来自该版计划本人已确认 FTP 与功率计；全程加权目标与平均功率只作整体参照，不证明逐段完成。无圈段和计划步骤对应，步骤／间歇顺序一律无法核实；RPE 提示与心率／功率不直接换算，不生成完成分或猜 FTP。休息日关联只记活动，不评分。
 
-统一 Agent 新增 get_training_execution、prepare_training_record_link、assess_training_execution，目录共19项；没有关联、删除或启用写工具。上下文工具提供对象、候选、状态及 revision，具体事实比较只由实际 assess 工具返回，以免只读取后冒充评估。模型自主理解问题并选工具，不以正则触发业务能力；依旧使用同一 /api/chat、已有证据校验和工具预算。Prompt 为 ride-chat-prompt-v0.6.1，模型输出仍 ride-chat-output-v0.3。知识解释按需调用已有知识库；疲劳时接受搁置，不自动改日程，明确调整另走 SCN-04 草案与确认。
+统一 Agent 提供 get_training_execution、prepare_training_record_link、assess_training_execution。上下文工具提供对象、候选、状态及 revision，实际 assess 工具返回事实比较。模型通过同一 /api/chat 选择工具并接受证据校验和调用预算，输出为 ride-chat-output-v0.3。知识解释按需检索，疲劳时接受搁置，明确调整走 SCN-04 草案与确认，关联、删除或启用仍使用各自的交互确认。
 
 AI 反馈仅取经验证／修复的 answer，并绑定工具实际返回的 revision、assessmentRevision、记录与计划哈希后保存；模型失败保留关联与事实，清楚显示待重试。关联更换或重新评估后清除旧反馈；读取发现源记录删除／改变时隐藏旧结论，延迟反馈以版本和内容复核拒收。原始骑行仓储与 SQLite 不构成跨库原子事务：在确认、评估、反馈保存及再次读取时复核，不宣称可阻止独立源仓储在两个读之间变化。
 
