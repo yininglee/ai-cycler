@@ -1,0 +1,175 @@
+{
+  "schemaVersion": "ride-analysis-eval-migration-v0.1",
+  "sourceCaseFile": "archive/v1-testing-2026-09-30/eval/ai-cycling-eval-cases.jsonl",
+  "targetOutputSchema": "ride-analysis-output-v0.3",
+  "targetSurface": "automatic_ride_analysis",
+  "fewShotMode": "disabled",
+  "cases": [
+    {
+      "sourceCaseId": "RA-L1-001",
+      "targetCaseId": "RA-AUTO-001",
+      "status": "READY",
+      "fixture": "l1-built-in-sample",
+      "contextProfile": "no_history",
+      "expectedDimensionKeys": ["pace", "climbing"],
+      "reason": "旧用例改为新合同业务维度；传感器限制可放在limitations，历史不可比不生成history。"
+    },
+    {
+      "sourceCaseId": "RA-L1-002",
+      "targetCaseId": "RA-AUTO-002",
+      "status": "READY",
+      "fixture": "l1-built-in-sample",
+      "contextProfile": "first_ride_no_history",
+      "expectedDimensionKeys": ["pace", "climbing"],
+      "reason": "首次骑行只总结本次；不生成history维度。"
+    },
+    {
+      "sourceCaseId": "RA-L1-003",
+      "targetCaseId": "RA-AUTO-003",
+      "status": "READY",
+      "fixture": "gpx-no-timestamps",
+      "contextProfile": "missing_timestamps",
+      "expectedDimensionKeys": ["climbing"],
+      "reason": "保留无时间戳降级，禁止模型补造速度和时长。"
+    },
+    {
+      "sourceCaseId": "RA-L1-004",
+      "targetCaseId": "RA-AUTO-004",
+      "status": "READY",
+      "fixture": "l1-gps-spike",
+      "contextProfile": "gps_quality_warning",
+      "expectedDimensionKeys": [],
+      "reason": "质量警告优先；不把异常速度当作骑行亮点。"
+    },
+    {
+      "sourceCaseId": "RA-L1-005",
+      "targetCaseId": "RA-AUTO-005",
+      "status": "READY",
+      "fixture": "eval-different-route-history",
+      "contextProfile": "different_route_history",
+      "expectedDimensionKeys": ["pace", "climbing"],
+      "reason": "需要新合同HistoricalComparisonSnapshot不可比样例，当前fixtures没有同等输入。"
+    },
+    {
+      "sourceCaseId": "RA-L2-001",
+      "targetCaseId": "RA-AUTO-006",
+      "status": "READY",
+      "fixture": "l2-built-in-sample",
+      "contextProfile": "heart_rate_and_cadence",
+      "expectedDimensionKeys": ["pace", "heartRate", "cadence", "climbing"],
+      "reason": "按实际开放能力选择业务维度，不拆成字段型维度。"
+    },
+    {
+      "sourceCaseId": "RA-L2-002",
+      "targetCaseId": "RA-AUTO-007",
+      "status": "READY",
+      "fixture": "eval-estimated-max-hr",
+      "contextProfile": "estimated_max_heart_rate",
+      "expectedDimensionKeys": ["heartRate"],
+      "reason": "需要带估算最大心率来源与不确定性Claim的上下文，当前fixtures没有。"
+    },
+    {
+      "sourceCaseId": "RA-L2-003",
+      "targetCaseId": "RA-AUTO-008",
+      "status": "READY",
+      "fixture": "fit-heart-rate-dropout",
+      "contextProfile": "heart_rate_quality_degraded",
+      "expectedDimensionKeys": ["pace"],
+      "reason": "心率质量不足时不生成完整心率维度或稳定性结论。"
+    },
+    {
+      "sourceCaseId": "RA-L2-004",
+      "targetCaseId": "RA-AUTO-009",
+      "status": "READY",
+      "fixture": "eval-high-hr-no-baseline",
+      "contextProfile": "high_heart_rate_without_personal_baseline",
+      "expectedDimensionKeys": ["heartRate"],
+      "reason": "需要安全边界与用户问题分离的自动骑后输入；当前fixture与旧用例语义不一致。"
+    },
+    {
+      "sourceCaseId": "RA-L2-005",
+      "targetCaseId": "RA-AUTO-010",
+      "status": "READY",
+      "fixture": "eval-indoor-hr-only",
+      "contextProfile": "indoor_heart_rate_only",
+      "expectedDimensionKeys": ["heartRate"],
+      "reason": "需要室内骑行合同样例；当前fixtures没有室内模式标识。"
+    },
+    {
+      "sourceCaseId": "RA-L3-001",
+      "targetCaseId": "RA-AUTO-011",
+      "status": "READY",
+      "fixture": "l3-built-in-sample",
+      "contextProfile": "heart_rate_power_cadence",
+      "expectedDimensionKeys": ["pace", "heartRate", "power", "cadence", "climbing"],
+      "reason": "整体评价应在必要时合并速度、心率、功率、踏频证据；首末Claim不得扩展为全程。"
+    },
+    {
+      "sourceCaseId": "RA-L3-002",
+      "targetCaseId": "RA-AUTO-012",
+      "status": "READY",
+      "fixture": "eval-insufficient-ftp",
+      "contextProfile": "insufficient_ftp_evidence",
+      "expectedDimensionKeys": ["power"],
+      "reason": "需要明确FTP不可用或不足的Claim，不能让模型自行估算。"
+    },
+    {
+      "sourceCaseId": "RA-L3-003",
+      "targetCaseId": "RA-AUTO-013",
+      "status": "READY",
+      "fixture": "eval-history-short",
+      "contextProfile": "history_not_comparable",
+      "expectedDimensionKeys": ["pace", "power", "cadence", "climbing"],
+      "reason": "需要新合同历史不可比上下文；limitations可说明历史记录不足，但不得生成history维度。"
+    },
+    {
+      "sourceCaseId": "RA-L3-004",
+      "targetCaseId": "RA-AUTO-014",
+      "status": "READY",
+      "fixture": "fit-power-dropout-with-heart-rate",
+      "contextProfile": "power_quality_degraded",
+      "expectedDimensionKeys": ["pace", "heartRate"],
+      "reason": "功率掉线时说明质量影响，不把掉线解释为生理表现；该fixture没有可靠海拔事实，不开放climbing。"
+    },
+    {
+      "sourceCaseId": "RA-L3-005",
+      "targetCaseId": "RA-AUTO-015",
+      "status": "READY",
+      "fixture": "eval-indoor-power-only",
+      "contextProfile": "indoor_power_only",
+      "expectedDimensionKeys": ["power"],
+      "reason": "需要室内模式与功率事实样例，不能从功率推断距离、路线或爬升。"
+    },
+    {
+      "sourceCaseId": "EDGE-001",
+      "targetCaseId": "RA-AUTO-016",
+      "status": "READY",
+      "fixture": "short-fit-ride",
+      "contextProfile": "short_ride",
+      "expectedDimensionKeys": [],
+      "reason": "短活动只保留基础事实，不生成趋势、体能或恢复判断。"
+    },
+    {
+      "sourceCaseId": "EDGE-002",
+      "targetCaseId": "RA-AUTO-017",
+      "status": "READY",
+      "fixture": "short-fit-ride",
+      "contextProfile": "short_ride",
+      "expectedDimensionKeys": [],
+      "reason": "当前短骑fixture同时覆盖距离和时长短门；用户问题改为自动骑后分析。"
+    },
+    {
+      "sourceCaseId": "EDGE-003",
+      "targetCaseId": "RA-AUTO-018",
+      "status": "READY",
+      "fixture": "inconsistent-fit-summary",
+      "contextProfile": "source_metric_conflict",
+      "expectedDimensionKeys": [],
+      "reason": "事实矛盾时由服务端降级/阻断，不让模型自行选择数字。"
+    }
+  ],
+  "deferredSourceCases": [
+    {"sourceCaseIds": ["SAFE-001", "SAFE-002", "SAFE-003", "SAFE-004", "SAFE-005"], "targetFile": "eval/ride-chat-cases-v0.1.jsonl", "reason": "主动健康/安全问题属于对话安全集，不属于自动骑后输出合同。"},
+    {"sourceCaseIds": ["SEC-001", "SEC-002", "TOOL-001", "TOOL-002", "TOOL-003", "RAG-001", "RAG-002"], "targetFile": "eval/ride-chat-cases-v0.1.jsonl", "reason": "注入、工具和RAG需要独立对话合同与工具评测。"}
+  ]
+}

@@ -8,7 +8,7 @@ import {
   type RideInterpretationV04Candidate,
 } from "../src/ai/ride-interpretation-v04-candidate.ts";
 
-const fixtureFile = new URL("../eval/ride-interpretation-v0.4-candidate/fixtures.json", import.meta.url);
+const fixtureFile = new URL("./fixtures/ride-interpretation-v04-candidate.json", import.meta.url);
 const fixtures = JSON.parse(readFileSync(fixtureFile, "utf8")) as { fixtures: Array<{ id: string; candidate: RideInterpretationV04Candidate }> };
 
 test("candidate interpretation fixtures pass the offline contract", () => {

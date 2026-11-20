@@ -161,7 +161,7 @@
 
 以 [粗规划 §5 里程碑 × 评测资产 × 放行门对照表](开发规划/VIBE_CODING_Agent_开发规划.md) 为准。评测制度要点：动评估资产/口径 → 全新 Run、旧结论 supersede、不续跑历史 Run；bad case 回流 → 版本递增 → 新 Run。评测口径对外陈述前必查项目 MEMORY.md「评测口径」表（两个 81 槽不可混讲等历史坑）。
 
-分类器标注集口径（三条轴 split/intent/kind、9 组对抗对、维护流程、已知局限）见 [`eval/ride-chat-classifier-v0.4/README.md`](../eval/ride-chat-classifier-v0.4/README.md)；变更登记见同目录 `CHANGES.md`。**`kind` 只用于错误归因，不得用于放宽门槛**。
+分类器标注集口径（三条轴 split/intent/kind、9 组对抗对、维护流程、已知局限）见 [`eval/ride-chat-classifier-v0.4/README.md`](../../../archive/pre-cycler-baseline-2026-11-20/eval/ride-chat-classifier-v0.4/README.md)；变更登记见同目录 `CHANGES.md`。**`kind` 只用于错误归因，不得用于放宽门槛**。
 
 **AGT-B 三套对话评测资产（2026-10-26 全部冻结，preflight 锁结构与 SHA）**：
 

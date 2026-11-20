@@ -7,6 +7,8 @@
 > 输出合同：`ride-chat-output-v0.1`（`autonomous_tools` 循环中间输出：`ride-chat-tool-call-v0.1`）  
 > 状态：`Review`。用于本地 Demo 联调；不代表 `chat_enabled` 已开放。
 
+文中的旧测评命令和数据路径对应 [Cycler 基线前归档](../archive/pre-cycler-baseline-2026-11-20/README.md)中的历史工作区。
+
 ## 0. 模型版本策略
 
 `ride_chat_v1` 的默认候选使用关闭深度思考的快速模型配置；另建 `ride_chat_v1_reasoning` 实验 Workflow 使用同一输入、Prompt、输出合同与服务端适配器，但可开启深度思考。不要在同一个已发布 Workflow 中直接切换二者并把结果混入同一测评 Run。

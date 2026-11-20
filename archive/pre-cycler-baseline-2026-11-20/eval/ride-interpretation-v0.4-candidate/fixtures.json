@@ -1,0 +1,89 @@
+{
+  "schemaVersion": "ride-interpretation-candidate-fixtures-v0.1",
+  "fixtures": [
+    {
+      "id": "full-default-with-relation",
+      "description": "完整功率与速度事实，默认模式包含关系综合和两个重点维度",
+      "candidate": {
+        "contractVersion": "ride-interpretation-v0.4-candidate",
+        "mode": "default",
+        "eligibleDimensionIds": ["route_pacing", "power_output"],
+        "dimensionAvailability": {
+          "route_pacing": "available",
+          "terrain_climb": "hidden",
+          "heart_rate": "hidden",
+          "power_output": "available",
+          "cadence": "hidden",
+          "pacing_stability": "hidden",
+          "history_change": "hidden"
+        },
+        "sourceClaimIds": [
+          "claim:ride:pace:fact",
+          "claim:ride:pace:performance",
+          "claim:ride:pace:capability",
+          "claim:ride:power:fact",
+          "claim:ride:power:performance",
+          "claim:ride:relation:pace-power",
+          "claim:ride:relation:pace-power-contrast",
+          "claim:ride:relation:pace-power-tradeoff",
+          "claim:ride:relation:pace-power-segment-pattern",
+          "claim:ride:limitation:none"
+        ],
+        "claims": [
+          {"claimId":"candidate:pace-fact","dimensionId":"route_pacing","claimType":"fact","sourceClaimIds":["claim:ride:pace:fact"],"availability":"available"},
+          {"claimId":"candidate:pace-performance","dimensionId":"route_pacing","claimType":"performance","sourceClaimIds":["claim:ride:pace:performance"],"availability":"available"},
+          {"claimId":"candidate:pace-capability","dimensionId":"route_pacing","claimType":"capability_evidence","sourceClaimIds":["claim:ride:pace:performance"],"availability":"available"},
+          {"claimId":"candidate:power-fact","dimensionId":"power_output","claimType":"fact","sourceClaimIds":["claim:ride:power:fact"],"availability":"available"},
+          {"claimId":"candidate:power-performance","dimensionId":"power_output","claimType":"performance","sourceClaimIds":["claim:ride:power:performance"],"availability":"available"},
+          {"claimId":"candidate:pace-power-relation","dimensionId":"route_pacing","claimType":"relation","sourceClaimIds":["claim:ride:pace:performance","claim:ride:power:performance"],"availability":"available","relation":{"relationType":"co_movement","leftSourceClaimIds":["claim:ride:pace:performance"],"rightSourceClaimIds":["claim:ride:power:performance"],"qualityPass":true,"minimumWindowPass":true,"directionConsistent":true}},
+          {"claimId":"candidate:pace-power-contrast","dimensionId":"route_pacing","claimType":"relation","sourceClaimIds":["claim:ride:pace:performance","claim:ride:power:performance"],"availability":"available","relation":{"relationType":"contrast","leftSourceClaimIds":["claim:ride:pace:performance"],"rightSourceClaimIds":["claim:ride:power:performance"],"qualityPass":true,"minimumWindowPass":true,"directionConsistent":true}},
+          {"claimId":"candidate:pace-power-tradeoff","dimensionId":"route_pacing","claimType":"relation","sourceClaimIds":["claim:ride:pace:performance","claim:ride:power:performance"],"availability":"available","relation":{"relationType":"tradeoff","leftSourceClaimIds":["claim:ride:pace:performance"],"rightSourceClaimIds":["claim:ride:power:performance"],"qualityPass":true,"minimumWindowPass":true,"directionConsistent":true}},
+          {"claimId":"candidate:pace-power-segment-pattern","dimensionId":"route_pacing","claimType":"relation","sourceClaimIds":["claim:ride:pace:performance","claim:ride:power:performance"],"availability":"available","relation":{"relationType":"segment_pattern","leftSourceClaimIds":["claim:ride:pace:performance"],"rightSourceClaimIds":["claim:ride:power:performance"],"qualityPass":true,"minimumWindowPass":true,"directionConsistent":true}},
+          {"claimId":"candidate:no-limitation","dimensionId":"power_output","claimType":"limitation","sourceClaimIds":["claim:ride:limitation:none"],"availability":"available"}
+        ],
+        "visualRegistry": [
+          {"visualId":"visual:pace-trend","type":"trend","sourceClaimIds":["claim:ride:pace:fact","claim:ride:pace:performance"],"availability":"available","ruleVersion":"ride-visual-rules-v0.1"},
+          {"visualId":"visual:pace-power-relation","type":"relation_trend","sourceClaimIds":["claim:ride:pace:performance","claim:ride:power:performance"],"availability":"available","ruleVersion":"ride-visual-rules-v0.1"},
+          {"visualId":"visual:power-trend","type":"trend","sourceClaimIds":["claim:ride:power:fact","claim:ride:power:performance"],"availability":"available","ruleVersion":"ride-visual-rules-v0.1"}
+        ],
+        "overallAssessment":{"factClaimIds":["candidate:pace-fact"],"performanceClaimIds":["candidate:pace-power-relation"],"capabilityEvidenceClaimIds":["candidate:pace-capability"],"meaningClaimIds":["candidate:pace-fact","candidate:pace-power-relation"],"visualRefIds":["visual:pace-power-relation"]},
+        "dimensionInterpretations":[
+          {"dimensionId":"route_pacing","factClaimIds":["candidate:pace-fact"],"performanceClaimIds":["candidate:pace-performance"],"capabilityEvidenceClaimIds":["candidate:pace-capability"],"meaningClaimIds":["candidate:pace-performance"],"visualRefIds":["visual:pace-trend"]},
+          {"dimensionId":"power_output","factClaimIds":["candidate:power-fact"],"performanceClaimIds":["candidate:power-performance"],"capabilityEvidenceClaimIds":[],"meaningClaimIds":["candidate:power-performance"],"visualRefIds":["visual:power-trend"]}
+        ],
+        "limitations":[]
+      }
+    },
+    {
+      "id": "expanded-with-partial-history",
+      "description": "展开模式包含可比历史与部分功率，限制必须邻接并存在",
+      "candidate": {
+        "contractVersion":"ride-interpretation-v0.4-candidate",
+        "mode":"expanded",
+        "eligibleDimensionIds":["route_pacing","power_output","history_change"],
+        "dimensionAvailability":{"route_pacing":"available","terrain_climb":"hidden","heart_rate":"hidden","power_output":"partial","cadence":"hidden","pacing_stability":"hidden","history_change":"available"},
+        "sourceClaimIds":["claim:ride:pace:fact","claim:ride:pace:performance","claim:ride:power:fact","claim:ride:power:performance","claim:ride:history:pace","claim:ride:power:partial"],
+        "claims":[
+          {"claimId":"candidate:expanded-pace-fact","dimensionId":"route_pacing","claimType":"fact","sourceClaimIds":["claim:ride:pace:fact"],"availability":"available"},
+          {"claimId":"candidate:expanded-pace-performance","dimensionId":"route_pacing","claimType":"performance","sourceClaimIds":["claim:ride:pace:performance"],"availability":"available"},
+          {"claimId":"candidate:expanded-power-fact","dimensionId":"power_output","claimType":"fact","sourceClaimIds":["claim:ride:power:fact"],"availability":"partial"},
+          {"claimId":"candidate:expanded-power-performance","dimensionId":"power_output","claimType":"performance","sourceClaimIds":["claim:ride:power:performance"],"availability":"partial"},
+          {"claimId":"candidate:expanded-history","dimensionId":"history_change","claimType":"history","sourceClaimIds":["claim:ride:pace:fact","claim:ride:history:pace"],"availability":"available","relation":{"relationType":"history_change","leftSourceClaimIds":["claim:ride:pace:fact"],"rightSourceClaimIds":["claim:ride:history:pace"],"qualityPass":true,"minimumWindowPass":true,"directionConsistent":true},"history":{"comparable":true,"sampleCount":2}},
+          {"claimId":"candidate:expanded-power-limitation","dimensionId":"power_output","claimType":"limitation","sourceClaimIds":["claim:ride:power:partial"],"availability":"partial"}
+        ],
+        "visualRegistry":[
+          {"visualId":"visual:expanded-pace","type":"trend","sourceClaimIds":["claim:ride:pace:fact"],"availability":"available","ruleVersion":"ride-visual-rules-v0.1"},
+          {"visualId":"visual:expanded-history","type":"trend","sourceClaimIds":["claim:ride:history:pace"],"availability":"available","ruleVersion":"ride-visual-rules-v0.1"},
+          {"visualId":"visual:expanded-power","type":"trend","sourceClaimIds":["claim:ride:power:fact","claim:ride:power:performance"],"availability":"partial","ruleVersion":"ride-visual-rules-v0.1"}
+        ],
+        "overallAssessment":{"factClaimIds":["candidate:expanded-pace-fact"],"performanceClaimIds":["candidate:expanded-pace-performance"],"capabilityEvidenceClaimIds":[],"meaningClaimIds":["candidate:expanded-pace-performance"],"visualRefIds":["visual:expanded-pace"]},
+        "dimensionInterpretations":[
+          {"dimensionId":"route_pacing","factClaimIds":["candidate:expanded-pace-fact"],"performanceClaimIds":["candidate:expanded-pace-performance"],"capabilityEvidenceClaimIds":[],"meaningClaimIds":["candidate:expanded-pace-performance"],"visualRefIds":["visual:expanded-pace"]},
+          {"dimensionId":"power_output","factClaimIds":["candidate:expanded-power-fact"],"performanceClaimIds":["candidate:expanded-power-performance"],"capabilityEvidenceClaimIds":[],"meaningClaimIds":["candidate:expanded-power-performance"],"visualRefIds":["visual:expanded-power"]},
+          {"dimensionId":"history_change","factClaimIds":["candidate:expanded-pace-fact"],"performanceClaimIds":["candidate:expanded-history"],"capabilityEvidenceClaimIds":[],"meaningClaimIds":["candidate:expanded-history"],"visualRefIds":["visual:expanded-history"]}
+        ],
+        "limitations":[{"dimensionId":"power_output","claimIds":["candidate:expanded-power-limitation"]}]
+      }
+    }
+  ]
+}

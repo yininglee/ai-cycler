@@ -70,4 +70,4 @@ Coze 只配置一个大模型节点和三个开始变量。该节点使用同一
 - 第二次校验失败、模型超时或供应商错误时直接返回服务端 B0；不得重试或发起第三次模型调用。
 - 冒烟必须留存调用次数、版本矩阵、校验结果和 B0 标记，但不落盘原始模型输出或敏感输入。
 
-详细迁移范围、四条冒烟槽位和停止条件见 `eval/ride-interpretation-v0.4-candidate/migration-gate-v0.1.md`。
+历史迁移范围、四条冒烟槽位和停止条件见[迁移记录](../archive/pre-cycler-baseline-2026-11-20/eval/ride-interpretation-v0.4-candidate/migration-gate-v0.1.md)。

@@ -1,10 +1,5 @@
-# V2 活跃评测区
+# AI Cycler 测评
 
-本目录从 2026-09-30 起用于 V2 的可执行固定集、fixture、manifest 和新增评测输出。
+[AI Cycler 基线索引](../doc_m7_main/AI_Cycler_基线索引.md)记录首轮测评要对照的代码版本和运行配置。新方案、用例和评分规则在这里维护，运行记录放在 [runs/](runs/README.md)。
 
-- `runs/`：新的机器运行记录；
-- `human-review/`：新的人工评审包与结果；
-- `user-testing/`：新的用户测试材料与场次记录；
-- 其他现有目录和 JSON/JSONL：仍被自动化测试、preflight 或评测 runner 使用的继承资产。
-
-V1 历史 Run、人工评审、已取消用户测试、长报告与一次性 T001 材料已移至 [`archive/v1-testing-2026-09-30/`](../archive/v1-testing-2026-09-30/README.md)。不要将旧结果复制回活跃输出目录，也不要改写归档中的 Run。
+旧测评方案、固定集、人工评审和 Run 见[历史测评索引](../archive/pre-cycler-baseline-2026-11-20/README.md)。工程回归通过根目录的 `pnpm verify` 执行。

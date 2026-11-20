@@ -15,7 +15,8 @@ type FixedCase = {
   expected: { route: string; action?: string; provider?: string; fallbackCode?: string; tool?: string; dimensions?: string[]; loopStatus?: string };
 };
 
-const fixedSet = JSON.parse(await readFile("eval/ride-chat-v0.1/cases.json", "utf8")) as { datasetId: string; cases: FixedCase[] };
+const fixedSetFile = new URL("./fixtures/ride-chat-fixed-set-v0.1.json", import.meta.url);
+const fixedSet = JSON.parse(await readFile(fixedSetFile, "utf8")) as { datasetId: string; cases: FixedCase[] };
 
 // CHAT-14（固定集 v0.4）：锚点用例需要真实编排链路——同 fixture 三条记录，
 // 出发时间最新为 2026-08-20（Asia/Shanghai 日历日）。

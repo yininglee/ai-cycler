@@ -1,5 +1,5 @@
-# V2 机器运行记录
+# AI Cycler 测评运行记录
 
-新的评测 runner 继续将 Run JSON 写入本目录。V1 历史 Run 已原样归档至 [`archive/v1-testing-2026-09-30/eval/runs/`](../../archive/v1-testing-2026-09-30/eval/runs/)。
+新方案的每次运行使用唯一 Run ID，并记录代码提交、用例和评分版本、实际运行配置及逐项结果。
 
-每次运行应使用新的 Run ID，禁止覆盖既有结果。
+归档前的 Run 见[历史运行记录](../../archive/pre-cycler-baseline-2026-11-20/eval/runs/)。

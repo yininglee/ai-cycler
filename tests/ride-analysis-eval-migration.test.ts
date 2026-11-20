@@ -19,7 +19,7 @@ interface MigrationManifest {
 }
 
 function manifest(): MigrationManifest {
-  return JSON.parse(readFileSync(new URL("../eval/ride-analysis-cases-v0.3-migration.json", import.meta.url), "utf8")) as MigrationManifest;
+  return JSON.parse(readFileSync(new URL("./fixtures/ride-analysis-cases-v0.3-migration.json", import.meta.url), "utf8")) as MigrationManifest;
 }
 
 test("T001 migration manifest stays aligned with the v0.3 automatic ride contract", () => {
@@ -46,7 +46,7 @@ test("T001 migration keeps dialogue-only source cases out of automatic ride anal
   assert.ok(value.deferredSourceCases.every((group) => group.targetFile === "eval/ride-chat-cases-v0.1.jsonl"));
   assert.ok(deferred.every((id) => /^(SAFE|SEC|TOOL|RAG)-\d{3}$/.test(id)));
 
-  const chatCases = readFileSync(new URL("../eval/ride-chat-cases-v0.1.jsonl", import.meta.url), "utf8")
+  const chatCases = readFileSync(new URL("./fixtures/ride-chat-cases-v0.1.jsonl", import.meta.url), "utf8")
     .trim()
     .split("\n")
     .map((line) => JSON.parse(line) as { case_id: string; contract_version: string; status: string });
