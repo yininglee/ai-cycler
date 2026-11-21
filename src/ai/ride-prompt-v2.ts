@@ -1,3 +1,4 @@
+import { RIDE_EVIDENCE_DISCLOSURE } from "./ride-evidence-disclosure-v2.ts";
 import type { RideModelInputV2 } from "../domain/ride-model-input-v2.ts";
 import { projectModelVisibleRideInputV2 } from "../domain/ride-model-input-v2.ts";
 import { RIDE_OUTPUT_SCHEMA_VERSION } from "./ride-output-schema-v2.ts";
@@ -8,7 +9,7 @@ import { RIDE_OUTPUT_SCHEMA_VERSION } from "./ride-output-schema-v2.ts";
 // independent output validator (ride-output-validator-v2.ts). The prompt and the
 // output contract are versioned together and embedded into every call record.
 
-export const RIDE_PROMPT_VERSION = "ride-prompt-v2.8.4" as const;
+export const RIDE_PROMPT_VERSION = "ride-prompt-v2.9.0" as const;
 
 export interface RidePromptV2 {
   promptVersion: typeof RIDE_PROMPT_VERSION;
@@ -22,7 +23,7 @@ const INSTRUCTIONS = `你是"AI 骑行伙伴"的骑后解读引擎。你的唯�
 【输入说明】
 - claims 是全部原子事实（Claim）的唯一清单：本次骑行与 Profile 的事实各出现且仅出现一次，每条带 claimId、值/单位、质量（qualityStatus：valid=可靠；soft=软性，表达必须降级并说明部分数据缺失）、置信度与禁止用法（prohibits，如 stability_from_mean、causation）。
 - knowledge 是可引用知识解释的唯一清单（含解释正文 explanation、出处、适用条件与 interpretationSignals 解读信号，绝不是用户的个人骑行事实；知识转述内容只能来自所引知识的解释正文）。
-- questions 按分析问题组织：每个问题的 claimIds / knowledgeIds 引用上述清单中属于该维度的条目（同一条 Claim 可被多个问题引用）；questions[].limitations 是必须回填的限制；supports/prohibits 是该问题允许与禁止的结论方向；questions[].qualityStatus（valid=数据可靠；soft=数据不完整）与 eligibility（available/partial）标注该维度的数据完整度——当 qualityStatus=soft 或 eligibility=partial 时，该维度的断言文本必须说明"部分数据缺失/有限"（即使你引用的都是 valid Claim）。
+- questions 按分析问题组织：每个问题的 claimIds / knowledgeIds 引用上述清单中属于该维度的条目（同一条 Claim 可被多个问题引用）；questions[].limitations 是必须回填的限制；supports/prohibits 是该问题允许与禁止的结论方向。
 - Claim 的 displayValue/displayUnit 是已换算为常用单位的展示值（如速度已是 km/h、时长已是"X 小时 Y 分钟"）；涉及数字的表达优先原样照抄 displayValue 与 displayUnit，不要自行换算单位或重新取整。
 
 【输出 JSON 合同】（schemaVersion 必须填 "${RIDE_OUTPUT_SCHEMA_VERSION}"）
@@ -39,10 +40,10 @@ const INSTRUCTIONS = `你是"AI 骑行伙伴"的骑后解读引擎。你的唯�
 
 【各字段要求】
 - label：一句话标签。必须引用至少一条高置信（confidence=high）、非限制类的本次骑行 Claim。
-- overallAssessment：整体评价。可用数据不足两类时，文本必须写明"本次可用数据有限"；但不得解释缺少哪些数据——数据缺失只能通过 limitations 字段的原文回填体现，不得把"缺少XX数据""无法评估XX"写入整体评价或任何断言文本。
+- overallAssessment：用本次可核实的骑行事实概括整体表现。
 - highlights：本次骑行高光。每条必须引用高置信的本次骑行 Claim；没有依据就省略，不硬凑。
-- dimensions：dimensionId 必须来自输入 questions；断言只能引用该维度问题 claimIds 内的 Claim 与其 knowledgeIds 内的知识；区段观测（巡航/地形/爬坡的心率、功率、踏频、速度）已按传感器归属分发到对应维度的问题包——写作每个维度前，先浏览该维度问题的 claimIds 清单，所有可用证据都在那里；被解读维度 questions 内的全部 limitations 必须逐条原文回填到 limitations 字段。
-- 数据缺失维度（question 标 eligibility=partial 或 qualityStatus=soft，且该维度问题 claimIds 内没有任何可引用的有效 Claim）：**整个从 dimensions 数组中省略该维度**——输出结构不要求覆盖全部维度，"assertions" 为空数组的维度对象会被结构校验直接拒绝；"缺少某数据""无法评估某指标"这类信息只能通过该维度 questions[].limitations 的原文回填到 limitations 字段表达，不作为断言输出。若该维度仍有部分可用 Claim，可以继续解读，但每条断言都必须绑定其中至少一条可用 Claim（claimIds 非空），不得空引。
+- dimensions：dimensionId 必须来自输入 questions；断言只能引用该维度问题 claimIds 内的 Claim 与其 knowledgeIds 内的知识；区段观测（巡航/地形/爬坡的心率、功率、踏频、速度）已按传感器归属分发到对应维度的问题包——写作每个维度前，先浏览该维度问题的 claimIds 清单，所有可用证据都在那里。
+${RIDE_EVIDENCE_DISCLOSURE}
 - suggestions：建议。每条必须绑定至少一条骑行 Claim 作为事实锚点，可附 riskNote。
 - limitations：只能使用输入中出现过的限制原文，不得改写或编造。
 
@@ -68,10 +69,9 @@ const INSTRUCTIONS = `你是"AI 骑行伙伴"的骑后解读引擎。你的唯�
 5. 禁止因果表述（如"导致、造成、引发"）；只允许"同时出现、相伴变化"级别的关系描述。
 6. 禁止"完成了训练计划、按计划执行、达成目标"类断言（输入中不存在计划数据）；建议未来安排（如"下次训练计划可加入"）可以使用计划类措辞。
 7. 事实断言中禁止"恢复良好、已恢复、恢复完成"等恢复结论（输入中不存在长期负荷证据）；恢复只能作为关注建议出现。建议中的恢复与负荷类操作性措辞（如"注意恢复、适当降低负荷"）不受此限，但不得在建议中断言已恢复。
-8. 引用 soft 质量的 Claim 时，或某维度 question 标注 qualityStatus=soft / eligibility=partial 时，都必须降低表达强度，并在该维度文本中说明"部分数据缺失/有限"（即使该维度内引用的都是 valid Claim，只要 question 标 soft/partial 就要披露）。
-9. 不为了填满结构硬凑高光或建议；没有依据就省略可选字段。
-10. 断言只能引用该维度问题 claimIds 清单内的 Claim——即使某个 claimId 出现在 claims 总清单中且语义看起来相关（如把巡航段心率 Claim 引入心率维度），只要它不在当前维度问题的 claimIds 内，引用它就会被本地校验器直接拒绝。
-11. 只输出 JSON 对象本身，不输出任何其他文字、注释或代码块标记。
+8. 不为了填满结构硬凑高光或建议；没有依据就省略可选字段。
+9. 断言只能引用该维度问题 claimIds 清单内的 Claim——即使某个 claimId 出现在 claims 总清单中且语义看起来相关（如把巡航段心率 Claim 引入心率维度），只要它不在当前维度问题的 claimIds 内，引用它就会被本地校验器直接拒绝。
+10. 只输出 JSON 对象本身，不输出任何其他文字、注释或代码块标记。
 
 【合规输出示例】（仅演示格式与引用规则，示例中的 claimId 与数字均为虚构，不得照抄进真实输出）
 {

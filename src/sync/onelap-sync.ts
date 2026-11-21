@@ -4,27 +4,15 @@ import { isRideParseError } from "../parsers/parse-errors.ts";
 import type { FileApplicationRepository, OneLapConnection } from "../persistence/application-repository.ts";
 import { createOneLapClient, OneLapError } from "./onelap-client.ts";
 
+import { getOneLapPilotConnection, type OneLapPilotConfig as Config } from "./onelap-access.ts";
+export { getOneLapPilotConnection, readOneLapPilotConfig } from "./onelap-access.ts";
+
 const MESSAGES = {
   authorization: "顽鹿授权已失效或请求被拒绝。请更新服务端连接凭据后重新连接。",
   rate_limit: "顽鹿限制了请求频率，请稍后重试。",
   protocol: "顽鹿返回的数据无法读取，请稍后重试。",
   upstream: "暂时无法完成顽鹿同步，请稍后重试。",
 };
-
-export function readOneLapPilotConfig() {
-  const ownerId = process.env.ONELAP_SYNC_OWNER_ID?.trim();
-  const accountId = process.env.ONELAP_SYNC_ACCOUNT_ID?.trim();
-  const token = process.env.ONELAP_SYNC_TOKEN?.trim();
-  const signingKey = process.env.ONELAP_SYNC_SIGNING_KEY?.trim();
-  if (process.env.ONELAP_SYNC_ENABLED !== "true" || process.env.AUTH_SESSION_MODE === "oidc" || (process.env.SESSION_SECRET?.length ?? 0) < 32 || !ownerId || !accountId || !token || !signingKey) return null;
-  return { ownerId, accountKey: createHash("sha256").update(accountId).digest("hex"), token, signingKey, cookie: process.env.ONELAP_SYNC_COOKIE?.trim() };
-}
-type Config = NonNullable<ReturnType<typeof readOneLapPilotConfig>>;
-
-export async function getOneLapPilotConnection(repository: FileApplicationRepository, config: Config) {
-  const state = await repository.getOneLapConnection(config.ownerId);
-  return state?.accountKey === config.accountKey ? state : null;
-}
 
 export async function connectOneLapPilot(repository: FileApplicationRepository, config: Config) {
   const existing = await getOneLapPilotConnection(repository, config);

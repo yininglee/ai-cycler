@@ -20,6 +20,7 @@ export type OneLapConnection = {
 type OneLapSource = { connectionId: string; key: string };
 type ImportResult = { rideId: string | null; duplicate: boolean };
 export interface ApplicationRepository {
+  getOneLapConnection(ownerId: string): Promise<OneLapConnection | null>;
   saveRide(ownerId: string, record: RideRecord, contentHash?: string): Promise<void>;
   /** 幂等导入去重：按 (ownerId, 内容哈希) 查找已导入记录；哈希随记录删除/账户删除一并移除。 */
   findRideIdByContentHash(ownerId: string, contentHash: string): Promise<string | null>;

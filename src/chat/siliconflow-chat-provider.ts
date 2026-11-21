@@ -1,7 +1,7 @@
 // AGT-A0（D-A6）：对话主模型 provider——Coze workflow（ride_chat_v1）退役，改为硅基流动
-// OpenAI 兼容 chat completions 直连。Prompt（v0.1.6）从代码库 chat-workflow-prompt.ts 随请求发送，
+// OpenAI 兼容 chat completions 直连。主提示词从代码库 chat-workflow-prompt.ts 随请求发送，
 // 行为合同不变：输入 `ride-chat-workflow-input-v0.1`（chat_request / repair_instruction /
-// previous_output），输出 `ride-chat-output-v0.2`（autonomous_tools 中间态 `ride-chat-tool-call-v0.1`）。
+// previous_output），输出 `ride-chat-output-v0.3`（autonomous_tools 中间态 `ride-chat-tool-call-v0.1`）。
 // 错误码体系沿用 ChatProviderError（chat-agent.ts）；采样参数锁定沿用骑后链路决策
 // （temperature 0.3 + enable_thinking false + JSON mode）。
 // 绝不读取骑后解读的 RIDE_MODEL_V2_* 配置——两条链路的 env 命名空间完全隔离。
@@ -12,7 +12,7 @@ import {
   type ChatProviderConfig,
   type ChatProviderInvocation,
 } from "./chat-agent.ts";
-import { buildChatWorkflowUserPrompt, CHAT_WORKFLOW_SYSTEM_PROMPT } from "./chat-workflow-prompt.ts";
+import { buildChatWorkflowUserPrompt, CHAT_WORKFLOW_PROMPT_VERSION, CHAT_WORKFLOW_SYSTEM_PROMPT } from "./chat-workflow-prompt.ts";
 import { CHAT_LEGACY_WORKFLOW_SYSTEM_PROMPT } from "./chat-legacy-workflow-prompt.ts";
 
 export const SILICONFLOW_CHAT_PROVIDER_VERSION = "siliconflow-chat-provider-v0.1" as const;
@@ -91,10 +91,11 @@ export class SiliconFlowChatProvider implements ChatProvider {
         chatRequestJson: JSON.stringify(chatRequest),
         repairInstruction: input.repairInstruction,
         previousOutput: input.previousOutput,
-      }));
+      }), input.route === "autonomous_tools" ? CHAT_WORKFLOW_PROMPT_VERSION : "legacy-fixed-route");
   }
 
-  async completeJson(requestId: string, systemPrompt: string, userPrompt: string): Promise<{ rawText: string }> {
+  async completeJson(requestId: string, systemPrompt: string, userPrompt: string, promptVersion: string): Promise<{ rawText: string }> {
+    console.info("[model-call]", { requestId, provider: "siliconflow", model: this.config.modelId, promptVersion });
     const body = JSON.stringify({
       model: this.config.modelId,
       messages: [

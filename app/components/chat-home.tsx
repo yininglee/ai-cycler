@@ -114,7 +114,7 @@ function hasOpenDialog() {
     .some(dialog => dialog.getClientRects().length > 0);
 }
 
-export function ChatHome({ snapshot, hasExistingSession }: { snapshot: ChatHomeSnapshot; hasExistingSession: boolean }) {
+export function ChatHome({ snapshot, hasExistingSession, liveOneLap }: { snapshot: ChatHomeSnapshot; hasExistingSession: boolean; liveOneLap: boolean }) {
   const trainingPlan = useTrainingPlanView();
   const [previousProfile, setPreviousProfile] = useState<ProfileInput>({});
   const [proposal, setProposal] = useState<ProfileInput | null>(null);
@@ -628,7 +628,7 @@ export function ChatHome({ snapshot, hasExistingSession }: { snapshot: ChatHomeS
         <button type="button" disabled={!hydrated || pending || savingProfile} onClick={() => void ask("我想制定新的训练计划。", "quick_question")}>训练计划生成</button>
       </div>
       <form className="chat-input-form" onSubmit={submit}>
-        {disclosureOpen && <p className="chat-disclosure-popover" role="note">可解读骑行、查询近期表现、解释骑行知识，准备训练草案，评估本人已确认关联的训练记录；计划启用、删除和记录关联需明确确认。平台同步为模拟；对话记录保存在本浏览器。</p>}
+        {disclosureOpen && <p className="chat-disclosure-popover" role="note">可解读骑行、查询近期表现、解释骑行知识，准备训练草案，评估本人已确认关联的训练记录；计划启用、删除和记录关联需明确确认。{liveOneLap ? "此账号可手动同步顽鹿记录，其他平台提供模拟体验。" : "此账号可体验模拟平台同步。"}也可上传 FIT 或 GPX 文件。对话记录保存在本浏览器。</p>}
         <label className="sr-only" htmlFor="chat-input">输入问题</label>
         <input id="chat-input" value={input} onChange={(event) => { setInput(event.target.value); try { sessionStorage.setItem(DRAFT_KEY, event.target.value); } catch {} }} maxLength={120} placeholder="问问你的骑行伙伴" disabled={!hydrated || pending || savingProfile} />
         <button type="button" className="chat-info-button" aria-label="能力说明" aria-expanded={disclosureOpen} onClick={() => setDisclosureOpen((open) => !open)}><InfoIcon /></button>

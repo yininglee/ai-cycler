@@ -154,7 +154,7 @@ const CHAT_TOOL_CATALOG_INPUTS: Record<ChatToolName, Record<string, unknown>> = 
   propose_training_plan: {
     intakeVersion: "必填整数，当前已由用户按钮确认的 state.intakeVersion，必须等于 confirmedIntakeVersion。",
     baseVersion: "必填整数，当前 state.version；每次修改都先读取，不猜版本。",
-    proposal: '必填 {rationale:中文制定依据,blocks:[{fromWeek:1,toWeek:N,sessions:[{weekday:1,kind:"endurance",minutes:30}]}]}。kind仅recovery/endurance/tempo/threshold。最多16阶段，每阶段最多6个不同weekday，阶段覆盖state.intake整个周期且不重叠；周数按开始日期所在周一计算，实际按可用日期展开。必须遵守state.constraints、availability、avoidDates；先读上下文，须已有同一已确认信息版本的待确认草案。若规则拒绝，可在原预算内修正后再提出。所有结果仍是待确认草案，不能启用。',
+    proposal: '必填 {rationale:中文制定依据,blocks:[{fromWeek:1,toWeek:N,sessions:[{weekday:1,kind:"endurance",minutes:30}]}]}。按计划上下文中的 schedulingRules 与 state.constraints 排期；先读上下文，须已有同一已确认信息版本的待确认草案。若规则拒绝，可在原预算内修正后再提出。所有结果仍是待确认草案，不能启用。',
   },
   prepare_ride_import: {},
   get_user_context: {},
@@ -227,7 +227,7 @@ export const CHAT_TOOL_CATALOG_PURPOSE: Record<ChatToolName, string> = {
   get_training_plan_context: "读取本人计划信息、已保存目标和资料、近期记录／自述基础、规则限制、当前草案与生效计划。制定或修改计划前先用它，不需要骑行锚点，不启用计划。",
   prepare_training_plan: "准备／补充待确认计划信息。明确制定新计划时先读取现有计划，再传startNew:true，返回制定计划入口和覆盖提示；不返回现有计划卡片。与聊天补缺共同维护，保存可恢复的草稿信息；不生成正式日程、不启用。信息要由用户在卡片明确核对后才能生成草案。",
   propose_training_plan: "修改同一已确认信息版本的现有待确认草案；首次生成由信息卡按钮触发。AI只选择周阶段、合法类型与时长，服务端扩展步骤并经过领域规则硬门。规则失败保留原信息与原草案，可修正。草案生成不等于生效，启用只能由详情页明确按钮完成。",
-  prepare_ride_import: "提供同步／导入骑行入口，用户自行选择真实 FIT/GPX 上传或明确模拟的平台。只准备入口，不代表已连接账户、已导入或已生成解读；不需要骑行锚点。",
+  prepare_ride_import: "查询本账号各平台的接入模式、连接状态与可用的上次同步结果，提供文件上传和平台入口。仅用于查询或准备入口，不执行连接或同步，无需骑行锚点。",
   get_user_context: "读取本人已保存身体资料和来源，不读取旧独立目标；当前训练目标由 get_training_plan_context 核实。不能将历史对话当成已保存事实。无骑行记录也可用。",
   show_onboarding: "用户希望了解如何开始或补充信息时，提供个人资料、骑行导入和制定训练计划三个入口。目标仅在制定具体计划时补充，不提供独立目标设置。只准备引导，不写入。",
   prepare_profile_proposal: "用户主动补充或更正个人资料时，生成待核对卡片；已有值由服务端读取。不能用它回答资料概念问题，不能猜单位或猜未知指标。",

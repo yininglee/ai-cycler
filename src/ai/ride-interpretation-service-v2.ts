@@ -46,6 +46,7 @@ import {
 import {
   orchestrateRideOutputValidationV2,
   RIDE_OUTPUT_REPAIR_RULES_VERSION,
+  RIDE_REPAIR_PROMPT_VERSION,
   type RideOutputOrchestrationStageV2,
   type RideOutputRepairCallerV2,
 } from "./ride-output-repair-v2.ts";
@@ -106,6 +107,7 @@ export interface RideInterpretationV2Versions {
   prompt: typeof RIDE_PROMPT_VERSION;
   outputSchema: typeof RIDE_OUTPUT_SCHEMA_VERSION;
   repairRules: typeof RIDE_OUTPUT_REPAIR_RULES_VERSION;
+  repairPrompt: typeof RIDE_REPAIR_PROMPT_VERSION;
   model?: string;
 }
 
@@ -150,6 +152,7 @@ export function getRideInterpretationV2Versions(): RideInterpretationV2Versions 
     prompt: RIDE_PROMPT_VERSION,
     outputSchema: RIDE_OUTPUT_SCHEMA_VERSION,
     repairRules: RIDE_OUTPUT_REPAIR_RULES_VERSION,
+    repairPrompt: RIDE_REPAIR_PROMPT_VERSION,
   };
 }
 

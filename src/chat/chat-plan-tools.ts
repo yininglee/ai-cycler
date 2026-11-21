@@ -1,6 +1,6 @@
 import type { ApplicationRepository } from "../persistence/application-repository.ts";
 import { planRuntime } from "../training/plan-service.ts";
-import { parsePlanIntakePatch, parsePlanProposal, PlanError, planDate, planWeekCount, type PlanIntake, type PlanProposal, type TrainingPlan, type PlanDay } from "../domain/training-plan.ts";
+import { PLAN_SCHEDULING_RULES, parsePlanIntakePatch, parsePlanProposal, PlanError, planDate, planWeekCount, type PlanIntake, type PlanProposal, type TrainingPlan, type PlanDay } from "../domain/training-plan.ts";
 import { trainingPlanStatus, type TrainingPlanStatus } from "../training/plan-view.ts";
 import type { ChatAgentInteraction } from "./chat-interaction.ts";
 
@@ -28,6 +28,7 @@ export type PlanToolResult = {
   schemaVersion: "chat-tools-v0.2"; tool: PlanToolName; status: "context" | "intake_ready" | "draft_ready" | "blocked";
   state: { id: string; intakeVersion: number; confirmedIntakeVersion: number | null; version: number; intake: PlanIntake; basis: PlanContext["basis"]; constraints: PlanContext["constraints"]; missing: string[]; draft: ReturnType<typeof summary>; active: ReturnType<typeof summary>; selected: { plan: ReturnType<typeof summary>; date?: string; day: PlanDay | null } | null };
   issues: Array<{ code: string; message: string; date?: string }>;
+  schedulingRules?: string;
   unchanged?: boolean;
   claims: Array<{ claimId: string; kind: "metric"; key: string; value: number; unit: string; confidence: "high" }>;
   interaction?: ChatAgentInteraction;
@@ -60,7 +61,8 @@ export async function executePlanTool(repository: ApplicationRepository, ownerId
   const referencedPlan = call.tool === "get_training_plan_context" ? selected?.plan ?? state.draft ?? state.active : status === "draft_ready" ? state.draft : null;
   const creating = call.tool === "prepare_training_plan" && call.input.startNew === true && status === "intake_ready";
   const artifact = call.tool === "get_training_plan_context" && status === "blocked" ? undefined : { kind: "training_plan" as const, payload: { planId: workspace.id, intakeVersion: workspace.intakeVersion, version: referencedPlan?.version ?? null, view: creating ? "create" as const : referencedPlan ? referencedPlan.version === workspace.activeVersion ? "active" as const : "draft" as const : "intake" as const } };
-  return { schemaVersion: "chat-tools-v0.2", tool: call.tool, status, state, issues, claims, ...(unchanged ? { unchanged: true } : {}), ...(artifact ? { interaction: { artifact } } : {}) };
+  return { schemaVersion: "chat-tools-v0.2", tool: call.tool, status, state, issues,
+    ...(context.draft && { schedulingRules: PLAN_SCHEDULING_RULES }), claims, ...(unchanged ? { unchanged: true } : {}), ...(artifact ? { interaction: { artifact } } : {}) };
 }
 export function planNumericFacts(result: PlanToolResult) {
   const numbers = (v: unknown): Array<{ value?: number; displayValue?: string }> => typeof v === "number" ? [{ value: v }] : Array.isArray(v) ? v.flatMap(numbers) : record(v) ? Object.entries(v).filter(([key]) => !["rationale", "profileHash", "id", "goal", "notes", "selfReportedBasis", "periodReason"].includes(key)).flatMap(([, entry]) => numbers(entry)) : typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v) ? [{ displayValue: v }] : [];

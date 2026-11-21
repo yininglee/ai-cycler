@@ -1,5 +1,5 @@
 import { ChatProviderError, type ChatProviderErrorCode } from "./chat-agent.ts";
-import { buildChatClassifierUserPrompt, CHAT_CLASSIFIER_SYSTEM_PROMPT } from "./chat-classifier-prompt.ts";
+import { buildChatClassifierUserPrompt, CHAT_CLASSIFIER_PROMPT_VERSION, CHAT_CLASSIFIER_SYSTEM_PROMPT } from "./chat-classifier-prompt.ts";
 import { classifyChatInputL0, makeChatDecision, type ChatRoute, type ChatRoutingDecision } from "./chat-routing.ts";
 
 // Boundary classification precedes the contextual Agent. Configured classifier
@@ -105,6 +105,7 @@ export class SiliconFlowClassifierClient implements ChatClassifierClient {
   }
 
   async classify(input: { requestId: string; text: string }): Promise<ChatClassifierResult> {
+    console.info("[model-call]", { requestId: input.requestId, provider: "siliconflow", model: this.config.modelId, promptVersion: CHAT_CLASSIFIER_PROMPT_VERSION });
     const classifyRequest = JSON.stringify({
       agent: "ride_chat_v1",
       classifierVersion: CHAT_CLASSIFIER_SCHEMA_VERSION,

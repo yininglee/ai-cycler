@@ -49,8 +49,9 @@ export async function POST(request: Request) {
     } else if (input.action === "confirm_intake" && exact(input, ["action", "intake", "expectedVersion", "confirmed"]) && input.confirmed === true && version(input.expectedVersion)) {
       await service.confirmIntake(input.intake, input.expectedVersion);
     } else if (input.action === "generate_draft" && exact(input, ["action", "intakeVersion"]) && version(input.intakeVersion)) {
-      const draft = await generateTrainingPlanDraft(service, input.intakeVersion);
-      return Response.json(await view(session.userId, draft.id, draft.version), { headers: responseHeaders });
+      const requestId = crypto.randomUUID();
+      const draft = await generateTrainingPlanDraft(service, input.intakeVersion, requestId);
+      return Response.json(await view(session.userId, draft.id, draft.version), { headers: { ...responseHeaders, "X-Request-Id": requestId } });
     } else if (input.action === "issue" && exact(input, ["action", "planId", "version", "activeVersion", "idempotencyKey"]) && typeof input.planId === "string" && version(input.version) && (input.activeVersion === null || version(input.activeVersion)) && typeof input.idempotencyKey === "string") {
       const grant = await service.issue({ planId: input.planId, version: input.version, activeVersion: input.activeVersion, idempotencyKey: input.idempotencyKey });
       return Response.json({ grant }, { headers: responseHeaders });

@@ -111,6 +111,7 @@ test("chat tools never call repository write methods", async () => {
   const writes: string[] = [];
   const repository = {
     getRide: async (ownerId: string, rideId: string) => ownerId === "owner" && rideId === "read-only-ride" ? record : null,
+    getOneLapConnection: async () => null,
     getProfile: async () => null,
     listRides: async () => [],
     findRideIdByContentHash: async () => null,
@@ -134,6 +135,7 @@ test("chat tools never call repository write methods", async () => {
 test("chat tool timeout uses the stable TIMEOUT error without exposing repository details", async () => {
   const repository = {
     getRide: async () => await new Promise<null>(() => {}),
+    getOneLapConnection: async () => null,
     getProfile: async () => null,
   } as unknown as FileApplicationRepository;
   const invocation = parseChatToolInvocation({ tool: "get_capabilities", input: { rideId: "slow-ride", caps: ["distance"] } });

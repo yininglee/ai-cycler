@@ -2,7 +2,9 @@ import { isPlatformId } from "../../../src/ux/platform-catalog.ts";
 import { resolveOrCreateRequestSession, sessionCookieHeader } from "../../../src/auth/session.ts";
 import { getApplicationRepository, type OneLapConnection } from "../../../src/persistence/application-repository.ts";
 import { PlatformError, updatePlatform, type PlatformAction } from "../../../src/ux/platform.ts";
-import { connectOneLapPilot, getOneLapPilotConnection, readOneLapPilotConfig, syncOneLapPilot } from "../../../src/sync/onelap-sync.ts";
+import { connectOneLapPilot, getOneLapPilotConnection, syncOneLapPilot } from "../../../src/sync/onelap-sync.ts";
+
+import { oneLapPilotFor } from "../../../src/sync/onelap-access.ts";
 
 export const runtime = "nodejs";
 
@@ -25,8 +27,8 @@ export async function GET(request: Request) {
     const session = resolveOrCreateRequestSession(request);
     const repository = getApplicationRepository();
     const headers = { "Cache-Control": "no-store", ...sessionCookieHeader(session) };
-    const config = provider === "onelap" ? readOneLapPilotConfig() : null;
-    if (config?.ownerId === session.userId) return liveResponse(await getOneLapPilotConnection(repository, config), headers);
+    const config = oneLapPilotFor(session.userId, provider);
+    if (config) return liveResponse(await getOneLapPilotConnection(repository, config), headers);
     const profile = await repository.getProfile(session.userId);
     return Response.json({ platform: profile?.ux?.platforms?.[provider] ?? (provider === "garmin" ? profile?.ux?.platform : undefined) ?? null }, { headers });
   } catch { return Response.json({ error: "平台状态暂时无法读取，请重试。" }, { status: 503 }); }
@@ -38,8 +40,8 @@ export async function POST(request: Request) {
     if (!isPlatformId(provider) || !["connect", "disconnect", "sync", "retry", "expire", "add-sample"].includes(action) || (range !== undefined && ![7, 30, 90].includes(range))) return Response.json({ error: "无效的同步操作或历史范围。" }, { status: 422 });
     const repository = getApplicationRepository();
     const headers = { "Cache-Control": "no-store", ...sessionCookieHeader(session) };
-    const config = provider === "onelap" ? readOneLapPilotConfig() : null;
-    if (config?.ownerId === session.userId) {
+    const config = oneLapPilotFor(session.userId, provider);
+    if (config) {
       if (request.headers.get("content-type")?.split(";")[0] !== "application/json") return Response.json({ error: "无效的请求格式。" }, { status: 415, headers });
       if (action === "connect") return liveResponse(await connectOneLapPilot(repository, config), headers);
       if (action === "disconnect") {

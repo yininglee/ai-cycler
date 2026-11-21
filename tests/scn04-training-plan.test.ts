@@ -12,6 +12,9 @@ import { TrainingPlanStore } from "../src/persistence/training-plan-store.ts";
 import { createUserProfile } from "../src/domain/user-profile.ts";
 import { addPlanDays, planMonday, planToday, emptyPlanIntake, parsePlanProposal, parsePlanIntakePatch, createTrainingPlan, PlanError, type PlanIntake, type PlanBasis, type PlanProposal } from "../src/domain/training-plan.ts";
 import { getRideFixture } from "../src/fixtures/rides.ts";
+import { runChatAgent } from "../src/chat/chat-agent.ts";
+import { createChatToolLoopRunner } from "../src/chat/chat-tool-orchestration.ts";
+import { PLAN_SCHEDULING_RULES } from "../src/domain/training-plan.ts";
 import { TRAINING_PLAN_GENERATION_PROMPT } from "../src/training/plan-generation-prompt.ts";
 import { planRuntime } from "../src/training/plan-service.ts";
 import { executePlanTool, parsePlanTool } from "../src/chat/chat-plan-tools.ts";
@@ -158,6 +161,14 @@ test("SCN-04: viewing an existing draft may acknowledge its existence; identical
   assert.equal(validateChatOutput(JSON.stringify({ ...output, reply: "草案已生成，如需修改可以告诉我。" }), { decision: makeChatDecision("autonomous_tools", "none", "AUTONOMOUS_TOOLS", 1), loopToolResults: [result] }).ok, true);
   const repeated = await executePlanTool(getApplicationRepository(), f.id, { tool: "propose_training_plan", input: { intakeVersion: plan.intakeVersion, baseVersion: 1, proposal: { ...proposal(), rationale: "安排轻松耐力，逐步建立规律。" } } });
   assert.equal(repeated.unchanged, true); assert.equal(repeated.state.version, 1);
+  assert.equal(result.schedulingRules, PLAN_SCHEDULING_RULES);
+  assert.ok(TRAINING_PLAN_GENERATION_PROMPT.includes(PLAN_SCHEDULING_RULES));
+  const check = (reply: string) => validateChatOutput(JSON.stringify({ ...output, reply }), {
+    decision: makeChatDecision("autonomous_tools", "none", "AUTONOMOUS_TOOLS", 1), loopToolResults: [repeated],
+  });
+  assert.equal(check("周六已经是三十分钟，无需调整。").ok, true);
+  const falseReceipt = check("草案已更新，可以查看。");
+  assert.ok(!falseReceipt.ok && falseReceipt.code === "OUTPUT_DRAFT_UNCHANGED");
   assert.equal((await service.store.read(f.id)).plans.length, 1);
 });
 
@@ -385,4 +396,28 @@ test("SCN-04: chat creation request follows AI tool selection to a create card, 
     const question = await ask("制定新的计划"); assert.equal(question.execution, "validated"); assert.equal(question.responseKind, "clarification"); assert.equal(question.artifact.payload.view, "create");
     assert.equal((await service.context()).active?.version, 1); assert.equal((await service.context()).workspace.version, 1);
   } finally { globalThis.fetch = original; for (const [key, value] of Object.entries(previous)) { if (value === undefined) delete process.env[key]; else process.env[key] = value; } }
+});
+
+test("missing-action recovery requests the actual intake card once", async () => {
+  const { f, plan } = await draft();
+  const requests: string[] = [];
+  const result = await runChatAgent({
+    text: "帮我重新制定一个训练计划。",
+    decision: makeChatDecision("autonomous_tools", "none", "AUTONOMOUS_TOOLS", 1),
+    loopRunner: createChatToolLoopRunner(getApplicationRepository(), f.id),
+    provider: { async run(input) {
+      const call = (tool: string, args: object) => ({ rawText: JSON.stringify({ schemaVersion: "ride-chat-tool-call-v0.1", calls: [{ tool, input: args }] }) });
+      const last = input.toolResults?.at(-1)?.context;
+      if (!last) return call("get_training_plan_context", {});
+      if (input.repairInstruction) {
+        requests.push(input.repairInstruction);
+        return call("prepare_training_plan", { expectedVersion: plan.intakeVersion, patch: {}, startNew: true });
+      }
+      return { rawText: JSON.stringify({ schemaVersion: "ride-chat-output-v0.3", route: input.route, responseKind: "answer",
+        reply: "已准备好计划信息卡。", claimIds: [`claim:loop:${input.toolResults!.length}:1`], capabilityKeys: [], knowledgeIds: [] }) };
+    } },
+  });
+  assert.match(requests.join(""), /补做缺少的动作/);
+  assert.equal(result.execution, "validated");
+  assert.deepEqual(result.loopTrace?.steps.map(step => step.tool), ["get_training_plan_context", "prepare_training_plan"]);
 });

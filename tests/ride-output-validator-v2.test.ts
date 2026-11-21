@@ -1,3 +1,6 @@
+import { organizeRideOutputDeterministicallyV2, buildRideRepairPromptV2 } from "../src/ai/ride-output-repair-v2.ts";
+import { RIDE_EVIDENCE_DISCLOSURE } from "../src/ai/ride-evidence-disclosure-v2.ts";
+import { buildRidePromptV2 } from "../src/ai/ride-prompt-v2.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
 
@@ -1106,4 +1109,26 @@ test("V21-10b power-curve duration labels are exempt from the number gate", () =
     limitations: [],
   };
   assert.deepEqual(validateRideModelOutputV2(input, output), { status: "pass" });
+});
+
+test("partial coverage and an omitted sensor have distinct report and repair requirements", () => {
+  const missing = question("cadence", [], { eligibility: "partial", limitations: ["cadence.missing"] });
+  const input = makeInput([{ ...powerQuestion, eligibility: "partial" }, hrQuestion, missing]);
+  const output = baseOutput();
+  output.overallAssessment.text = "本次可用数据有限。";
+  output.dimensions[0]!.assertions[0]!.text += "部分路段为耐力骑。";
+  const initial = validateRideModelOutputV2(input, output);
+  assert.ok(initial.status === "fail");
+  assert.ok(initial.issues.some(issue => issue.code === "SOFT_QUALITY_NOT_DISCLOSED"));
+  assert.ok(initial.issues.some(issue => issue.code === "LIMITATION_BACKFILL_MISSING"));
+  assert.ok(buildRidePromptV2(input).promptText.includes(RIDE_EVIDENCE_DISCLOSURE));
+  assert.ok(buildRideRepairPromptV2({ input, issues: initial.issues }).promptText.includes(RIDE_EVIDENCE_DISCLOSURE));
+  output.dimensions[0]!.assertions[0]!.text += "本维度数据覆盖有限。";
+  const fixed = organizeRideOutputDeterministicallyV2(input, output, initial.issues);
+  assert.ok(fixed);
+  assert.equal(validateRideModelOutputV2(input, fixed.output).status, "pass");
+  output.dimensions[0]!.assertions[0]!.text += "缺少踏频数据。";
+  assert.ok(failureCodes(validateRideModelOutputV2(input, output)).includes("SPECIFIC_MISSING_DATA_IN_ASSERTION"));
+  output.dimensions.push({ dimensionId: missing.dimensionId, assertions: [{ text: "数据有限。", conclusionType: "fact", claimIds: [] }] });
+  assert.ok(failureCodes(validateRideModelOutputV2(input, output)).includes("DIMENSION_WITHOUT_FACT"));
 });

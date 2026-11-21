@@ -37,6 +37,7 @@ export type ChatOutputValidationCode =
   | "OUTPUT_SCHEMA_INVALID"
   | "OUTPUT_ROUTE_MISMATCH"
   | "OUTPUT_TOOL_CONTEXT_MISSING"
+  | "OUTPUT_DRAFT_UNCHANGED"
   | "OUTPUT_ACTION_UNSUPPORTED"
   | "OUTPUT_CLAIM_INVALID"
   | "OUTPUT_CAPABILITY_INVALID"
@@ -317,6 +318,10 @@ export function validateChatOutput(rawOutput: string, context: ChatOutputValidat
   const intakeCardClaim = /已(?:经)?[^。，；！？]{0,12}(?:准备|提供|展示)[^。，；！？]{0,20}(?:计划[^。，；！？]{0,8}(?:信息卡|卡片)|(?:信息卡|卡片)[^。，；！？]{0,8}计划)/;
   const hasIntakeCard = planResults.some(result => "interaction" in result && result.interaction?.artifact?.kind === "training_plan" && ["intake", "create"].includes(result.interaction.artifact.payload.view));
   if (planResults.length && !hasIntakeCard && hasUnnegatedHit(output.reply, intakeCardClaim)) return reject("OUTPUT_ACTION_UNSUPPORTED", output.claimIds.length, output.capabilityKeys.length);
+  const lastProposal = planResults.filter(result => result.tool === "propose_training_plan").at(-1);
+  if (lastProposal && "unchanged" in lastProposal && lastProposal.unchanged && hasUnnegatedHit(output.reply, /(?:已(?:经)?|刚刚|刚才)(?:帮你|为你|按(?:你的)?要求|重新|将周[一二三四五六日]的骑行|把周[一二三四五六日]的安排){0,3}(?:更新|修改|调整|改成|改为|缩短|延长|生成新版本)|(?:更新|修改|调整)了(?:草案|计划|安排)/)) {
+    return reject("OUTPUT_DRAFT_UNCHANGED", output.claimIds.length, output.capabilityKeys.length);
+  }
   const creationClaim = /已(?:经)?[^。，；！？]{0,14}(?:生成|准备|制定|更新|修改|调整)[^。，；！？]{0,10}(?:草案|训练计划(?!信息))|(?:草案|训练计划(?!信息))[^。，；！？]{0,8}已(?:经)?[^。，；！？]{0,4}(?:生成|准备|更新|修改|调整)|(?:生成|制定|更新|修改|准备)(?:了|好)[^。，；！？]{0,8}(?:草案|训练计划(?!信息))/;
   const pendingCommitment = /(?:我将|我会|现在|正在|马上)[^。！？]{0,60}(?:生成|制定|更新|修改|调整)[^。！？]{0,20}(?:草案|训练计划)/;
   const readyIntake = planResults.some(result => "state" in result && result.state.confirmedIntakeVersion !== null && result.state.confirmedIntakeVersion === result.state.intakeVersion);

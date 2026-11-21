@@ -1,7 +1,7 @@
 import { readSiliconFlowChatProviderConfig, SiliconFlowChatProvider } from "../chat/siliconflow-chat-provider.ts";
 import { trainingKnowledgeForPlan } from "../domain/training-knowledge-base.ts";
 import { parsePlanProposal, PlanError, planWeekCount, type PlanProposal, type PlanRuleIssue, type TrainingPlan } from "../domain/training-plan.ts";
-import { TRAINING_PLAN_GENERATION_PROMPT } from "./plan-generation-prompt.ts";
+import { TRAINING_PLAN_GENERATION_PROMPT, TRAINING_PLAN_GENERATION_PROMPT_VERSION } from "./plan-generation-prompt.ts";
 import type { planRuntime } from "./plan-service.ts";
 
 type PlanRuntime = Awaited<ReturnType<typeof planRuntime>>;
@@ -21,12 +21,12 @@ function parseCandidate(rawText: string, knowledge: ReturnType<typeof trainingKn
     throw new PlanError("RULES_REJECTED", [{ code: "INVALID_PROPOSAL", message: "提案或知识引用格式无效。按输出合同返回周阶段、制定依据和本轮提供的知识 ID。" }]);
   }
   if (/\d/.test(proposal.rationale)) {
-    throw new PlanError("RULES_REJECTED", [{ code: "INVALID_RATIONALE", message: "制定依据只能使用定性描述。去掉所有阿拉伯数字，保留目标、个人训练基础和所选课型的关系。" }]);
+    throw new PlanError("RULES_REJECTED", [{ code: "INVALID_RATIONALE", message: "制定依据只能使用定性描述。去掉所有阿拉伯数字，保留目标、个人训练基础和骑行训练类型的关系。" }]);
   }
   return proposal;
 }
 
-export async function generateTrainingPlanDraft(service: PlanRuntime, intakeVersion: number): Promise<TrainingPlan> {
+export async function generateTrainingPlanDraft(service: PlanRuntime, intakeVersion: number, requestId = crypto.randomUUID()): Promise<TrainingPlan> {
   const { workspace, basis, constraints, missing, draft } = await service.context();
   if (workspace.intakeVersion !== intakeVersion) throw new PlanError("VERSION_CONFLICT");
   if (workspace.confirmedIntakeVersion !== intakeVersion) throw new PlanError("INTAKE_NOT_CONFIRMED");
@@ -50,7 +50,7 @@ export async function generateTrainingPlanDraft(service: PlanRuntime, intakeVers
   for (let attempt = 0; attempt < 2; attempt++) {
     let rawText: string;
     try {
-      ({ rawText } = await model.completeJson(crypto.randomUUID(), TRAINING_PLAN_GENERATION_PROMPT, JSON.stringify({ ...evidence, ...repair })));
+      ({ rawText } = await model.completeJson(requestId, TRAINING_PLAN_GENERATION_PROMPT, JSON.stringify({ ...evidence, ...repair }), TRAINING_PLAN_GENERATION_PROMPT_VERSION));
     } catch {
       throw new PlanError("PLAN_GENERATION_UNAVAILABLE");
     }

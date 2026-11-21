@@ -84,6 +84,7 @@ test("ride-analysis route reaches the v0.4 candidate chain and reports its versi
     "COZE_INTERPRETATION_WORKFLOW_NAME",
     "COZE_INTERPRETATION_WORKFLOW_ID",
     "COZE_INTERPRETATION_WORKFLOW_VERSION",
+    "COZE_INTERPRETATION_PROMPT_VERSION",
   ];
   const previousVars = trackedVars.map((key) => [key, process.env[key]] as const);
   process.env.AI_ANALYSIS_ENABLED = "true";
@@ -101,9 +102,9 @@ test("ride-analysis route reaches the v0.4 candidate chain and reports its versi
     assert.equal(body.source, "b0");
     assert.equal(body.fallbackCode, "AI_NOT_CONFIGURED");
     assert.equal(body.output, null);
-    assert.equal(versions.workflowName, "ride_analysis_v3");
-    assert.equal(versions.workflowVersion, "v0.0.11");
-    assert.equal(versions.promptVersion, "v0.4.14");
+    assert.equal(versions.workflowName, "not_configured");
+    assert.equal(versions.workflowVersion, "not_configured");
+    assert.equal(versions.promptVersion, "unreported");
   } finally {
     if (previousEnabled === undefined) delete process.env.AI_ANALYSIS_ENABLED;
     else process.env.AI_ANALYSIS_ENABLED = previousEnabled;
@@ -121,7 +122,7 @@ async function withEngineVars(
   run: () => Promise<void>,
 ): Promise<void> {
   const trackedKeys = ["AI_ANALYSIS_ENABLED", "RIDE_INTERPRETATION_ENGINE", "SILICONFLOW_API_TOKEN"];
-  const previous = trackedKeys.map((key) => [key, process.env[key]] as const);
+  const previous = [...new Set([...trackedKeys, ...Object.keys(vars)])].map((key) => [key, process.env[key]] as const);
   process.env.AI_ANALYSIS_ENABLED = "true";
   for (const [key, value] of Object.entries(vars)) {
     if (value === undefined) delete process.env[key];
@@ -188,6 +189,27 @@ test("ride-analysis route body engine v1 overrides a V2 environment cut-over", a
     assert.equal(body.fallbackCode, "AI_NOT_CONFIGURED");
     assert.equal(body.engine, undefined);
     const versions = body.versions as Record<string, unknown>;
-    assert.equal(versions.workflowName, "ride_analysis_v3");
+    assert.equal(versions.workflowName, "not_configured");
+  });
+});
+
+test("V1 reports the workflow version sent to the provider", async t => {
+  await withEngineVars({
+    RIDE_INTERPRETATION_ENGINE: "v1", COZE_API_URL: "https://coze.example.test/workflow/run",
+    COZE_API_TOKEN: "test-only", COZE_INTERPRETATION_WORKFLOW_ID: "fixture",
+    COZE_INTERPRETATION_WORKFLOW_NAME: "test-workflow", COZE_INTERPRETATION_WORKFLOW_VERSION: "v9.9.9",
+    COZE_INTERPRETATION_PROMPT_VERSION: undefined,
+  }, async () => {
+    const sent: string[] = [];
+    t.mock.method(globalThis, "fetch", async (_url: unknown, init: RequestInit) => {
+      sent.push(JSON.parse(String(init.body)).workflow_version);
+      return Response.json({ code: 1, msg: "test rejection" });
+    });
+    const response = await POST(new Request("http://localhost/api/ride-analysis", { method: "POST", body: JSON.stringify({ rideId: "l1-built-in-sample" }) }));
+    const { versions } = await response.json();
+    assert.ok(sent.length > 0);
+    assert.ok(sent.every(version => version === versions.workflowVersion));
+    assert.equal(versions.workflowVersion, "v9.9.9");
+    assert.equal(versions.promptVersion, "unreported");
   });
 });

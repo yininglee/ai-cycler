@@ -5,7 +5,8 @@ import { createHash } from "node:crypto";
 import { GET, POST } from "../app/api/platform/route.ts";
 import { resolveOrCreateRequestSession } from "../src/auth/session.ts";
 import { importRideBytes } from "../src/imports/ride-import-service.ts";
-import { FileApplicationRepository } from "../src/persistence/application-repository.ts";
+import { executeChatTool } from "../src/chat/chat-tools.ts";
+import { getApplicationRepository, FileApplicationRepository } from "../src/persistence/application-repository.ts";
 import { connectOneLapPilot, readOneLapPilotConfig, syncOneLapPilot } from "../src/sync/onelap-sync.ts";
 import { buildCyclingFitSample } from "./helpers/fit-sample.ts";
 
@@ -107,12 +108,21 @@ test("connecting and reading status do not contact OneLap; only an explicit sync
   const post = (action: string) => POST(new Request(url, { method: "POST", headers, body: JSON.stringify({ provider: "onelap", action }) }));
   const other = await GET(new Request(url));
   assert.deepEqual(await other.json(), { platform: null });
+  const importEntry = async (owner: string) => {
+    const result = await executeChatTool(getApplicationRepository(), owner, { tool: "prepare_ride_import", input: {} });
+    assert.ok(result.tool === "prepare_ride_import");
+    assert.doesNotMatch(JSON.stringify(result), /fixture-token|fixture-signing-key|accountKey|rideIds/);
+    return result.platforms.find(platform => platform.id === "onelap");
+  };
+  assert.deepEqual(await importEntry("another-account"), { id: "onelap", name: "顽鹿", mode: "simulated", status: "disconnected" });
+  assert.deepEqual(await importEntry(session.userId), { id: "onelap", name: "顽鹿", mode: "live_manual", status: "disconnected" });
   const connected = await post("connect");
   assert.equal(connected.status, 200);
   const state = await connected.json();
   assert.equal(state.live, true);
   assert.equal(state.platform.status, "connected");
   assert.doesNotMatch(JSON.stringify(state), /fixture-token|fixture-signing-key|accountKey/);
+  assert.deepEqual(await importEntry(session.userId), { id: "onelap", name: "顽鹿", mode: "live_manual", status: "connected" });
   const status = await GET(new Request(url, { headers }));
   assert.equal((await status.json()).platform.lastSyncAt, undefined);
   assert.equal(upstream.mock.callCount(), 0);
@@ -120,5 +130,7 @@ test("connecting and reading status do not contact OneLap; only an explicit sync
   const synced = await post("sync");
   assert.equal(synced.status, 200);
   assert.ok((await synced.json()).platform.lastSyncAt);
+  assert.deepEqual(await importEntry(session.userId), { id: "onelap", name: "顽鹿", mode: "live_manual", status: "connected",
+    lastAttempt: { added: 0, duplicate: 0, failed: 0, interrupted: false } });
   assert.equal(upstream.mock.callCount(), 1);
 });

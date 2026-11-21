@@ -30,7 +30,7 @@ import type { ChatNumericFact } from "./chat-numeric-evidence.ts";
 import { executePlanTool, isPlanToolResult, parsePlanTool, planNumericFacts, type PlanToolInvocation, type PlanToolName, type PlanToolResult } from "./chat-plan-tools.ts";
 import { historyRangeDays, parseChatHistoryDateRange, type ChatHistoryDateRange } from "./chat-history-range.ts";
 import type { ChatAgentInteraction } from "./chat-interaction.ts";
-import { PLATFORMS } from "../ux/platform-catalog.ts";
+import { readImportPlatforms } from "../sync/onelap-access.ts";
 import { MAX_UPLOAD_BYTES } from "../parsers/parser-utils.ts";
 import { executeChatUserTool, parseChatUserToolInvocation, type ChatUserToolInvocation, type ChatUserToolResult } from "./chat-user-capabilities.ts";
 import {
@@ -423,8 +423,8 @@ export type ChatToolResult =
 export type RideImportToolResult = {
   schemaVersion: typeof CHAT_TOOL_SCHEMA_VERSION;
   tool: "prepare_ride_import";
-  mode: "real_file_simulated_platform";
-  platforms: Array<{ id: string; name: string }>;
+  mode: "real_file_simulated_platform" | "real_file_live_onelap";
+  platforms: Awaited<ReturnType<typeof readImportPlatforms>>;
   fileFormats: string[];
   maxFileSizeMB: number;
   claims: ChatToolClaim[];
@@ -971,7 +971,17 @@ export const chatToolSpecs: Record<ChatToolName, ChatToolSpec> = {
   prepare_ride_import: {
     anchorMode: "none", evidenceKind: "claims",
     claimIds: result => result.tool === "prepare_ride_import" ? result.claims.map(claim => claim.claimId) : [],
-    knowledgeIds: () => [], numericFacts: result => result.tool === "prepare_ride_import" ? [{ value: result.maxFileSizeMB, unit: "MB" }] : [],
+    knowledgeIds: () => [],
+    numericFacts: result => {
+      if (result.tool !== "prepare_ride_import") return [];
+      const facts = [{ value: result.maxFileSizeMB, unit: "MB" }];
+      for (const platform of result.platforms) {
+        if (platform.mode !== "live_manual" || !platform.lastAttempt) continue;
+        const { added, duplicate, failed } = platform.lastAttempt;
+        facts.push(...[added, duplicate, failed].map(value => ({ value, unit: "count" })));
+      }
+      return facts;
+    },
     hasUsableEvidence: result => result.tool === "prepare_ride_import",
   },
   get_user_context: userToolSpec,
@@ -1603,10 +1613,19 @@ async function executeChatToolWithinBoundary(repository: ApplicationRepository, 
   try {
     if (invocation.tool === "get_training_execution" || invocation.tool === "prepare_training_record_link" || invocation.tool === "assess_training_execution") return enforceResultSize(await executeExecutionTool(repository, ownerId, invocation));
     if (invocation.tool === "get_training_plan_context" || invocation.tool === "prepare_training_plan" || invocation.tool === "propose_training_plan") return executePlanTool(repository, ownerId, invocation);
-    if (invocation.tool === "prepare_ride_import") return { schemaVersion: CHAT_TOOL_SCHEMA_VERSION, tool: invocation.tool, mode: "real_file_simulated_platform",
-      platforms: PLATFORMS.map(({ id, name }) => ({ id, name })), fileFormats: ["FIT", "GPX"], maxFileSizeMB: MAX_UPLOAD_BYTES / (1024 * 1024),
-      claims: [{ claimId: "claim:import:available", key: "import_entry_available", kind: "metric", value: 1, unit: "count", confidence: "high" }],
-      interaction: { artifact: { kind: "ride_import", payload: {} } } };
+    if (invocation.tool === "prepare_ride_import") {
+      const platforms = await readImportPlatforms(repository, ownerId);
+      return {
+        schemaVersion: CHAT_TOOL_SCHEMA_VERSION,
+        tool: invocation.tool,
+        mode: platforms.some(platform => platform.mode === "live_manual") ? "real_file_live_onelap" : "real_file_simulated_platform",
+        platforms,
+        fileFormats: ["FIT", "GPX"],
+        maxFileSizeMB: MAX_UPLOAD_BYTES / (1024 * 1024),
+        claims: [{ claimId: "claim:import:available", key: "import_entry_available", kind: "metric", value: 1, unit: "count", confidence: "high" }],
+        interaction: { artifact: { kind: "ride_import", payload: {} } },
+      };
+    }
     if (invocation.tool === "get_user_context" || invocation.tool === "show_onboarding" || invocation.tool === "prepare_profile_proposal") {
       return enforceResultSize(await executeChatUserTool(repository, ownerId, invocation, userSource));
     }

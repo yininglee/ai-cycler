@@ -232,6 +232,7 @@ export class HttpChatProvider implements ChatProvider {
   }
 
   async run(input: ChatProviderInvocation): Promise<{ rawText: string }> {
+    console.info("[model-call]", { requestId: input.requestId, provider: "http", model: this.config.modelId, promptVersion: "remote_unreported" });
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), this.config.timeoutMs);
     try {
@@ -390,6 +391,7 @@ const REPAIR_INSTRUCTIONS: Record<string, string> = {
   OUTPUT_INVALID_JSON: "上一轮输出不是合法 JSON。只输出一个 JSON 对象，前后不得有任何解释、Markdown 或代码围栏。",
   // AGT-B0：合同升 v0.2（六字段，含 knowledgeIds）。
   OUTPUT_SCHEMA_INVALID: "上一轮输出结构不符合 schema。只输出恰好七个字段：schemaVersion（ride-chat-output-v0.3）、route、reply、responseKind（answer 或 clarification）、claimIds、capabilityKeys、knowledgeIds，字段名与类型不得变化。clarification 至少含一个问号，可有后续填写说明，三类引用必须为空；answer 引用本轮实际证据。claimIds 至多12个，knowledgeIds至多6个，均不得重复。",
+  OUTPUT_DRAFT_UNCHANGED: "原草案已符合请求。只说明已有安排与待确认状态，不能声称本次已修改，也不重复提案。",
   OUTPUT_ACTION_UNSUPPORTED: "没有成功的实际提案结果，不能声称已生成草案或承诺正在生成并让用户查看。不能把已有版本冒充新的修改结果；尚未完成时据实说明，保留原计划。",
   OUTPUT_ROUTE_MISMATCH: "输出的 route 必须与 chat_request 中的 route 完全相同。",
   OUTPUT_TOOL_CONTEXT_MISSING: "服务端未提供该场景的工具上下文；不要编造骑行事实，只基于 chat_request 作答。",
@@ -1092,7 +1094,7 @@ async function runAutonomousToolLoop(input: {
         const last = completed.at(-1)?.result;
         if (last && isPlanToolResult(last) && last.tool === "propose_training_plan" && last.status === "blocked") {
           return withLoop({ schemaVersion: CHAT_AGENT_SCHEMA_VERSION, decision, execution: "template", modelInvoked: true,
-            reply: "草案未能通过当前校验，尚未启用新计划。已核对的信息仍保留，可以稍后重试；无需为迁就这份草案修改自己的基础。", fallbackCode: "PLAN_PROPOSAL_REJECTED" }, "failed");
+            reply: `草案未能通过当前校验。${last.issues[0]?.message ?? ""}已保留原有安排和核对信息。`, fallbackCode: "PLAN_PROPOSAL_REJECTED" }, "failed");
         }
         // 最终回答：动态溯源白名单校验 + 一次受限修复（计入总 provider 预算）。
         const validationContext = {
@@ -1130,23 +1132,25 @@ async function runAutonomousToolLoop(input: {
           evidenceRequest = "当前没有执行任何取数／知识工具，回答缺少证据。toolCatalog 中列出的能力当前可调用；请依据用户问题与上下文自主选择工具先查询，不要以尚未取数为由让用户重复提供记录。意图确有歧义时可用 clarification 追问。错误回答不是事实来源。";
           continue toolLoop;
         }
-        // AGT-B5（第六轮 ORCH-19 r1 = 156.6s 暴露的预算洞）：修复轮在循环迭代**内部**执行，
-        // 不经过 while 开头的整轮检查——多个 25s 调用可以叠加越过 60s 上限（实测 6 次
-        // provider 全耗尽 = 156s）。修复不计入 provider 预算（既有合同），但必须受**时间**预算。
+        // Repair happens inside the loop. Check both budgets before scheduling another call.
         if (providerCalls >= CHAT_TOOL_LOOP_MAX_PROVIDER_CALLS || Date.now() - startedAt >= CHAT_TOOL_LOOP_TIMEOUT_MS) {
           console.log(`${tag} L2b repair SKIPPED | elapsed=${Date.now() - startedAt}ms ≥ ${CHAT_TOOL_LOOP_TIMEOUT_MS}ms`);
           return budgetExhausted();
         }
         providerCalls += 1;
+        const recoverAction = firstValidation.code === "OUTPUT_ACTION_UNSUPPORTED" && !toolRepairContinuationUsed
+          && toolCalls < CHAT_TOOL_LOOP_MAX_TOOL_CALLS && providerCalls < CHAT_TOOL_LOOP_MAX_PROVIDER_CALLS;
         const repaired = await input.provider.run({
           ...invocation,
-          repairInstruction: repairInstruction(firstValidation.publicResult.code, "autonomous_tools"),
+          repairInstruction: recoverAction
+            ? "补做缺少的动作。若原请求需要的卡片或评估尚未准备，请按目录提交对应工具请求；无法执行则如实说明未完成。不得重复已完成的动作，或代替用户确认。"
+            : repairInstruction(firstValidation.publicResult.code, "autonomous_tools"),
           previousOutput: response.rawText,
         });
         // A missing-action repair may legitimately request the actual tool.
         // Execute it through the same permission/budget checks on the next
         // iteration, without counting this already-paid response twice.
-        if (firstValidation.code === "OUTPUT_ACTION_UNSUPPORTED" && !toolRepairContinuationUsed && parseChatToolCallRequest(repaired.rawText)) {
+        if (recoverAction && parseChatToolCallRequest(repaired.rawText)) {
           deferredToolOutput = repaired; toolRepairContinuationUsed = true;
           continue toolLoop;
         }

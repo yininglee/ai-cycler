@@ -1,6 +1,18 @@
 export const TRAINING_PLAN_RULES_VERSION = "training-plan-rules-v1" as const;
 export const TRAINING_PLAN_SCHEMA_VERSION = "training-plan-v1" as const;
 export const WORKOUT_KINDS = ["recovery", "endurance", "tempo", "threshold"] as const;
+const maxBlocks = 16;
+const minSessionMinutes = 15;
+const weeklyFloorMinutes = 60;
+const weeklyGrowthMaxPercent = 10;
+const maxSessionsPer7Days = 6;
+const hardSessionMin = { tempo: 30, threshold: 35 };
+const hardSessionMax = 60;
+
+export const PLAN_SCHEDULING_RULES = `根据 intake、basis 与 constraints 排出日程。以开始日期所在周一为第一周起点，阶段至多 ${maxBlocks} 个，须覆盖完整周期且无重叠。weekday 为周一至周日的一至七；kind 仅 ${WORKOUT_KINDS.join("、")}。每阶段选择不同星期，按实际起止日展开，避开 avoidDates。availability 是上限，每次至少 ${minSessionMinutes} 分钟，不超过当天可用时长和 singleRideMaxMinutes。
+首周总时长不超过 firstWeekMaxMinutes。以后各周以最近一个完整且非空的训练周为基准，乘以（1 + weeklyGrowthMaxPercent / 100）后向下取整，上限最低为 ${weeklyFloorMinutes} 分钟。未出现这样的完整周时沿用首周上限。首尾不完整周和空周也须检查上限，但不更新基准。缩短或调整任何一周后重新核对后续各周。
+连续七天最多 maxSessionsPer7Days 次训练、maxHardSessionsPer7Days 次节奏或阈值训练；两次高强度训练不能相邻。allowHardSessions 为 false 时只选恢复骑或耐力骑。节奏骑至少 ${hardSessionMin.tempo} 分钟，阈值骑至少 ${hardSessionMin.threshold} 分钟，均不超过 ${hardSessionMax} 分钟。规则拒绝时根据 issues 修正安排，保留已核对的用户条件。`;
+
 export type WorkoutKind = typeof WORKOUT_KINDS[number];
 export type Availability = { weekday: number; minutes: number };
 export type PlanIntake = {
@@ -60,10 +72,10 @@ export function parsePlanIntakePatch(value: unknown): Partial<PlanIntake> {
   return structuredClone(value) as Partial<PlanIntake>;
 }
 export function parsePlanProposal(value: unknown): PlanProposal {
-  if (!object(value) || Object.keys(value).sort().join() !== "blocks,rationale" || !text(value.rationale, 600) || !value.rationale.trim() || !Array.isArray(value.blocks) || !value.blocks.length || value.blocks.length > 16) throw new PlanError("INVALID_INPUT");
+  if (!object(value) || Object.keys(value).sort().join() !== "blocks,rationale" || !text(value.rationale, 600) || !value.rationale.trim() || !Array.isArray(value.blocks) || !value.blocks.length || value.blocks.length > maxBlocks) throw new PlanError("INVALID_INPUT");
   for (const block of value.blocks) {
-    if (!object(block) || Object.keys(block).sort().join() !== "fromWeek,sessions,toWeek" || !integer(block.fromWeek, 1, 54) || !integer(block.toWeek, block.fromWeek, 54) || !Array.isArray(block.sessions) || !block.sessions.length || block.sessions.length > 6) throw new PlanError("INVALID_INPUT");
-    for (const session of block.sessions) if (!object(session) || Object.keys(session).sort().join() !== "kind,minutes,weekday" || !integer(session.weekday, 1, 7) || !integer(session.minutes, 15, 240) || !(WORKOUT_KINDS as readonly unknown[]).includes(session.kind)) throw new PlanError("INVALID_INPUT");
+    if (!object(block) || Object.keys(block).sort().join() !== "fromWeek,sessions,toWeek" || !integer(block.fromWeek, 1, 54) || !integer(block.toWeek, block.fromWeek, 54) || !Array.isArray(block.sessions) || !block.sessions.length || block.sessions.length > maxSessionsPer7Days) throw new PlanError("INVALID_INPUT");
+    for (const session of block.sessions) if (!object(session) || Object.keys(session).sort().join() !== "kind,minutes,weekday" || !integer(session.weekday, 1, 7) || !integer(session.minutes, minSessionMinutes, 240) || !(WORKOUT_KINDS as readonly unknown[]).includes(session.kind)) throw new PlanError("INVALID_INPUT");
     if (new Set(block.sessions.map(session => session.weekday)).size !== block.sessions.length) throw new PlanError("INVALID_INPUT");
   }
   return structuredClone(value) as PlanProposal;
@@ -88,8 +100,11 @@ function steps(kind: WorkoutKind, minutes: number, intake: PlanIntake, basis: Pl
   const warmup = kind === "tempo" ? 10 : 5;
   return [step("热身", warmup, "recovery"), step(labels[kind].title, minutes - warmup * 2, kind), step("冷身", warmup, "recovery")];
 }
+function weeklyMinuteCap(previous: number) {
+  return Math.floor(Math.max(weeklyFloorMinutes, previous * (1 + weeklyGrowthMaxPercent / 100)));
+}
 export function planConstraints(basis: PlanBasis) {
-  return { firstWeekMaxMinutes: Math.floor(Math.max(60, (basis.weeklyMinutes ?? 0) * 1.1)), singleRideMaxMinutes: Math.floor(Math.min(240, Math.max(30, (basis.longestRideMinutes ?? 0) * 1.1))), weeklyGrowthMaxPercent: 10, maxHardSessionsPer7Days: 2, maxSessionsPer7Days: 6, allowHardSessions: (basis.weeklyMinutes ?? 0) >= 120 && (basis.longestRideMinutes ?? 0) >= 45 };
+  return { firstWeekMaxMinutes: weeklyMinuteCap(basis.weeklyMinutes ?? 0), singleRideMaxMinutes: Math.floor(Math.min(240, Math.max(30, (basis.longestRideMinutes ?? 0) * 1.1))), weeklyGrowthMaxPercent, maxHardSessionsPer7Days: 2, maxSessionsPer7Days, allowHardSessions: (basis.weeklyMinutes ?? 0) >= 120 && (basis.longestRideMinutes ?? 0) >= 45 };
 }
 export function validateTrainingPlan(plan: TrainingPlan, today = planToday()): PlanRuleIssue[] {
   const issues: PlanRuleIssue[] = [];
@@ -114,20 +129,20 @@ export function validateTrainingPlan(plan: TrainingPlan, today = planToday()): P
     if (day.minutes > constraints.singleRideMaxMinutes) issue("SINGLE_RIDE_LIMIT", `单次时长不能超过当前基础对应的${constraints.singleRideMaxMinutes}分钟。`, day.date);
     if (day.kind === "tempo" || day.kind === "threshold") {
       if (!constraints.allowHardSessions) issue("BASELINE_TOO_LOW", "当前基础仅支持轻松和耐力训练。", day.date);
-      if (day.minutes < (day.kind === "threshold" ? 35 : 30) || day.minutes > 60) issue("HARD_DURATION", "节奏／阈值单次时长需在相应的30或35分钟至60分钟之间。", day.date);
+      if (day.minutes < hardSessionMin[day.kind] || day.minutes > hardSessionMax) issue("HARD_DURATION", "节奏／阈值单次时长需在相应的30或35分钟至60分钟之间。", day.date);
     }
     if (day.steps.some(step => step.minutes <= 0 || step.powerWatts && (!basis.ftpWatts || step.powerWatts[1] > basis.ftpWatts)) || day.steps.reduce((sum, step) => sum + step.minutes, 0) !== day.minutes) issue("STEP_LIMIT", "训练步骤时长或功率上限不合规则。", day.date);
   }
   for (let i = 0; i < plan.days.length; i++) {
     const window = plan.days.slice(i, i + 7), hard = window.filter(day => day.kind === "tempo" || day.kind === "threshold");
-    if (window.filter(day => day.minutes > 0).length > 6) issue("RECOVERY_DAY", "任意连续七天至少保留一个休息日。");
-    if (hard.length > 2) issue("HARD_FREQUENCY", "任意连续七天最多两次节奏／阈值练习。");
+    if (window.filter(day => day.minutes > 0).length > constraints.maxSessionsPer7Days) issue("RECOVERY_DAY", "任意连续七天至少保留一个休息日。");
+    if (hard.length > constraints.maxHardSessionsPer7Days) issue("HARD_FREQUENCY", "任意连续七天最多两次节奏／阈值练习。");
     if (i && ["tempo", "threshold"].includes(plan.days[i].kind) && ["tempo", "threshold"].includes(plan.days[i - 1].kind)) issue("HARD_CONSECUTIVE", "节奏／阈值练习不能连续两天安排。");
   }
   let previous = basis.weeklyMinutes ?? 0;
   for (let week = 1; week <= weeks; week++) {
     const days = plan.days.filter(day => day.week === week), total = days.reduce((sum, day) => sum + day.minutes, 0);
-    const cap = Math.floor(Math.max(60, previous * 1.1));
+    const cap = weeklyMinuteCap(previous);
     if (total > cap) issue("WEEKLY_VOLUME", `第${week}周总时长${total}分钟超过当前规则上限${cap}分钟。`);
     if (days.length === 7 && total > 0) previous = total;
   }

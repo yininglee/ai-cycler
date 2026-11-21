@@ -1,3 +1,4 @@
+import { disclosureQuestions } from "./ride-evidence-disclosure-v2.ts";
 import type { RideModelInputQuestionV2, RideModelInputV2 } from "../domain/ride-model-input-v2.ts";
 import type { V2AnalysisClaim } from "../domain/ride-analysis-evidence-v2.ts";
 import {
@@ -24,6 +25,8 @@ export type RideOutputFailureCode =
   | "TEXT_EMPTY"
   | "CONCLUSION_TYPE_INVALID"
   | "DIMENSIONS_EMPTY"
+  | "SPECIFIC_MISSING_DATA_IN_ASSERTION"
+  | "DIMENSION_WITHOUT_FACT"
   | "DIMENSION_NOT_IN_INPUT"
   | "CLAIM_NOT_IN_INPUT"
   | "CLAIM_NOT_IN_DIMENSION"
@@ -93,7 +96,8 @@ const causalTextPattern = /导致|造成|引发/;
 const planAssertionTextPattern = /完成了?(训练)?计划|按计划(完成|执行|达成)|完成(了)?(训练)?目标|符合(训练)?计划|达成(训练)?目标/;
 const recoveryTextPattern = /恢复良好|已恢复|恢复完成|完全恢复/;
 const dataLimitedDisclosurePattern = /有限|不足/;
-const softDisclosurePattern = /部分|缺失|有限/;
+const namedMissingSensor = /(?:缺少|没有采集到|未采集到|缺乏)(?:完整的)?(?:心率|功率|踏频|速度|海拔)(?:数据|记录|读数)|(?:心率|功率|踏频|速度|海拔)数据(?:完全缺失|未采集)/;
+const softDisclosurePattern = /(?:数据|记录|采集|覆盖|样本)[^。！？]{0,8}(?:有限|不足|不全|不完整|缺失|部分依赖估算)|(?:部分|缺少|缺失)[^。！？]{0,4}(?:数据|记录|采样)/;
 // V21-15 P2 (2026-10-08): power.curve.* (max average power per duration —
 // 5s/60s/300s/1200s/3600s) is process data by construction: the curve's
 // gradient across durations IS the within-ride output structure, so wording
@@ -297,6 +301,9 @@ export function validateRideModelOutputV2(
       return [];
     }
     const text = view.text;
+    if (namedMissingSensor.test(text)) {
+      issue("SPECIFIC_MISSING_DATA_IN_ASSERTION", `${path}.text`, "keep the named missing sensor in verbatim limitations; describe coverage generally in the dimension");
+    }
     if (
       typeof view.conclusionType !== "string"
       || !rideOutputConclusionTypes.includes(view.conclusionType as RideOutputConclusionType)
@@ -536,13 +543,21 @@ export function validateRideModelOutputV2(
         );
         return;
       }
+      if (!question.claimIds.some(id => {
+        const claim = claimsById.get(id)?.claim;
+        return claim && claim.kind !== "limitation";
+      })) {
+        issue("DIMENSION_WITHOUT_FACT", path, "omit the dimension with no supporting fact and include its input limitations verbatim");
+      }
+      let discloseCoverage = question.qualityStatus === "soft" || question.eligibility === "partial";
       const joinedText: string[] = [];
       dimension.assertions.forEach((assertion, assertionIndex) => {
         const view = asAssertionView(assertion);
-        validateAssertion(`${path}.assertions[${assertionIndex}]`, view, question.dimensionId);
+        const cited = validateAssertion(`${path}.assertions[${assertionIndex}]`, view, question.dimensionId);
+        if (cited.some(claim => claim.qualityStatus === "soft")) discloseCoverage = true;
         if (isRecord(view) && typeof view.text === "string") joinedText.push(view.text);
       });
-      if (question.qualityStatus === "soft" && !softDisclosurePattern.test(joinedText.join(" "))) {
+      if (discloseCoverage && !softDisclosurePattern.test(joinedText.join(" "))) {
         issue(
           "SOFT_QUALITY_NOT_DISCLOSED",
           `${path}.assertions`,
@@ -604,20 +619,18 @@ export function validateRideModelOutputV2(
       }
     }
     if (Array.isArray(output.dimensions)) {
-      output.dimensions.forEach((dimension, index) => {
-        if (!isRecord(dimension)) return;
-        const question = questionsByDimension.get(String(dimension.dimensionId));
-        if (!question) return;
+      const included = new Set(output.dimensions.filter(isRecord).map(dimension => String(dimension.dimensionId)));
+      for (const question of disclosureQuestions(input, included)) {
         for (const limitation of question.limitations) {
           if (!outputLimitations.includes(limitation)) {
             issue(
               "LIMITATION_BACKFILL_MISSING",
-              `dimensions[${index}]`,
+              "limitations",
               `limitation "${limitation}" of dimension "${question.dimensionId}" must be backfilled verbatim`,
             );
           }
         }
-      });
+      }
     }
   }
 

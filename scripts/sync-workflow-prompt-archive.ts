@@ -10,7 +10,7 @@ const target = "prompts/ride-chat-workflow-v0.1.md";
 const raw = readFileSync(target, "utf8");
 const pattern = /```text\n[\s\S]*?\n```/;
 if (!pattern.test(raw)) throw new Error(`ARCHIVE_BLOCK_NOT_FOUND: ${target}`);
-const next = raw.replace(pattern, `\`\`\`text\n${CHAT_WORKFLOW_SYSTEM_PROMPT}\n\`\`\``);
+const next = raw.replace(/当前 Prompt 版本：`[^`]+`/, `当前 Prompt 版本：\`${CHAT_WORKFLOW_PROMPT_VERSION}\``).replace(pattern, `\`\`\`text\n${CHAT_WORKFLOW_SYSTEM_PROMPT}\n\`\`\``);
 if (next === raw) {
   console.log(`archive already in sync: ${target} (${CHAT_WORKFLOW_PROMPT_VERSION})`);
 } else {

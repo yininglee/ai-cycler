@@ -38,11 +38,15 @@ export const runtime = "nodejs";
  * owning session only.
  */
 export const RIDE_INTERPRETATION_ROUTE_VERSION = "ride-interpretation-route-v0.4-candidate" as const;
-export const RIDE_INTERPRETATION_ROUTE_VERSION_MATRIX = {
-  workflowName: "ride_analysis_v3",
-  workflowVersion: "v0.0.11",
-  promptVersion: "v0.4.14",
-} as const;
+function configuredV1Versions(environment: NodeJS.ProcessEnv) {
+  return {
+    engine: "v1",
+    workflowName: environment.COZE_INTERPRETATION_WORKFLOW_NAME?.trim() || "not_configured",
+    workflowVersion: environment.COZE_INTERPRETATION_WORKFLOW_VERSION?.trim() || "not_configured",
+    promptVersion: environment.COZE_INTERPRETATION_PROMPT_VERSION?.trim() || "unreported",
+    model: environment.COZE_INTERPRETATION_MODEL_ID?.trim() || "unrecorded",
+  };
+}
 
 const MAX_REQUEST_BYTES = 1_024;
 
@@ -65,7 +69,7 @@ function noStoreJson(value: unknown, status = 200, headers: Record<string, strin
 
 function cacheFingerprint(record: RideRecord, profile: UserProfile | null, engine: "v1" | "v2") {
   const model = engine === "v2" ? (process.env.RIDE_MODEL_V2_MODEL_ID?.trim() || DEFAULT_RIDE_MODEL_V2_MODEL_ID) : process.env.COZE_INTERPRETATION_WORKFLOW_ID?.trim();
-  return rideInterpretationFingerprint(record, profile, { engine, versions: engine === "v2" ? getRideInterpretationV2Versions() : RIDE_INTERPRETATION_ROUTE_VERSION_MATRIX,
+  return rideInterpretationFingerprint(record, profile, { engine, versions: engine === "v2" ? getRideInterpretationV2Versions() : configuredV1Versions(process.env),
     model, workflowVersion: engine === "v1" ? process.env.COZE_INTERPRETATION_WORKFLOW_VERSION : undefined, semanticModel: engine === "v2" ? readRideSemanticModelIdV2(process.env) : undefined });
 }
 
@@ -157,7 +161,7 @@ export async function POST(request: Request): Promise<Response> {
   const context = buildRideAnalysisContext(record);
   const eligibility = buildAnalysisEligibility(context);
 
-  const versions = { route: RIDE_INTERPRETATION_ROUTE_VERSION, ...RIDE_INTERPRETATION_ROUTE_VERSION_MATRIX };
+  const versions = { route: RIDE_INTERPRETATION_ROUTE_VERSION, ...(engine === "v2" ? getRideInterpretationV2Versions() : configuredV1Versions(process.env)) };
 
   if (eligibility.fallback === "safety_stop") {
     return finalize(

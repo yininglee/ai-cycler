@@ -4,6 +4,8 @@ import { getNextSessionUserId } from "../../src/auth/next-session.ts";
 import { buildChatHomeSnapshot } from "../../src/chat/chat-home.ts";
 import { getRideRepository } from "../../src/persistence/demo-ride-repository.ts";
 
+import { oneLapPilotFor } from "../../src/sync/onelap-access.ts";
+
 export default async function ChatPage() {
   const userId = await getNextSessionUserId();
   // DEMO-IMPORTED-RIDES：演示记录参与累计/本周摘要，使「我一共骑了多少」等聚合问题
@@ -12,6 +14,6 @@ export default async function ChatPage() {
   const snapshot = buildChatHomeSnapshot(rides.map(({ record }) => record));
 
   return <AppShell active="partner" pageClassName="chat-page-content">
-    <ChatHome snapshot={snapshot} hasExistingSession={userId !== null} />
+    <ChatHome liveOneLap={!!oneLapPilotFor(userId, "onelap")} snapshot={snapshot} hasExistingSession={userId !== null} />
   </AppShell>;
 }
