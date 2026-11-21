@@ -91,6 +91,8 @@ sequenceDiagram
 | 制定或调整训练计划 | `get_training_plan_context`、`prepare_training_plan`、`propose_training_plan` | 读取当前或指定版本，准备待核对的信息，或修改已有草案。首次生成由用户核对信息后触发专用生成流程，启用另需确认 |
 | 复盘训练执行 | `get_training_execution`、`prepare_training_record_link`、`assess_training_execution` | 读取当天安排与关联状态，准备记录选择入口，对已确认关联计算并保存执行事实。通过校验的文字反馈可随评估保存 |
 
+聊天会从两组内置知识中排序取回条目，首次制定计划按目标选材，V2 骑后解读按本次可分析的维度挂载知识。三个入口的选材与引用过程见[知识库构建与检索设计](AI_Cycler_知识库构建与检索设计.md)。
+
 **判断一项动作是否完成，要看它改变了什么状态。** 准备资料提案只会返回待确认卡片，日程确有变化时，修改训练草案会写入一个待审阅的版本。相同日程返回原版本和 `unchanged=true`，助手据此说明已有安排。规则拒绝时，既有安排和已核对的信息保留。启用或删除计划、关联骑行则使用专用接口，确认凭据绑定用户、目标、版本与幂等键。同一次有效确认重试会返回已有回执。[资料提案](../src/chat/chat-user-capabilities.ts) · [计划工具](../src/chat/chat-plan-tools.ts) · [执行工具](../src/chat/chat-execution-tools.ts) · [确认写入](../src/chat/chat-write-confirmation.ts)
 
 比如问“我可以同步顽鹿的骑行吗？”聊天首页和导入工具使用同一个账号判断。试点用户可以打开入口手动连接和同步，其他账号可以体验模拟流程。即使工具读到“已连接”，仍须查看上一次同步回执才能说导入了多少条；单纯查询和打开入口都不会拉取骑行。[账号能力与连接状态](../src/sync/onelap-access.ts) · [同步接口](../app/api/platform/route.ts)
