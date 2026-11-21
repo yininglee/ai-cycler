@@ -1,13 +1,17 @@
 # AI Cycler 基线索引
 
-2026-11-20 选定提交 `823c63f65479e6feaafae18a2df6be6b6b416c8d`（`m7-main`）作为 AI Cycler 后续功能和测评迭代的代码起点。新方案下的首轮测评待建立。
+**当前项目代码基线为 `d8bc8bfdd7c695b3eb089136843703725bc79488`**，所属分支 `m7-main`，登记于 2026-11-21。该提交包含提示词优化、相应工具与校验逻辑，以及回归用例。[上下文工程与工具设计](AI_Cycler_上下文工程与工具设计.md)
 
-## 代码与运行配置
+## 本版验证与运行配置
 
-- 技术入口。产品代码在 `app/` 和 `src/`，自动化测试通过 `pnpm verify` 运行，测试样例在 `tests/fixtures/` 和 `test-data/`。归档后类型检查通过，936 项自动化测试全部通过。[项目命令](../package.json)
-- 对话。代码内的主 Prompt 为 `ride-chat-prompt-v0.6.3`，分类器 Prompt 为 `ride-chat-classifier-prompt-v0.5.0`。首轮测评应记录实际启用的提供方和模型。[主 Prompt](../src/chat/chat-workflow-prompt.ts) · [分类器 Prompt](../src/chat/chat-classifier-prompt.ts) · [配置示例](../.env.example)
-- 骑行解读。API 在未配置引擎且请求未指定引擎时默认使用 V1 Coze 链路。V2 使用 `ride-prompt-v2.8.4`。测评时记录实际走的引擎、工作流或模型版本。[解读路由](../app/api/ride-analysis/route.ts) · [V2 Prompt](../src/ai/ride-prompt-v2.ts)
-- 骑行同步。当前实现包含默认关闭的顽鹿手动同步试验。同步场景的测评应注明实际使用的模拟或真实路径。[同步技术方案](Cycler_第三方骑行自动同步技术方案.md)
+- **工程验证。** `pnpm verify` 通过类型检查及全部 939 项自动化测试，`pnpm build` 完成生产构建。本轮使用测试数据和模拟提供方检查真实代码路径，线上模型效果与 Coze 发布内容未实测。[项目命令](../package.json) · [同步用例](../tests/onelap-sync.test.ts) · [训练计划用例](../tests/scn04-training-plan.test.ts) · [解读用例](../tests/ride-output-validator-v2.test.ts)
+- **聊天与训练计划。** 主提示词为 `ride-chat-prompt-v0.7.0`，边界分类器为 `ride-chat-classifier-prompt-v0.5.0`，首次排期为 `training-plan-generation-v1.1`。主对话与首版计划生成默认使用的硅基流动模型是 `deepseek-ai/DeepSeek-V3.2`，分类器默认模型为 `deepseek-ai/DeepSeek-V4-Flash`。可按环境配置覆盖；实际模型调用会记录所选模型及提示词标识。[主提示词](../src/chat/chat-workflow-prompt.ts) · [分类器](../src/chat/chat-classifier.ts) · [首版计划生成](../src/training/plan-generation.ts) · [配置示例](../.env.example)
+- **骑后深度解读。** 默认走 V1 Coze 工作流。仓库示例为 `ride_analysis_v3 / v0.0.11`、提示词 `v0.4.14`，实际请求采用部署配置。V2 使用 `ride-prompt-v2.9.0` 和修复提示词 `ride-repair-prompt-v2.3.0`，两者共用数据有限时的写作规则。[引擎选择与版本](../app/api/ride-analysis/route.ts) · [V2 版本信息](../src/ai/ride-interpretation-service-v2.ts)
+- **骑行接入。** 支持 FIT／GPX 文件导入；顽鹿真实手动同步由试点配置和当前账号共同决定。其他账号和平台展示对应模拟入口。[同步能力判断](../src/sync/onelap-access.ts) · [同步技术方案](Cycler_第三方骑行自动同步技术方案.md)
+
+## 历史代码基线
+
+2026-11-20 选定的代码起点为 `823c63f65479e6feaafae18a2df6be6b6b416c8d`，当时通过 936 项自动化测试。此条保留供历史版本对照。
 
 ## 建立首轮测评基线
 

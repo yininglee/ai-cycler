@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="704" viewBox="0 0 1080 704" role="img" aria-labelledby="title desc" lang="zh-CN">
+  <title id="title">Cycler 对话 Agent 的产品结构</title>
+  <desc id="desc">用户提问后先经过规则和可选的边界分类器。常规业务问题进入主对话模型，结合会话上下文向服务端请求工具。工具返回事实或草案，服务端核验候选回复并组装卡片。用户在相应界面确认保存资料、启用计划或关联骑行。</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10Z" fill="#4e6763"/>
+    </marker>
+    <style>
+      text { font-family: "PingFang SC","Microsoft YaHei","Noto Sans CJK SC",sans-serif; }
+      .node { fill: #f5f7f6; stroke: #afbfba; stroke-width: 1.4; }
+      .main { fill: #125b51; stroke: #125b51; }
+      .user { fill: #e5f4ed; stroke: #73a28b; stroke-width: 1.4; }
+      .title { font-size: 27px; font-weight: 650; fill: #183d37; }
+      .label { font-size: 20px; font-weight: 600; fill: #183d37; }
+      .sub { font-size: 15px; fill: #37544f; }
+      .inverse { fill: #fff; }
+      .link { fill: none; stroke: #4e6763; stroke-width: 1.8; marker-end: url(#arrow); }
+      .edge { font-size: 13px; fill: #36534d; }
+    </style>
+  </defs>
+  <rect width="1080" height="704" fill="#fff"/>
+  <text class="title" x="28" y="47">Cycler 对话 Agent 的产品结构</text>
+  <path fill="none" stroke="#d3dfdb" d="M28 69H1052"/>
+
+  <g text-anchor="middle">
+    <rect class="user" x="340" y="91" width="352" height="68" rx="10"/>
+    <text class="label" x="516" y="119">骑行者提出问题</text>
+    <text class="sub" x="516" y="143">输入一句话、点击推荐问题或选择记录</text>
+    <path class="link" d="M516 160V185"/>
+
+    <rect class="node" x="340" y="187" width="352" height="75" rx="10"/>
+    <text class="label" x="516" y="218">判断请求怎么处理</text>
+    <text class="sub" x="516" y="243">本地规则优先，按配置启用边界分类器</text>
+    <path class="link" d="M693 225H781"/>
+    <rect class="node" x="783" y="187" width="269" height="75" rx="10"/>
+    <text class="label" x="917" y="218">直接回应</text>
+    <text class="sub" x="917" y="243">问候、简单汇总、边界或不可用提示</text>
+    <path class="link" d="M516 263V321"/>
+    <text class="edge" x="568" y="296">业务问题</text>
+
+    <rect class="node" x="28" y="322" width="256" height="96" rx="10"/>
+    <text class="label" x="156" y="355">当前会话上下文</text>
+    <text class="sub" x="156" y="382">最近最多 6 条摘要、已选骑行</text>
+    <text class="sub" x="156" y="403">帮助理解“这次”“刚才那个指标”</text>
+    <path class="link" d="M285 370H338"/>
+
+    <rect class="main" x="340" y="322" width="352" height="96" rx="10"/>
+    <text class="label inverse" x="516" y="356">主对话模型选择下一步</text>
+    <text class="sub inverse" x="516" y="383">按需组合工具、追问或起草回答</text>
+    <text class="sub inverse" x="516" y="404">每次选择都受当前可用能力约束</text>
+    <path class="link" d="M693 351H781"/>
+    <text class="edge" x="737" y="342">工具请求</text>
+    <path class="link" d="M782 398H694"/>
+    <text class="edge" x="737" y="389">执行结果</text>
+    <rect class="node" x="783" y="322" width="269" height="96" rx="10"/>
+    <text class="label" x="917" y="355">服务端执行工具</text>
+    <text class="sub" x="917" y="382">核对权限、记录和参数</text>
+    <text class="sub" x="917" y="403">查询事实、准备草案、评估执行</text>
+    <path class="link" d="M917 466V420"/>
+    <rect class="node" x="783" y="467" width="269" height="74" rx="10"/>
+    <text class="label" x="917" y="498">工具依据</text>
+    <text class="sub" x="917" y="523">用户记录与资料、知识库、训练服务</text>
+
+    <path class="link" d="M516 419V465"/>
+    <text class="edge" x="568" y="449">候选回复</text>
+    <rect class="node" x="340" y="467" width="352" height="74" rx="10"/>
+    <text class="label" x="516" y="498">服务端核验回复</text>
+    <text class="sub" x="516" y="523">核对数字、知识引用和动作是否实际发生</text>
+    <path class="link" d="M340 505H309V399H338"/>
+    <text class="edge" x="254" y="498">补查或修复</text>
+
+    <path class="link" d="M516 542V585"/>
+    <rect class="node" x="340" y="587" width="352" height="83" rx="10"/>
+    <text class="label" x="516" y="619">在对话中交付结果</text>
+    <text class="sub" x="516" y="646">答复或追问，按工具结果附选择项与卡片</text>
+    <path class="link" d="M693 628H781"/>
+    <text class="edge" x="737" y="619">需要确认</text>
+    <rect class="user" x="783" y="587" width="269" height="83" rx="10"/>
+    <text class="label" x="917" y="619">用户在界面确认</text>
+    <text class="sub" x="917" y="646">保存资料、启用计划或关联骑行</text>
+  </g>
+</svg>
