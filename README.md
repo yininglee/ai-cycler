@@ -23,7 +23,7 @@ pnpm dev
 
 ### 按需启用外部服务
 
-- **骑后深度解读** · 填写 `SILICONFLOW_API_TOKEN` 并设置 `AI_ANALYSIS_ENABLED=true`，骑行详情即使用 V2 生成解读。默认模型为 `deepseek-ai/DeepSeek-V4-Flash`，可用 `RIDE_MODEL_V2_MODEL_ID` 覆盖。
+- **骑后深度解读（V2）** · 在 `.env.local` 中填写 `SILICONFLOW_API_TOKEN`，设置 `AI_ANALYSIS_ENABLED=true`，然后在骑行详情点击「查看深度解读」。默认使用硅基流动的 `deepseek-ai/DeepSeek-V4-Flash`，可通过 `RIDE_MODEL_V2_MODEL_ID` 更换模型。[当前解读流程](doc_m7_main/AI_Cycler_项目架构.md#3-骑后解读)
 - **模型对话与训练计划草案** · 设置 `CHAT_MODEL_ENABLED=true`，并填写 `SILICONFLOW_API_TOKEN`。
 - **平台同步** · 按需设置 `XINGZHE_SYNC_ENABLED` 或 `ONELAP_SYNC_ENABLED` 及对应凭据。行者 OAuth 回调地址须与开放平台登记的地址一致。
 
@@ -44,4 +44,4 @@ pnpm build    # 生产构建
 - [对话 Agent 整体设计](doc_m7_main/AI_Cycler_对话Agent整体结构设计.md) · 对话场景与 Agent 行为
 - [账号与第三方骑行导入 PRD](doc_m7_main/v1.1.0-account-and-import/PRD.md) · 账号、顽鹿和行者的功能范围与验收
 - [版本迭代规划](doc_m7_main/AI_Cycler_版本迭代规划.md) · 已完成事项与后续计划
-- [测评基线](doc_m7_main/AI_Cycler_基线索引.md) · 基线版本、模型配置与回归记录
+- [测评基线](doc_m7_main/AI_Cycler_基线索引.md) · 历史基线版本、当时的模型配置与回归记录
