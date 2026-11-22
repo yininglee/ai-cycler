@@ -57,9 +57,9 @@ sequenceDiagram
 | 用户发来消息，本地规则未直接处理，且启用了边界分类器 | 分类提示词只看本轮问题，判断放行、安全停止、隐私边界、指令注入或域外请求 | 分类标签交给对话路由。放行后，主对话才带上会话上下文和工具目录处理“那次呢”之类的追问 |
 | 用户在聊天里查询记录、讨论知识或复盘训练 | 主提示词中的对应场景规则生效。比如执行评估工具计算计划与实际的差异，主模型根据工具结果组织反馈 | 服务端核验后，把回复和卡片交给对话界面 |
 | 用户在计划信息卡核对信息并首次生成草案 | 计划接口调用专用生成器，以计划生成提示词作为系统消息，输入已核对的信息、近期骑行、训练知识与领域约束 | 生成器返回提案，计划服务校验并保存草案，界面展示新版本。启用另需用户确认 |
-| 用户点击某条骑行的“查看深度解读” | 解读界面按骑行 ID 请求独立接口。缓存命中时复用结果。需要生成时，默认 V1 调用 Coze 工作流，V2 将专用解读指令与本次骑行证据拼成一条 `user` 消息 | 解读结果交给骑行详情抽屉 |
+| 用户点击某条骑行的“查看深度解读” | 解读界面按骑行 ID 请求独立接口。缓存命中时复用结果。需要生成时，V2 将专用解读指令与本次骑行证据拼成一条 `user` 消息 | 解读结果交给骑行详情抽屉 |
 
-[分类提示词](../src/chat/chat-classifier-prompt.ts) · [对话路由](../app/api/chat/route.ts) · [计划生成调用](../src/training/plan-generation.ts) · [计划生成提示词](../src/training/plan-generation-prompt.ts) · [解读界面请求](../app/components/interpretation-view.tsx) · [解读引擎选择](../app/api/ride-analysis/route.ts) · [V2 消息发送](../src/ai/ride-model-provider-v2.ts)
+[分类提示词](../src/chat/chat-classifier-prompt.ts) · [对话路由](../app/api/chat/route.ts) · [计划生成调用](../src/training/plan-generation.ts) · [计划生成提示词](../src/training/plan-generation-prompt.ts) · [解读界面请求](../app/components/interpretation-view.tsx) · [解读接口](../app/api/ride-analysis/route.ts) · [V2 消息发送](../src/ai/ride-model-provider-v2.ts)
 
 **同一份排期规则在两个入口生效。** 用户第一次点击“核对信息并生成草案”时，专用生成器的系统消息直接包含共享规则。用户随后说“把周六的耐力骑缩短一点”，主对话读取已有草案，工具随结果带回同一段 `schedulingRules` 和按本人基础计算的 `state.constraints`。普通骑行问答无需携带整套排期算法。首次生成、聊天修订和规则拒绝后的重试，都以领域校验通过为提交条件。[共享排期规则与校验](../src/domain/training-plan.ts) · [首次生成提示词](../src/training/plan-generation-prompt.ts) · [聊天计划工具](../src/chat/chat-plan-tools.ts)
 
@@ -115,10 +115,10 @@ sequenceDiagram
 
 | AI 入口 | 如何组装输入 | 产品结果 |
 | --- | --- | --- |
-| 骑后深度解读 | 默认 V1 从单次骑行的分析计划选取允许引用的事实、解读维度、图表引用和局限，交给 Coze。V2 从骑行时间窗、资料、证据包与知识条目构造模型输入，核对运行范围、隐私字段和字符预算 | 深度解读围绕所选骑行生成。V2 缺少合格证据或输入超预算时会在模型调用前停止，界面可据原因降级 |
+| 骑后深度解读 | V2 从骑行时间窗、资料、证据包与知识条目构造模型输入，核对运行范围、隐私字段和字符预算 | 深度解读围绕所选骑行生成。V2 缺少合格证据或输入超预算时会在模型调用前停止，界面可据原因降级 |
 | 首次生成训练草案 | 用户先确认当前版本的训练信息。生成器取目标、可用时间、训练基础、领域约束、近四周汇总与最多 8 条近期骑行摘要，再按目标和功率条件选择训练知识 | 模型给出带知识引用的提案，领域规则核对可用日、负荷等约束。通过后得到可审阅的草案版本 |
 
-[骑后解读引擎选择](../app/api/ride-analysis/route.ts) · [V1 输入](../src/ai/ride-interpretation-input-v04-candidate.ts) · [V2 输入检查](../src/domain/ride-model-input-v2.ts) · [训练基础与近期记录](../src/training/plan-service.ts) · [草案生成](../src/training/plan-generation.ts)
+[骑后解读接口](../app/api/ride-analysis/route.ts) · [V2 输入检查](../src/domain/ride-model-input-v2.ts) · [训练基础与近期记录](../src/training/plan-service.ts) · [草案生成](../src/training/plan-generation.ts)
 
 ### 骑后报告遇到数据不足时怎样呈现
 
@@ -127,7 +127,7 @@ V2 的生成和修复使用同一份披露规则。整次骑行中，可完整�
 ### 如何核对一次请求实际用了哪份提示词
 
 - 主对话使用本地 `ride-chat-prompt-v0.7.0`，可选边界分类器使用 `ride-chat-classifier-prompt-v0.5.0`，首次生成计划使用 `training-plan-generation-v1.1`。硅基流动调用日志按请求 ID 记录提供方、模型和提示词标识。计划生成重试沿用同一请求 ID，成功响应的 `X-Request-Id` 可用于查日志。选择自建 HTTP 聊天端点时，远端提示词标为未报告。[主对话调用](../src/chat/siliconflow-chat-provider.ts) · [分类器](../src/chat/chat-classifier.ts) · [计划生成](../src/training/plan-generation.ts)
-- V1 响应和运行记录采用部署配置的工作流版本。Coze 内部提示词版本由部署方核对后填写，缺省标为 `unreported`。V2 在本地维护生成提示词 `ride-prompt-v2.9.0` 和修复提示词 `ride-repair-prompt-v2.3.0`，可从版本信息查到两者。[配置示例](../.env.example) · [V1 路由](../app/api/ride-analysis/route.ts) · [V2 版本信息](../src/ai/ride-interpretation-service-v2.ts)
+- 骑后解读使用本地维护的生成提示词 `ride-prompt-v2.9.0` 和修复提示词 `ride-repair-prompt-v2.3.0`。响应和运行记录包含这两项版本，可核对一次解读采用了哪套规则。[解读接口](../app/api/ride-analysis/route.ts) · [V2 版本信息](../src/ai/ride-interpretation-service-v2.ts)
 
 ## 产品验收看哪些信号
 

@@ -22,14 +22,12 @@ export function InterpretationSheet({
   title,
   dateLabel,
   demoFallback,
-  engine,
   onClose,
 }: {
   rideId: string;
   title: string;
   dateLabel?: string;
   demoFallback?: string;
-  engine?: "v2";
   onClose: () => void;
 }) {
   const { sessionData } = useAccountStorage();
@@ -104,7 +102,7 @@ export function InterpretationSheet({
           {preview === "loading" || preview === "error" ? <section className="ux-card">
             <p className="kicker">{dateLabel}</p><h2>{title}</h2>
             {preview === "loading" ? <p role="status"><span className="spinner" />正在生成解读…（状态演示）</p> : <div role="alert"><h3>解读生成失败</h3><p>模拟服务暂时不可用，当前记录已保留。</p><button className="primary-button" onClick={() => setPreview("b0")}>重试解读（演示）</button></div>}
-          </section> : <InterpretationView rideId={rideId} title={title} dateLabel={dateLabel} demoFallback={preview === "b0" ? "b0" : undefined} engine={engine} previewOnly={preview === "b0"} />}
+          </section> : <InterpretationView rideId={rideId} title={title} dateLabel={dateLabel} demoFallback={preview === "b0" ? "b0" : undefined} previewOnly={preview === "b0"} />}
 
         </div>
       </div>

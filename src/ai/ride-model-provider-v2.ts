@@ -1,8 +1,4 @@
-// S5-02: isolated V2 server-side model provider for SiliconFlow's OpenAI-compatible
-// chat completion API. This module is NOT wired into the production ride-analysis
-// route; integration happens in S6-03. Keys are read from server environment
-// variables only, never logged, and every call (success or failure) produces a
-// traceable call record per V2 PRD FR-11.
+// Server-side SiliconFlow provider for the V2 ride interpretation service.
 
 export const RIDE_MODEL_PROVIDER_RULES_VERSION = "ride-model-provider-v2.1.0" as const;
 export const RIDE_MODEL_PROVIDER_ID = "siliconflow" as const;

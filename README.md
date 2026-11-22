@@ -23,7 +23,7 @@ pnpm dev
 
 ### 按需启用外部服务
 
-- **骑后深度解读** · 设置 `AI_ANALYSIS_ENABLED=true`。默认使用 Coze V1 工作流，需填写 API Token 和工作流 ID。也可设置 `RIDE_INTERPRETATION_ENGINE=v2` 并配置硅基流动凭据。
+- **骑后深度解读** · 填写 `SILICONFLOW_API_TOKEN` 并设置 `AI_ANALYSIS_ENABLED=true`，骑行详情即使用 V2 生成解读。默认模型为 `deepseek-ai/DeepSeek-V4-Flash`，可用 `RIDE_MODEL_V2_MODEL_ID` 覆盖。
 - **模型对话与训练计划草案** · 设置 `CHAT_MODEL_ENABLED=true`，并填写 `SILICONFLOW_API_TOKEN`。
 - **平台同步** · 按需设置 `XINGZHE_SYNC_ENABLED` 或 `ONELAP_SYNC_ENABLED` 及对应凭据。行者 OAuth 回调地址须与开放平台登记的地址一致。
 

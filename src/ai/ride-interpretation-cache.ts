@@ -10,8 +10,7 @@ export function rideInterpretationFingerprint(ride: RideRecord, profile: UserPro
   return createHash("sha256").update(JSON.stringify({ version: "ride-interpretation-cache-v1", ride, health, policy })).digest("hex");
 }
 export function canCacheRideInterpretation(response: Record<string, unknown>): boolean {
-  return response.source === "b2" && record(response.v04Candidate)
-    || response.source === "v2" && record(response.v2Candidate) && response.v2Candidate.demoValidationBypass !== true;
+  return response.source === "v2" && record(response.v2Candidate) && response.v2Candidate.demoValidationBypass !== true;
 }
 export function readCachedRideInterpretation(result: unknown, fingerprint: string, rideId: string): CachedRideInterpretation | undefined {
   if (!record(result) || !record(result.successfulCache)) return undefined;

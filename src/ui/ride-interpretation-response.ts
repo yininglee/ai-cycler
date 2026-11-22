@@ -1,7 +1,7 @@
 export function hasInterpretationIdentity(value: unknown, rideId: string): boolean {
   if (!value || typeof value !== "object" || Array.isArray(value)) return false;
   const response = value as Record<string, unknown>;
-  return response.rideId === rideId && ["b2", "v2", "b0", "safety_stop"].includes(String(response.source));
+  return response.rideId === rideId && ["v2", "b0", "safety_stop"].includes(String(response.source));
 }
 export function interpretationFailureMessage(code?: string): string {
   switch (code) {

@@ -42,7 +42,6 @@ flowchart TB
     UI -->|同源 HTTP| API
     Data --> JSON & SQLite
     Import -->|手动同步试验| OneLap["顽鹿 OTM"]
-    Analysis -->|V1| Coze["Coze Workflow"]
     Analysis -->|V2| Models["硅基流动"]
     Chat -->|分类与主对话| Models
     Chat -.->|可配置的主对话提供方| HTTP["自建 HTTP 端点"]
@@ -84,23 +83,20 @@ flowchart TB
     Cache -->|有| Render["抽屉展示解读与图表，或降级提示"]
     Cache -->|无| Post["POST /api/ride-analysis"]
     Sheet -->|强制刷新| Post
-    Post --> Gate["读取骑行、构建分析上下文<br/>判断资格与安全边界，选择引擎"]
-    Gate -->|默认 V1| V1Input["解读计划与候选证据输入"]
-    Gate -->|请求或环境选择 V2| V2Input["读取用户资料，计算时间窗与能力<br/>装配证据包与知识，白名单投影"]
-    V1Input --> Coze["Coze Workflow"]
-    V2Input --> Model["硅基流动"]
-    Coze --> V1Output["结构与证据校验<br/>必要时修复，构建展示模型"]
-    Model --> V2Output["输出校验、修复与展示组装<br/>绑定骑行图表"]
-    V1Output --> Result["成功结果或带原因的降级响应"]
-    V2Output --> Result
+    Post --> Gate["读取骑行、构建分析上下文<br/>检查安全风险与解读开关"]
+    Gate -->|已启用 V2| V2Input["结合用户资料与骑行时间窗计算可分析的维度<br/>组装证据与知识，校验模型输入"]
+    V2Input -->|证据与输入校验通过| Model["硅基流动"]
+    Model --> V2Output["输出校验、必要时修复<br/>组装解读并绑定骑行图表"]
+    V2Output --> Result["成功结果或带原因的降级响应"]
+    V2Input -->|证据不足或输入超限| Result
     Gate -->|安全停止、AI 关闭等| Result
     Result --> Render
     Result -->|有会话且走仓储记录分支| Saved[("运行结果与成功缓存")]
     Saved -.-> Cache
 ```
 
-- **引擎选择** · 请求指定的 `engine` 优先于 `RIDE_INTERPRETATION_ENGINE`，均缺省时选 V1。骑行详情可以用 `?ai=v2` 为该抽屉选择 V2。两个引擎都受 `AI_ANALYSIS_ENABLED` 控制。安全停止返回 `safety_stop`，引擎失败返回 `b0` 和原因码，V2 也按该协议降级。[解读接口](../app/api/ride-analysis/route.ts) · [解读抽屉请求](../app/components/interpretation-view.tsx)
-- **缓存和单次分析边界** · 缓存读取核对记录、引擎和版本等指纹，V2 额外考虑用户资料。V2 单次骑行解读以本次记录为主要证据，历史比较和 PMC 负荷由其他入口提供。[缓存指纹](../src/ai/ride-interpretation-cache.ts) · [V1 解读服务](../src/ai/ride-interpretation-service-v04-candidate.ts) · [V2 解读服务](../src/ai/ride-interpretation-service-v2.ts) · [对话工具](../src/chat/chat-tools.ts)
+- **生成解读** · 用户打开抽屉，有匹配的 V2 成功结果就直接展示。首次生成或点击“重新解读”时，V2 将本次骑行证据交给硅基流动。安全停止返回 `safety_stop`，AI 关闭、凭据缺失或生成失败时返回 `b0` 和具体原因。[解读接口](../app/api/ride-analysis/route.ts) · [解读抽屉](../app/components/interpretation-view.tsx)
+- **缓存和分析范围** · 服务端按账号读取缓存，核对骑行记录、相关身体指标、模型和 V2 版本。旧版报告会在下次打开时重新生成。单次解读只使用这趟骑行的证据，历史比较和 PMC 负荷由对话工具提供。[缓存指纹](../src/ai/ride-interpretation-cache.ts) · [V2 解读服务](../src/ai/ride-interpretation-service-v2.ts) · [对话工具](../src/chat/chat-tools.ts)
 
 ## 4. 骑行对话 Agent
 
@@ -153,6 +149,6 @@ flowchart TB
 ## 6. 运行边界与代码定位
 
 - **会话与存储** · 开发会话使用签名 Cookie，应用仓储按用户 ID 读写数据。默认数据目录为 `.local-data/`，可通过 `LOCAL_DATA_DIR` 覆盖。开启 OIDC 模式会停用开发会话，当前 OIDC 适配器待接入。[会话实现](../src/auth/session.ts) · [应用仓储](../src/persistence/application-repository.ts)
-- **配置来源** · 解读与对话的外部调用各有开关。V1 解读使用 Coze。当前主对话提供方代码接受 `siliconflow` 或 `http`，未指定时根据硅基流动 Token 选择，环境示例中的 `coze_workflow` 属于旧配置。分类器启用后走硅基流动。[环境示例](../.env.example) · [对话提供方选择](../src/chat/chat-agent.ts) · [分类器配置](../src/chat/chat-classifier.ts)
+- **配置来源** · 骑后解读由 `AI_ANALYSIS_ENABLED` 控制，启用时读取 `SILICONFLOW_API_TOKEN`。主对话可选硅基流动或自建 HTTP 端点，边界分类器独立启用。[环境示例](../.env.example) · [对话提供方选择](../src/chat/chat-agent.ts) · [分类器配置](../src/chat/chat-classifier.ts)
 - **演示与观测** · `/pmc` 是占位页面。符合数据条件时，对话工具可计算 CTL、ATL、TSB。应用通过 `/api/demo-events` 记录或查询演示事件，导入、解读和对话也会记录服务端事件。[PMC 页面](../app/pmc/page.tsx) · [PMC 计算](../src/domain/ride-pmc-load-v2.ts) · [事件接口](../app/api/demo-events/route.ts)
 - **验证入口** · `pnpm verify` 运行 TypeScript 检查和 Node 测试。测试覆盖解析导入、路由、仓储、解读、对话与训练。基线说明包含样例和测评资产的位置。[项目命令](../package.json) · [基线索引](AI_Cycler_基线索引.md)

@@ -84,8 +84,8 @@ test("SCN-02: receipts return to the origin once; an inspected record survives r
   assert.equal(parseImportReceipts([{ ...receipt, ids: [null] }], "conversation-1").length, 0);
 });
 
-test("SCN-02: successful interpretation persists; cache has no provider cost and invalidates by profile, engine or visibility", async () => {
-  await withEnv({ AI_ANALYSIS_ENABLED: "true", RIDE_INTERPRETATION_ENGINE: "V2", SILICONFLOW_API_TOKEN: "test-only", DEMO_VALIDATION_BYPASS: "off" }, async () => {
+test("SCN-02: successful interpretation persists; cache has no provider cost and ignores retired engine hints and respects profile and visibility", async () => {
+  await withEnv({ AI_ANALYSIS_ENABLED: "true", SILICONFLOW_API_TOKEN: "test-only", DEMO_VALIDATION_BYPASS: "off" }, async () => {
     const f = owner(); await saveProfile(f.json("/api/profile", { age: 31, weightKg: 71, ftpWatts: 220, maxHeartRateBpm: 190 }));
     const { rideId } = await (await upload(f.upload(buildCyclingFitSample({ recordCount: 121 }), "ride.fit"))).json();
     const original = globalThis.fetch; let modelCalls = 0;
@@ -93,6 +93,15 @@ test("SCN-02: successful interpretation persists; cache has no provider cost and
       return Response.json({ choices: [{ message: { content: JSON.stringify(interpretationProviderReply(body.messages[0].content)) } }] });
     }) as typeof fetch;
     try {
+      await getApplicationRepository().saveAnalysisRun(f.id, rideId, {
+        successfulCache: {
+          fingerprint: "retired-coze-fingerprint", generatedAt: new Date().toISOString(),
+          response: { rideId, source: "b2", v04Candidate: {} },
+        },
+      });
+      const oldCache = await (await cachedAnalysis(f.get(`/api/ride-analysis?rideId=${rideId}&engine=v1`))).json();
+      assert.equal(oldCache.cached, false);
+      assert.equal(modelCalls, 0);
       const generated = await (await analyze(f.json("/api/ride-analysis", { rideId }))).json();
       assert.equal(generated.source, "v2", JSON.stringify(generated)); assert.ok(modelCalls > 0);
       const count = modelCalls;
@@ -102,7 +111,10 @@ test("SCN-02: successful interpretation persists; cache has no provider cost and
       assert.equal((await (await analyze(f.json("/api/ride-analysis", { rideId }))).json()).source, "b0");
       assert.equal((await (await cachedAnalysis(f.get(`/api/ride-analysis?rideId=${rideId}`))).json()).cached, true, "failed retry preserves an explicitly dated existing success");
       process.env.AI_ANALYSIS_ENABLED = "true";
-      assert.equal((await (await cachedAnalysis(f.get(`/api/ride-analysis?rideId=${rideId}&engine=v1`))).json()).cached, false);
+      const legacyHint = await (await cachedAnalysis(f.get(`/api/ride-analysis?rideId=${rideId}&engine=v1`))).json();
+      assert.equal(legacyHint.cached, true);
+      assert.equal(legacyHint.response.source, "v2");
+      assert.equal(modelCalls, count);
       assert.equal((await cachedAnalysis(owner().get(`/api/ride-analysis?rideId=${rideId}`))).status, 400);
       await saveProfile(f.json("/api/profile", { ftpWatts: 230 }));
       assert.equal((await (await cachedAnalysis(f.get(`/api/ride-analysis?rideId=${rideId}`))).json()).cached, false);
@@ -121,7 +133,7 @@ test("SCN-02: successful interpretation persists; cache has no provider cost and
 });
 
 test("SCN-02: disabled analysis stays retryable, is not cached as success and reports service rather than missing-data cause", async () => {
-  await withEnv({ AI_ANALYSIS_ENABLED: "false", RIDE_INTERPRETATION_ENGINE: "V2" }, async () => {
+  await withEnv({ AI_ANALYSIS_ENABLED: "false" }, async () => {
     const f = owner(); const { rideId } = await (await upload(f.upload(buildCyclingFitSample({ recordCount: 121 }), "ride.fit"))).json();
     const result = await (await analyze(f.json("/api/ride-analysis", { rideId }))).json(); assert.equal(result.source, "b0"); assert.equal(result.fallbackCode, "AI_DISABLED");
     assert.equal((await (await cachedAnalysis(f.get(`/api/ride-analysis?rideId=${rideId}`))).json()).cached, false);

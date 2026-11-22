@@ -6,7 +6,7 @@
 
 - **工程验证。** `pnpm verify` 通过类型检查及全部 939 项自动化测试，`pnpm build` 完成生产构建。本轮使用测试数据和模拟提供方检查真实代码路径，线上模型效果与 Coze 发布内容未实测。[项目命令](../package.json) · [同步用例](../tests/onelap-sync.test.ts) · [训练计划用例](../tests/scn04-training-plan.test.ts) · [解读用例](../tests/ride-output-validator-v2.test.ts)
 - **聊天与训练计划。** 主提示词为 `ride-chat-prompt-v0.7.0`，边界分类器为 `ride-chat-classifier-prompt-v0.5.0`，首次排期为 `training-plan-generation-v1.1`。主对话与首版计划生成默认使用的硅基流动模型是 `deepseek-ai/DeepSeek-V3.2`，分类器默认模型为 `deepseek-ai/DeepSeek-V4-Flash`。可按环境配置覆盖；实际模型调用会记录所选模型及提示词标识。[主提示词](../src/chat/chat-workflow-prompt.ts) · [分类器](../src/chat/chat-classifier.ts) · [首版计划生成](../src/training/plan-generation.ts) · [配置示例](../.env.example)
-- **骑后深度解读。** 默认走 V1 Coze 工作流。仓库示例为 `ride_analysis_v3 / v0.0.11`、提示词 `v0.4.14`，实际请求采用部署配置。V2 使用 `ride-prompt-v2.9.0` 和修复提示词 `ride-repair-prompt-v2.3.0`，两者共用数据有限时的写作规则。[引擎选择与版本](../app/api/ride-analysis/route.ts) · [V2 版本信息](../src/ai/ride-interpretation-service-v2.ts)
+- **骑后深度解读。** 基线提交 `d8bc8bf` 当时默认走 V1 Coze 工作流。该提交的配置示例为 `ride_analysis_v3 / v0.0.11`、提示词 `v0.4.14`，实际请求采用部署配置。V2 使用 `ride-prompt-v2.9.0` 和修复提示词 `ride-repair-prompt-v2.3.0`，两者共用数据有限时的写作规则。[当前版本的 V2 解读流程](AI_Cycler_项目架构.md#3-骑后解读) · [V2 版本信息](../src/ai/ride-interpretation-service-v2.ts)
 - **骑行接入。** 支持 FIT／GPX 文件导入；顽鹿真实手动同步由试点配置和当前账号共同决定。其他账号和平台展示对应模拟入口。[同步能力判断](../src/sync/onelap-access.ts) · [同步技术方案](Cycler_第三方骑行自动同步技术方案.md)
 
 ## 历史代码基线
