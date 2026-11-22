@@ -9,6 +9,7 @@ test-data/private/
 .env*
 !.env.example
 .local-data/
+/.workbuddy/
 .wbapp_*.genie
 
 # V2 归档中的外部参考文献 PDF 不入库
