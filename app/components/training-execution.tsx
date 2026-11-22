@@ -1,4 +1,6 @@
 "use client";
+
+import { useAccountStorage } from "./account-scope";
 import { createClientRequestId } from "../../src/ui/client-request-id";
 import { StatusBadge } from "./status-badge";
 import Link from "next/link";
@@ -24,6 +26,7 @@ async function executionRequest(body?: unknown, query = "") {
 type Props = { reference?: TrainingExecutionRef; conversationId?: string; pending?: boolean; onAsk?: (text: string) => Promise<void>; onImported?: (ids: string[], text: string, conversationId?: string) => void };
 
 export function TrainingExecutionCard({ reference, conversationId, pending, onAsk, onImported }: Props) {
+  const { scope, sessionData } = useAccountStorage();
   const [view, setView] = useState<ExecutionView>(), [error, setError] = useState(""), [open, setOpen] = useState(false), [selected, setSelected] = useState<string>(), [busy, setBusy] = useState(false);
   const receipt = useRef<WriteConfirmationRequest | null>(null), requestSequence = useRef(0);
   const key = reference ? `${reference.planId}:${reference.version}:${reference.date}` : "today";
@@ -99,7 +102,7 @@ export function TrainingExecutionCard({ reference, conversationId, pending, onAs
     {view.status === "ended" && <p>可查看历史，新的安排需重新制定并确认。</p>}
     {view.profileChanged && <p className={styles.note}>资料或目标已变化，当前安排需复核。</p>}
     {view.staleReason && <p role="status">{view.staleReason}</p>}
-    {execution && <><p>已由本人确认关联一条骑行记录</p><Link onClick={() => rememberStoredRideInspection(execution.rideId, conversationId)} href={`/rides/${encodeURIComponent(execution.rideId)}?${new URLSearchParams({ from: "chat", ...(conversationId ? { conversation: conversationId } : {}) })}`}>查看关联骑行</Link></>}
+    {execution && <><p>已由本人确认关联一条骑行记录</p><Link onClick={() => rememberStoredRideInspection(execution.rideId, conversationId, scope)} href={`/rides/${encodeURIComponent(execution.rideId)}?${new URLSearchParams({ from: "chat", ...(conversationId ? { conversation: conversationId } : {}) })}`}>查看关联骑行</Link></>}
     {facts && <dl className={styles.executionMetrics}>
       <div><dt>计划时长</dt><dd>{facts.plannedMinutes}<small> 分钟</small></dd></div>
       <div><dt>实际移动</dt><dd>{facts.movingMinutes === null ? "未记录" : facts.movingMinutes}<small>{facts.movingMinutes === null ? "" : " 分钟"}</small></dd></div>
@@ -116,8 +119,8 @@ export function TrainingExecutionCard({ reference, conversationId, pending, onAs
         if (onImported) { onImported(ids, text, origin); void load(); }
         else if (origin) {
           try {
-            const receipts = parseImportReceipts(JSON.parse(sessionStorage.getItem(CHAT_IMPORT_QUEUE_KEY) ?? "[]"), origin);
-            sessionStorage.setItem(CHAT_IMPORT_QUEUE_KEY, JSON.stringify([...receipts, { receiptId: createClientRequestId(), conversationId: origin, ids, text }]));
+            const receipts = parseImportReceipts(JSON.parse(sessionData.getItem(CHAT_IMPORT_QUEUE_KEY) ?? "[]"), origin);
+            sessionData.setItem(CHAT_IMPORT_QUEUE_KEY, JSON.stringify([...receipts, { receiptId: createClientRequestId(), conversationId: origin, ids, text }]));
             window.location.assign(chatReturnPath(origin));
           } catch { setError("记录已导入；回执暂未保存，请返回原对话查看候选。"); void load(); }
         } else void load();

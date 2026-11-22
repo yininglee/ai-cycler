@@ -12,7 +12,7 @@ export type PlatformState = {
   failedIds: string[];
   extra?: boolean;
 };
-export type SyncResult = { added: number; duplicate: number; failed: number; rideIds: string[] };
+export type SyncResult = { added: number; duplicate: number; failed: number; rideIds: string[]; updated?: number; summaryOnly?: number; skippedDeleted?: number };
 export type PlatformAction = "connect" | "disconnect" | "sync" | "retry" | "expire" | "add-sample";
 export class PlatformError extends Error {}
 

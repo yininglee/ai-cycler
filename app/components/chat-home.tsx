@@ -1,4 +1,6 @@
 "use client";
+
+import { useAccountStorage } from "./account-scope";
 import { StatusBadge } from "./status-badge";
 import { isChatRideScope, type ChatRideScope } from "../../src/chat/chat-context.ts";
 
@@ -16,6 +18,7 @@ import { parsePlanDiscussion, planDiscussionKey, planDiscussionText } from "../.
 import { SideDrawer } from "./side-drawer";
 import { ChatReplyText } from "./chat-reply-text";
 import { Onboarding, PrototypeSettings } from "./ux-onboarding";
+import { claimChatOnboarding } from "./profile-client";
 import { PROFILE_LABELS } from "../../src/chat/profile-proposal";
 import type { ProfileInput } from "../../src/domain/user-profile";
 import Link from "next/link";
@@ -114,7 +117,8 @@ function hasOpenDialog() {
     .some(dialog => dialog.getClientRects().length > 0);
 }
 
-export function ChatHome({ snapshot, hasExistingSession, liveOneLap }: { snapshot: ChatHomeSnapshot; hasExistingSession: boolean; liveOneLap: boolean }) {
+export function ChatHome({ snapshot, liveOneLap }: { snapshot: ChatHomeSnapshot; liveOneLap: boolean }) {
+  const { scope, sessionData } = useAccountStorage();
   const trainingPlan = useTrainingPlanView();
   const [previousProfile, setPreviousProfile] = useState<ProfileInput>({});
   const [proposal, setProposal] = useState<ProfileInput | null>(null);
@@ -174,39 +178,39 @@ export function ChatHome({ snapshot, hasExistingSession, liveOneLap }: { snapsho
   useEffect(() => {
     if (restoredSessionRef.current) return;
     restoredSessionRef.current = true;
-    const stored = readStoredChatSession();
+    const stored = readStoredChatSession(scope);
     const before = stored ?? createChatSession(snapshot);
     let restored = before;
     let reset: string | null = null;
     try {
       const url = new URL(window.location.href);
       const returnTo = url.searchParams.get("conversation");
-      reset = sessionStorage.getItem("cycler-reset-chat");
-      sessionStorage.removeItem("cycler-reset-chat");
-      const receipts = parseImportReceipts(JSON.parse(sessionStorage.getItem(CHAT_IMPORT_QUEUE_KEY) ?? "[]"), before.activeConversationId);
+      reset = sessionData.getItem("cycler-reset-chat");
+      sessionData.removeItem("cycler-reset-chat");
+      const receipts = parseImportReceipts(JSON.parse(sessionData.getItem(CHAT_IMPORT_QUEUE_KEY) ?? "[]"), before.activeConversationId);
       restored = restoreImportReceipts(before, receipts);
       restored = reset ? startChatConversation(restored, snapshot) : resumeChatSession(restored, snapshot);
-      if (storeChatSession(restored)) sessionStorage.removeItem(CHAT_IMPORT_QUEUE_KEY);
+      if (storeChatSession(restored, scope)) sessionData.removeItem(CHAT_IMPORT_QUEUE_KEY);
 
       const sameConversation = before.activeConversationId === restored.activeConversationId;
       if (!reset && returnTo && returnTo !== restored.activeConversationId && url.searchParams.get("discussPlan") === "1"
         && restored.conversations.some(conversation => conversation.id === returnTo)) {
         const key = planDiscussionKey(returnTo);
-        const discussion = sessionStorage.getItem(key);
+        const discussion = sessionData.getItem(key);
         if (discussion) {
-          sessionStorage.setItem(planDiscussionKey(restored.activeConversationId), discussion);
-          sessionStorage.removeItem(key);
+          sessionData.setItem(planDiscussionKey(restored.activeConversationId), discussion);
+          sessionData.removeItem(key);
         }
       }
-      if (!sameConversation) sessionStorage.removeItem(planDiscussionKey(before.activeConversationId));
-      if (reset) sessionStorage.removeItem(DRAFT_KEY);
+      if (!sameConversation) sessionData.removeItem(planDiscussionKey(before.activeConversationId));
+      if (reset) sessionData.removeItem(DRAFT_KEY);
       else {
         const legacyDraftKey = `cycler-input:${before.activeConversationId}`;
-        const draft = sessionStorage.getItem(DRAFT_KEY) ?? sessionStorage.getItem(legacyDraftKey) ?? "";
+        const draft = sessionData.getItem(DRAFT_KEY) ?? sessionData.getItem(legacyDraftKey) ?? "";
         setInput(draft);
-        if (draft) sessionStorage.setItem(DRAFT_KEY, draft);
-        sessionStorage.removeItem(legacyDraftKey);
-        const savedPosition = JSON.parse(sessionStorage.getItem(RETURN_MESSAGE_KEY) ?? "null") as MessagePosition | null;
+        if (draft) sessionData.setItem(DRAFT_KEY, draft);
+        sessionData.removeItem(legacyDraftKey);
+        const savedPosition = JSON.parse(sessionData.getItem(RETURN_MESSAGE_KEY) ?? "null") as MessagePosition | null;
         const origin = returnTo ?? savedPosition?.conversationId;
         if (origin) {
           const messages = buildChatTimeline(restored);
@@ -220,14 +224,14 @@ export function ChatHome({ snapshot, hasExistingSession, liveOneLap }: { snapsho
           }
         }
       }
-      sessionStorage.removeItem(RETURN_MESSAGE_KEY);
+      sessionData.removeItem(RETURN_MESSAGE_KEY);
       if (returnTo) {
         url.searchParams.delete("conversation");
         url.searchParams.delete("discussPlan");
         window.history.replaceState(window.history.state, "", `${url.pathname}${url.search}`);
       }
       if (sameConversation) {
-        const raw = JSON.parse(sessionStorage.getItem("cycler-profile-proposal") ?? "null");
+        const raw = JSON.parse(sessionData.getItem("cycler-profile-proposal") ?? "null");
         if (raw) {
           const { artifact } = sanitizeChatInteractionPayload({ artifact: { kind: "profile_proposal", payload: raw.input ? raw : { input: raw, previous: {} } } });
           if (artifact?.kind === "profile_proposal") {
@@ -236,13 +240,18 @@ export function ChatHome({ snapshot, hasExistingSession, liveOneLap }: { snapsho
           }
         }
       } else {
-        sessionStorage.removeItem("cycler-profile-proposal");
+        sessionData.removeItem("cycler-profile-proposal");
       }
     } catch {
       restored = resumeChatSession(restored, snapshot);
     }
-    if (reset === "blank" || (!reset && !stored && !hasExistingSession)) {
+    if (reset === "blank") {
       setSetupConversation(restored.activeConversationId);
+    } else if (scope && !reset && before.conversations.length === 1 && !getActiveChatConversation(before).messages.some(message => message.role === "user")) {
+      const firstConversationId = restored.activeConversationId;
+      void claimChatOnboarding().then(show => {
+        if (show) setSetupConversation(firstConversationId);
+      }).catch(() => { /* Keep chat available and retry the welcome on a later visit. */ });
     }
     const messages = buildChatTimeline(restored);
     const position = scrollTarget.current;
@@ -260,8 +269,8 @@ export function ChatHome({ snapshot, hasExistingSession, liveOneLap }: { snapsho
   }, [snapshot, snapshotFingerprint]);
 
   useEffect(() => {
-    if (hydrated) storeChatSession(session);
-  }, [session, hydrated]);
+    if (hydrated) storeChatSession(session, scope);
+  }, [session, hydrated, scope]);
 
   function jumpToLatest() {
     followRepliesRef.current = true;
@@ -329,8 +338,8 @@ export function ChatHome({ snapshot, hasExistingSession, liveOneLap }: { snapsho
     historyWheel.current.distance = 0;
     setHistoryPull(0);
     try {
-      sessionStorage.removeItem("cycler-profile-proposal");
-      sessionStorage.removeItem(planDiscussionKey(session.activeConversationId));
+      sessionData.removeItem("cycler-profile-proposal");
+      sessionData.removeItem(planDiscussionKey(session.activeConversationId));
     } catch {}
     return getActiveChatConversation(next);
   }, [session, snapshot, setHistoryPull]);
@@ -363,7 +372,7 @@ export function ChatHome({ snapshot, hasExistingSession, liveOneLap }: { snapsho
     if (!(event.target instanceof Element)) return;
     const link = event.target.closest<HTMLAnchorElement>("a[href]");
     if (!link || new URL(link.href, window.location.href).searchParams.get("conversation") !== position.conversationId) return;
-    try { sessionStorage.setItem(RETURN_MESSAGE_KEY, JSON.stringify(position)); } catch {}
+    try { sessionData.setItem(RETURN_MESSAGE_KEY, JSON.stringify(position)); } catch {}
   }
 
   function addReply(conversationId: string, userText: string, reply: string, source: ChatSessionSummarySource, turn?: { route?: string; rideAnchor?: string; choice?: ChatChoiceRef; rideScope?: ChatRideScope }, interaction?: ChatAgentInteraction) {
@@ -382,7 +391,7 @@ export function ChatHome({ snapshot, hasExistingSession, liveOneLap }: { snapsho
   function inspectRide(rideId: string) {
     if (isChatConversationExpired(activeConversation)) return;
     const next = rememberChatRideSelection(session, rideId, activeConversation.id);
-    storeChatSession(next); // A detail link can unmount chat before its persistence effect runs.
+    storeChatSession(next, scope); // A detail link can unmount chat before its persistence effect runs.
     setSession(next);
   }
 
@@ -407,8 +416,8 @@ export function ChatHome({ snapshot, hasExistingSession, liveOneLap }: { snapsho
       const summaries = buildChatSessionSummaries(conversation);
       try {
         const key = planDiscussionKey(conversation.id);
-        const focus = parsePlanDiscussion(JSON.parse(sessionStorage.getItem(key) ?? "null"));
-        sessionStorage.removeItem(key);
+        const focus = parsePlanDiscussion(JSON.parse(sessionData.getItem(key) ?? "null"));
+        sessionData.removeItem(key);
         if (focus) {
           const { viewPlan } = await planRequest(undefined, `?${new URLSearchParams({ planId: focus.planId, version: String(focus.version) })}`);
           if (viewPlan?.id === focus.planId && viewPlan.version === focus.version && (!focus.date || viewPlan.days.some(day => day.date === focus.date))) {
@@ -421,7 +430,7 @@ export function ChatHome({ snapshot, hasExistingSession, liveOneLap }: { snapsho
       if (result.interaction?.artifact?.kind === "profile_proposal") {
         const payload = result.interaction.artifact.payload;
         setProposal(payload.input); setPreviousProfile(payload.previous); setProposalMessage("");
-        try { sessionStorage.setItem("cycler-profile-proposal", JSON.stringify(payload)); } catch {}
+        try { sessionData.setItem("cycler-profile-proposal", JSON.stringify(payload)); } catch {}
       }
       addReply(conversation.id, userText, result.reply ?? CHAT_UNAVAILABLE_REPLY, source, result, result.interaction);
       notifyPlanUpdated();
@@ -459,7 +468,7 @@ export function ChatHome({ snapshot, hasExistingSession, liveOneLap }: { snapsho
     if (!value || pending || inFlight.current || savingProfile || !hydrated) return;
     void ask(value, "typed_input");
     setInput("");
-    try { sessionStorage.removeItem(DRAFT_KEY); } catch {}
+    try { sessionData.removeItem(DRAFT_KEY); } catch {}
   }
 
   const currentPlan = trainingPlan?.active ?? trainingPlan?.draft;
@@ -474,7 +483,7 @@ export function ChatHome({ snapshot, hasExistingSession, liveOneLap }: { snapsho
     </header>
 
     <SideDrawer open={settingsOpen} onClose={() => setSettingsOpen(false)}>
-      <PrototypeSettings />
+      {!scope && <PrototypeSettings />}
       <p className="chat-history-note">对话记录保存在本浏览器。在消息顶部下拉可加载历史。</p>
     </SideDrawer>
 
@@ -581,10 +590,10 @@ export function ChatHome({ snapshot, hasExistingSession, liveOneLap }: { snapsho
             try {
               const r = await fetch("/api/profile", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(proposal) });
               if (!r.ok) throw Error();
-              setProposal(null); sessionStorage.removeItem("cycler-profile-proposal"); setProposalMessage("已确认保存，可在「我的」查看来源与更新时间。");
+              setProposal(null); sessionData.removeItem("cycler-profile-proposal"); setProposalMessage("已确认保存，可在「我的」查看来源与更新时间。");
               window.dispatchEvent(new Event("cycler-profile-saved"));
             } catch { setProposalMessage("保存失败，待确认内容已保留，请重试。"); } finally { setSavingProfile(false); }
-          }}>确认保存资料</button><Link href="/profile" onClick={() => { setProposal(null); sessionStorage.removeItem("cycler-profile-proposal"); }}>到资料页修改</Link><button disabled={savingProfile} onClick={() => { setProposal(null); sessionStorage.removeItem("cycler-profile-proposal"); }}>取消</button></div>
+          }}>确认保存资料</button><Link href="/profile" onClick={() => { setProposal(null); sessionData.removeItem("cycler-profile-proposal"); }}>到资料页修改</Link><button disabled={savingProfile} onClick={() => { setProposal(null); sessionData.removeItem("cycler-profile-proposal"); }}>取消</button></div>
         </section>}
         {proposalMessage && <p role="status">{proposalMessage}</p>}
         <section className="chat-opening" ref={openingRef} aria-label="开始聊天" hidden={!opening}>
@@ -628,9 +637,9 @@ export function ChatHome({ snapshot, hasExistingSession, liveOneLap }: { snapsho
         <button type="button" disabled={!hydrated || pending || savingProfile} onClick={() => void ask("我想制定新的训练计划。", "quick_question")}>训练计划生成</button>
       </div>
       <form className="chat-input-form" onSubmit={submit}>
-        {disclosureOpen && <p className="chat-disclosure-popover" role="note">可解读骑行、查询近期表现、解释骑行知识，准备训练草案，评估本人已确认关联的训练记录；计划启用、删除和记录关联需明确确认。{liveOneLap ? "此账号可手动同步顽鹿记录，其他平台提供模拟体验。" : "此账号可体验模拟平台同步。"}也可上传 FIT 或 GPX 文件。对话记录保存在本浏览器。</p>}
+        {disclosureOpen && <p className="chat-disclosure-popover" role="note">可解读骑行、查询近期表现、解释骑行知识，准备训练草案，评估本人已确认关联的训练记录；计划启用、删除和记录关联需明确确认。可上传 FIT 或 GPX 文件。{liveOneLap && "此会话可手动同步顽鹿记录。"}对话记录保存在本浏览器。</p>}
         <label className="sr-only" htmlFor="chat-input">输入问题</label>
-        <input id="chat-input" value={input} onChange={(event) => { setInput(event.target.value); try { sessionStorage.setItem(DRAFT_KEY, event.target.value); } catch {} }} maxLength={120} placeholder="问问你的骑行伙伴" disabled={!hydrated || pending || savingProfile} />
+        <input id="chat-input" value={input} onChange={(event) => { setInput(event.target.value); try { sessionData.setItem(DRAFT_KEY, event.target.value); } catch {} }} maxLength={120} placeholder="问问你的骑行伙伴" disabled={!hydrated || pending || savingProfile} />
         <button type="button" className="chat-info-button" aria-label="能力说明" aria-expanded={disclosureOpen} onClick={() => setDisclosureOpen((open) => !open)}><InfoIcon /></button>
         <button type="submit" disabled={!hydrated || !input.trim() || pending || savingProfile}>发送</button>
       </form>

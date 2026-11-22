@@ -3,7 +3,25 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { GET, PUT } from "../app/api/profile/route.ts";
 import { PUT as ux } from "../app/api/ux/route.ts";
+import { accountCookie } from "../src/auth/session.ts";
+import { createAccountSession, findSessionAccount, registerAccount } from "../src/auth/account-store.ts";
 import { isProfileProposalInput } from "../src/chat/chat-user-capabilities.ts";
+
+test("the first chat opening can show onboarding once per registered account across login sessions", async () => {
+  const first = registerAccount("onboarding-a@example.test", "unused-test-hash")!;
+  const second = createAccountSession(findSessionAccount(first)!.id);
+  const other = registerAccount("onboarding-b@example.test", "unused-test-hash")!;
+  const claim = (token?: string) => ux(new Request("http://localhost/api/ux", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...(token ? { Cookie: accountCookie(token).split(";")[0] } : {}) },
+    body: JSON.stringify({ action: "claim_chat_onboarding" }),
+  }));
+  assert.equal((await claim()).status, 401);
+  assert.deepEqual(await (await claim(first)).json(), { showOnboarding: true });
+  assert.deepEqual(await (await claim(first)).json(), { showOnboarding: false });
+  assert.deepEqual(await (await claim(second)).json(), { showOnboarding: false });
+  assert.deepEqual(await (await claim(other)).json(), { showOnboarding: true });
+});
 
 test("clear and blank mode persist; retired independent goal writes cannot alter profile", async () => {
   const initial = await GET(new Request("http://localhost/api/profile"));

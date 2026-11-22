@@ -19,7 +19,7 @@ export async function GET(request: Request): Promise<Response> {
     const session = resolveOrCreateRequestSession(request);
     const repository = getApplicationRepository();
     const stored = await repository.getProfile(session.userId);
-    if (!stored && demoSeedEnabled()) {
+    if (!stored && !session.accountEmail && demoSeedEnabled()) {
       const seeded = demoBaselineProfile();
       await repository.saveProfile(session.userId, seeded);
       return Response.json(seeded, { headers: { ...headers, ...sessionCookieHeader(session) } });

@@ -909,6 +909,10 @@ h1 { margin: 0; font-size: clamp(40px, 11vw, 66px); line-height: 1.03; letter-sp
 .ux-meta { display: block; font-size: 11px; }
 .ux-confirm { border-left: 3px solid #588463; padding: 12px; background: #f2f7f3; }
 fieldset.profile-fields { margin: 0; padding: 0; border: 0; min-width: 0; }
+.profile-fields.account-fields { grid-template-columns: minmax(0, 1fr); margin-top: 20px; }
+.account-card { max-width: 480px; }
+.account-card .ux-actions { margin-top: 20px; }
+.account-email { overflow-wrap: anywhere; }
 .bottom-nav { grid-template-columns: repeat(3, 1fr); }
 @media (max-width: 480px) { .ux-card { padding: 16px; } .ux-steps { grid-template-columns: 1fr; } .ux-steps button, .ux-steps a { text-align: left; } }
 .chat-home { height: calc(100svh - 129px); }

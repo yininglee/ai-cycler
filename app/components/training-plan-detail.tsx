@@ -1,4 +1,6 @@
 "use client";
+
+import { useAccountStorage } from "./account-scope";
 import { createClientRequestId } from "../../src/ui/client-request-id";
 import { StatusBadge } from "./status-badge";
 import Link from "next/link";
@@ -15,6 +17,7 @@ import { BackIcon } from "./icons";
 import { TrainingExecutionButton, TrainingExecutionCard } from "./training-execution";
 
 export function TrainingPlanDetail({ planId, requestedVersion, conversationId, date }: { planId: string; requestedVersion?: number; conversationId?: string; date?: string }) {
+  const { sessionData } = useAccountStorage();
   const [data, setData] = useState<TrainingPlanView>(), [error, setError] = useState(""), [busy, setBusy] = useState(false);
   const [week, setWeek] = useState(1), [loaded, setLoaded] = useState(false), [message, setMessage] = useState("");
   const receipt = useRef<WriteConfirmationRequest | null>(null);
@@ -41,7 +44,7 @@ export function TrainingPlanDetail({ planId, requestedVersion, conversationId, d
   const latest = data?.draft?.version ?? data?.active?.version;
   const replaced = plan ? data?.replacedAt?.[String(plan.version)] : undefined;
   function discuss(targetDate?: string) {
-    if (plan && conversationId) try { sessionStorage.setItem(planDiscussionKey(conversationId), JSON.stringify({ planId, version: plan.version, ...(targetDate ? { date: targetDate } : {}) })); } catch {}
+    if (plan && conversationId) try { sessionData.setItem(planDiscussionKey(conversationId), JSON.stringify({ planId, version: plan.version, ...(targetDate ? { date: targetDate } : {}) })); } catch {}
   }
   useEffect(() => {
     if (date && plan?.days.find(day => day.date === date)?.week === week) document.getElementById(`day-${date}`)?.scrollIntoView({ block: "center" });

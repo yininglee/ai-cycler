@@ -14,6 +14,6 @@ export default async function ChatPage() {
   const snapshot = buildChatHomeSnapshot(rides.map(({ record }) => record));
 
   return <AppShell active="partner" pageClassName="chat-page-content">
-    <ChatHome liveOneLap={!!oneLapPilotFor(userId, "onelap")} snapshot={snapshot} hasExistingSession={userId !== null} />
+    <ChatHome liveOneLap={!!oneLapPilotFor(userId, "onelap")} snapshot={snapshot} />
   </AppShell>;
 }

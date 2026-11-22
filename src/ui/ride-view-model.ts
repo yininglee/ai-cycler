@@ -6,6 +6,7 @@ import { getRideFixture } from "../fixtures/rides.ts";
 import type { DataSourceKind, Metric, MetricKey, RideRecord, SensorKind } from "../domain/ride-schema.ts";
 import { validateRideRecord } from "../domain/ride-series.ts";
 import { buildRideVisualDisplay, type RideVisualDisplay } from "./ride-series-view-model.ts";
+import { platformInfo } from "../ux/platform-catalog.ts";
 
 export const RIDE_DETAIL_UI_VERSION = "ride-detail-ui-v0.3" as const;
 
@@ -184,6 +185,7 @@ export function isDemoRideId(value: string): value is DemoRideId {
 }
 
 function metricSourceLabel(metric: Metric, sourceKind: DataSourceKind): string {
+  if (sourceKind === "platform_summary") return metric.provenance === "calculated" ? "按平台起止时间计算" : "平台摘要";
   if (metric.provenance === "calculated") return `规则计算 · ${metric.formulaVersion}`;
   if (metric.provenance === "estimated") return "估算 · 仅供参考";
   return sourceKind === "sample" ? "内置样例" : "设备记录";
@@ -363,6 +365,7 @@ function buildTimingDisplay(timing: RideTimingSummary): RideTimingDisplay {
 
 function sourceKindLabel(sourceKind: DataSourceKind): string {
   if (sourceKind === "sample") return "内置演示样例";
+  if (sourceKind === "platform_summary") return "骑行摘要";
   return sourceKind === "fit" ? "FIT 设备文件" : "GPX 轨迹文件";
 }
 
@@ -393,11 +396,12 @@ export function formatRideTitle(startTime: string | undefined): string {
 
 export function buildRidePageViewModelFromRecord(
   record: RideRecord,
-  fixtureDescription = "已导入的 FIT/GPX 骑行记录",
+  fixtureDescription?: string,
 ): RidePageViewModel {
   const { activity, series } = record;
   const { source } = activity;
-  const sourceLabel = sourceKindLabel(source.kind);
+  const kindLabel = sourceKindLabel(source.kind);
+  const sourceLabel = source.platformId ? `${platformInfo(source.platformId).name} · ${kindLabel}` : kindLabel;
   const dateLabel = formatRideDate(activity.startTime);
   const validation = validateRideRecord(record);
   const recordIsValid = validation.valid;
@@ -405,7 +409,8 @@ export function buildRidePageViewModelFromRecord(
   const elevation = recordIsValid ? buildRideElevationSummary(record) : undefined;
   const routeShape = elevation ? buildRideRouteShapeSummary(elevation) : undefined;
   const eventClimbs = elevation && routeShape ? buildRideEventClimbSummary(elevation, routeShape, record) : undefined;
-  const factCards = SUMMARY_METRICS.flatMap((metricKey) => {
+  const summaryMetrics: MetricKey[] = source.kind === "platform_summary" ? ["distanceM", "elapsedTimeS"] : SUMMARY_METRICS;
+  const factCards = summaryMetrics.flatMap((metricKey) => {
     const metric = recordIsValid ? activity.metrics[metricKey] : undefined;
     return metric ? [toMetricDisplay(metricKey, metric, activity.rideId, source.kind)] : [];
   });
@@ -443,7 +448,7 @@ export function buildRidePageViewModelFromRecord(
   return {
     uiVersion: RIDE_DETAIL_UI_VERSION,
     id: activity.rideId,
-    fixtureDescription,
+    fixtureDescription: fixtureDescription ?? (source.kind === "platform_summary" ? "已同步的骑行摘要" : "已导入的 FIT/GPX 骑行记录"),
     rejected: !recordIsValid,
     factCards,
     detailSections,
@@ -457,7 +462,8 @@ export function buildRidePageViewModelFromRecord(
     timing: timing ? buildTimingDisplay(timing) : { sourceLabel: "当前记录不可计算", cruiseSegments: [] },
     dataQuality: {
       sourceLabel,
-      note: source.kind === "sample"
+      note: source.kind === "platform_summary" ? "当前记录只有骑行摘要。轨迹和传感器指标可从原始骑行文件获取。"
+        : source.kind === "sample"
         ? "当前为内置演示样例，质量参数仅用于验证界面与规则，不代表真实设备兼容结果。"
         : "只展示通过当前质量规则的数据；缺失或不可靠的项目不会用 0 代替。",
       sensors,

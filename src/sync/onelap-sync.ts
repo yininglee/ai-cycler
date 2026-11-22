@@ -3,6 +3,7 @@ import { importRideBytes } from "../imports/ride-import-service.ts";
 import { isRideParseError } from "../parsers/parse-errors.ts";
 import type { FileApplicationRepository, OneLapConnection } from "../persistence/application-repository.ts";
 import { createOneLapClient, OneLapError } from "./onelap-client.ts";
+import { ManualSyncRuns, manualSyncKey } from "./manual-sync-runs.ts";
 
 import { getOneLapPilotConnection, type OneLapPilotConfig as Config } from "./onelap-access.ts";
 export { getOneLapPilotConnection, readOneLapPilotConfig } from "./onelap-access.ts";
@@ -23,15 +24,15 @@ export async function connectOneLapPilot(repository: FileApplicationRepository, 
 }
 
 // Overlapping requests for the same account share one pull.
-const runtime = globalThis as typeof globalThis & { __cyclerOneLapRuns?: Map<string, Promise<OneLapConnection | null>> };
-const runs = runtime.__cyclerOneLapRuns ??= new Map();
+const runtime = globalThis as typeof globalThis & { cyclerOneLapSyncRuns?: ManualSyncRuns<OneLapConnection> };
+const runs = runtime.cyclerOneLapSyncRuns ??= new ManualSyncRuns<OneLapConnection>();
 
-async function runOnce(repository: FileApplicationRepository, config: Config, fetchImpl: typeof fetch) {
+async function runOnce(repository: FileApplicationRepository, config: Config, cancellation: AbortSignal, fetchImpl: typeof fetch) {
   const connection = await getOneLapPilotConnection(repository, config);
   const now = Date.now();
   if (!connection || connection.paused || (connection.retryAt ?? 0) > now) return connection;
 
-  const signal = AbortSignal.timeout(60_000);
+  const signal = AbortSignal.any([cancellation, AbortSignal.timeout(60_000)]);
   const client = createOneLapClient(config, signal, fetchImpl);
   const result = { added: 0, duplicate: 0, failed: 0, rideIds: [] as string[] };
   const next: OneLapConnection = { ...connection, error: undefined, retryAt: undefined, result };
@@ -53,7 +54,7 @@ async function runOnce(repository: FileApplicationRepository, config: Config, fe
         continue;
       }
       try {
-        const imported = await importRideBytes(repository, config.ownerId, "onelap.fit", bytes, { connectionId: connection.id, key });
+        const imported = await importRideBytes(repository, config.ownerId, "onelap.fit", bytes, { platformId: "onelap", source: { provider: "onelap", connectionId: connection.id, key } });
         if (!imported.result) return null;
         if (imported.result.duplicate) result.duplicate++;
         else if (imported.result.rideId) {
@@ -68,6 +69,7 @@ async function runOnce(repository: FileApplicationRepository, config: Config, fe
     }
     if (result.failed === 0) next.lastSyncAt = new Date().toISOString();
   } catch (error) {
+    if (cancellation.aborted) return null;
     next.error = MESSAGES[error instanceof OneLapError ? error.code : "upstream"];
     if (error instanceof OneLapError) {
       next.paused = error.code === "authorization";
@@ -80,10 +82,9 @@ async function runOnce(repository: FileApplicationRepository, config: Config, fe
 }
 
 export function syncOneLapPilot(repository: FileApplicationRepository, config: Config, fetchImpl = fetch) {
-  const key = JSON.stringify([repository.root, config.ownerId]);
-  const existing = runs.get(key);
-  if (existing) return existing;
-  const task = runOnce(repository, config, fetchImpl).finally(() => { runs.delete(key); });
-  runs.set(key, task);
-  return task;
+  return runs.start(manualSyncKey(repository.root, config.ownerId), signal => runOnce(repository, config, signal, fetchImpl));
+}
+
+export function disconnectOneLapPilot(repository: FileApplicationRepository, ownerId: string) {
+  return runs.disconnect(manualSyncKey(repository.root, ownerId), () => repository.setOneLapConnection(ownerId, null));
 }

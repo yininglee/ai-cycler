@@ -1,7 +1,7 @@
 export const RIDE_SCHEMA_VERSION = "0.2" as const;
 export const RIDE_SERIES_SCHEMA_VERSION = "0.1" as const;
 
-export type DataSourceKind = "sample" | "fit" | "gpx";
+export type DataSourceKind = "sample" | "fit" | "gpx" | "platform_summary";
 export type MetricProvenance = "recorded" | "calculated" | "estimated";
 export type Confidence = "high" | "medium" | "low";
 export type QualityStatus = "valid" | "degraded";

@@ -1,4 +1,5 @@
-import { resolveOrCreateRequestSession, sessionCookieHeader } from "../../../src/auth/session.ts";
+import { AccountSessionExpiredError, resolveOrCreateRequestSession, sessionCookieHeader, signInRequiredResponse } from "../../../src/auth/session.ts";
+import { claimFirstChatOnboarding } from "../../../src/auth/account-store.ts";
 import { getApplicationRepository } from "../../../src/persistence/application-repository.ts";
 import { createUserProfile, demoBaselineProfile } from "../../../src/domain/user-profile.ts";
 
@@ -6,6 +7,13 @@ export async function PUT(request: Request) {
   try {
     const session = resolveOrCreateRequestSession(request);
     const input = await request.json();
+    if (input.action === "claim_chat_onboarding") {
+      if (!session.accountEmail) return signInRequiredResponse();
+      return Response.json({ showOnboarding: claimFirstChatOnboarding(session.userId) }, { headers: { "Cache-Control": "no-store" } });
+    }
+    if (session.accountEmail && (input.action === "blank" || input.action === "demo")) {
+      return Response.json({ error: "演示设置仅在访客模式下可用。" }, { status: 403, headers: { "Cache-Control": "no-store" } });
+    }
     const repository = getApplicationRepository();
     let profile = await repository.getProfile(session.userId) ?? createUserProfile();
     const now = new Date().toISOString();
@@ -21,5 +29,8 @@ export async function PUT(request: Request) {
     } else return Response.json({ error: "未知操作" }, { status: 400 });
     await repository.saveProfile(session.userId, profile);
     return Response.json(profile, { headers: { "Cache-Control": "no-store", ...sessionCookieHeader(session) } });
-  } catch { return Response.json({ error: "保存失败，请稍后重试" }, { status: 503 }); }
+  } catch (error) {
+    if (error instanceof AccountSessionExpiredError) return signInRequiredResponse();
+    return Response.json({ error: "保存失败，请稍后重试" }, { status: 503 });
+  }
 }

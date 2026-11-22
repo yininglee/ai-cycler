@@ -44,6 +44,7 @@ export function Onboarding({ rideCount, onImported, conversationId, planHref, on
   const [panel, setPanel] = useState<"profile" | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const hasProfile = hasAnyProfileFact(profile);
   async function refresh() { setProfile(await readProfile()); }
   useEffect(() => { const load = () => { void refresh().catch(e => setError(e.message)); }; load(); window.addEventListener("cycler-profile-saved", load); return () => window.removeEventListener("cycler-profile-saved", load); }, []);
   useEffect(() => {
@@ -59,12 +60,12 @@ export function Onboarding({ rideCount, onImported, conversationId, planHref, on
   return <>
 
     {visible && error && <p role="alert">{error}<button onClick={() => void refresh().catch(e => setError(e.message))}>重试读取</button></p>}
-    {visible && profile && !profile.ux?.skipped && <section className="ux-card ux-welcome">
+    {visible && !profile?.ux?.skipped && <section className="ux-card ux-welcome">
       <p className="kicker">CYCLER · 你的教练型伙伴</p>
       <p>可以先补充资料或导入骑行记录，也可以直接提问。</p>
       <div className="ux-steps">
-        <button className={!hasAnyProfileFact(profile) ? "primary-button" : undefined} onClick={() => setPanel("profile")}>{hasAnyProfileFact(profile) ? "查看／补充资料" : "完善个人资料"}</button>
-        <RideSyncLauncher className={hasAnyProfileFact(profile) && !rideCount ? "primary-button" : undefined} label={rideCount ? `同步／查看骑行（${rideCount}）` : "同步／导入骑行"} onComplete={onImported} conversationId={conversationId} />
+        <button className={!hasProfile ? "primary-button" : undefined} onClick={() => setPanel("profile")}>{hasProfile ? "查看／补充资料" : "完善个人资料"}</button>
+        <RideSyncLauncher className={hasProfile && !rideCount ? "primary-button" : undefined} label={rideCount ? `同步／查看骑行（${rideCount}）` : "同步／导入骑行"} onComplete={onImported} conversationId={conversationId} />
         {planHref
           ? <Link href={planHref}>查看计划</Link>
           : <button disabled={pending} onClick={onStartPlan}>制定训练计划</button>}

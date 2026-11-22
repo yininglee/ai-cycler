@@ -1,3 +1,4 @@
+import { scopedBrowserKey } from "../auth/browser-scope.ts";
 import { isChatRideScope, type ChatRideScope } from "./chat-context.ts";
 import type { ChatRoute, ChatSessionSummary } from "./chat-routing.ts";
 import { CHAT_SESSION_ANSWER_CONTEXT_MAX_CHARS } from "./chat-routing.ts";
@@ -217,9 +218,9 @@ function isChatSessionState(value: unknown): value is ChatSessionState {
 }
 
 // 对话记录仅保存在用户本地浏览器（localStorage），不上传服务端——与脱敏事件不落用户原文的隐私边界一致。
-export function readStoredChatSession(): ChatSessionState | null {
+export function readStoredChatSession(scope?: string): ChatSessionState | null {
   try {
-    const raw = globalThis.localStorage?.getItem(CHAT_SESSION_STORAGE_KEY);
+    const raw = globalThis.localStorage?.getItem(scopedBrowserKey(CHAT_SESSION_STORAGE_KEY, scope));
     if (!raw) return null;
     const parsed: unknown = JSON.parse(raw);
     if (!isChatSessionState(parsed)) return null;
@@ -234,10 +235,10 @@ export function readStoredChatSession(): ChatSessionState | null {
   }
 }
 
-export function storeChatSession(state: ChatSessionState): boolean {
+export function storeChatSession(state: ChatSessionState, scope?: string): boolean {
   try {
     if (!globalThis.localStorage) return false;
-    globalThis.localStorage.setItem(CHAT_SESSION_STORAGE_KEY, JSON.stringify(state));
+    globalThis.localStorage.setItem(scopedBrowserKey(CHAT_SESSION_STORAGE_KEY, scope), JSON.stringify(state));
     return true;
   } catch {
     // 本地存储不可用时静默降级为仅当前标签页保留

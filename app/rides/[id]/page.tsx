@@ -89,6 +89,7 @@ export default async function RideDetailPage({
               {!isFixture && !demoRide && <RideDeleteButton rideId={id} />}
             </section>
             {record.activity.source.parserVersion === "platform-demo-v1" && <p className="ux-meta">{platformInfo(record.activity.source.platformId ?? "garmin").name}模拟记录 · 用于原型演示</p>}
+            {record.activity.source.platformId && record.activity.source.parserVersion !== "platform-demo-v1" && <p className="ux-meta">{view.rideMeta.sourceLabel}</p>}
             {(!record.activity.metrics.avgHeartRateBpm || !record.activity.metrics.avgPowerW) && <p className="ux-meta">{!record.activity.metrics.avgHeartRateBpm ? "缺少心率数据。" : ""}{!record.activity.metrics.avgPowerW ? "缺少功率数据。" : ""}解读仅基于可用数据，缺失维度不作判断。</p>}
             <section className="summary-metrics" aria-label="核心骑行事实">
               {view.factCards.map((fact) => <article className="summary-metric" key={fact.claimId}><p>{fact.label}</p><strong>{fact.value}</strong></article>)}

@@ -3,12 +3,13 @@
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useRef, useState } from "react";
+import { platformInfo, type ImportPlatformId } from "../../src/ux/platform-catalog";
 
 const MAX_FILE_SIZE_BYTES = 50 * 1024 * 1024;
 
 type UploadState = "idle" | "uploading" | "error";
 
-export function RideFileUpload({ onImported }: { onImported?: (id: string, duplicate: boolean) => void } = {}) {
+export function RideFileUpload({ onImported, platform }: { onImported?: (id: string, duplicate: boolean) => void; platform?: ImportPlatformId } = {}) {
   const [result, setResult] = useState<{ id: string; duplicate: boolean } | null>(null);
   const router = useRouter();
   const fileInput = useRef<HTMLInputElement>(null);
@@ -52,6 +53,7 @@ export function RideFileUpload({ onImported }: { onImported?: (id: string, dupli
     try {
       const data = new FormData();
       data.set("file", file);
+      if (platform) data.set("platform", platform);
       const response = await fetch("/api/rides/import", { method: "POST", body: data });
       const payload = await response.json() as { rideId?: string; message?: string; duplicate?: boolean };
       if (!response.ok || !payload.rideId) throw new Error(payload.message ?? "文件暂时无法读取，请重试。");
@@ -68,7 +70,8 @@ export function RideFileUpload({ onImported }: { onImported?: (id: string, dupli
   return (
     <section className="upload-card" aria-label="导入 FIT 或 GPX 文件">
       <div className="upload-icon" aria-hidden="true"><span>+</span></div>
-      <div><h2>导入 FIT / GPX</h2><p>上传后仅保留用于展示和解读的标准化骑行数据。</p></div>
+      <div><h2>{platform ? `导入${platformInfo(platform).name}文件` : "导入 FIT / GPX"}</h2>
+        <p>{platform ? "选择从运动平台导出的 FIT 或 GPX 骑行文件。" : "上传后仅保留用于展示和解读的标准化骑行数据。"}</p></div>
       <form className="upload-form" onSubmit={submit}>
         <label className="file-picker">
           <span>选择 FIT 或 GPX 文件</span>

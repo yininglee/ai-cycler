@@ -5,6 +5,10 @@ export const PLATFORMS = [
   { id: "igpsport", name: "IGPSPORT", label: "iGPSPORT", mark: "iG" },
 ] as const;
 export type PlatformId = typeof PLATFORMS[number]["id"];
+export type ImportPlatformId = "onelap" | "xingzhe";
+export function isImportPlatform(value: unknown): value is ImportPlatformId {
+  return value === "onelap" || value === "xingzhe";
+}
 export function isPlatformId(value: unknown): value is PlatformId {
   return PLATFORMS.some(platform => platform.id === value);
 }

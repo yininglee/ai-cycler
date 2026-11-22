@@ -1,5 +1,7 @@
 "use client";
 
+import { useAccountStorage } from "./account-scope";
+
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
@@ -30,11 +32,12 @@ export function InterpretationSheet({
   engine?: "v2";
   onClose: () => void;
 }) {
+  const { sessionData } = useAccountStorage();
   const panelRef = useRef<HTMLDivElement>(null);
   const [preview, setPreview] = useState(() => {
     if (demoFallback) return demoFallback;
     if (typeof window === "undefined") return "real";
-    const saved = sessionStorage.getItem("cycler-insight-preview");
+    const saved = sessionData.getItem("cycler-insight-preview");
     return saved && ["loading", "error", "b0"].includes(saved) ? saved : "real";
   });
   useEffect(() => {

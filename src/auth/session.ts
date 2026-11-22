@@ -1,6 +1,8 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
+import { ACCOUNT_SESSION_SECONDS, findSessionAccount } from "./account-store.ts";
 
 export const SESSION_COOKIE_NAME = "ai-cycling-buddy-session";
+export const ACCOUNT_COOKIE_NAME = "cycler-account";
 const DEV_SECRET = "ai-cycling-buddy-local-development-secret-v1";
 const AUTH_SESSION_MODE = "AUTH_SESSION_MODE";
 const SESSION_COOKIE_SECURE = "SESSION_COOKIE_SECURE";
@@ -37,23 +39,47 @@ function decode(value: string | null): SessionPayload | null {
   }
 }
 
-export type RequestSession = { userId: string; setCookie?: string };
+export type RequestSession = { userId: string; setCookie?: string; accountEmail?: string };
 
 export class AuthConfigurationError extends Error {
   readonly code = "AUTH_CONFIGURATION_REQUIRED" as const;
+}
+
+export class AccountSessionExpiredError extends Error {
+  readonly code = "UNAUTHORIZED" as const;
+}
+
+export function signInRequiredResponse(): Response {
+  return Response.json({ error: "UNAUTHORIZED", message: "请先登录 Cycler。" }, {
+    status: 401, headers: { "Cache-Control": "no-store" },
+  });
 }
 
 function usesOidcSession(): boolean {
   return process.env[AUTH_SESSION_MODE] === "oidc";
 }
 
-export function getRequestSession(request: Request): RequestSession | null {
-  // An OIDC deployment must replace this development-cookie adapter. Never
-  // accept its locally signed cookie as an OIDC identity.
+export function getAccountRequestSession(request: Request): (RequestSession & { accountEmail: string }) | null {
   if (usesOidcSession()) return null;
-  const value = request.headers.get("cookie")?.match(new RegExp(`(?:^|;\\s*)${SESSION_COOKIE_NAME}=([^;]+)`))?.[1] ?? null;
-  const payload = decode(value);
-  return payload ? { userId: payload.userId } : null;
+  const token = requestCookie(request, ACCOUNT_COOKIE_NAME);
+  const account = token ? findSessionAccount(token) : null;
+  return account ? { userId: account.id, accountEmail: account.email } : null;
+}
+
+export function getRequestSession(request: Request): RequestSession | null {
+  if (usesOidcSession()) return null;
+  if (requestCookie(request, ACCOUNT_COOKIE_NAME)) return getAccountRequestSession(request);
+  const payload = decode(requestCookie(request, SESSION_COOKIE_NAME));
+  // Legacy guest cookies can only identify generated guest IDs.
+  return payload?.userId.startsWith("local-user-") ? { userId: payload.userId } : null;
+}
+
+export function requestCookie(request: Request, name: string): string | null {
+  return request.headers.get("cookie")?.match(new RegExp(`(?:^|;\\s*)${name}=([^;]+)`))?.[1] ?? null;
+}
+
+export function accountCookie(token = ""): string {
+  return `${ACCOUNT_COOKIE_NAME}=${token}; HttpOnly; SameSite=Lax; Path=/; Max-Age=${token ? ACCOUNT_SESSION_SECONDS : 0}${sessionCookieSecureSuffix()}`;
 }
 
 /**
@@ -75,6 +101,7 @@ export function resolveOrCreateRequestSession(request: Request): RequestSession 
   }
   const existing = getRequestSession(request);
   if (existing) return existing;
+  if (requestCookie(request, ACCOUNT_COOKIE_NAME)) throw new AccountSessionExpiredError("Cycler sign-in required");
   const userId = `local-user-${crypto.randomUUID()}`;
   const value = encode({ userId, issuedAt: Date.now() });
   const secure = sessionCookieSecureSuffix();

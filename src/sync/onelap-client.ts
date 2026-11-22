@@ -1,5 +1,6 @@
 import { createHash, randomBytes } from "node:crypto";
 import { MAX_UPLOAD_BYTES } from "../parsers/parser-utils.ts";
+import { readResponseBytes } from "./read-response-bytes.ts";
 
 const ORIGIN = "https://u.onelap.cn";
 const RECORDS = "/api/otm/ride_record";
@@ -35,28 +36,8 @@ function fitUrl(value: unknown, depth = 0): string | undefined {
   }
 }
 
-async function readBytes(response: Response, max: number): Promise<Uint8Array> {
-  if (!response.body) throw new OneLapError("protocol");
-  if (Number(response.headers.get("content-length")) > max) {
-    await response.body.cancel();
-    throw new OneLapError("protocol");
-  }
-  const reader = response.body.getReader();
-  const buffers: Uint8Array[] = [];
-  let size = 0;
-  try {
-    for (;;) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      size += value.byteLength;
-      if (size > max) {
-        await reader.cancel();
-        throw new OneLapError("protocol");
-      }
-      buffers.push(value);
-    }
-  } finally { reader.releaseLock(); }
-  return Buffer.concat(buffers, size);
+function readBytes(response: Response, max: number) {
+  return readResponseBytes(response, max, () => new OneLapError("protocol"));
 }
 
 export function createOneLapClient(config: { token: string; signingKey: string; cookie?: string }, signal: AbortSignal, fetchImpl = fetch) {

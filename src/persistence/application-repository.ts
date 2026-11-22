@@ -1,6 +1,7 @@
 import { mkdir, readFile, rename, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import type { RideRecord } from "../domain/ride-schema.ts";
+import type { SyncResult } from "../ux/platform.ts";
 import type { UserProfile } from "../domain/user-profile.ts";
 import type { DemoEvent } from "../observability/demo-events.ts";
 
@@ -15,12 +16,18 @@ export type OneLapConnection = {
   paused?: boolean;
   retryAt?: number;
   error?: string;
-  result?: { added: number; duplicate: number; failed: number; rideIds: string[] };
+  result?: SyncResult;
 };
-type OneLapSource = { connectionId: string; key: string };
-type ImportResult = { rideId: string | null; duplicate: boolean };
+export type XingzheConnection = OneLapConnection & { credentials: string };
+export type RideImportSource = { connectionId: string; key: string } & (
+  { provider?: "onelap" } | { provider: "xingzhe"; replaceSummary?: true; reimportDeleted?: boolean }
+);
+type SourceActivity = { ownerId: string; rideId: string | null };
+type XingzheAuthorization = { stateHash: string; expiresAt: number; returnQuery?: string; claimed?: boolean };
+type ImportResult = { rideId: string | null; duplicate: boolean; updated?: true };
 export interface ApplicationRepository {
   getOneLapConnection(ownerId: string): Promise<OneLapConnection | null>;
+  getXingzheConnection?(ownerId: string): Promise<XingzheConnection | null>;
   saveRide(ownerId: string, record: RideRecord, contentHash?: string): Promise<void>;
   /** 幂等导入去重：按 (ownerId, 内容哈希) 查找已导入记录；哈希随记录删除/账户删除一并移除。 */
   findRideIdByContentHash(ownerId: string, contentHash: string): Promise<string | null>;
@@ -45,24 +52,33 @@ type State = {
   consents: Record<string, ConsentRecord>;
   demoEvents: Record<string, { ownerId: string; event: DemoEvent }>;
   oneLapConnections: Record<string, OneLapConnection>;
-  oneLapActivities: Record<string, { ownerId: string; rideId: string | null }>;
+  oneLapActivities: Record<string, SourceActivity>;
+  xingzheConnections: Record<string, XingzheConnection>;
+  xingzheActivities: Record<string, SourceActivity>;
+  xingzheAuthorizations: Record<string, XingzheAuthorization>;
 };
 
-// Next.js dev mode compiles each route into its own bundle, so module-level
-// state is not shared between the import API and the ride pages. Keep the
-// repository singletons on globalThis (same pattern as demo-ride-store) so
-// every route reads and writes through the same cached instance.
-const INSTANCES_KEY = "__aiCyclingBuddyApplicationRepositories";
+type RepositoryRuntime = {
+  state: State | null;
+  stateFileMtimeMs: number | null;
+  queue: Promise<void>;
+};
 
-function repositoryInstances(): Map<string, FileApplicationRepository> {
-  const globalState = globalThis as typeof globalThis & { [INSTANCES_KEY]?: Map<string, FileApplicationRepository> };
-  if (!globalState[INSTANCES_KEY]) globalState[INSTANCES_KEY] = new Map();
-  return globalState[INSTANCES_KEY];
-}
-
+// Next.js route bundles share cache and write ordering. Each bundle creates
+// its own repository handle so a hot reload picks up the current methods.
+const globalState = globalThis as typeof globalThis & { cyclerRepositoryRuntimes?: Map<string, RepositoryRuntime> };
+const runtimes = globalState.cyclerRepositoryRuntimes ??= new Map<string, RepositoryRuntime>();
 const defaultRoot = () => process.env.LOCAL_DATA_DIR || path.join(process.cwd(), ".local-data");
 
-function emptyState(): State { return { rides: {}, profiles: {}, analysisRuns: {}, consents: {}, demoEvents: {}, oneLapConnections: {}, oneLapActivities: {} }; }
+function emptyState(): State {
+  return {
+    rides: {}, profiles: {}, analysisRuns: {}, consents: {}, demoEvents: {},
+    oneLapConnections: {}, oneLapActivities: {},
+    xingzheConnections: {}, xingzheActivities: {}, xingzheAuthorizations: {},
+  };
+}
+
+function analysisKey(ownerId: string, rideId: string) { return JSON.stringify([ownerId, rideId]); }
 
 function sanitized(record: RideRecord): RideRecord {
   const next = structuredClone(record);
@@ -71,46 +87,52 @@ function sanitized(record: RideRecord): RideRecord {
 }
 
 export class FileApplicationRepository implements ApplicationRepository {
-  private state: State | null = null;
-  private stateFileMtimeMs: number | null = null;
-  private queue: Promise<void> = Promise.resolve();
+  private readonly runtime: RepositoryRuntime;
   readonly filePath: string;
   readonly root: string;
-  constructor(root: string = defaultRoot()) { this.root = root; this.filePath = path.join(root, "application-state.json"); }
+  constructor(root: string = defaultRoot()) {
+    this.root = root;
+    this.filePath = path.join(root, "application-state.json");
+    const key = path.resolve(this.filePath);
+    this.runtime = runtimes.get(key) ?? { state: null, stateFileMtimeMs: null, queue: Promise.resolve() };
+    runtimes.set(key, this.runtime);
+  }
 
   private async fileMtimeMs(): Promise<number | null> {
     try { return (await stat(this.filePath)).mtimeMs; } catch { return null; }
   }
 
   private async load(): Promise<State> {
+    const runtime = this.runtime;
     // Reload when the state file changed on disk (e.g. another dev server
     // instance or process wrote it); otherwise serve the cached state.
-    if (this.state) {
+    if (runtime.state) {
       const currentMtime = await this.fileMtimeMs();
-      if (currentMtime === null || currentMtime === this.stateFileMtimeMs) return this.state;
+      if (currentMtime === null || currentMtime === runtime.stateFileMtimeMs) return runtime.state;
     }
     // Stat before reading: if the file is rewritten while we read, the
     // recorded mtime will differ from the file's and the next load reloads.
-    this.stateFileMtimeMs = await this.fileMtimeMs();
+    runtime.stateFileMtimeMs = await this.fileMtimeMs();
     try {
       const parsed = JSON.parse(await readFile(this.filePath, "utf8")) as State;
-      this.state = { ...emptyState(), ...parsed };
-    } catch { this.state = emptyState(); }
-    return this.state;
+      runtime.state = { ...emptyState(), ...parsed };
+    } catch { runtime.state = emptyState(); }
+    return runtime.state;
   }
 
   private async mutate(fn: (state: State) => void | Promise<void>): Promise<void> {
-    this.queue = this.queue.catch(() => {}).then(async () => {
+    const runtime = this.runtime;
+    runtime.queue = runtime.queue.catch(() => {}).then(async () => {
       const state = structuredClone(await this.load());
       await fn(state);
       await mkdir(this.root, { recursive: true });
       const temp = `${this.filePath}.${process.pid}.${crypto.randomUUID()}.tmp`;
       await writeFile(temp, JSON.stringify(state), "utf8");
       await rename(temp, this.filePath);
-      this.state = state;
-      this.stateFileMtimeMs = await this.fileMtimeMs();
+      runtime.state = state;
+      runtime.stateFileMtimeMs = await this.fileMtimeMs();
     });
-    return this.queue;
+    return runtime.queue;
   }
 
   async saveRide(ownerId: string, record: RideRecord, contentHash?: string): Promise<void> {
@@ -126,13 +148,30 @@ export class FileApplicationRepository implements ApplicationRepository {
       .find((item) => item.ownerId === ownerId && item.contentHash === contentHash);
     return entry?.record.activity.rideId ?? null;
   }
-  async importRide(ownerId: string, contentHash: string, parse: () => Promise<RideRecord>, source?: OneLapSource): Promise<ImportResult | null> {
+  async importRide(ownerId: string, contentHash: string, parse: (rideId?: string) => Promise<RideRecord>, source?: RideImportSource): Promise<ImportResult | null> {
     let result: ImportResult | null = null;
     await this.mutate(async state => {
+      const activities = source?.provider === "xingzhe" ? state.xingzheActivities : state.oneLapActivities;
       if (source) {
-        if (state.oneLapConnections[ownerId]?.id !== source.connectionId) return;
-        const known = state.oneLapActivities[source.key];
-        if (known?.ownerId === ownerId) {
+        const connections = source.provider === "xingzhe" ? state.xingzheConnections : state.oneLapConnections;
+        if (connections[ownerId]?.id !== source.connectionId) return;
+        const known = activities[source.key];
+        if (source.provider === "xingzhe" && source.reimportDeleted) {
+          if (known?.ownerId !== ownerId || known.rideId !== null) {
+            result = { rideId: known?.ownerId === ownerId ? known.rideId : null, duplicate: true };
+            return;
+          }
+        } else if (known?.ownerId === ownerId) {
+          const target = known.rideId ? state.rides[known.rideId] : undefined;
+          if (source.provider === "xingzhe" && source.replaceSummary && target?.ownerId === ownerId
+            && target.record.activity.source.kind === "platform_summary"
+            && !Object.values(state.rides).some(ride => ride.ownerId === ownerId && ride.contentHash === contentHash)) {
+            const rideId = target.record.activity.rideId;
+            target.record = sanitized(await parse(rideId));
+            target.contentHash = contentHash;
+            result = { rideId, duplicate: false, updated: true };
+            return;
+          }
           result = { rideId: known.rideId, duplicate: true };
           return;
         }
@@ -148,7 +187,7 @@ export class FileApplicationRepository implements ApplicationRepository {
         const ux = state.profiles[ownerId]?.ux;
         if (!source && ux?.mode === "blank" && existing.storedAt < (ux.blankSince ?? "")) existing.storedAt = new Date().toISOString();
       }
-      if (source) state.oneLapActivities[source.key] = { ownerId, rideId };
+      if (source) activities[source.key] = { ownerId, rideId };
       result = { rideId, duplicate: Boolean(existing) };
     });
     return result;
@@ -171,6 +210,57 @@ export class FileApplicationRepository implements ApplicationRepository {
     const activity = (await this.load()).oneLapActivities[key];
     return activity?.ownerId === ownerId ? { rideId: activity.rideId } : null;
   }
+  async getXingzheConnection(ownerId: string): Promise<XingzheConnection | null> {
+    return structuredClone((await this.load()).xingzheConnections[ownerId] ?? null);
+  }
+  async findXingzheActivity(ownerId: string, key: string): Promise<"summary" | "imported" | "deleted" | null> {
+    const state = await this.load();
+    const activity = state.xingzheActivities[key];
+    if (activity?.ownerId !== ownerId) return null;
+    if (activity.rideId === null) return "deleted";
+    const ride = state.rides[activity.rideId];
+    return ride?.ownerId === ownerId && ride.record.activity.source.kind === "platform_summary" ? "summary" : "imported";
+  }
+  async updateXingzheConnection(ownerId: string, connection: XingzheConnection): Promise<void> {
+    await this.mutate(state => {
+      if (state.xingzheConnections[ownerId]?.id !== connection.id) return;
+      const next = structuredClone(connection);
+      if (next.result) next.result.rideIds = next.result.rideIds.filter(id => state.rides[id]?.ownerId === ownerId);
+      state.xingzheConnections[ownerId] = next;
+    });
+  }
+  async beginXingzheAuthorization(ownerId: string, stateHash: string, expiresAt: number, returnQuery?: string): Promise<void> {
+    await this.mutate(state => {
+      state.xingzheAuthorizations[ownerId] = { stateHash, expiresAt, returnQuery };
+    });
+  }
+  async claimXingzheAuthorization(ownerId: string, stateHash: string): Promise<XingzheAuthorization | null> {
+    let claimed: XingzheAuthorization | null = null;
+    await this.mutate(state => {
+      const pending = state.xingzheAuthorizations[ownerId];
+      if (pending?.stateHash !== stateHash || pending.claimed || pending.expiresAt <= Date.now()) return;
+      pending.claimed = true;
+      claimed = structuredClone(pending);
+    });
+    return claimed;
+  }
+  async finishXingzheAuthorization(ownerId: string, stateHash: string, connection?: XingzheConnection): Promise<boolean> {
+    let finished = false;
+    await this.mutate(state => {
+      const pending = state.xingzheAuthorizations[ownerId];
+      if (pending?.stateHash !== stateHash || !pending.claimed) return;
+      delete state.xingzheAuthorizations[ownerId];
+      if (connection) state.xingzheConnections[ownerId] = structuredClone(connection);
+      finished = true;
+    });
+    return finished;
+  }
+  async disconnectXingzhe(ownerId: string): Promise<void> {
+    await this.mutate(state => {
+      delete state.xingzheAuthorizations[ownerId];
+      delete state.xingzheConnections[ownerId];
+    });
+  }
   async getRide(ownerId: string, rideId: string): Promise<RideRecord | null> {
     const item = (await this.load()).rides[rideId];
     return item?.ownerId === ownerId ? structuredClone(item.record) : null;
@@ -186,20 +276,26 @@ export class FileApplicationRepository implements ApplicationRepository {
     await this.mutate(state => {
       if (state.rides[rideId]?.ownerId !== ownerId) return;
       delete state.rides[rideId];
-      delete state.analysisRuns[rideId];
-      for (const activity of Object.values(state.oneLapActivities)) {
+      delete state.analysisRuns[analysisKey(ownerId, rideId)];
+      if (state.analysisRuns[rideId]?.ownerId === ownerId) delete state.analysisRuns[rideId];
+      for (const activity of [...Object.values(state.oneLapActivities), ...Object.values(state.xingzheActivities)]) {
         if (activity.ownerId === ownerId && activity.rideId === rideId) activity.rideId = null;
       }
-      const result = state.oneLapConnections[ownerId]?.result;
-      if (result) result.rideIds = result.rideIds.filter(id => id !== rideId);
+      for (const connection of [state.oneLapConnections[ownerId], state.xingzheConnections[ownerId]]) {
+        if (connection?.result) connection.result.rideIds = connection.result.rideIds.filter(id => id !== rideId);
+      }
       deleted = true;
     });
     return deleted;
   }
   async getProfile(ownerId: string): Promise<UserProfile | null> { const value = (await this.load()).profiles[ownerId]; return value ? structuredClone(value) : null; }
   async saveProfile(ownerId: string, profile: UserProfile): Promise<void> { await this.mutate((state) => { state.profiles[ownerId] = structuredClone(profile); }); }
-  async saveAnalysisRun(ownerId: string, rideId: string, result: unknown): Promise<void> { await this.mutate((state) => { state.analysisRuns[rideId] = { ownerId, run: { rideId, result: structuredClone(result), storedAt: new Date().toISOString() } }; }); }
-  async getAnalysisRun(ownerId: string, rideId: string): Promise<AnalysisRunRecord | null> { const value = (await this.load()).analysisRuns[rideId]; return value?.ownerId === ownerId ? structuredClone(value.run) : null; }
+  async saveAnalysisRun(ownerId: string, rideId: string, result: unknown): Promise<void> { await this.mutate((state) => { state.analysisRuns[analysisKey(ownerId, rideId)] = { ownerId, run: { rideId, result: structuredClone(result), storedAt: new Date().toISOString() } }; }); }
+  async getAnalysisRun(ownerId: string, rideId: string): Promise<AnalysisRunRecord | null> {
+    const runs = (await this.load()).analysisRuns;
+    const value = runs[analysisKey(ownerId, rideId)] ?? runs[rideId];
+    return value?.ownerId === ownerId ? structuredClone(value.run) : null;
+  }
   async getConsent(ownerId: string): Promise<ConsentRecord | null> { const value = (await this.load()).consents[ownerId]; return value ? structuredClone(value) : null; }
   async saveConsent(ownerId: string, consent: ConsentRecord): Promise<void> { await this.mutate((state) => { state.consents[ownerId] = structuredClone(consent); }); }
   async saveDemoEvent(ownerId: string, event: DemoEvent): Promise<void> { await this.mutate((state) => { state.demoEvents[event.eventId] = { ownerId, event: structuredClone(event) }; }); }
@@ -211,14 +307,20 @@ export class FileApplicationRepository implements ApplicationRepository {
   }
   async deleteAccount(ownerId: string): Promise<void> {
     await this.mutate((state) => {
-      for (const [id, item] of Object.entries(state.rides)) if (item.ownerId === ownerId) { delete state.rides[id]; delete state.analysisRuns[id]; }
+      for (const [id, item] of Object.entries(state.rides)) if (item.ownerId === ownerId) delete state.rides[id];
+      for (const [key, item] of Object.entries(state.analysisRuns)) if (item.ownerId === ownerId) delete state.analysisRuns[key];
       for (const [id, item] of Object.entries(state.demoEvents)) if (item.ownerId === ownerId) delete state.demoEvents[id];
       delete state.profiles[ownerId];
       delete state.consents[ownerId];
       delete state.oneLapConnections[ownerId];
+      delete state.xingzheConnections[ownerId];
+      delete state.xingzheAuthorizations[ownerId];
       for (const [key, activity] of Object.entries(state.oneLapActivities)) if (activity.ownerId === ownerId) delete state.oneLapActivities[key];
+      for (const [key, activity] of Object.entries(state.xingzheActivities)) if (activity.ownerId === ownerId) delete state.xingzheActivities[key];
     });
   }
 }
 
-export function getApplicationRepository(): FileApplicationRepository { const root = defaultRoot(); const instances = repositoryInstances(); let instance = instances.get(root); if (!instance) { instance = new FileApplicationRepository(root); instances.set(root, instance); } return instance; }
+export function getApplicationRepository(): FileApplicationRepository {
+  return new FileApplicationRepository();
+}

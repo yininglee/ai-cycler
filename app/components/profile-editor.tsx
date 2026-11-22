@@ -14,6 +14,9 @@ import {
 } from "../../src/domain/user-profile";
 import { readProfile } from "./profile-client";
 import type { ConsentRecord } from "../../src/persistence/application-repository";
+import { notifyAccountChange, useAccountStorage } from "./account-scope";
+import { CHAT_SESSION_STORAGE_KEY } from "../../src/chat/chat-session";
+import { scopedBrowserKey } from "../../src/auth/browser-scope";
 
 type FormValues = Record<ProfileField, string>;
 
@@ -39,6 +42,7 @@ function formatTime(value?: string): string {
 }
 
 export default function ProfileEditor({ onSaved, formOnly = false }: { onSaved?: () => void; formOnly?: boolean }) {
+  const { scope } = useAccountStorage();
   const [busy, setBusy] = useState(false);
   const [profile, setProfile] = useState<UserProfile>(demoInitialProfile);
   const [values, setValues] = useState<FormValues>(demoInitialValues);
@@ -99,6 +103,16 @@ export default function ProfileEditor({ onSaved, formOnly = false }: { onSaved?:
     if (!window.confirm("删除账户、骑行记录、个人资料及 AI 解读？此操作不可撤销。")) return;
     const response = await fetch("/api/account", { method: "DELETE" });
     if (!response.ok) { setError("账户删除失败，请稍后重试"); return; }
+    if (scope) {
+      try {
+        localStorage.removeItem(scopedBrowserKey(CHAT_SESSION_STORAGE_KEY, scope));
+        const prefix = scopedBrowserKey("", scope);
+        for (const key of Object.keys(sessionStorage)) if (key.startsWith(prefix)) sessionStorage.removeItem(key);
+      } catch {}
+      notifyAccountChange();
+      window.location.replace("/account");
+      return;
+    }
     const next = createUserProfile(); setProfile(next); setValues(emptyValues); setConsent(null); setMessage("账户数据已删除。");
   }
 
@@ -115,7 +129,7 @@ export default function ProfileEditor({ onSaved, formOnly = false }: { onSaved?:
       <form className="profile-card" onSubmit={save}>
         {!formOnly && <div className="profile-card-heading">
           <div><h2>基本资料</h2></div>
-          <span className="local-badge">开发会话</span>
+          <span className="local-badge">{scope ? "已登录" : "访客"}</span>
         </div>}
         <p className="profile-card-copy">用于理解你的骑行数据。所有项目均可留空，也可以在对话中补充，确认后保存。</p>
         <fieldset className="profile-fields" disabled={!hydrated || busy}>

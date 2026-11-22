@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
+import { getNextSession } from "../src/auth/next-session";
+import { AccountScopeProvider } from "./components/account-scope";
 
 import "./globals.css";
 
@@ -14,10 +16,11 @@ export const viewport: Viewport = {
   themeColor: "#f4f4f2",
 };
 
-export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
+export default async function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
+  const session = await getNextSession();
   return (
     <html lang="zh-CN">
-      <body>{children}</body>
+      <body><AccountScopeProvider scope={session?.accountEmail ? session.userId : undefined}>{children}</AccountScopeProvider></body>
     </html>
   );
 }

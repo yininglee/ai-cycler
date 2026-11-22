@@ -7,7 +7,7 @@ import { resolveOrCreateRequestSession } from "../src/auth/session.ts";
 import { importRideBytes } from "../src/imports/ride-import-service.ts";
 import { executeChatTool } from "../src/chat/chat-tools.ts";
 import { getApplicationRepository, FileApplicationRepository } from "../src/persistence/application-repository.ts";
-import { connectOneLapPilot, readOneLapPilotConfig, syncOneLapPilot } from "../src/sync/onelap-sync.ts";
+import { connectOneLapPilot, disconnectOneLapPilot, readOneLapPilotConfig, syncOneLapPilot } from "../src/sync/onelap-sync.ts";
 import { buildCyclingFitSample } from "./helpers/fit-sample.ts";
 
 const ownerId = "onelap-test-owner";
@@ -88,6 +88,27 @@ test("OneLap rejects pull attempts during rate limiting and after authorization 
   const expired = await syncOneLapPilot(repository, testConfig, async () => new Response(null, { status: 401 }));
   assert.equal(expired?.paused, true);
   assert.equal((await syncOneLapPilot(repository, testConfig, async () => assert.fail("connection paused")))?.paused, true);
+});
+
+test("disconnecting OneLap aborts the request and supports an immediate new sync after connecting again", { timeout: 5000 }, async t => {
+  const repository = new FileApplicationRepository(`${process.env.LOCAL_DATA_DIR}/disconnect-in-flight`);
+  const started = Promise.withResolvers<AbortSignal>();
+  await connectOneLapPilot(repository, testConfig);
+  const interrupted = syncOneLapPilot(repository, testConfig, (_url, options) => {
+    const signal = AbortSignal.any([options!.signal!, t.signal]);
+    return new Promise((_, reject) => {
+      signal.addEventListener("abort", () => reject(signal.reason), { once: true });
+      started.resolve(signal);
+    });
+  });
+  const signal = await started.promise;
+  await disconnectOneLapPilot(repository, ownerId);
+  assert.equal(signal.aborted, true);
+  await connectOneLapPilot(repository, testConfig);
+  const replacement = syncOneLapPilot(repository, testConfig, async () => Response.json({ data: { list: [] } }));
+  assert.equal(await interrupted, null);
+  assert.ok((await replacement)?.lastSyncAt);
+  assert.deepEqual(await repository.listRides(ownerId), []);
 });
 
 test("connecting and reading status do not contact OneLap; only an explicit sync pulls rides", async t => {

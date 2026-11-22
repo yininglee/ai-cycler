@@ -6,6 +6,7 @@ import { isRideParseError } from "../../../../src/parsers/index.ts";
 import { MAX_UPLOAD_BYTES } from "../../../../src/parsers/parser-utils.ts";
 import { assertDeclaredMimeType } from "../../../../src/parsers/file-signature.ts";
 import { getImportRateLimiter } from "../../../../src/imports/import-rate-limit.ts";
+import { isImportPlatform } from "../../../../src/ux/platform-catalog.ts";
 
 import { importRideBytes } from "../../../../src/imports/ride-import-service.ts";
 
@@ -42,6 +43,8 @@ async function rejectImport(
 }
 
 export async function POST(request: Request): Promise<Response> {
+  const requestSite = request.headers.get("sec-fetch-site");
+  if (requestSite && !["same-origin", "none"].includes(requestSite)) return noStoreJson({ error: "INVALID_UPLOAD" }, 403);
   let session;
   try { session = resolveOrCreateRequestSession(request); } catch (error) {
     if (error instanceof AuthConfigurationError) return noStoreJson({ error: error.code }, 503);
@@ -70,6 +73,10 @@ export async function POST(request: Request): Promise<Response> {
     return rejectImport(session, requestId, "INVALID_UPLOAD", "无法读取上传文件", 400);
   }
 
+  const platform = formData.get("platform");
+  if (platform !== null && !isImportPlatform(platform)) {
+    return rejectImport(session, requestId, "UNSUPPORTED_PLATFORM", "请选择顽鹿或行者作为记录来源。", 422);
+  }
   const upload = formData.get("file");
   if (!(upload instanceof File)) {
     return rejectImport(session, requestId, "MISSING_FILE", "请选择一个 FIT 或 GPX 文件", 400);
@@ -92,7 +99,7 @@ export async function POST(request: Request): Promise<Response> {
   const bytes = new Uint8Array(await upload.arrayBuffer());
   try {
     const repository = getApplicationRepository();
-    const { result, record } = await importRideBytes(repository, session.userId, upload.name, bytes);
+    const { result, record } = await importRideBytes(repository, session.userId, upload.name, bytes, platform ? { platformId: platform } : undefined);
     if (!result?.rideId) throw new Error("Import did not return a ride ID");
     await repository.saveDemoEvent(session.userId, createDemoEvent({
       type: "import_completed",
@@ -100,7 +107,7 @@ export async function POST(request: Request): Promise<Response> {
       requestId,
       attributes: record ? { source: record.activity.source.kind } : { deduplicated: "true" },
     }));
-    if (record) saveImportedRide(record);
+    if (record && !session.accountEmail) saveImportedRide(record);
     return result.duplicate
       ? noStoreJson({ rideId: result.rideId, duplicate: true }, 200, sessionCookieHeader(session))
       : noStoreJson({ rideId: result.rideId }, 201, sessionCookieHeader(session));

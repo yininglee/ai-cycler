@@ -1,4 +1,4 @@
-import { resolveOrCreateRequestSession, sessionCookieHeader } from "../../../../src/auth/session.ts";
+import { AccountSessionExpiredError, resolveOrCreateRequestSession, sessionCookieHeader, signInRequiredResponse } from "../../../../src/auth/session.ts";
 import { getRideRepository } from "../../../../src/persistence/demo-ride-repository.ts";
 import { formatRideTitle } from "../../../../src/ui/ride-view-model.ts";
 import { toCalendarRide } from "../../../../src/ui/ride-calendar.ts";
@@ -16,5 +16,8 @@ export async function GET(request: Request) {
       power: record.activity.metrics.avgPowerW !== undefined,
     }));
     return Response.json({ rides }, { headers: { "Cache-Control": "no-store", ...sessionCookieHeader(session) } });
-  } catch { return Response.json({ error: "记录暂时无法读取" }, { status: 503 }); }
+  } catch (error) {
+    if (error instanceof AccountSessionExpiredError) return signInRequiredResponse();
+    return Response.json({ error: "记录暂时无法读取" }, { status: 503 });
+  }
 }

@@ -36,7 +36,9 @@ export function toCalendarRide(record: RideRecord): CalendarRide {
     date: record.activity.startTime ? calendarDate(record.activity.startTime) : null,
     source: record.activity.source.parserVersion === "platform-demo-v1"
       ? `${platformInfo(record.activity.source.platformId ?? "garmin").name} · 模拟`
-      : record.activity.source.platformId ? platformInfo(record.activity.source.platformId).name : record.activity.source.kind.toUpperCase(),
+      : record.activity.source.platformId
+        ? `${platformInfo(record.activity.source.platformId).name}${record.activity.source.kind === "platform_summary" ? " · 摘要" : ""}`
+        : record.activity.source.kind.toUpperCase(),
     distanceM: metric("distanceM"),
     durationS: metric("movingTimeS") ?? metric("elapsedTimeS"),
     avgSpeedMps: metric("avgSpeedMps"),

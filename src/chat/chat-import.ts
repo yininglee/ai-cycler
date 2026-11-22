@@ -11,9 +11,9 @@ export function chatReturnPath(conversationId?: string, discussPlan = false): st
   if (discussPlan) query.set("discussPlan", "1");
   return `/chat?${query}`;
 }
-export function rememberStoredRideInspection(rideId: string, conversationId?: string): void {
-  const state = readStoredChatSession();
-  if (state) storeChatSession(rememberChatRideSelection(state, rideId, conversationId ?? state.activeConversationId));
+export function rememberStoredRideInspection(rideId: string, conversationId?: string, scope?: string): void {
+  const state = readStoredChatSession(scope);
+  if (state) storeChatSession(rememberChatRideSelection(state, rideId, conversationId ?? state.activeConversationId), scope);
 }
 export function parseImportReceipts(value: unknown, fallbackConversationId: string): ChatImportReceipt[] {
   if (!Array.isArray(value)) return [];

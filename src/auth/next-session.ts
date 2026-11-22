@@ -1,11 +1,11 @@
-import { cookies } from "next/headers";
-import { SESSION_COOKIE_NAME } from "./session.ts";
+import { headers } from "next/headers";
+import { getAccountRequestSession } from "./session.ts";
+
+export async function getNextSession() {
+  const cookie = (await headers()).get("cookie");
+  return cookie ? getAccountRequestSession(new Request("http://localhost", { headers: { cookie } })) : null;
+}
 
 export async function getNextSessionUserId(): Promise<string | null> {
-  if (process.env.AUTH_SESSION_MODE === "oidc") return null;
-  const value = (await cookies()).get(SESSION_COOKIE_NAME)?.value;
-  if (!value) return null;
-  const request = new Request("http://localhost", { headers: { cookie: `${SESSION_COOKIE_NAME}=${value}` } });
-  const { getRequestSession } = await import("./session.ts");
-  return getRequestSession(request)?.userId ?? null;
+  return (await getNextSession())?.userId ?? null;
 }

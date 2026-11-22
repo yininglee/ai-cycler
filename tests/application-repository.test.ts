@@ -4,10 +4,33 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
 
-import { FileApplicationRepository } from "../src/persistence/application-repository.ts";
+import { FileApplicationRepository, getApplicationRepository } from "../src/persistence/application-repository.ts";
 import { getRideFixture } from "../src/fixtures/rides.ts";
 import { createUserProfile } from "../src/domain/user-profile.ts";
 import { createDemoEvent } from "../src/observability/demo-events.ts";
+
+test("reloaded repository code uses current methods and shares the write queue", async t => {
+  const root = await mkdtemp(join(tmpdir(), "ai-cycling-repo-reload-"));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const previousRoot = process.env.LOCAL_DATA_DIR;
+  process.env.LOCAL_DATA_DIR = root;
+  t.after(() => {
+    if (previousRoot === undefined) delete process.env.LOCAL_DATA_DIR;
+    else process.env.LOCAL_DATA_DIR = previousRoot;
+  });
+  const original = getApplicationRepository();
+  const updatedModule = new URL("../src/persistence/application-repository.ts?reload", import.meta.url);
+  const reloaded = await import(updatedModule.href) as typeof import("../src/persistence/application-repository.ts");
+  const updated = reloaded.getApplicationRepository();
+  assert.ok(updated instanceof reloaded.FileApplicationRepository);
+
+  const writes = Array.from({ length: 8 }, (_, index) => (index % 2 === 0 ? original : updated)
+    .saveProfile(`owner-${index}`, createUserProfile({ age: 30 + index })));
+  await Promise.all(writes);
+  for (let index = 0; index < writes.length; index++) {
+    assert.equal((await updated.getProfile(`owner-${index}`))?.age?.value, 30 + index);
+  }
+});
 
 test("file repository persists private records, strips filenames, and enforces owner", async () => {
   const root = await mkdtemp(join(tmpdir(), "ai-cycling-repo-"));

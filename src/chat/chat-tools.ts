@@ -423,7 +423,7 @@ export type ChatToolResult =
 export type RideImportToolResult = {
   schemaVersion: typeof CHAT_TOOL_SCHEMA_VERSION;
   tool: "prepare_ride_import";
-  mode: "real_file_simulated_platform" | "real_file_live_onelap";
+  mode: "real_file_simulated_platform" | "real_file_live_onelap" | "real_file_live_platform" | "real_file_only";
   platforms: Awaited<ReturnType<typeof readImportPlatforms>>;
   fileFormats: string[];
   maxFileSizeMB: number;
@@ -1618,7 +1618,9 @@ async function executeChatToolWithinBoundary(repository: ApplicationRepository, 
       return {
         schemaVersion: CHAT_TOOL_SCHEMA_VERSION,
         tool: invocation.tool,
-        mode: platforms.some(platform => platform.mode === "live_manual") ? "real_file_live_onelap" : "real_file_simulated_platform",
+        mode: platforms.some(platform => platform.id === "xingzhe" && platform.mode === "live_manual") ? "real_file_live_platform"
+          : platforms.some(platform => platform.mode === "live_manual") ? "real_file_live_onelap"
+          : platforms.some(platform => platform.mode === "simulated") ? "real_file_simulated_platform" : "real_file_only",
         platforms,
         fileFormats: ["FIT", "GPX"],
         maxFileSizeMB: MAX_UPLOAD_BYTES / (1024 * 1024),

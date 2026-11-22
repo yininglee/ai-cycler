@@ -1,4 +1,6 @@
 "use client";
+
+import { useAccountStorage } from "./account-scope";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { CalendarRide } from "../../src/ui/ride-calendar";
@@ -9,6 +11,7 @@ import { rememberStoredRideInspection } from "../../src/chat/chat-import";
 
 type RideSummary = CalendarRide & { title: string; heartRate: boolean; power: boolean };
 export function RideRecordCards({ ids, fromChat = false, onInspect, conversationId }: { ids: string[]; fromChat?: boolean; onInspect?: (id: string) => void; conversationId?: string }) {
+  const { scope } = useAccountStorage();
   const [rides, setRides] = useState<RideSummary[]>([]);
   const [error, setError] = useState("");
   const [loaded, setLoaded] = useState(false);
@@ -25,7 +28,7 @@ export function RideRecordCards({ ids, fromChat = false, onInspect, conversation
     return () => { active = false; };
   }, [fingerprint, attempt]);
   const dateLabel = (ride: RideSummary) => ride.startTime ? new Date(ride.startTime).toLocaleString("zh-CN", { timeZone: "Asia/Shanghai", hour12: false }) : "日期未记录";
-  function inspect(id: string) { if (onInspect) onInspect(id); else if (fromChat) rememberStoredRideInspection(id, conversationId); }
+  function inspect(id: string) { if (onInspect) onInspect(id); else if (fromChat) rememberStoredRideInspection(id, conversationId, scope); }
   return <div className="sync-records">
     {error ? <p role="alert">{error}<button onClick={() => setAttempt(n => n + 1)}>重试读取</button></p> : !loaded ? <p role="status">正在读取骑行…</p> : !rides.length ? <p>记录已不可用或不在当前演示视图中，请重新选择。</p> : <>
       <RideCardStack cards={rides.map(ride => ({ id: ride.id, content: <article className="sync-record">

@@ -19,6 +19,7 @@ export function withDemoImportedRides(base: ApplicationRepository): ApplicationR
     get(target, property) {
       if (property === "listRides") {
         return async (ownerId: string) => {
+          if (ownerId.startsWith("account-")) return target.listRides(ownerId);
           const profile = await target.getProfile(ownerId);
           const [owned, demo] = await Promise.all([
             target.listRides(ownerId),
@@ -32,7 +33,7 @@ export function withDemoImportedRides(base: ApplicationRepository): ApplicationR
       }
       if (property === "getRide") {
         return async (ownerId: string, rideId: string) => {
-          if (isDemoImportedRideId(rideId)) {
+          if (!ownerId.startsWith("account-") && isDemoImportedRideId(rideId)) {
             const demo = (await loadDemoImportedRides()).find((item) => item.rideId === rideId);
             if (demo) return structuredClone(demo.record);
           }
