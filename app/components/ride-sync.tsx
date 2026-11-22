@@ -117,6 +117,9 @@ export function PlatformConnection({ provider, from, conversationId, oauth }: { 
     finally { setBusy(false); }
   }
   const fileImport = isImportPlatform(provider) ? <RideFileUpload platform={provider}
+    onBatchImported={from === "chat" ? result => {
+      if (result.rideIds.length) recordReceipt(result.rideIds, `顽鹿批量导入完成。新增 ${result.added} 条，跳过重复 ${result.duplicate} 条，失败 ${result.failed} 条。`);
+    } : undefined}
     onImported={from === "chat" ? (id, duplicate) => recordReceipt([id], duplicate
       ? `这个${info.name}文件已导入，已找到原记录。`
       : `已导入 1 条${info.name}骑行记录。`) : undefined} /> : null;

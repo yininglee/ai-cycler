@@ -32,5 +32,5 @@ export function proxy(request: Request): Response | undefined {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static/|_next/image(?:/|$)|_next/(?:webpack-)?hmr(?:/|$)|__nextjs_font/|favicon\\.ico$|icon\\.svg$).*)"],
+  matcher: ["/((?!_next/static/|_next/image(?:/|$)|_next/(?:webpack-)?hmr(?:/|$)|__nextjs_font/|favicon\\.ico$|icon\\.svg$|api/rides/import/onelap-batch/?$).*)"],
 };

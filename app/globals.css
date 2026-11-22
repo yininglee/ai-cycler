@@ -222,6 +222,9 @@ h1 { margin: 0; font-size: clamp(40px, 11vw, 66px); line-height: 1.03; letter-sp
 .upload-file-name { margin: 0 !important; color: var(--muted); font-size: 12px !important; text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .upload-form .primary-button { grid-column: 1 / -1; margin-top: 4px; }
 .upload-form .primary-button:disabled { opacity: .55; cursor: wait; }
+.upload-batch-result { grid-column: 1 / -1; min-width: 0; overflow-wrap: anywhere; }
+.upload-batch-result details { margin-top: 10px; font-size: 14px; }
+.upload-batch-result li + li { margin-top: 6px; }
 .upload-error { grid-column: 1 / -1; margin: 0 !important; padding: 10px 12px; border-radius: 12px; background: #fff1ef; color: var(--danger) !important; font-size: 13px !important; }
 .upload-privacy-note { grid-column: 1 / -1; padding-top: 2px; color: #878781 !important; font-size: 12px !important; line-height: 1.55; }
 .coming-pill { position: absolute; left: 92px; bottom: 20px; padding: 4px 10px; background: #f0edf4; color: #77667e; }
