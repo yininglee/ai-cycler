@@ -11,7 +11,15 @@ AI Cycler 是面向骑友的骑行分析和训练助手。导入码表或骑行�
 
 ## 界面速览
 
-以下为移动端截图。骑行与训练数据为合成样例，V2 解读展示的是固定演示结果。
+以下为移动端截图。骑行页面和 Agent 对话使用实际导入的行者记录，训练计划为示例草案。
+
+### 用 Agent 检索骑行、对比表现
+
+1. **按日期筛选并定位记录。** 问「7 月 18 日到 22 日哪次骑得最远」，Agent 从两条记录中找出 **161.8 km** 的长途骑行，列出爬升与平均功率，并给出可打开详情的记录卡片。
+2. **沿用上下文继续追问。** 问「把这次和 7 月 18 日那次的爬升及平均功率并列」，Agent 将「这次」关联到刚找到的记录，对照两次骑行，并结合知识库解释为什么判断疲劳还要参考时长等信息。
+
+<img src="docs/screenshots/chat.png" alt="Agent 按日期找到 161.8 公里的骑行，展示爬升、功率和记录卡片" width="320">
+<img src="docs/screenshots/chat-followup.png" alt="Agent 延续上一轮，比较两次骑行的爬升和功率，并列出知识依据" width="320">
 
 ### 导入与回顾骑行
 
@@ -20,18 +28,24 @@ AI Cycler 是面向骑友的骑行分析和训练助手。导入码表或骑行�
 <img src="docs/screenshots/ride-import.png" alt="同步与导入菜单，包含行者、顽鹿和本地文件入口" width="320">
 <img src="docs/screenshots/ride-history.png" alt="骑行记录页，展示累计统计、热力图和单次骑行列表" width="320">
 
-### 查看单次表现与 AI 解读
+### 查看骑行摘要与 V2 解读
 
-骑行详情展示路线、用时、爬升和可用的传感器数据。点击「查看深度解读」，可阅读 V2 给出的整体评价和分项分析，对照图表理解本次骑行表现。
+以 7 月 22 日的长途骑行为例，摘要显示路线、距离、骑行时长和累计爬升。打开「查看深度解读」，可阅读 V2 对同一条记录的分项说明，比如爬坡里程、地形构成和识别出的爬坡段。
 
-<img src="docs/screenshots/ride-detail.png" alt="骑行详情摘要，展示路线、距离、用时和爬升" width="320">
-<img src="docs/screenshots/ride-insight.png" alt="V2 骑后深度解读，展示整体评价、表现高光和分项解读" width="320">
+<img src="docs/screenshots/ride-detail.png" alt="161.8 公里骑行的路线、时长和累计爬升" width="320">
+<img src="docs/screenshots/ride-insight.png" alt="同一条长途记录的 V2 深度解读，展示爬坡表现及依据" width="320">
 
-### 询问骑行数据与查看训练安排
+### 直接查看数据分析
 
-在对话里可以直接询问累计里程等数据。也可以提供训练目标和每周可用时间，生成计划草案，按周查看每次训练的时长和步骤，再确认启用。
+在骑行详情切换到「分析」标签，即可查看由记录直接计算的图表。上半部分展示速度、海拔和爬坡分级，下滑可查看功率、峰值平均功率和踏频。这个页面独立于 AI 解读。
 
-<img src="docs/screenshots/chat.png" alt="Cycler 对话，根据已导入记录回答累计骑行次数和里程" width="320">
+<img src="docs/screenshots/ride-analysis.png" alt="骑行分析标签页，展示速度曲线、海拔和爬坡分级" width="320">
+<img src="docs/screenshots/ride-analysis-power.png" alt="骑行分析标签页中的功率曲线、峰值平均功率与踏频" width="320">
+
+### 查看训练计划草案
+
+提供训练目标和每周可用时间后，可以生成计划草案，按周查看每次训练的时长和步骤，再确认启用。
+
 <img src="docs/screenshots/training-plan.png" alt="待确认的训练计划，展示两周安排和每日训练步骤" width="320">
 
 ## 本地运行
